@@ -1,13 +1,17 @@
-﻿using MajdataPlay.Scenes.Game;
+﻿using MajdataPlay.Json;
+using MajdataPlay.Scenes.Game;
 using MajdataPlay.Scenes.Game.Notes;
+using Newtonsoft.Json;
 using System.Collections;
 using System.Collections.Generic;
 
 namespace MajdataPlay.Collections
 {
+    [JsonConverter(typeof(JudgeDetailConverter))]
     public class JudgeDetail : IReadOnlyDictionary<ScoreNoteType, JudgeInfo>
     {
-        public static JudgeDetail Empty => new JudgeDetail(new Dictionary<ScoreNoteType, JudgeInfo>()
+        [JsonIgnore]
+        public static JudgeDetail Empty { get; } = new JudgeDetail(new Dictionary<ScoreNoteType, JudgeInfo>()
         {
             {ScoreNoteType.Tap,JudgeInfo.Empty },
             {ScoreNoteType.Hold,JudgeInfo.Empty },
@@ -15,14 +19,31 @@ namespace MajdataPlay.Collections
             {ScoreNoteType.Touch,JudgeInfo.Empty },
             {ScoreNoteType.Break,JudgeInfo.Empty },
         });
-        public JudgeInfo TotalJudgeInfo => total;
+        public JudgeInfo TotalJudgeInfo
+        {
+            get
+            {
+                return total;
+            }
+        }
+        [JsonIgnore]
+        public int Count
+        {
+            get
+            {
+                return db.Count;
+            }
+        }
+
         IReadOnlyDictionary<ScoreNoteType, JudgeInfo> db;
         JudgeInfo total = JudgeInfo.Empty;
         public JudgeDetail(IReadOnlyDictionary<ScoreNoteType, JudgeInfo> source)
         {
             db = source;
             foreach (var kv in source)
+            {
                 total += kv.Value;
+            }
         }
 
         public JudgeInfo this[ScoreNoteType key] => db[key];
@@ -30,9 +51,6 @@ namespace MajdataPlay.Collections
         public IEnumerable<ScoreNoteType> Keys => db.Keys;
 
         public IEnumerable<JudgeInfo> Values => db.Values;
-
-        public int Count => db.Count;
-
         public bool ContainsKey(ScoreNoteType key) => db.ContainsKey(key);
         public IEnumerator<KeyValuePair<ScoreNoteType, JudgeInfo>> GetEnumerator() => db.GetEnumerator();
         public bool TryGetValue(ScoreNoteType key, out JudgeInfo value) => db.TryGetValue(key, out value);

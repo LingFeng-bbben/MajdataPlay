@@ -1,15 +1,18 @@
-using UnityEngine;
-using MajdataPlay.IO;
-using MajdataPlay.Utils;
+using MajdataPlay.Buffers;
+using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
-using System;
-using System.Threading.Tasks;
+using MajdataPlay.IO;
+using MajdataPlay.Settings;
+using MajdataPlay.Utils;
 using MajSimai;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using MajdataPlay.Collections;
-using MajdataPlay.Settings;
-using MajdataPlay.Buffers;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using Unity.IL2CPP.CompilerServices;
+using UnityEngine;
+using UnityEngine.Profiling;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
@@ -61,8 +64,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         const int ANSWER = 12;
         const int ANSWER_CLOCK = 13;
 
-        float _answerOffsetSec = MajInstances.Settings?.Judge.AnswerOffset ?? 0;
-        float _displayOffsetSec = MajInstances.Settings?.Debug.DisplayOffset ?? 0;
+        float _answerOffsetSec = 0;
 
         void Awake()
         {
@@ -80,16 +82,14 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                     _noteSFXs[i] = sfx;
                 }
             }
-            var settings = MajEnv.UserSettings;
+            var settings = MajEnv.Settings;
             if (settings.Debug.OffsetUnit == OffsetUnitOption.Second)
             {
-                _answerOffsetSec = settings.Judge.AudioOffset;
-                _displayOffsetSec = settings.Debug.DisplayOffset;
+                _answerOffsetSec = settings.Judge.AnswerOffset + settings.Debug.DisplayOffset;
             }
             else
             {
-                _answerOffsetSec = settings.Judge.AudioOffset * MajEnv.FRAME_LENGTH_SEC;
-                _displayOffsetSec = settings.Debug.DisplayOffset * MajEnv.FRAME_LENGTH_SEC;
+                _answerOffsetSec = (settings.Judge.AnswerOffset + settings.Debug.DisplayOffset) * MajEnv.FRAME_LENGTH_SEC;
             }
         }
         private void Start()
@@ -106,15 +106,24 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             _rentedArrayForAnswerSoundPoints = Array.Empty<AnswerSoundPoint>();
             _answerTimingPoints = Memory<AnswerSoundPoint>.Empty;
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void OnPreUpdate()
         {
+            Profiler.BeginSample("NoteAudioManager.OnPreUpdate");
             for (var i = 0; i < _noteSFXPlaybackRequests.Length; i++)
             {
                 _noteSFXPlaybackRequests[i] = false;
             }
+            Profiler.EndSample();
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void OnLateUpdate()
         {
+            Profiler.BeginSample("NoteAudioManager.OnLateUpdate");
             AnswerSFXUpdate();
             for (var i = 0; i < _noteSFXPlaybackRequests.Length; i++)
             {
@@ -218,7 +227,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                         break;
                 }
             }
+            Profiler.EndSample();
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void AnswerSFXUpdate()
         {
             try
@@ -229,7 +242,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 }
                 var timingPoints = _answerTimingPoints.Span;
                 var thisFrameSec = _noteController.ThisFrameSec;
-                var offset = _answerOffsetSec + _displayOffsetSec + ANSWER_PLAYBACK_OFFSET_SEC;
+                var offset = ANSWER_PLAYBACK_OFFSET_SEC;
                 var i = 0;
                 for (; i < timingPoints.Length; i++)
                 {
@@ -261,6 +274,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 MajDebug.LogException(e);
             }
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PlayTapSound(in NoteJudgeResult judgeResult)
         {
             if (judgeResult.IsMissOrTooFast)
@@ -308,6 +324,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                     break;
             }
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void PlayBreakTapSound(in NoteJudgeResult judgeResult)
         {
             switch (judgeResult.Grade)
@@ -345,7 +364,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                     return;
                 }
                 //Generate ClockSounds
-                var firstBpm = chart.NoteTimings.FirstOrDefault().Bpm;
+                var firstBpm = 0f;
+                if(!chart.NoteTimings.IsEmpty)
+                {
+                    firstBpm = chart.NoteTimings[0].Bpm;
+                }
                 var interval = 60 / firstBpm;
                 using RentedList<AnswerSoundPoint> answerTimingPoints = new();
 
@@ -387,7 +410,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                     {
                         continue;
                     }
-                    var timing = (float)timingPoint.Timing;
+                    var timing = (float)timingPoint.Timing + _answerOffsetSec;
                     var isClock = false;
                     answerTimingPoints.Add(new AnswerSoundPoint(timing, isClock)
                     {
@@ -400,7 +423,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                     }
                     foreach (var hold in holds)
                     {
-                        var newTime = (float)(timingPoint.Timing + hold.HoldTime);
+                        var newTime = (float)(timingPoint.Timing + hold.HoldTime) + _answerOffsetSec;
                         if (!chart.NoteTimings.Any(o => Math.Abs(o.Timing - newTime) < 0.001) &&
                             !answerTimingPoints.Any(o => Math.Abs(o.Timing - newTime) < 0.001)
                             )
@@ -432,17 +455,25 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             }
             _isTouchHoldRiserPlaying = false;
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PlayTouchSound()
         {
             _noteSFXPlaybackRequests[TOUCH] = true;
             //_audioManager.PlaySFX("touch.wav");
         }
-
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PlayHanabiSound()
         {
             _noteSFXPlaybackRequests[FIREWORK] = true;
             //_audioManager.PlaySFX("touch_hanabi.wav");
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PlayTouchHoldSound()
         {
             _noteSFXPlaybackRequests[TOUCHHOLD] = true;
@@ -450,12 +481,17 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             //if(!riser.IsPlaying)
             //    _audioManager.PlaySFX("touch_Hold_riser.wav");
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void StopTouchHoldSound()
         {
             _noteSFXPlaybackRequests[TOUCHHOLD] = false;
             //_audioManager.StopSFX("touch_Hold_riser.wav");
         }
-
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PlaySlideSound(bool isBreak)
         {
             if (isBreak)
@@ -469,6 +505,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 //_audioManager.PlaySFX("slide.wav");
             }
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 
         public void PlayBreakSlideEndSound()
         {

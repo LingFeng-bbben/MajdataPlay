@@ -27,7 +27,7 @@ namespace MajdataPlay
         public static GameSetting Settings
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => MajEnv.UserSettings;
+            get => MajEnv.Settings;
         }
         public static AudioManager AudioManager
         {
@@ -56,6 +56,13 @@ namespace MajdataPlay
             get => Majdata<GameUpdater>.Instance!;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => Majdata<GameUpdater>.Instance = value;
+        }
+        internal static FPSDisplayer FPSDisplayer
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Majdata<FPSDisplayer>.Instance!;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => Majdata<FPSDisplayer>.Instance = value;
         }
     }
 }

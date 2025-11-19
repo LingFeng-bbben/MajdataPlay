@@ -1,16 +1,13 @@
 ﻿using Cysharp.Text;
-using MajdataPlay.Utils;
+using MajdataPlay.Settings;
 using System;
-using System.Buffers;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 #nullable enable
@@ -24,17 +21,36 @@ namespace MajdataPlay
         static StreamWriter? _fileStream;
 
         readonly static Utf16PreparedFormat<DateTime, LogLevel> LOG_OUTPUT_FORMAT = ZString.PrepareUtf16<DateTime, LogLevel>("[{0:yyyy-MM-dd HH:mm:ss.ffff}][{1}] ");
+
+        static bool _isInited = false;
+        readonly static object _initLock = new();
+
         static MajDebug()
         {
             _unityLogger = Debug.unityLogger;
-            TaskScheduler.UnobservedTaskException += (sender,args) =>
+        }
+        internal static void Init()
+        {
+            if (_isInited)
+            {
+                return;
+            }
+            lock(_initLock)
+            {
+                if (_isInited)
+                {
+                    return;
+                }
+                _isInited = true;
+            }
+            TaskScheduler.UnobservedTaskException += (sender, args) =>
             {
                 LogException(args.Exception);
                 args.SetObserved();
             };
             StartLogWritebackTask();
             MajEnv.OnApplicationQuit += OnApplicationQuit;
-#if !(UNITY_EDITOR || DEBUG)
+            MajEnv.OnSave += OnSave;
             Application.logMessageReceivedThreaded += (string condition, string stackTrace, LogType type) =>
             {
                 var sb = ZString.CreateStringBuilder();
@@ -48,8 +64,9 @@ namespace MajdataPlay
                 };
                 _logQueue.Enqueue(log);
             };
-#endif
         }
+
+
         [HideInCallstack]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void Log<T>(T obj, LogLevel level)
@@ -67,9 +84,10 @@ namespace MajdataPlay
                 StackTrace = string.Empty,
                 Level = level
             };
-
-#if UNITY_EDITOR || DEBUG
+#if UNITY_EDITOR || (UNITY_ANDROID && DEBUG)
             _unityLogger.Log(ToUnityLogLevel(level), sb.ToString());
+#endif
+#if UNITY_EDITOR || DEBUG
             if (obj is not Exception)
             {
                 log.StackTrace = GetStackTrack();
@@ -108,7 +126,7 @@ namespace MajdataPlay
             Log(obj, LogLevel.Error);
         }
         
-        public static void OnApplicationQuit()
+        static void OnApplicationQuit()
         {
             try
             {
@@ -131,6 +149,15 @@ namespace MajdataPlay
             {
                 MajEnv.OnApplicationQuit -= OnApplicationQuit;
             }
+        }
+        static void OnSave()
+        {
+            if (_fileStream is null)
+            {
+                return;
+            }
+            var sb = ZString.CreateStringBuilder();
+            WriteLog(ref sb);
         }
         static string GetStackTrack()
         {
@@ -190,10 +217,13 @@ namespace MajdataPlay
             {
                 while (_logQueue.TryDequeue(out var log))
                 {
-                    var condition = log.Condition;
+                    using var condition = log.Condition;
+                    if(log.Level < (MajEnv.Settings?.Debug.DebugLevel ?? LogLevel.Debug))
+                    {
+                        continue;
+                    }
                     LOG_OUTPUT_FORMAT.FormatTo(ref sb, log.Date, log.Level);
                     sb.Append(condition.AsSpan());
-                    condition.Dispose();
                     if (!string.IsNullOrEmpty(log.StackTrace))
                     {
                         sb.AppendLine();
@@ -235,7 +265,7 @@ namespace MajdataPlay
             public string? StackTrace { get; set; }
             public LogLevel Level { get; init; }
         }
-        enum LogLevel
+        internal enum LogLevel
         {
             Debug,
             Info,

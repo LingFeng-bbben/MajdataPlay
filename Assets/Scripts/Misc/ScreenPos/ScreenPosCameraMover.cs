@@ -11,7 +11,7 @@ namespace MajdataPlay
         Camera cam;
         void Start()
         {
-            transform.position = new Vector3(0, 1.5f + 2.7f * MajInstances.Settings.Display.MainScreenPosition, -10);
+            transform.position = new Vector3(0, 1.5f + 2.7f * (MajInstances.Settings?.Display.MainScreenPosition ?? 1f), -10);
 #if UNITY_ANDROID
             cam = GetComponent<Camera>();
             var aspectratio = (float)Screen.width / (float)Screen.height;

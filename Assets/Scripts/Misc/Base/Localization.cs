@@ -1,12 +1,14 @@
-﻿using MajdataPlay.Extensions;
-using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json.Serialization;
-using System.Text.Json;
-using MajdataPlay.Collections;
+﻿using MajdataPlay.Collections;
+using MajdataPlay.Extensions;
 using MajdataPlay.Utils;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
 
 #nullable enable
 namespace MajdataPlay
@@ -24,43 +26,73 @@ namespace MajdataPlay
                     OnLanguageChanged(null, value);
             }
         }
-        readonly static JsonSerializerOptions jsonReaderOption = new()
+        readonly static JsonSerializerSettings jsonReaderSettings = new()
         {
-
-            Converters =
-            {
-                new JsonStringEnumConverter()
-            },
-            ReadCommentHandling = JsonCommentHandling.Skip,
-            WriteIndented = true
+            Formatting = Formatting.Indented,
+            Converters = 
+            { 
+                new StringEnumConverter() 
+            }
         };
         public static Language[] Available { get; private set; } = Array.Empty<Language>();
-        static Localization()
+
+        static bool _isInited = false;
+        readonly static object _initLock = new();
+
+        internal static void Init()
         {
-            var path = MajEnv.LangPath;
-            if (!Directory.Exists(path))
+            if (_isInited)
             {
                 return;
             }
-            var files = new DirectoryInfo(path).GetFiles()
-                                               .Where(x => x.Extension == ".json");
-            List<Language> loadedLangs = new();
-            foreach (var fileInfo in files)
+            lock (_initLock)
             {
-                var filePath = fileInfo.FullName;
-                var json = File.ReadAllText(filePath);
-                Language? lang = null;
-                if (Serializer.Json.TryDeserialize(json, out lang, jsonReaderOption) && lang is not null)
-                    loadedLangs.Add(lang);
-                else
-                    continue;
+                if (_isInited)
+                {
+                    return;
+                }
+                _isInited = true;
             }
-            if (loadedLangs.IsEmpty())
-                return;
-            var grouped = loadedLangs.GroupBy(x => x.ToString());
-            Available = new Language[grouped.Count()];
-            foreach (var (i, grouping) in grouped.WithIndex())
-                Available[i] = grouping.First();
+
+            try
+            {
+                var path = MajEnv.LangPath;
+                if (!Directory.Exists(path))
+                {
+                    return;
+                }
+                var files = new DirectoryInfo(path).GetFiles()
+                                                   .Where(x => x.Extension == ".json");
+                List<Language> loadedLangs = new();
+                foreach (var fileInfo in files)
+                {
+                    var filePath = fileInfo.FullName;
+                    var json = File.ReadAllText(filePath);
+                    Language? lang = null;
+                    if (Serializer.Json.TryDeserialize(json, out lang, jsonReaderSettings) && lang is not null)
+                    {
+                        loadedLangs.Add(lang);
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+                if (loadedLangs.IsEmpty())
+                {
+                    return;
+                }
+                var grouped = loadedLangs.GroupBy(x => x.ToString());
+                Available = new Language[grouped.Count()];
+                foreach (var (i, grouping) in grouped.WithIndex())
+                {
+                    Available[i] = grouping.First();
+                }
+            }
+            catch(Exception e)
+            {
+                MajDebug.LogException(e);
+            }
         }
         /// <summary>
         /// Set language by code and author<para>such like: "zh-CN - Majdata"</para>

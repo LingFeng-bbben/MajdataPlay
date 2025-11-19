@@ -10,10 +10,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide
         /// Indicates the total duration of the Slide Group
         /// </summary>
         public float TotalLength { get; set; }
-        /// <summary>
-        /// Indicates the total length of the Slide Group
-        /// </summary>
-        public float TotalSlideLen { get; set; }
+        ///// <summary>
+        ///// Indicates the total length of the Slide Group
+        ///// </summary>
+        //public float TotalSlideLen { get; set; }
         /// <summary>
         /// Indicates the length of the judgment queue of Slide Group
         /// </summary>

@@ -1,17 +1,18 @@
 ﻿using MajdataPlay.Buffers;
 using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
+using MajdataPlay.IO;
+using MajdataPlay.Numerics;
 using MajdataPlay.Scenes.Game.Notes.Slide;
 using MajdataPlay.Scenes.Game.Notes.Slide.Utils;
 using MajdataPlay.Scenes.Game.Utils;
-using MajdataPlay.IO;
-using MajdataPlay.Numerics;
+using MajdataPlay.Settings;
 using MajdataPlay.Utils;
 using System;
 using System.Linq;
-using MajdataPlay.Settings;
-using UnityEngine;
 using System.Runtime.CompilerServices;
+using Unity.IL2CPP.CompilerServices;
+using UnityEngine;
 
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Behaviours
@@ -188,6 +189,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             State = NoteStatus.Initialized;
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void SensorCheck()
         {
             if (AutoplayMode == AutoplayModeOption.Enable || !_isCheckable)
@@ -202,23 +206,15 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 return;
             }
-            else if (_isChecking)
+
+            for (var i = 0; i < 3; i++)
             {
-                return;
-            }
-            _isChecking = true;
-            try
-            {
-                for (var i = 0; i < 3; i++)
-                {
-                    SensorCheckInternal(ref _judgeQueues[i]);
-                }
-            }
-            finally
-            {
-                _isChecking = false;
+                SensorCheckInternal(ref _judgeQueues[i]);
             }
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void SensorCheckInternal(ref Memory<SlideArea> queueMemory)
         {
             if (queueMemory.IsEmpty)
@@ -226,56 +222,62 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 return;
             }
 
-            var queue = queueMemory.Span;
-            ref var first = ref queue[0];
-            ref SlideArea second = ref Unsafe.NullRef<SlideArea>();
+            for (; !queueMemory.IsEmpty;)
+            {
+                var queue = queueMemory.Span;
+                ref var first = ref queue[0];
+                ref SlideArea second = ref Unsafe.NullRef<SlideArea>();
+                var fAreas = first.IncludedAreas;
 
-            if (queueMemory.Length >= 2)
-            {
-                second = ref queue[1];
-            }
-            var fAreas = first.IncludedAreas;
-            foreach (var t in fAreas)
-            {
-                var sensorState = _noteManager.CheckSensorStatusInThisFrame(t, SwitchStatus.On) ? SwitchStatus.On : SwitchStatus.Off;
-                first.Check(t, sensorState);
-            }
-
-            if (first.On)
-            {
-                PlaySFX();
-            }
-
-            if (!Unsafe.IsNullRef(ref second) && (first.IsSkippable || first.On))
-            {
-                var sAreas = second.IncludedAreas;
-                foreach (var t in sAreas)
+                if (queueMemory.Length >= 2)
                 {
-                    var sensorState = _noteManager.CheckSensorStatusInThisFrame(t, SwitchStatus.On) ? SwitchStatus.On : SwitchStatus.Off;
-                    second.Check(t, sensorState);
+                    second = ref queue[1];
                 }
 
-                if (second.IsFinished)
+                for (var i = 0; i < fAreas.Length; i++)
                 {
-                    queueMemory = queueMemory.Slice(2);
-                    HideBar(GetIndex());
-                    return;
+                    var area = fAreas[i];
+                    var sensorState = _noteManager.GetSensorStatusInThisFrame(area);
+                    first.Check(area, sensorState);
                 }
-                else if (second.On)
+
+                if (first.On)
+                {
+                    PlaySFX();
+                }
+
+                if (!Unsafe.IsNullRef(ref second) && (first.IsSkippable || first.On))
+                {
+                    var sAreas = second.IncludedAreas;
+
+                    for (var i = 0; i < sAreas.Length; i++)
+                    {
+                        var area = sAreas[i];
+                        var sensorState = _noteManager.GetSensorStatusInThisFrame(area);
+                        second.Check(area, sensorState);
+                    }
+
+                    if (second.IsFinished)
+                    {
+                        queueMemory = queueMemory.Slice(2);
+                        HideBar(GetIndex());
+                        continue;
+                    }
+                    else if (second.On)
+                    {
+                        queueMemory = queueMemory.Slice(1);
+                        HideBar(GetIndex());
+                        continue;
+                    }
+                }
+
+                if (first.IsFinished)
                 {
                     queueMemory = queueMemory.Slice(1);
                     HideBar(GetIndex());
-                    return;
                 }
-            }
-
-            if (first.IsFinished)
-            {
-                queueMemory = queueMemory.Slice(1);
-                HideBar(GetIndex());
                 return;
             }
-
         }
         void SlideCheck()
         {

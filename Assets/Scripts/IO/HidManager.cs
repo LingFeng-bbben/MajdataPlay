@@ -26,8 +26,8 @@ namespace MajdataPlay.IO
         readonly static List<HidDevice> _cacheList = new(); 
         static HidManager()
         {
-            var manufacturer = MajEnv.UserSettings.IO.Manufacturer;
-            var buttonRingOptions = MajEnv.UserSettings.IO.InputDevice.ButtonRing;
+            var manufacturer = MajEnv.Settings.IO.Manufacturer;
+            var buttonRingOptions = MajEnv.Settings.IO.InputDevice.ButtonRing;
 
             _hidDevices = DeviceList.Local.GetHidDevices();
             DeviceList.Local.Changed += OnDeviceListChanged;

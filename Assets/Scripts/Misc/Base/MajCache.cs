@@ -1,34 +1,35 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+#nullable enable
 namespace MajdataPlay
 {
     internal static class MajCache<TKey,TValue>
     {
-        static Dictionary<TKey, TValue> _storage = new(4096);
+        readonly static ConcurrentDictionary<TKey, TValue> _storage = new(8, 1024);
 
-        public static void Add(TKey key,in TValue value)
+        public static TValue GetOrAdd(TKey key, TValue value)
         {
-            _storage.Add(key, value);
+            return _storage.GetOrAdd(key, value);
         }
-        public static void Add(in KeyValuePair<TKey,TValue> pair)
+        public static TValue GetOrAdd(in KeyValuePair<TKey,TValue> pair)
         {
-            Add(pair.Key, pair.Value);
+            return GetOrAdd(pair.Key, pair.Value);
         }
-        public static void Replace(TKey key,in TValue value)
+        public static void Replace(TKey key, TValue value)
         {
             _storage[key] = value;
         }
         public static void Replace(in KeyValuePair<TKey, TValue> pair)
         {
-            Replace(pair.Key, pair.Value);
+            _storage[pair.Key] = pair.Value;
         }
-        public static bool Remove(TKey key)
+        public static bool TryRemove(TKey key, out TValue value)
         {
-            return _storage.Remove(key);
+            return _storage.TryRemove(key, out value);
         }
         public static bool TryGetValue(TKey key, out TValue result)
         {

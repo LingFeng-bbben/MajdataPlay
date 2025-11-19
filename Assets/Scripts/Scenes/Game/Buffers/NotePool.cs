@@ -7,10 +7,14 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Buffers
 {
+    [Il2CppSetOption(Option.NullChecks, false)]
+    [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     internal class NotePool<TInfo, TMember> : INotePool<TInfo, TMember>, IDisposable
         where TInfo : NotePoolingInfo where TMember : NoteQueueInfo
     {
@@ -21,6 +25,8 @@ namespace MajdataPlay.Scenes.Game.Buffers
         protected readonly Transform _parent;
         protected Memory<TimingPoint<TInfo>> _timingPoints = Memory<TimingPoint<TInfo>>.Empty;
         protected Bucket _storage;
+
+        protected uint _flag = 0;
 
         TimingPoint<TInfo>[] _rentedArrayForTimingPoints = Array.Empty<TimingPoint<TInfo>>();
         TInfo[] _rentedArrayForNotePoolingInfos = Array.Empty<TInfo>();
@@ -74,6 +80,7 @@ namespace MajdataPlay.Scenes.Game.Buffers
         {
 
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual void OnPreUpdate(float currentSec)
         {
             ThrowIfDisposed();
@@ -110,6 +117,7 @@ namespace MajdataPlay.Scenes.Game.Buffers
                 }
             }
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         bool Dequeue(ref TimingPoint<TInfo> tp)
         {
             var infos = tp.Infos;
@@ -134,23 +142,33 @@ namespace MajdataPlay.Scenes.Game.Buffers
             }
             return true;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IPoolableNote<TInfo, TMember>? Dequeue()
         {
             ThrowIfDisposed();
             IPoolableNote<TInfo, TMember>? idleNote;
             if (!_storage.TryRent(out idleNote))
             {
-                MajDebug.LogWarning($"No more Note can use");
+                switch(_flag)
+                {
+                    case 0:
+                        MajDebug.LogWarning($"No more Note can use");
+                        _flag = 1;
+                        break;
+                }
                 return null;
             }
+            _flag = 0;
 
             return idleNote;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void ActiveObject(IPoolableNote<TInfo, TMember> element, TInfo info)
         {
             info.Instance = element as NoteDrop;
             element.Initialize(info);
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual void Collect(in IPoolableNote<TInfo, TMember> endNote)
         {
             ThrowIfDisposed();
@@ -195,6 +213,8 @@ namespace MajdataPlay.Scenes.Game.Buffers
             public float Timing { get; init; }
             public Memory<T> Infos { get; set; }
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         protected struct Bucket: IDisposable
         {
             public int Size
@@ -220,6 +240,7 @@ namespace MajdataPlay.Scenes.Game.Buffers
             {
 
             }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public IPoolableNote<TInfo, TMember>? Rent()
             {
                 ThrowIfDisposed();
@@ -227,11 +248,13 @@ namespace MajdataPlay.Scenes.Game.Buffers
                 {
                     return null;
                 }
-                var note = _storage.Span[_cursor];
-                _storage.Span[_cursor] = null;
+                var storage = _storage.Span;
+                var note = storage[_cursor];
+                storage[_cursor] = null;
                 _cursor++;
                 return note;
             }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool TryRent([NotNullWhen(true)]out IPoolableNote<TInfo, TMember>? note)
             {
                 ThrowIfDisposed();
@@ -240,11 +263,13 @@ namespace MajdataPlay.Scenes.Game.Buffers
                     note = null;
                     return false;
                 }
-                note = _storage.Span[_cursor]!;
-                _storage.Span[_cursor] = null;
+                var storage = _storage.Span;
+                note = storage[_cursor]!;
+                storage[_cursor] = null;
                 _cursor++;
                 return true;
             }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Return(IPoolableNote<TInfo, TMember> note)
             {
                 ThrowIfDisposed();
@@ -262,6 +287,7 @@ namespace MajdataPlay.Scenes.Game.Buffers
             public void Dispose()
             {
                 Pool<IPoolableNote<TInfo, TMember>?>.ReturnArray(_rentedArray, true);
+                _isDisposed = true;
             }
             void ThrowIfDisposed()
             {

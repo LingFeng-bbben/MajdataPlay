@@ -53,7 +53,7 @@ namespace MajdataPlay.Scenes.View
         }
         public bool IsAutoplay => AutoplayMode != AutoplayModeOption.Disable;
         public GameModInfo ModInfo { get; private set; }
-        public AutoplayModeOption AutoplayMode => MajEnv.UserSettings.Mod.AutoPlay;
+        public AutoplayModeOption AutoplayMode => MajEnv.Settings.Mod.AutoPlay;
         public JudgeGrade AutoplayGrade { get; private set; } = JudgeGrade.Perfect;
         public Material BreakMaterial { get; } = MajEnv.BreakMaterial;
         public Material DefaultMaterial { get; } = MajEnv.DefaultMaterial;
@@ -74,7 +74,6 @@ namespace MajdataPlay.Scenes.View
 
         float _playbackSpeed = 1f;
 
-        readonly SimaiParser SIMAI_PARSER = SimaiParser.Shared;
         readonly string CACHE_PATH = Path.Combine(MajEnv.CachePath, "View");
 
         // Assets
@@ -106,7 +105,7 @@ namespace MajdataPlay.Scenes.View
             Majdata<ViewManager>.Instance = this;
             Majdata<INoteController>.Instance = this;
             Majdata<INoteTimeProvider>.Instance = this;
-            ModInfo = MajEnv.UserSettings.Mod;
+            ModInfo = MajEnv.Settings.Mod;
             //PlayerSettings.resizableWindow = true;
             //Screen.SetResolution(1920, 1080, false);
         }
@@ -123,7 +122,7 @@ namespace MajdataPlay.Scenes.View
 
             if (!string.IsNullOrEmpty(_videoPath))
             {
-                _bgManager.SetBackgroundMovieAsync(_videoPath, _bgCover).AsTask().Wait();
+                _bgManager.SetMovieAsync(_videoPath, _bgCover).AsTask().Wait();
             }
             else if (_bgCover is not null)
             {
@@ -320,7 +319,7 @@ namespace MajdataPlay.Scenes.View
             try
             {
                 if(_audioSample is not null) _audioSample.Dispose();
-                var sample = await MajInstances.AudioManager.LoadMusicAsync(audioPath, true);
+                var sample = await MajInstances.AudioManager.LoadMusicAsync(audioPath, true, true);
                 if (File.Exists(bgPath))
                 {
                     var cover = await SpriteLoader.LoadAsync(bgPath);
@@ -384,12 +383,12 @@ namespace MajdataPlay.Scenes.View
             _state = ViewStatus.Busy;
             try
             {
-                _chart = await SIMAI_PARSER.ParseChartAsync(string.Empty, string.Empty, fumen);
+                _chart = await SimaiParser.ParseChartAsync(string.Empty, string.Empty, fumen);
                 AudioLength = (float)_audioSample!.Length.TotalSeconds;
                 await _chartAnalyzer.AnalyzeAndDrawGraphAsync(_chart, (float)_audioSample.Length.TotalSeconds);
                 await UniTask.SwitchToMainThread();
                 var range = new Range<double>(startAt-Offset, double.MaxValue);
-                _chart.Clamp(range);
+                _chart = _chart.Clamp(range);
                 await UniTask.SwitchToMainThread();
 
                 var tapSpeed = Math.Abs(_setting.Game.TapSpeed);
@@ -410,7 +409,7 @@ namespace MajdataPlay.Scenes.View
                 }
                 else
                 {
-                    await _bgManager.SetBackgroundMovieAsync(_videoPath, _bgCover);
+                    await _bgManager.SetMovieAsync(_videoPath, _bgCover);
                 }
                 _audioSample!.CurrentSec = startAt;
                 await _noteAudioManager.GenerateAnswerSFX(_chart, false, 0);

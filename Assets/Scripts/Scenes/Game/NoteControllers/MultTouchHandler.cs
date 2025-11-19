@@ -1,6 +1,8 @@
-using MajdataPlay.Scenes.Game.Notes.Behaviours;
 using MajdataPlay.IO;
+using MajdataPlay.Scenes.Game.Notes.Behaviours;
 using MajdataPlay.Utils;
+using System.Runtime.CompilerServices;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Controllers
@@ -8,7 +10,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
     public class MultTouchHandler : MonoBehaviour
     {
         public GameObject BorderPrefab;
-        TouchBorder[] borders = new TouchBorder[33];
+        TouchBorder[] _borders = new TouchBorder[33];
 
         private void Awake()
         {
@@ -22,7 +24,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 var obj = Instantiate(BorderPrefab, transform);
                 var border = obj.GetComponent<TouchBorder>();
                 border.AreaPosition = sensorType;
-                borders[i] = border;
+                _borders[i] = border;
             }
         }
         private void OnDestroy()
@@ -31,19 +33,25 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         }
         internal void Clear()
         {
-            foreach (var border in borders)
+            foreach (var border in _borders)
             {
                 border.Clear();
             }
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Register(SensorArea area, bool isEach, bool isBreak)
         {
-            var border = borders[(int)area];
+            var border = _borders[(int)area];
             border.Add(isBreak, isEach);
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Unregister(SensorArea area)
         {
-            var border = borders[(int)area];
+            var border = _borders[(int)area];
             border.Remove();
         }
     }

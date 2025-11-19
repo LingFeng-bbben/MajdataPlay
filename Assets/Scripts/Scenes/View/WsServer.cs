@@ -1,19 +1,19 @@
-﻿using System;
+﻿using MajdataPlay.Scenes.View.Types;
+using MajdataPlay.Utils;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using System;
+using System.Diagnostics;
 using System.IO;
+using System.IO.Pipes;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading.Tasks;
-using System.Text.Json;
-using System.IO.Pipes;
-using MajdataPlay.Utils;
-using System.Threading;
-using WebSocketSharp;
-using WebSocketSharp.Server;
-using MajdataPlay.Scenes.View.Types;
-using System.Diagnostics;
-using System.Text.Json.Serialization;
 using System.Net.WebSockets;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using WebSocketSharp;
+using WebSocketSharp.Server;
 
 #nullable enable
 namespace MajdataPlay.Scenes.View
@@ -57,12 +57,12 @@ namespace MajdataPlay.Scenes.View
         ViewManager? _viewManager => Majdata<ViewManager>.Instance;
 
         readonly CancellationTokenSource _cts = new();
-        readonly static JsonSerializerOptions JSON_READER_OPTIONS = new()
+        readonly static JsonSerializerSettings JSON_READER_OPTIONS = new()
         {
             Converters =
             {
-                new JsonStringEnumConverter()
-            },
+                new StringEnumConverter()
+            }
         };
         public MajdataWsService()
         {
@@ -103,7 +103,7 @@ namespace MajdataPlay.Scenes.View
                 responseType = MajWsResponseType.Heartbeat,
                 responseData = ViewManager.Summary
             };
-            var json = JsonSerializer.Serialize(rsp, JSON_READER_OPTIONS);
+            var json = Serializer.Json.Serialize(rsp, JSON_READER_OPTIONS);
             return json;
         }
 
@@ -240,7 +240,7 @@ namespace MajdataPlay.Scenes.View
                 responseType = type,
                 responseData = data
             };
-            var json = JsonSerializer.Serialize( rsp, JSON_READER_OPTIONS);
+            var json = Serializer.Json.Serialize(rsp, JSON_READER_OPTIONS);
             Send(json);
         }
     }

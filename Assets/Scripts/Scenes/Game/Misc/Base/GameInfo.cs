@@ -26,7 +26,6 @@ namespace MajdataPlay.Scenes.Game
         public int HPRecover { get; set; } = 0;
         public bool IsForceGameover => DanInfo?.IsForceGameover ?? false;
         public DanInfo? DanInfo { get; init; } = null;
-        // TO-DO: Practice Mode
         public int PracticeCount
         {
             get => _practiceCount;

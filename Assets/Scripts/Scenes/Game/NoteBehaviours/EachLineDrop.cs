@@ -5,9 +5,13 @@ using MajdataPlay.Scenes.Game.Notes.Controllers;
 using MajdataPlay.Utils;
 using UnityEngine;
 using UnityEngine.U2D;
+using System;
+using Unity.IL2CPP.CompilerServices;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
+    [Il2CppSetOption(Option.NullChecks, false)]
+    [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     internal class EachLineDrop : MajComponent, IPoolableNote<EachLinePoolingInfo, NoteQueueInfo>, IStateful<NoteStatus>, IRendererContainer
     {
         public RendererStatus RendererState
@@ -41,11 +45,14 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         public int curvLength = 1;
         public float speed = 1;
         float _noteAppearRate = 0.265f;
-        readonly Sprite[] _curvSprites = new Sprite[4];
+        
         SpriteRenderer _sr;
         GameSetting _gameSetting = new();
         INoteController _noteController;
         NotePoolManager _poolManager;
+        
+        static Sprite[] _curvSprites = Array.Empty<Sprite>();
+        static bool _isCurvSpritesInited = false;
 
         protected override void Awake()
         {
@@ -55,12 +62,17 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             _gameSetting = MajInstances.Settings;
             _noteAppearRate = _gameSetting.Debug.NoteAppearRate;
             _sr = gameObject.GetComponent<SpriteRenderer>();
-            _sr.sprite = _curvSprites[curvLength - 1];
+            _sr.sprite = null!;
             RendererState = RendererStatus.Off;
             _sr.forceRenderingOff = true;
             Active = true;
-            var skin = MajInstances.SkinManager.GetEachLineSkin();
-            skin.EachGuideLines.CopyTo(_curvSprites);
+            if (!_isCurvSpritesInited)
+            {
+                _curvSprites = new Sprite[4];
+                var skin = MajInstances.SkinManager.GetEachLineSkin();
+                skin.EachGuideLines.CopyTo(_curvSprites);
+                _isCurvSpritesInited = true;
+            }
         }
         public void Initialize(EachLinePoolingInfo poolingInfo)
         {
@@ -141,6 +153,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         void OnDestroy()
         {
             Active = false;
+            if(_isCurvSpritesInited)
+            {
+                _curvSprites = Array.Empty<Sprite>();
+                _isCurvSpritesInited = false;
+            }
         }
         RendererStatus _rendererState = RendererStatus.Off;
     }

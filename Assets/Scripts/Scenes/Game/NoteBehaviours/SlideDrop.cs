@@ -11,6 +11,8 @@ using MajdataPlay.IO;
 using MajdataPlay.Numerics;
 using MajdataPlay.Buffers;
 using MajdataPlay.Settings;
+using System.Runtime.CompilerServices;
+using Unity.IL2CPP.CompilerServices;
 
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Behaviours
@@ -32,6 +34,14 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         SpriteRenderer _starRenderer;
         SlideTable _table;
         float _djAutoplayRatio = 1;
+
+        int _parentForceFinishFlag = 0;
+
+//#if UNITY_EDITOR
+//        Transform _judgeFramePoint;
+//        [SerializeField]
+//        float _runtimeSlideConst;
+//#endif
         protected override void Awake()
         {
             base.Awake();
@@ -193,8 +203,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 //#if UNITY_EDITOR
 //            var obj = Instantiate(_slideBars[0]);
 //            Destroy(obj.GetComponent<SpriteRenderer>());
-//            var transform = obj.transform;
-//            var indexProcess = (_starPositions.Count - 1) * (1- _table.Const);
+//            _judgeFramePoint = obj.transform;
+//            _runtimeSlideConst = IsClassic ? _table.ClassicConst : _table.Const;
+//            var indexProcess = (_starPositions.Count - 1) * (1 - _runtimeSlideConst);
 //            var index = (int)indexProcess;
 //            var pos = indexProcess - index;
 
@@ -203,7 +214,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 //            var ba = a - b;
 //            var newPos = ba * pos + b;
 
-//            transform.position = newPos;
+//            _judgeFramePoint.position = newPos;
 //#endif
         }
         void InitializeSlideGroup()
@@ -221,7 +232,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             if (ConnectInfo.IsConnSlide)
             {
-                Length = ConnectInfo.TotalLength / ConnectInfo.TotalSlideLen * SlideLength;
+                //Length = ConnectInfo.TotalLength / ConnectInfo.TotalSlideLen * SlideLength;
                 if (!ConnectInfo.IsGroupPartHead)
                 {
                     if (Parent is null)
@@ -274,6 +285,19 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [OnUpdate]
         void OnUpdate()
         {
+//#if UNITY_EDITOR
+//            {
+//                var indexProcess = (_starPositions.Count - 1) * (1 - _runtimeSlideConst);
+//                var index = (int)indexProcess;
+//                var pos = indexProcess - index;
+
+//                var a = _starPositions[index + 1];
+//                var b = _starPositions[index];
+//                var ba = a - b;
+//                var newPos = ba * pos + b;
+//                _judgeFramePoint.position = newPos;
+//            }
+//#endif
             // ConnSlide
             //var star = _stars[0];
             var starTransform = _starTransforms.Span[0];
@@ -370,6 +394,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         /// <summary>
         /// 判定队列检查
         /// </summary>
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void SensorCheck()
         {
             if (AutoplayMode == AutoplayModeOption.Enable || !_isCheckable)
@@ -384,29 +411,24 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 return;
             }
-            else if (_isChecking)
-            {
-                return;
-            }
+            ref var queueMemory = ref _judgeQueues[0];
+            var canPlaySFX = ConnectInfo.IsGroupPartHead || !ConnectInfo.IsConnSlide;
 
-            _isChecking = true;
-            try
+            for(; !queueMemory.IsEmpty; )
             {
-                ref var queueMemory = ref _judgeQueues[0];
                 var queue = queueMemory.Span;
                 ref var first = ref queue[0];
-                ref SlideArea second = ref Unsafe.NullRef<SlideArea>(); ;
+                ref SlideArea second = ref Unsafe.NullRef<SlideArea>();
                 var fAreas = first.IncludedAreas;
-                var canPlaySFX = ConnectInfo.IsGroupPartHead || !ConnectInfo.IsConnSlide;
-                
 
                 if (queue.Length >= 2)
                 {
                     second = ref queue[1];
                 }
 
-                foreach (var area in fAreas)
+                for (var i = 0; i < fAreas.Length; i++)
                 {
+                    var area = fAreas[i];
                     var sensorState = _noteManager.GetSensorStatusInThisFrame(area);
                     first.Check(area, sensorState);
                 }
@@ -421,8 +443,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 if (!Unsafe.IsNullRef(ref second) && (first.IsSkippable || first.On))
                 {
                     var sAreas = second.IncludedAreas;
-                    foreach (var area in sAreas)
+
+                    for (var i = 0; i < sAreas.Length; i++)
                     {
+                        var area = sAreas[i];
                         var sensorState = _noteManager.GetSensorStatusInThisFrame(area);
                         second.Check(area, sensorState);
                     }
@@ -432,14 +456,14 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                         HideBar(second.ArrowProgressWhenFinished);
                         queueMemory = queueMemory.Slice(2);
                         SetParentFinish();
-                        return;
+                        continue;
                     }
                     else if (second.On)
                     {
-                        HideBar(first.ArrowProgressWhenOn);
+                        HideBar(second.ArrowProgressWhenOn);
                         queueMemory = queueMemory.Slice(1);
                         SetParentFinish();
-                        return;
+                        continue;
                     }
                 }
 
@@ -450,17 +474,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                     HideBar(first.ArrowProgressWhenFinished);
                     queueMemory = queueMemory.Slice(1);
                     SetParentFinish();
-                    return;
                 }
                 else if (first.On)
                 {
                     HideBar(first.ArrowProgressWhenOn);
-                    return;
                 }
-            }
-            finally
-            {
-                _isChecking = false;
+                return;
             }
         }
         void SlideCheck()
@@ -526,16 +545,30 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 }
             }
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void SetParentFinish()
         {
-            if (Parent is not null)
+            switch(_parentForceFinishFlag)
             {
-                if (_judgeQueues[0].Length < _table.JudgeQueue.Length && !ConnectInfo.ParentFinished)
-                {
-                    Parent.ForceFinish();
-                }
+                case 0:
+                    {
+                        _parentForceFinishFlag = 1;
+                        if (Parent is not null)
+                        {
+                            if (_judgeQueues[0].Length < _table.JudgeQueue.Length && !ConnectInfo.ParentFinished)
+                            {
+                                Parent.ForceFinish();
+                            }
+                        }
+                    }
+                    break;
+                default:
+                    return;
             }
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override void TooLateJudge()
         {
             if (_isJudged)
@@ -546,6 +579,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             base.TooLateJudge();
             End();
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public new void End()
         {
             if (IsEnded)
@@ -574,7 +610,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 _objectCounter.ReportResult(this, result, Multiple);
                 if (PlaySlideOK(result))
                 {
-                    _slideOK!.PlayResult(result);
+                    _slideOK.PlayResult(result);
                 }
 
                 PlayJudgeSFX(result);
@@ -688,6 +724,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
             _djAutoplayProgress = _djAutoplayProgress.Clamp(0, currentProgress);
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         Vector3 GetPositionFromProgress(float progress)
         {
             progress = progress.Clamp(0, 1);
@@ -706,6 +745,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             return newPos;
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void ApplyStarRotation(Quaternion newRotation)
         {
             var star = _stars.Span[0];

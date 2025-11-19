@@ -15,7 +15,7 @@ namespace MajdataPlay.Settings
         static bool _isInited = false;
 
         readonly static List<ChartSetting> _storage = new(1024);
-        readonly static string STORAGE_PATH = Path.Combine(MajEnv.RootPath, "ChartSetting.db");
+        static string STORAGE_PATH = string.Empty;
         
         public static async ValueTask InitAsync()
         {
@@ -25,8 +25,12 @@ namespace MajdataPlay.Settings
             }
             try
             {
+                if(string.IsNullOrEmpty(STORAGE_PATH))
+                {
+                    STORAGE_PATH = Path.Combine(MajEnv.RootPath, "ChartSetting.db");
+                }
                 await UniTask.SwitchToThreadPool();
-                MajEnv.OnApplicationQuit += OnApplicationQuit;
+                MajEnv.OnSave += OnSave;
                 if (!File.Exists(STORAGE_PATH))
                 {
                     return;
@@ -44,7 +48,7 @@ namespace MajdataPlay.Settings
                     for (var i = 0; i < data.Length; i++)
                     {
                         var setting = data[i];
-                        if (setting.Unit != MajEnv.UserSettings.Debug.OffsetUnit)
+                        if (setting.Unit != MajEnv.Settings.Debug.OffsetUnit)
                         {
                             if(setting.Unit == OffsetUnitOption.Second) // Second => Frame
                             {
@@ -54,7 +58,7 @@ namespace MajdataPlay.Settings
                             {
                                 setting.AudioOffset *= MajEnv.FRAME_LENGTH_SEC;
                             }
-                            setting.Unit = MajEnv.UserSettings.Debug.OffsetUnit;
+                            setting.Unit = MajEnv.Settings.Debug.OffsetUnit;
                         }
                     }
                     _storage.AddRange(data);
@@ -78,7 +82,7 @@ namespace MajdataPlay.Settings
                 setting = new()
                 {
                     Hash = hash,
-                    Unit = MajEnv.UserSettings.Debug.OffsetUnit
+                    Unit = MajEnv.Settings.Debug.OffsetUnit
                 };
                 _storage.Add(setting);
             }
@@ -109,7 +113,7 @@ namespace MajdataPlay.Settings
                 }
             }
         }
-        static void OnApplicationQuit()
+        static void OnSave()
         {
             try
             {
@@ -120,9 +124,9 @@ namespace MajdataPlay.Settings
                 var json = Serializer.Json.Serialize(_storage);
                 File.WriteAllText(STORAGE_PATH, json);
             }
-            finally
+            catch(Exception e)
             {
-                MajEnv.OnApplicationQuit -= OnApplicationQuit;
+                MajDebug.LogException(e);
             }
         }
     }

@@ -6,15 +6,32 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Unity.IL2CPP.CompilerServices;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Slide
 {
+    [Il2CppSetOption(Option.NullChecks, false)]
+    [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     public struct SlideArea: IDisposable
     {
-        public bool On => _isOn;
-        public bool IsSkippable { get; set; } = true;
+        public bool On
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                return _isOn;
+            }
+        }
+        public bool IsSkippable 
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set; 
+        } = true;
         public bool IsFinished
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 ThrowIfDisposed();
@@ -30,19 +47,28 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide
         }
         public ReadOnlySpan<SensorArea> IncludedAreas
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 ThrowIfDisposed();
                 return _includedAreas.Span;
             }
         }
-        public AreaPolicy Policy { get; init; } = AreaPolicy.OR;
+        public AreaPolicy Policy 
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            init; 
+        } = AreaPolicy.OR;
         public int ArrowProgressWhenFinished
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _arrowProgressWhenFinished;
         }
         public int ArrowProgressWhenOn
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _arrowProgressWhenOn;
         }
 
@@ -112,6 +138,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide
         {
 
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Mirror(SensorArea baseLine)
         {
             ThrowIfDisposed();
@@ -132,6 +159,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide
                 area = area.Mirror(baseLine);
             }
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Diff(int diff)
         {
             ThrowIfDisposed();
@@ -152,6 +180,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide
                 area = area.Diff(diff);
             }
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetIsLast()
         {
             ThrowIfDisposed();
@@ -162,6 +191,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide
                 area.IsLast = true;
             }
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetNonLast()
         {
             ThrowIfDisposed();
@@ -172,6 +202,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide
                 area.IsLast = false;
             }
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Check(in SensorArea targetArea, in SwitchStatus state)
         {
             ThrowIfDisposed();
@@ -204,6 +235,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide
             _isFinished = isFinished;
             _isOn = isOn;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Dispose()
         {
             if (_isDisposed)

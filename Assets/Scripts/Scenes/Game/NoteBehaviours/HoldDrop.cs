@@ -125,8 +125,18 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             switch (AutoplayMode)
             {
                 case AutoplayModeOption.Enable:
-                    if (_isJudged || !IsAutoplay)
+                    if (!IsAutoplay)
+                    {
                         return;
+                    }
+                    else if(_isJudged)
+                    {
+                        if (GetRemainingTime() == 0)
+                        {
+                            End();
+                        }
+                        return;
+                    }
                     if (GetTimeSpanToJudgeTiming() >= -0.016667f)
                     {
                         var autoplayGrade = AutoplayGrade;
@@ -229,7 +239,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 _bodyCheckRange = CLASSIC_HOLD_BODY_CHECK_RANGE;
             }
-            else if (Length < HOLD_HEAD_IGNORE_LENGTH_SEC + HOLD_TAIL_IGNORE_LENGTH_SEC)
+            else if (Length <= HOLD_HEAD_IGNORE_LENGTH_SEC + HOLD_TAIL_IGNORE_LENGTH_SEC)
             {
                 _bodyCheckRange = DEFAULT_HOLD_BODY_CHECK_RANGE;
             }
@@ -483,39 +493,31 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 return;
             }
-
-            ref bool isDeviceUsedInThisFrame = ref Unsafe.NullRef<bool>();
-            var isButton = false;
-            if (_noteManager.IsButtonClickedInThisFrame(_buttonPos))
-            {
-                isDeviceUsedInThisFrame = ref _noteManager.GetButtonUsageInThisFrame(_buttonPos);
-                isButton = true;
-            }
-            else if (_noteManager.IsSensorClickedInThisFrame(_sensorPos))
-            {
-                isDeviceUsedInThisFrame = ref _noteManager.GetSensorUsageInThisFrame(_sensorPos);
-            }
-            else
-            {
-                return;
-            }
-
-            if (isDeviceUsedInThisFrame)
-            {
-                return;
-            }
-            if (isButton)
-            {
-                Judge(ThisFrameSec);
-            }
-            else
+#if UNITY_ANDROID
+            if (_noteManager.IsSensorClickedInThisFrame(_sensorPos) && _noteManager.TryUseSensorClickEvent(_sensorPos))
             {
                 Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
             }
-
+            else
+            {
+                return;
+            }
+#else
+            if (_noteManager.IsButtonClickedInThisFrame(_buttonPos) && _noteManager.TryUseButtonClickEvent(_buttonPos))
+            {
+                Judge(ThisFrameSec);
+            }
+            else if (_noteManager.IsSensorClickedInThisFrame(_sensorPos) && _noteManager.TryUseSensorClickEvent(_sensorPos))
+            {
+                Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
+            }
+            else
+            {
+                return;
+            }
+#endif
             if (_isJudged)
             {
-                isDeviceUsedInThisFrame = true;
                 PlaySFX();
                 if (USERSETTING_DISPLAY_HOLD_HEAD_JUDGE_RESULT)
                 {

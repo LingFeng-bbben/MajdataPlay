@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>ManagedBass.Wasapi</id>
+    <version>4.0.2</version>
+    <authors>MathewSachin</authors>
+    <license type="file">LICENSE.md</license>
+    <licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
+    <icon>icon.png</icon>
+    <projectUrl>https://github.com/ManagedBass/ManagedBass</projectUrl>
+    <description>ManagedBass WASAPI AddOn</description>
+    <repository type="git" url="https://github.com/ManagedBass/ManagedBass" commit="ea1a86cd138f66f7fadbe4e7a822fe4ceba933c8" />
+    <dependencies>
+      <group targetFramework=".NETFramework4.5">
+        <dependency id="ManagedBass" version="4.0.2" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net8.0">
+        <dependency id="ManagedBass" version="4.0.2" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="ManagedBass" version="4.0.2" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

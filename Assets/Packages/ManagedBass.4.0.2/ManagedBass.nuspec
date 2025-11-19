@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>ManagedBass</id>
+    <version>4.0.2</version>
+    <authors>MathewSachin</authors>
+    <license type="file">LICENSE.md</license>
+    <licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
+    <icon>icon.png</icon>
+    <projectUrl>https://github.com/ManagedBass/ManagedBass</projectUrl>
+    <description>.Net wrapper for un4seen BASS audio library</description>
+    <repository type="git" url="https://github.com/ManagedBass/ManagedBass" commit="ea1a86cd138f66f7fadbe4e7a822fe4ceba933c8" />
+    <dependencies>
+      <group targetFramework=".NETFramework4.5" />
+      <group targetFramework="net8.0" />
+      <group targetFramework=".NETStandard2.0" />
+    </dependencies>
+  </metadata>
+</package>

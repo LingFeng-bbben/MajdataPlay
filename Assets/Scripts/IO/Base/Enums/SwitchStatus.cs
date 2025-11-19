@@ -1,6 +1,6 @@
 ﻿namespace MajdataPlay.IO
 {
-    public enum SwitchStatus
+    public enum SwitchStatus : byte
     {
         Off,
         On

@@ -17,6 +17,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
             public string Name { get; init; } = string.Empty;
             public PredefinedSlideArea[] JudgeQueue { get; init; } = Array.Empty<PredefinedSlideArea>();
             public float Const { get; init; } = 0f;
+            public float ClassicConst { get; init; } = 0f;
             public SlideTable Build()
             {
                 var rentedArray = Pool<SlideArea>.RentArray(JudgeQueue.Length, true);
@@ -27,7 +28,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                 return new SlideTable(rentedArray, JudgeQueue.Length)
                 {
                     Name = Name,
-                    Const = Const
+                    Const = Const,
+                    ClassicConst = ClassicConst
                 };
             }
         }
@@ -106,7 +108,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.A1,0,3,false),
                     BuildSlideArea(SensorArea.A2,5,7,true,true)
                 },
-                Const = 0.465f
+                Const = 0.465f,
+                ClassicConst = 0.505f
+
             },
             new StaticSlideTable()
             {
@@ -117,7 +121,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.A2,7,11,false),
                     BuildSlideArea(SensorArea.A3,13,15,true,true)
                 },
-                Const = 0.233f
+                Const = 0.233f,
+                ClassicConst = 0.263f
             },
             new StaticSlideTable()
             {
@@ -129,7 +134,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.A3,14,19),
                     BuildSlideArea(SensorArea.A4,21,23,true,true)
                 },
-                Const = 0.155f
+                Const = 0.155f,
+                ClassicConst = 0.175f
             },
             new StaticSlideTable()
             {
@@ -142,7 +148,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.A4,23,27),
                     BuildSlideArea(SensorArea.A5,29,31,true,true)
                 },
-                Const = 0.116f
+                Const = 0.116f,
+                ClassicConst = 0.131f
             },
             new StaticSlideTable()
             {
@@ -156,7 +163,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.A5,31,35),
                     BuildSlideArea(SensorArea.A6,37,39,true,true)
                 },
-                Const = 0.093f
+                Const = 0.093f,
+                ClassicConst = 0.108f
             },
             new StaticSlideTable()
             {
@@ -171,7 +179,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.A6,39,43),
                     BuildSlideArea(SensorArea.A7,45,47,true,true)
                 },
-                Const = 0.078f
+                Const = 0.078f,
+                ClassicConst = 0.0855f
             },
             new StaticSlideTable()
             {
@@ -187,7 +196,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.A7,46,51),
                     BuildSlideArea(SensorArea.A8,53,55,true,true)
                 },
-                Const = 0.066f
+                Const = 0.066f,
+                ClassicConst = 0.076f
             },
             new StaticSlideTable()
             {
@@ -204,7 +214,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.A8,54,59),
                     BuildSlideArea(SensorArea.A1,61,63,true,true)
                 },
-                Const = 0.058f
+                Const = 0.058f,
+                ClassicConst = 0.0655f
             },
             new StaticSlideTable()
             {
@@ -215,7 +226,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(new SensorArea[]{SensorArea.A2,SensorArea.B2 },6,9,false),
                     BuildSlideArea(SensorArea.A3,10,13,true,true)
                 },
-                Const = 0.182f
+                Const = 0.182f,
+                ClassicConst = 0.277f
             },
             new StaticSlideTable()
             {
@@ -227,7 +239,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.B3,11,14),
                     BuildSlideArea(SensorArea.A4,15,18,true,true)
                 },
-                Const = 0.19f
+                Const = 0.19f,
+                ClassicConst = 0.23f
             },
             new StaticSlideTable()
             {
@@ -240,7 +253,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.B5,13,16),
                     BuildSlideArea(SensorArea.A5,17,19,true,true)
                 },
-                Const = 0.152f
+                Const = 0.152f,
+                ClassicConst = 0.167f
             },
             new StaticSlideTable()
             {
@@ -252,7 +266,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.B7,11,14),
                     BuildSlideArea(SensorArea.A6,15,18,true,true)
                 },
-                Const = 0.19f
+                Const = 0.19f,
+                ClassicConst = 0.23f
             },
             new StaticSlideTable()
             {
@@ -263,7 +278,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(new SensorArea[]{SensorArea.A8,SensorArea.B8 },6,9,false),
                     BuildSlideArea(SensorArea.A7,10,13,true,true)
                 },
-                Const = 0.182f
+                Const = 0.182f,
+                ClassicConst = 0.277f
             },
             new StaticSlideTable()
             {
@@ -276,7 +292,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.B1,14,16),
                     BuildSlideArea(SensorArea.A1,17,19,true,true)
                 },
-                Const = 0.185f
+                Const = 0.185f,
+                ClassicConst = 0.205f
             },
             new StaticSlideTable()
             {
@@ -289,7 +306,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.B2,14,16),
                     BuildSlideArea(SensorArea.A2,17,19,true,true)
                 },
-                Const = 0.15f
+                Const = 0.15f,
+                ClassicConst = 0.17f
             },
             new StaticSlideTable()
             {
@@ -302,7 +320,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.B3,14,16),
                     BuildSlideArea(SensorArea.A3,17,19,true,true)
                 },
-                Const = 0.158f
+                Const = 0.158f,
+                ClassicConst = 0.178f
             },
             new StaticSlideTable()
             {
@@ -315,7 +334,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.B4, 14, 16),
                     BuildSlideArea(SensorArea.A4,17,19,true,true)
                 },
-                Const = 0.158f
+                Const = 0.158f,
+                ClassicConst = 0.178f
             },
             new StaticSlideTable()
             {
@@ -328,7 +348,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.B6,14,16),
                     BuildSlideArea(SensorArea.A6,17,19,true,true)
                 },
-                Const = 0.158f
+                Const = 0.158f,
+                ClassicConst = 0.178f
             },
             new StaticSlideTable()
             {
@@ -341,7 +362,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.B7,14,16),
                     BuildSlideArea(SensorArea.A7,17,19,true,true)
                 },
-                Const = 0.158f
+                Const = 0.158f,
+                ClassicConst = 0.178f
             },
             new StaticSlideTable()
             {
@@ -354,7 +376,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.B8,14,16),
                     BuildSlideArea(SensorArea.A8,17,19,true,true)
                 },
-                Const = 0.154f
+                Const = 0.154f,
+                ClassicConst = 0.174f
             },
             new StaticSlideTable()
             {
@@ -369,7 +392,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.A2,29,32),
                     BuildSlideArea(SensorArea.A1,33,35,true,true)
                 },
-                Const = 0.065f
+                Const = 0.065f,
+                ClassicConst = 0.095f
 
             },
             new StaticSlideTable()
@@ -384,7 +408,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.A3,20,25),
                     BuildSlideArea(SensorArea.A2,26,28,true,true),
                 },
-                Const = 0.086f
+                Const = 0.086f,
+                ClassicConst = 0.131f
             },
             new StaticSlideTable()
             {
@@ -397,7 +422,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.B4,14,17),
                     BuildSlideArea(SensorArea.A3,19,22,true,true),
                 },
-                Const = 0.157f
+                Const = 0.157f,
+                ClassicConst = 0.197f
             },
             new StaticSlideTable()
             {
@@ -415,7 +441,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.B4,44,46),
                     BuildSlideArea(SensorArea.A4,47,49,true,true),
                 },
-                Const = 0.065f
+                Const = 0.065f,
+                ClassicConst = 0.0725f
             },
             new StaticSlideTable()
             {
@@ -433,7 +460,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.B5,44,46),
                     BuildSlideArea(SensorArea.A5,47,49,true,true),
                 },
-                Const = 0.065f
+                Const = 0.065f,
+                ClassicConst = 0.075f
             },
             new StaticSlideTable()
             {
@@ -451,7 +479,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(new SensorArea[] { SensorArea.B7,SensorArea.B6 },42,44),
                     BuildSlideArea(SensorArea.A6,46,48,true,true),
                 },
-                Const = 0.067f
+                Const = 0.067f,
+                ClassicConst = 0.077f
             },
             new StaticSlideTable()
             {
@@ -468,7 +497,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.B8,38,42),
                     BuildSlideArea(SensorArea.A7,43,46,true,true),
                 },
-                Const = 0.079f
+                Const = 0.079f,
+                ClassicConst = 0.094f
             },
             new StaticSlideTable()
             {
@@ -484,7 +514,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(new SensorArea[] { SensorArea.B1,SensorArea.A1 },35,37),
                     BuildSlideArea(SensorArea.A8,38,41,true,true),
                 },
-                Const = 0.0626f
+                Const = 0.0626f,
+                ClassicConst = 0.0801f
             },
             new StaticSlideTable()
             {
@@ -498,7 +529,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.B1,25,28),
                     BuildSlideArea(SensorArea.A2,29,32,true,true),
                 },
-                Const = 0.1f
+                Const = 0.1f,
+                ClassicConst = 0.12f
             },
             new StaticSlideTable()
             {
@@ -513,7 +545,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.B3,28,31),
                     BuildSlideArea(SensorArea.A3,32,34,true,true),
                 },
-                Const = 0.104f
+                Const = 0.104f,
+                ClassicConst = 0.114f
             },
             new StaticSlideTable()
             {
@@ -527,7 +560,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.B5,25,28),
                     BuildSlideArea(SensorArea.A4,29,32,true,true),
                 },
-                Const = 0.098f
+                Const = 0.098f,
+                ClassicConst = 0.123f
             },
             new StaticSlideTable()
             {
@@ -540,7 +574,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(new SensorArea[] { SensorArea.B6,SensorArea.A6 },21,24,false),
                     BuildSlideArea(SensorArea.A5,27,28,true,true),
                 },
-                Const = 0.105f
+                Const = 0.105f,
+                ClassicConst = 0.15f
             },
             new StaticSlideTable()
             {
@@ -555,7 +590,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.B4,22,25),
                     BuildSlideArea(SensorArea.A5,27,30,true,true),
                 },
-                Const = 0.13f
+                Const = 0.13f,
+                ClassicConst = 0.155f
             },
             new StaticSlideTable()
             {
@@ -572,7 +608,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.B2,25,29),
                     BuildSlideArea(SensorArea.A1,30,33,true,true),
                 },
-                Const = 0.095f
+                Const = 0.095f,
+                ClassicConst = 0.115f
             },
             new StaticSlideTable()
             {
@@ -588,7 +625,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.B3,22,26),
                     BuildSlideArea(SensorArea.A2,27,30,true,true),
                 },
-                Const = 0.112f
+                Const = 0.112f,
+                ClassicConst = 0.137f
             },
             new StaticSlideTable()
             {
@@ -603,7 +641,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.B4,20,23),
                     BuildSlideArea(SensorArea.A3,25,27,true,true),
                 },
-                Const = 0.125f
+                Const = 0.125f,
+                ClassicConst = 0.150f
             },
             new StaticSlideTable()
             {
@@ -617,7 +656,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.B5,16,20),
                     BuildSlideArea(SensorArea.A4,22,24,true,true),
                 },
-                Const = 0.139f
+                Const = 0.139f,
+                ClassicConst = 0.169f
             },
             new StaticSlideTable()
             {
@@ -630,7 +670,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.B6,14,17),
                     BuildSlideArea(SensorArea.A5,19,21,true,true),
                 },
-                Const = 0.160f
+                Const = 0.160f,
+                ClassicConst = 0.1925f
             },
             new StaticSlideTable()
             {
@@ -650,7 +691,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.B7,35,38),
                     BuildSlideArea(SensorArea.A6,40,42,true,true),
                 },
-                Const = 0.080f
+                Const = 0.080f,
+                ClassicConst = 0.0975f
             },
             new StaticSlideTable()
             {
@@ -669,7 +711,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.B8,33,36),
                     BuildSlideArea(SensorArea.A7,37,40,true,true),
                 },
-                Const = 0.084f
+                Const = 0.084f,
+                ClassicConst = 0.104f
             },
             new StaticSlideTable()
             {
@@ -687,7 +730,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
                     BuildSlideArea(SensorArea.B1,28,32),
                     BuildSlideArea(SensorArea.A8,33,36,true,true),
                 },
-                Const = 0.0895f
+                Const = 0.0895f,
+                ClassicConst = 0.1095f
             },
         };
         readonly static StaticWifiTable WIFISLIDE_JUDGE_QUEUE = new StaticWifiTable
@@ -749,7 +793,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Slide.Utils
         }
         public static WifiTable GetWifiTable(int startPos)
         {
-            var predefinedTable = MajInstances.Settings.Judge.Mode == JudgeModeOption.Modern ? WIFISLIDE_JUDGE_QUEUE : WIFISLIDE_JUDGE_QUEUE_CLASSIC;
+            var predefinedTable = (MajInstances.Settings?.Judge.Mode ?? JudgeModeOption.Modern) == JudgeModeOption.Modern ? WIFISLIDE_JUDGE_QUEUE : WIFISLIDE_JUDGE_QUEUE_CLASSIC;
             var table = predefinedTable.Build();
             var diff = Math.Abs(1 - startPos);
 

@@ -10,13 +10,15 @@ using System.Threading;
 using UnityEngine;
 using MajdataPlay.Scenes.Setting;
 using System.Threading.Tasks;
+using MajdataPlay.Buffers;
+using MajdataPlay.Settings.Runtime;
 
 namespace MajdataPlay.Scenes.List
 {
     public class ListManager : MonoBehaviour
     {
         public CancellationToken CancellationToken => _cts.Token;
-        public static List<UniTask> AllBackgroundTasks { get; } = new(8192);
+        public static List<Task> AllBackgroundTasks { get; } = new(8192);
 
         int _delta = 0;
         float _pressTime = 0;
@@ -36,6 +38,7 @@ namespace MajdataPlay.Scenes.List
         const float AUTO_SLIDE_INTERVAL_SEC = 0.15f;
         const float AUTO_SLIDE_TRIGGER_TIME_SEC = 0.4f;
 
+        readonly ListConfig _listConfig = MajEnv.RuntimeConfig?.List ?? new();
         readonly SwitchStatistic[] _buttonPressTimes = new SwitchStatistic[12];
         readonly CancellationTokenSource _cts = new();
 
@@ -43,7 +46,45 @@ namespace MajdataPlay.Scenes.List
         void Awake()
         {
             Majdata<ListManager>.Instance = this;
-            AllBackgroundTasks.Clear();
+
+            if(AllBackgroundTasks.Count > 4096)
+            {
+                var indexs = Pool<int>.RentArray(AllBackgroundTasks.Count);
+                try
+                {
+                    var i2 = -1;
+                    var count = 0;
+                    Parallel.For(0, AllBackgroundTasks.Count, i =>
+                    {
+                        var task = AllBackgroundTasks[i];
+                        if (task is null || task.IsCompleted)
+                        {
+                            indexs[Interlocked.Increment(ref i2)] = i;
+                            Interlocked.Increment(ref count);
+                        }
+                    });
+                    for (var i = 0; i < count; i++)
+                    {
+                        AllBackgroundTasks.RemoveAt(indexs[i]);
+                    }
+                }
+                finally
+                {
+                    Pool<int>.ReturnArray(indexs);
+                }
+            }
+            else
+            {
+                for (var i = 0; i < AllBackgroundTasks.Count; i++)
+                {
+                    var task = AllBackgroundTasks[i];
+                    if (task is null || task.IsCompleted)
+                    {
+                        AllBackgroundTasks.RemoveAt(i);
+                        i--;
+                    }
+                }
+            }
         }
         void Start()
         {
@@ -69,7 +110,7 @@ namespace MajdataPlay.Scenes.List
             finally
             {
                 MajInstances.SceneSwitcher.FadeOut();
-                _coverListDisplayer.SlideToDifficulty((int)MajInstances.GameManager.SelectedDiff);
+                _coverListDisplayer.SlideToDifficulty((int)_listConfig.SelectedDiff);
                 _isInited = true;
                 LedRing.SetButtonLight(Color.green, 3);
                 LedRing.SetButtonLight(Color.red, 4);
@@ -214,13 +255,13 @@ namespace MajdataPlay.Scenes.List
             {
                 _coverListDisplayer.SlideDifficulty(-1);
                 var list = new string[] { "easy.wav", "basic.wav", "advanced.wav", "expert.wav", "master.wav", "remaster.wav", "original.wav" };
-                MajInstances.AudioManager.PlaySFX(list[(int)MajInstances.GameManager.SelectedDiff]);
+                MajInstances.AudioManager.PlaySFX(list[(int)_listConfig.SelectedDiff]);
             }
             else if (a1Statistic.IsClicked)
             {
                 _coverListDisplayer.SlideDifficulty(1);
                 var list = new string[] { "easy.wav", "basic.wav", "advanced.wav", "expert.wav", "master.wav", "remaster.wav", "original.wav" };
-                MajInstances.AudioManager.PlaySFX(list[(int)MajInstances.GameManager.SelectedDiff]);
+                MajInstances.AudioManager.PlaySFX(list[(int)_listConfig.SelectedDiff]);
             }
             
 
@@ -397,11 +438,11 @@ namespace MajdataPlay.Scenes.List
             MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
             var levels = new ChartLevel[]
             {
-                        MajInstances.GameManager.SelectedDiff
+                _listConfig.SelectedDiff
             };
             var charts = new ISongDetail[]
             {
-                        _coverListDisplayer.SelectedSong
+                _coverListDisplayer.SelectedSong
             };
             var info = new GameInfo(GameMode.Normal, charts, levels);
             Majdata<GameInfo>.Instance = info;
@@ -414,7 +455,7 @@ namespace MajdataPlay.Scenes.List
             _cts.Cancel();
             var levels = new ChartLevel[]
             {
-                MajInstances.GameManager.SelectedDiff
+                _listConfig.SelectedDiff
             };
             var charts = new ISongDetail[]
             {
@@ -518,11 +559,7 @@ namespace MajdataPlay.Scenes.List
             {
                 return Task.CompletedTask;
             }
-            return UniTask.WhenAll(AllBackgroundTasks)
-                          .ContinueWith(() => 
-            {
-                AllBackgroundTasks.Clear();
-            }).AsTask();
+            return Task.WhenAll(AllBackgroundTasks);
         }
     }
 }

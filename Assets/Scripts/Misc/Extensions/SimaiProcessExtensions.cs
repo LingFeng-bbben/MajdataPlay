@@ -1,13 +1,16 @@
-﻿using MajdataPlay.Numerics;
+﻿using MajdataPlay.Buffers;
+using MajdataPlay.Numerics;
 using MajSimai;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay.Extensions
 {
     public static class SimaiProcessExtensions
     {
-        public static void Scale(this SimaiChart source,float timeScale)
+        public static SimaiChart Scale(this SimaiChart source,float timeScale)
         {
             var timingPoints = source.NoteTimings;
             foreach(var timingPoint in timingPoints)
@@ -21,8 +24,9 @@ namespace MajdataPlay.Extensions
                     note.SlideTime /= timeScale;
                 }
             }
+            return source;
         }
-        public static void ConvertToBreak(this SimaiChart source)
+        public static SimaiChart ConvertToBreak(this SimaiChart source)
         {
             var timingPoints = source.NoteTimings;
             foreach (var timingPoint in timingPoints)
@@ -33,8 +37,9 @@ namespace MajdataPlay.Extensions
                     note.IsSlideBreak = true;
                 }
             }
+            return source;
         }
-        public static void ConvertToEx(this SimaiChart source)
+        public static SimaiChart ConvertToEx(this SimaiChart source)
         {
             var timingPoints = source.NoteTimings;
             foreach (var timingPoint in timingPoints)
@@ -42,8 +47,9 @@ namespace MajdataPlay.Extensions
                 foreach (var note in timingPoint.Notes)
                     note.IsEx = true;
             }
+            return source;
         }
-        public static void ConvertToTouch(this SimaiChart source)
+        public static SimaiChart ConvertToTouch(this SimaiChart source)
         {
             var timingPoints = source.NoteTimings;
             foreach (var timingPoint in timingPoints)
@@ -113,10 +119,11 @@ namespace MajdataPlay.Extensions
                     newNoteList.Add(touch);
                 timingPoint.Notes = newNoteList.ToArray();
             }
+            return source;
         }
-        public static void Clamp(this SimaiChart source,Range<long> noteIndexRange)
+        public static SimaiChart Clamp(this SimaiChart source,Range<long> noteIndexRange)
         {
-            List<SimaiTimingPoint> newTimingList = new();
+            using RentedList<SimaiTimingPoint> newTimingList = new();
             var currentIndex = 0;
             for (var i = 0; i < source.NoteTimings.Length; i++)
             {
@@ -173,19 +180,29 @@ namespace MajdataPlay.Extensions
                 {
                     var newTimingPoint = new SimaiTimingPoint(noteTiming.Timing,
                                                               newNoteList.ToArray(),
-                                                              noteTiming.RawTextPositionX,
-                                                              noteTiming.RawTextPositionY ,
                                                               noteTiming.RawContent,
+                                                              noteTiming.RawTextPositionX,
+                                                              noteTiming.RawTextPositionY,
                                                               noteTiming.Bpm, 
                                                               noteTiming.HSpeed);
                     newTimingList.Add(newTimingPoint);
                 }
             }
-            source.NoteTimings = newTimingList.ToArray();
+            var buffer = Pool<SimaiTimingPoint>.RentArray(newTimingList.Count);
+            try
+            {
+                newTimingList.CopyTo(buffer);
+                return new SimaiChart(source.Level, source.Designer, source.Fumen, buffer.AsSpan(0, newTimingList.Count), null);
+            }
+            finally
+            {
+                Pool<SimaiTimingPoint>.ReturnArray(buffer);
+            }
+            //source.NoteTimings = newTimingList.ToArray();
         }
-        public static void Clamp(this SimaiChart source, Range<double> timestampRange)
+        public static SimaiChart Clamp(this SimaiChart source, Range<double> timestampRange)
         {
-            List<SimaiTimingPoint> newTimingList = new();
+            using RentedList<SimaiTimingPoint> newTimingList = new();
             foreach(var noteTiming in source.NoteTimings)
             {
                 if(timestampRange.InRange(noteTiming.Timing))
@@ -193,7 +210,45 @@ namespace MajdataPlay.Extensions
                     newTimingList.Add(noteTiming);
                 }
             }
-            source.NoteTimings = newTimingList.ToArray();
+            //source.NoteTimings = newTimingList.ToArray();
+            var buffer = Pool<SimaiTimingPoint>.RentArray(newTimingList.Count);
+            try
+            {
+                newTimingList.CopyTo(buffer);
+                return new SimaiChart(source.Level, source.Designer, source.Fumen, buffer.AsSpan(0, newTimingList.Count), null);
+            }
+            finally
+            {
+                Pool<SimaiTimingPoint>.ReturnArray(buffer);
+            }
+        }
+        public static SimaiChart AddOffset(this SimaiChart source, float timingOffsetMSec)
+        {
+            var noteTimingCount = source.NoteTimings.Length;
+            var commaTimingCount = source.CommaTimings.Length;
+
+            Parallel.For(0, noteTimingCount, i =>
+            {
+                ref readonly var tp = ref source.NoteTimings[i];
+                tp.Timing += timingOffsetMSec;
+                for (var k = 0; k < tp.Notes.Length; k++)
+                {
+                    ref var note = ref tp.Notes[k];
+                    switch(note.Type)
+                    {
+                        case SimaiNoteType.Slide:
+                            note.SlideStartTime += timingOffsetMSec;
+                            break;
+                    }
+                }
+            });
+            Parallel.For(0, commaTimingCount, i =>
+            {
+                ref readonly var tp = ref source.CommaTimings[i];
+                tp.Timing += timingOffsetMSec;
+            });
+
+            return source;
         }
     }
 }
