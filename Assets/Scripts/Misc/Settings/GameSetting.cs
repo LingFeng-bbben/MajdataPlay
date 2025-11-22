@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Threading;
 using UnityEngine.Scripting;
 using Newtonsoft.Json;
+using MajdataPlay.Net;
 #nullable enable
 namespace MajdataPlay.Settings
 {
@@ -225,30 +226,16 @@ namespace MajdataPlay.Settings
         public string Proxy { get; init; } = string.Empty;
 #endif
         [Preserve]
-        public List<ApiEndpoint> ApiEndpoints { get; set; } = new List<ApiEndpoint>
+        public ApiEndpoint[] ApiEndpoints { get; set; } = new ApiEndpoint[]
         {
+            new ApiEndpoint()
             {
-                new ApiEndpoint()
-                {
-                    Name = "Majnet",
-                    Url = "https://majdata.net/api3/api" ,
-                    Username = "YourUsername",
-                    Password = "YourPassword"
-                }
+                Name = "Majnet",
+                Url = "https://majdata.net/api3/api" ,
+                Username = "YourUsername",
+                Password = "YourPassword"
             }
         };
-    }
-    [Preserve]
-    public class ApiEndpoint
-    {
-        [Preserve]
-        public string Name { get; set; } = string.Empty;
-        [Preserve]
-        public string Url { get; set; } = string.Empty;
-        [Preserve]
-        public string? Username { get; set; }
-        [Preserve]
-        public string? Password { get; set; }
     }
     [Preserve]
     public class DebugOptions

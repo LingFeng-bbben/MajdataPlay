@@ -4,7 +4,6 @@ using MajdataPlay.Buffers;
 using MajdataPlay.IO;
 using MajdataPlay.Net;
 using MajdataPlay.Numerics;
-using MajdataPlay.Settings;
 using MajdataPlay.Utils;
 using MajSimai;
 using NeoSmart.AsyncLock;

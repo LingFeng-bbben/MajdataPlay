@@ -1,6 +1,5 @@
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Net;
-using MajdataPlay.Settings;
 using MajdataPlay.Unsafe;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
