@@ -72,7 +72,7 @@ namespace MajdataPlay.Scenes.Title
                 await UniTask.Yield();
             }
 
-            echoText.text = $"{Localization.GetLocalizedText("MAJTEXT_SCANNING_CHARTS")}...";
+            echoText.text = $"{"MAJTEXT_SCANNING_CHARTS".i18n()}...";
             var task3 = StartScanningChart();
             try
             {
@@ -89,13 +89,13 @@ namespace MajdataPlay.Scenes.Title
                     {
                         if (task3.IsFaulted)
                         {
-                            echoText.text = Localization.GetLocalizedText("MAJTEXT_SCAN_CHARTS_FAILED");
+                            echoText.text = "MAJTEXT_SCAN_CHARTS_FAILED".i18n();
                             MajDebug.LogException(task3.Exception);
                         }
                         else if (SongStorage.IsEmpty)
                         {
                             isEmpty = true;
-                            echoText.text = Localization.GetLocalizedText("MAJTEXT_NO_CHART");
+                            echoText.text = "MAJTEXT_NO_CHART".i18n();
                         }
                         else
                         {

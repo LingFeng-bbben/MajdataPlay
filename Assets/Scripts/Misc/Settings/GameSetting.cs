@@ -231,7 +231,7 @@ namespace MajdataPlay.Settings
             new ApiEndpoint()
             {
                 Name = "Majnet",
-                Url = "https://majdata.net/api3/api" ,
+                Url = "https://majdata.net/api3/api",
                 Username = "YourUsername",
                 Password = "YourPassword"
             }
