@@ -732,15 +732,15 @@
     },
     {
       "Origin": "MAJSETTING_PROPERTY_BGInfo_OPTION_S_Border",
-      "Content": "距S級"
+      "Content": "距離分數S"
     },
     {
       "Origin": "MAJSETTING_PROPERTY_BGInfo_OPTION_SS_Border",
-      "Content": "距SS級"
+      "Content": "距離分數SS"
     },
     {
       "Origin": "MAJSETTING_PROPERTY_BGInfo_OPTION_SSS_Border",
-      "Content": "距SSS級"
+      "Content": "距離分數SSS"
     },
     {
       "Origin": "MAJSETTING_PROPERTY_BGInfo_OPTION_MyBest",
@@ -804,7 +804,7 @@
     },
     {
       "Origin": "MAJSETTING_PROPERTY_Topmost_DESC",
-      "Content": "讓majplay窗口總在最前"
+      "Content": "讓MajPlay視窗優先度最前"
     },
     {
       "Origin": "MAJSETTING_PROPERTY_FPSLimit",
@@ -880,7 +880,7 @@
     },
     {
       "Origin": "Input_Hint",
-      "Content": "按Select(或觸摸副屏)搜索和排序歌曲。觸摸歌曲封面隨機選曲。長按4號鍵開啟練習模式。\n按Alt+Enter切換全屏模式。按Alt+F4退出遊戲。"
+      "Content": "按Select(或觸摸副螢幕)搜索和排序歌曲。觸摸歌曲封面隨機選曲。長按4號鍵開啟練習模式。\n按Alt+Enter切換全屏模式。按Alt+F4退出遊戲。"
     },
     {
       "Origin": "MAJSETTING_PROPERTY_SubdivideSlideJudgeGrade",
@@ -920,7 +920,15 @@
     },
     {
       "Origin": "MAJTEXT_SETTING_OFFSETUNIT_Frame",
-      "Content": "單位: 幀"
+      "Content": "單位: 幀數"
+    },
+    {
+      "Origin": "MAJSETTING_PROPERTY_TrackVolumeOffset",
+      "Content": "音樂音量偏移"
+    },
+    {
+      "Origin": "MAJSETTING_PROPERTY_TrackVolumeOffset_DESC",
+      "Content": "Nothing"
     }
   ]
 }
