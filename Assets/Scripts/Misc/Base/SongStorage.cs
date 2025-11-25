@@ -440,7 +440,7 @@ namespace MajdataPlay
             var collection = SongCollection.Empty(cachePath, name);
             var apiroot = api.Url;
 
-            if (string.IsNullOrEmpty(apiroot))
+            if (apiroot is null)
             {
                 return collection;
             }

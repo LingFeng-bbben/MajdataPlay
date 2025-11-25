@@ -1,4 +1,5 @@
 ﻿using MajdataPlay.Settings;
+using System;
 using UnityEngine.Scripting;
 #nullable enable
 namespace MajdataPlay.Net
@@ -9,7 +10,7 @@ namespace MajdataPlay.Net
         [Preserve]
         public string Name { get; init; } = string.Empty;
         [Preserve]
-        public string Url { get; init; } = string.Empty;
+        public required Uri Url { get; init; }
         [Preserve]
         public NetAuthMethodOption AuthMethod { get; init; } = NetAuthMethodOption.None;
         [Preserve]

@@ -226,12 +226,12 @@ namespace MajdataPlay.Settings
         public string Proxy { get; init; } = string.Empty;
 #endif
         [Preserve]
-        public ApiEndpoint[] ApiEndpoints { get; set; } = new ApiEndpoint[]
+        public ApiEndpoint[] ApiEndpoints { get; init; } = new ApiEndpoint[]
         {
             new ApiEndpoint()
             {
                 Name = "Majnet",
-                Url = "https://majdata.net/api3/api",
+                Url = new("https://majdata.net/api3/api/"),
                 Username = "YourUsername",
                 Password = "YourPassword"
             }

@@ -12,6 +12,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -250,6 +251,23 @@ namespace MajdataPlay
                 else
                 {
                     Settings = setting;
+
+                    for (var i = 0; i < Settings.Online.ApiEndpoints.Length; i++)
+                    {
+                        ref var apiEndpoint = ref Settings.Online.ApiEndpoints[i];
+                        var uri = apiEndpoint.Url;
+                        if (uri.OriginalString.LastOrDefault() != '/')
+                        {
+                            apiEndpoint = new()
+                            {
+                                Name = apiEndpoint.Name,
+                                Url = new Uri(uri.OriginalString + "/"),
+                                AuthMethod = apiEndpoint.AuthMethod,
+                                Username = apiEndpoint.Username,
+                                Password = apiEndpoint.Password,
+                            };
+                        }
+                    }
                     //Reset Mod option after reboot
                     //Settings.Mod = new ModOptions();
                 }

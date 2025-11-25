@@ -5,13 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MajdataPlay.Net;
-internal enum HttpErrorCode
+internal enum EndpointResponseCode
 {
-    NoError,
-    Unreachable,
-    InvalidRequest,
-    NotSupported,
-    Unsuccessful,
-    Timeout,
-    Canceled,
+    Unknown,
+    OK
 }

@@ -72,7 +72,7 @@ namespace MajdataPlay.Scenes.Result
             //LightManager.SetButtonLight(Color.blue, 4);
             try
             {
-                await Online.SendLike(song);
+                await Online.SendLikeAsync(song);
                 await UniTask.SwitchToMainThread();
                 infotext.text = "THUMBUP_SENDED".i18n();
                 MajInstances.AudioManager.PlaySFX(SFX_LIST[UnityEngine.Random.Range(0, SFX_LIST.Length)]);
@@ -95,7 +95,7 @@ namespace MajdataPlay.Scenes.Result
                 {
                     await UniTask.SwitchToMainThread();
                     uploadtext.text = "SCORE_SENDING".i18n();
-                    await Online.SendScore(_onlineDetail, score);
+                    await Online.SendScoreAsync(_onlineDetail, score);
                     await UniTask.SwitchToMainThread();
                     uploadtext.text = "SCORE_SENDED".i18n();
                     return;
