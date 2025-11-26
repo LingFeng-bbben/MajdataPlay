@@ -95,7 +95,7 @@ namespace MajdataPlay.Scenes.Result
                 {
                     await UniTask.SwitchToMainThread();
                     uploadtext.text = "SCORE_SENDING".i18n();
-                    await Online.SendScoreAsync(_onlineDetail, score);
+                    await Online.PostScoreAsync(_onlineDetail, score);
                     await UniTask.SwitchToMainThread();
                     uploadtext.text = "SCORE_SENDED".i18n();
                     return;

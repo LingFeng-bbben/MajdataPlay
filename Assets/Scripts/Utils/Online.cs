@@ -13,6 +13,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using UnityEditor.PackageManager;
 using UnityEditor.PackageManager.Requests;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -138,7 +139,7 @@ namespace MajdataPlay.Utils
 #endif
             }
         }
-        public static async UniTask SendLikeAsync(OnlineSongDetail song, CancellationToken token = default)
+        public static async UniTask<EndpointResponse> SendLikeAsync(OnlineSongDetail song, CancellationToken token = default)
         {
             await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
@@ -148,55 +149,61 @@ namespace MajdataPlay.Utils
                 var interactUrl = BuildMaiChartUri(API_POST_MAICHART_INTERACT, song.Id);
 
 #if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
-                await UniTask.SwitchToMainThread();
-                var getReq = UnityWebRequestFactory.Get(interactUrl);
-                var asyncOperation = getReq.SendWebRequest();
-                while (!asyncOperation.isDone)
+                var rsp = await GetAsync(interactUrl, token);
+
+                if (!rsp.IsDeserializable)
                 {
-                    if (token.IsCancellationRequested)
-                    {
-                        getReq.Abort();
-                        throw new HttpException(getReq.url, HttpErrorCode.Canceled);
-                    }
-                    await UniTask.Yield();
+                    return rsp;
                 }
-                if(!getReq.IsSuccessStatusCode())
-                {
-                    throw new Exception("THUMBUP_FAILED".i18n());
-                }
-                var intlist = await Serializer.Json.DeserializeAsync<MajNetSongInteract>(getReq.downloadHandler.text, DEFAULT_JSON_SERIALIZER_SETTINGS);
+                var intlist = await rsp.DeserializeAsync<MajNetSongInteract>();
                 if (intlist.IsLiked)
                 {
-                    throw new Exception("THUMBUP_ALREADY".i18n());
+                    return new()
+                    {
+                        ErrorCode = HttpErrorCode.NoError,
+                        StatusCode = rsp.StatusCode,
+                        IsSuccessfully = false,
+                        IsDeserializable = false,
+                        Message = "THUMBUP_ALREADY"
+                    };
                 }
 
                 var form = new WWWForm();
                 form.AddField("type", "like");
                 form.AddField("content", "...");
 
-                var postReq = UnityWebRequestFactory.Post(interactUrl, form);
-                var postAsyncOperation = postReq.SendWebRequest();
+                rsp = await PostAsync(interactUrl, form, token);
 
-                while (!postAsyncOperation.isDone)
+                if (!rsp.IsSuccessfully)
                 {
-                    if (token.IsCancellationRequested)
+                    return new()
                     {
-                        postReq.Abort();
-                        throw new HttpException(postReq.url, HttpErrorCode.Canceled);
-                    }
-                    await UniTask.Yield();
+                        ErrorCode = rsp.ErrorCode,
+                        StatusCode = rsp.StatusCode,
+                        IsSuccessfully = false,
+                        IsDeserializable = false,
+                        Message = "THUMBUP_FAILED"
+                    };
                 }
-                if(!postReq.IsSuccessStatusCode())
-                {
-                    throw new Exception("THUMBUP_FAILED".i18n());
-                }
+                return rsp;
 #else
-                var intStream = await _client.GetStreamAsync(interactUrl);
-                var intlist = await Serializer.Json.DeserializeAsync<MajNetSongInteract>(intStream, DEFAULT_JSON_SERIALIZER);
+                var rsp = await GetAsync(interactUrl, token);
+                if(!rsp.IsDeserializable)
+                {
+                    return rsp;
+                }
+                var intlist = await rsp.DeserializeAsync<MajNetSongInteract>();
 
                 if (intlist.IsLiked)
                 {
-                    throw new Exception("THUMBUP_ALREADY".i18n());
+                    return new()
+                    {
+                        ErrorCode = HttpErrorCode.NoError,
+                        StatusCode = rsp.StatusCode,
+                        IsSuccessfully = false,
+                        IsDeserializable = false,
+                        Message = "THUMBUP_ALREADY"
+                    };
                 }
 
                 var formData = new MultipartFormDataContent
@@ -204,16 +211,24 @@ namespace MajdataPlay.Utils
                     { new StringContent("like"), "type" },
                     { new StringContent("..."), "content" },
                 };
-                var rsp = await _client.PostAsync(interactUrl, formData, token);
+                rsp = await PostAsync(interactUrl, formData, token);
 
-                if (rsp.StatusCode != System.Net.HttpStatusCode.OK)
+                if (!rsp.IsSuccessfully)
                 {
-                    throw new Exception("THUMBUP_FAILED".i18n());
+                    return new()
+                    {
+                        ErrorCode = rsp.ErrorCode,
+                        StatusCode = rsp.StatusCode,
+                        IsSuccessfully = false,
+                        IsDeserializable = false,
+                        Message = "THUMBUP_FAILED"
+                    };
                 }
+                return rsp;
 #endif
             }
         }
-        public static async UniTask SendScoreAsync(OnlineSongDetail song, MaiScore score, CancellationToken token = default)
+        public static async UniTask<EndpointResponse> PostScoreAsync(OnlineSongDetail song, MaiScore score, CancellationToken token = default)
         {
             await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
@@ -224,30 +239,9 @@ namespace MajdataPlay.Utils
                 var json = await Serializer.Json.SerializeAsync(score, DEFAULT_JSON_SERIALIZER);
 
 #if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
-                await UniTask.SwitchToMainThread();
-                var postReq = UnityWebRequestFactory.Post(scoreUrl, json, "application/json");
-                var postAsyncOperation = postReq.SendWebRequest();
-                while (!postAsyncOperation.isDone)
-                {
-                    if (token.IsCancellationRequested)
-                    {
-                        postReq.Abort();
-                        throw new HttpException(postReq.url, HttpErrorCode.Canceled);
-                    }
-                    await UniTask.Yield();
-                }
-                if (!postReq.IsSuccessStatusCode())
-                {
-                    throw new Exception(postReq.downloadHandler.text);
-                }
+                return await PostAsync(scoreUrl, json, "application/json", token);
 #else
-                var rsp = await _client.PostAsync(scoreUrl, new StringContent(json, Encoding.UTF8, "application/json"), token);
-                var rspContent = await rsp.Content.ReadAsStringAsync();
-
-                if (rsp.StatusCode != System.Net.HttpStatusCode.OK)
-                {
-                    throw new Exception(rspContent);
-                }
+                return await PostAsync(scoreUrl, new StringContent(json, Encoding.UTF8, "application/json"), token);
 #endif
             }
         }
@@ -257,12 +251,17 @@ namespace MajdataPlay.Utils
             {
                 await UniTask.SwitchToThreadPool();
                 var url = apiEndpoint.Url.Combine(API_GET_MAICHART_LIST);
-                var client = MajEnv.SharedHttpClient;
-                var rspText = string.Empty;
 
+                return await GetAsync(url, token);
+            }
+        }
+        
+        
+        static async ValueTask<EndpointResponse> GetAsync(Uri uri, CancellationToken token = default)
+        {
 #if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
                 await UniTask.SwitchToMainThread();
-                var getReq = UnityWebRequestFactory.Get(url);
+                var getReq = UnityWebRequestFactory.Get(uri);
                 try
                 {
                     var asyncOperation = getReq.SendWebRequest();
@@ -271,20 +270,24 @@ namespace MajdataPlay.Utils
                         if (token.IsCancellationRequested)
                         {
                             getReq.Abort();
-                            throw new HttpException(url.OriginalString, HttpErrorCode.Canceled);
+                            throw new HttpException(uri.OriginalString, HttpErrorCode.Canceled);
                         }
                         await UniTask.Yield();
                     }
 
                     getReq.EnsureSuccessStatusCode();
                     var nativeBuffer = getReq.downloadHandler.nativeData;
-                    var buffer = new byte[nativeBuffer.Length];
-                    nativeBuffer.CopyTo(buffer);
+                    var buffer = Array.Empty<byte>();
+                    if(nativeBuffer.Length != 0)
+                    {
+                        buffer = new byte[nativeBuffer.Length];
+                        nativeBuffer.CopyTo(buffer);
+                    }
 
                     return new EndpointResponse(buffer, DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
                     {
                         IsSuccessfully = false,
-                        IsDeserializable = false,
+                        IsDeserializable = true && buffer.Length != 0,
                         ErrorCode = default,
                         StatusCode = (HttpStatusCode)getReq.responseCode,
                         Message = ""
@@ -315,44 +318,111 @@ namespace MajdataPlay.Utils
                     };
                 }
 #else
-                try
+            try
+            {
+                var client = MajEnv.SharedHttpClient;
+                var rsp = await client.GetAsync(uri, token);
+                if (rsp.StatusCode != HttpStatusCode.OK)
                 {
-                    var rsp = await client.GetAsync(url);
-                    if (rsp.StatusCode != HttpStatusCode.OK)
-                    {
-                        return new EndpointResponse(Array.Empty<byte>(), DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
-                        {
-                            IsSuccessfully = false,
-                            IsDeserializable = false,
-                            ErrorCode = HttpErrorCode.Unsuccessful,
-                            StatusCode = rsp.StatusCode,
-                            Message = ""
-                        };
-                    }
-                    var buffer = await rsp.Content.ReadAsByteArrayAsync();
-                    return new EndpointResponse(buffer, DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
-                    {
-                        IsSuccessfully = true,
-                        IsDeserializable = true,
-                        ErrorCode = HttpErrorCode.NoError,
-                        StatusCode = rsp.StatusCode,
-                        Message = "Ok"
-                    };
-                }
-                catch (OperationCanceledException)
-                {
-                    var errorCode = HttpErrorCode.Timeout;
-                    if (token.IsCancellationRequested)
-                    {
-                        errorCode = HttpErrorCode.Canceled;
-                    }
                     return new EndpointResponse(Array.Empty<byte>(), DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
                     {
                         IsSuccessfully = false,
                         IsDeserializable = false,
-                        ErrorCode = errorCode,
-                        StatusCode = null,
+                        ErrorCode = HttpErrorCode.Unsuccessful,
+                        StatusCode = rsp.StatusCode,
                         Message = ""
+                    };
+                }
+                var buffer = await rsp.Content.ReadAsByteArrayAsync();
+                return new EndpointResponse(buffer, DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
+                {
+                    IsSuccessfully = true,
+                    IsDeserializable = true,
+                    ErrorCode = HttpErrorCode.NoError,
+                    StatusCode = rsp.StatusCode,
+                    Message = "Ok"
+                };
+            }
+            catch (OperationCanceledException)
+            {
+                var errorCode = HttpErrorCode.Timeout;
+                if (token.IsCancellationRequested)
+                {
+                    errorCode = HttpErrorCode.Canceled;
+                }
+                return new EndpointResponse(Array.Empty<byte>(), DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
+                {
+                    IsSuccessfully = false,
+                    IsDeserializable = false,
+                    ErrorCode = errorCode,
+                    StatusCode = null,
+                    Message = ""
+                };
+            }
+            catch (Exception e)
+            {
+                MajDebug.LogException(e);
+                return new EndpointResponse(Array.Empty<byte>(), DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
+                {
+                    IsSuccessfully = false,
+                    IsDeserializable = false,
+                    ErrorCode = HttpErrorCode.Unreachable,
+                    StatusCode = null,
+                    Message = e.ToString()
+                };
+            }
+#endif
+        }
+
+
+#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
+        static async ValueTask<EndpointResponse> PostAsync(Uri uri, WWWForm form, CancellationToken token = default)
+        {
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
+            {
+                await UniTask.SwitchToMainThread();
+                var getReq = UnityWebRequestFactory.Post(uri, form);
+                try
+                {
+                    var asyncOperation = getReq.SendWebRequest();
+                    while (!asyncOperation.isDone)
+                    {
+                        if (token.IsCancellationRequested)
+                        {
+                            getReq.Abort();
+                            throw new HttpException(uri.OriginalString, HttpErrorCode.Canceled);
+                        }
+                        await UniTask.Yield();
+                    }
+
+                    getReq.EnsureSuccessStatusCode();
+                    var nativeBuffer = getReq.downloadHandler.nativeData;
+                    var buffer = Array.Empty<byte>();
+                    if (nativeBuffer.Length != 0)
+                    {
+                        buffer = new byte[nativeBuffer.Length];
+                        nativeBuffer.CopyTo(buffer);
+                    }
+
+                    return new EndpointResponse(buffer, DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
+                    {
+                        IsSuccessfully = false,
+                        IsDeserializable = true && buffer.Length != 0,
+                        ErrorCode = default,
+                        StatusCode = (HttpStatusCode)getReq.responseCode,
+                        Message = ""
+                    };
+                }
+                catch (HttpException httpE)
+                {
+                    MajDebug.LogException(httpE);
+                    return new EndpointResponse(Array.Empty<byte>(), DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
+                    {
+                        IsSuccessfully = false,
+                        IsDeserializable = false,
+                        ErrorCode = httpE.ErrorCode,
+                        StatusCode = httpE.StatusCode,
+                        Message = httpE.Message
                     };
                 }
                 catch (Exception e)
@@ -367,9 +437,142 @@ namespace MajdataPlay.Utils
                         Message = e.ToString()
                     };
                 }
-#endif
             }
         }
+        static async ValueTask<EndpointResponse> PostAsync(Uri uri, string content, string contentType, CancellationToken token = default)
+        {
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
+            {
+                await UniTask.SwitchToMainThread();
+                var getReq = UnityWebRequestFactory.Post(uri, content, contentType);
+                try
+                {
+                    var asyncOperation = getReq.SendWebRequest();
+                    while (!asyncOperation.isDone)
+                    {
+                        if (token.IsCancellationRequested)
+                        {
+                            getReq.Abort();
+                            throw new HttpException(uri.OriginalString, HttpErrorCode.Canceled);
+                        }
+                        await UniTask.Yield();
+                    }
+
+                    getReq.EnsureSuccessStatusCode();
+                    var nativeBuffer = getReq.downloadHandler.nativeData;
+                    var buffer = Array.Empty<byte>();
+                    if (nativeBuffer.Length != 0)
+                    {
+                        buffer = new byte[nativeBuffer.Length];
+                        nativeBuffer.CopyTo(buffer);
+                    }
+
+                    return new EndpointResponse(buffer, DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
+                    {
+                        IsSuccessfully = false,
+                        IsDeserializable = true && buffer.Length != 0,
+                        ErrorCode = default,
+                        StatusCode = (HttpStatusCode)getReq.responseCode,
+                        Message = ""
+                    };
+                }
+                catch (HttpException httpE)
+                {
+                    MajDebug.LogException(httpE);
+                    return new EndpointResponse(Array.Empty<byte>(), DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
+                    {
+                        IsSuccessfully = false,
+                        IsDeserializable = false,
+                        ErrorCode = httpE.ErrorCode,
+                        StatusCode = httpE.StatusCode,
+                        Message = httpE.Message
+                    };
+                }
+                catch (Exception e)
+                {
+                    MajDebug.LogException(e);
+                    return new EndpointResponse(Array.Empty<byte>(), DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
+                    {
+                        IsSuccessfully = false,
+                        IsDeserializable = false,
+                        ErrorCode = HttpErrorCode.Unreachable,
+                        StatusCode = null,
+                        Message = e.ToString()
+                    };
+                }
+            }
+        }
+#else
+        static ValueTask<EndpointResponse> PostAsync(Uri uri, string content, CancellationToken token = default)
+        {
+            return PostAsync(uri, new StringContent(content), token);
+        }
+        static ValueTask<EndpointResponse> PostAsync(Uri uri, byte[] content, CancellationToken token = default)
+        {
+            return PostAsync(uri, new ByteArrayContent(content), token);
+        }
+        static ValueTask<EndpointResponse> PostAsync(Uri uri, ArraySegment<byte> content, CancellationToken token = default)
+        {
+            return PostAsync(uri, new ByteArrayContent(content.Array, content.Offset, content.Count), token);
+        }
+        static async ValueTask<EndpointResponse> PostAsync(Uri uri, HttpContent content, CancellationToken token = default)
+        {
+            try
+            {
+                var client = MajEnv.SharedHttpClient;
+                var rsp = await client.PostAsync(uri, content, token);
+                if (rsp.StatusCode != HttpStatusCode.OK)
+                {
+                    return new EndpointResponse(Array.Empty<byte>(), DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
+                    {
+                        IsSuccessfully = false,
+                        IsDeserializable = false,
+                        ErrorCode = HttpErrorCode.Unsuccessful,
+                        StatusCode = rsp.StatusCode,
+                        Message = ""
+                    };
+                }
+                var buffer = await rsp.Content.ReadAsByteArrayAsync();
+                return new EndpointResponse(buffer, DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
+                {
+                    IsSuccessfully = true,
+                    IsDeserializable = true,
+                    ErrorCode = HttpErrorCode.NoError,
+                    StatusCode = rsp.StatusCode,
+                    Message = "Ok"
+                };
+            }
+            catch (OperationCanceledException)
+            {
+                var errorCode = HttpErrorCode.Timeout;
+                if (token.IsCancellationRequested)
+                {
+                    errorCode = HttpErrorCode.Canceled;
+                }
+                return new EndpointResponse(Array.Empty<byte>(), DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
+                {
+                    IsSuccessfully = false,
+                    IsDeserializable = false,
+                    ErrorCode = errorCode,
+                    StatusCode = null,
+                    Message = ""
+                };
+            }
+            catch (Exception e)
+            {
+                MajDebug.LogException(e);
+                return new EndpointResponse(Array.Empty<byte>(), DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
+                {
+                    IsSuccessfully = false,
+                    IsDeserializable = false,
+                    ErrorCode = HttpErrorCode.Unreachable,
+                    StatusCode = null,
+                    Message = e.ToString()
+                };
+            }
+        }
+#endif
+
         static Uri BuildMaiChartUri(string api, string chartId)
         {
             return BuildMaiChartUri(api, Guid.Parse(chartId));
