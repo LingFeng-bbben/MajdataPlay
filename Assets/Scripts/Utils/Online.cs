@@ -46,43 +46,24 @@ namespace MajdataPlay.Utils
         {
             await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
-#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
-                await UniTask.SwitchToMainThread();
-                using var req = UnityWebRequestFactory.Get(apiEndpoint.Url.Combine(API_GET_USER_INFO));
-                var asyncOperation = req.SendWebRequest();
-                while (!asyncOperation.isDone)
-                {
-                    if (token.IsCancellationRequested)
-                    {
-                        req.Abort();
-                        throw new HttpException(req.url, HttpErrorCode.Canceled);
-                    }
-                    await UniTask.Yield();
-                }
-                if(req.IsSuccessStatusCode())
-                {
-                    return true;
-                }
-                return false;
-#else
                 await UniTask.SwitchToThreadPool();
-                var rsp = await _client.GetAsync(apiEndpoint.Url.Combine(API_GET_USER_INFO), token);
-                if (rsp.StatusCode != System.Net.HttpStatusCode.OK)
-                {
-                    return false;
-                }
-                else
-                {
-                    return true;
-                }
+                var uri = apiEndpoint.Url.Combine(API_GET_USER_INFO);
+#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
+                var rsp = await GetAsync(uri, token);
+
+                return rsp.IsSuccessfully;
+#else
+                var rsp = await GetAsync(uri, token);
+
+                return rsp.IsSuccessfully;
 #endif
             }
         }
-        public static UniTask LoginAsync(ApiEndpoint apiEndpoint, CancellationToken token = default)
+        public static UniTask<EndpointResponse> LoginAsync(ApiEndpoint apiEndpoint, CancellationToken token = default)
         {
             return LoginAsync(apiEndpoint, apiEndpoint?.Username ?? string.Empty, apiEndpoint?.Password ?? string.Empty, token);
         }
-        public static async UniTask LoginAsync(ApiEndpoint apiEndpoint, string username, string password, CancellationToken token = default)
+        public static async UniTask<EndpointResponse> LoginAsync(ApiEndpoint apiEndpoint, string username, string password, CancellationToken token = default)
         {
             await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
@@ -101,29 +82,25 @@ namespace MajdataPlay.Utils
                 }
                 if (await CheckLoginAsync(apiEndpoint))
                 {
-                    return;
+                    return new()
+                    {
+                        IsSuccessfully = true,
+                        IsDeserializable = false,
+                        StatusCode = HttpStatusCode.OK,
+                        ErrorCode = HttpErrorCode.NoError,
+                        Message = string.Empty
+                    };
                 }
                 var pwdHashStr = HashHelper.ToHexString(await HashHelper.ComputeHashAsync(Encoding.UTF8.GetBytes(password)));
+                var uri = apiEndpoint.Url.Combine(API_POST_USER_LOGIN);
 #if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
                 await UniTask.SwitchToMainThread();
                 var form = new WWWForm();
                 form.AddField("username", username);
                 form.AddField("password", pwdHashStr.Replace("-", "").ToLower());
-                using var req = UnityWebRequestFactory.Post(apiEndpoint.Url.Combine(API_POST_USER_LOGIN), form);
-                var asyncOperation = req.SendWebRequest();
-                while (!asyncOperation.isDone)
-                {
-                    if (token.IsCancellationRequested)
-                    {
-                        req.Abort();
-                        throw new HttpException(req.url, HttpErrorCode.Canceled);
-                    }
-                    await UniTask.Yield();
-                }
-                if(!req.IsSuccessStatusCode())
-                {
-                    throw new Exception("Login failed");
-                }
+                var rsp = await PostAsync(uri, form, token);
+
+                return rsp;
 #else
                 var formData = new MultipartFormDataContent
                 {
@@ -131,11 +108,9 @@ namespace MajdataPlay.Utils
                     { new StringContent(pwdHashStr.Replace("-", "").ToLower()), "password" }
                 };
 
-                var rsp = await _client.PostAsync(apiEndpoint.Url.Combine(API_POST_USER_LOGIN), formData, token);
-                if (rsp.StatusCode != HttpStatusCode.OK)
-                {
-                    throw new Exception("Login failed");
-                }
+                var rsp = await PostAsync(uri, formData, token);
+
+                return rsp;
 #endif
             }
         }
