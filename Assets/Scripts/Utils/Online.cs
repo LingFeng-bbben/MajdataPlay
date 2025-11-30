@@ -39,6 +39,7 @@ namespace MajdataPlay.Utils
         public const string API_GET_MAICHART_INTERACT = "maichart/{0}/interact";
         public const string API_GET_MAICHART_SCORE = "maichart/{0}/score";
         public const string API_GET_MACHINE_INFO = "machine/info";
+        public const string API_GET_AUTH_CHECK = "machine/auth/check";
 
         public const string API_POST_USER_LOGIN = "account/login";
         public const string API_POST_MAICHART_INTERACT = "maichart/{0}/interact";
@@ -154,7 +155,7 @@ namespace MajdataPlay.Utils
                 }
             }
         }
-        public static async UniTask<EndpointResponse> AuthRequestAsync(ApiEndpoint apiEndpoint, MachineInfo machineInfo, CancellationToken token = default)
+        public static async UniTask<EndpointResponse> AuthRequestAsync(ApiEndpoint apiEndpoint, CancellationToken token = default)
         {
             await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
@@ -194,6 +195,36 @@ namespace MajdataPlay.Utils
                         Message = "MACHINE_AUTH_REQUEST_FAILED"
                     };
                 }
+#endif
+            }
+        }
+        public static async UniTask<EndpointResponse> AuthCheckAsync(ApiEndpoint apiEndpoint, string authId, CancellationToken token = default)
+        {
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
+            {
+                var statistics = GetApiEndpointStatistic(apiEndpoint);
+                if (statistics.IsMachineRegistrationSupported is false)
+                {
+                    return new()
+                    {
+                        IsSuccessfully = false,
+                        IsDeserializable = false,
+                        StatusCode = HttpStatusCode.NotFound,
+                        ErrorCode = HttpErrorCode.NotSupported,
+                        Message = "MACHINE_REGISTRATION_UNSUPPORTED"
+                    };
+                }
+                else if (statistics.IsMachineRegistrationSupported is null)
+                {
+                    throw new InvalidOperationException();
+                }
+                var uriBuilder = new UriBuilder(apiEndpoint.Url.Combine(API_GET_AUTH_CHECK));
+                uriBuilder.Query = $"auth-id={authId}";
+                var uri = uriBuilder.Uri;
+#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
+#else
+                var rsp = await GetAsync(uri, token);
+                return rsp;
 #endif
             }
         }
