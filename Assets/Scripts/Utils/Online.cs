@@ -7,6 +7,7 @@ using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
@@ -37,10 +38,16 @@ namespace MajdataPlay.Utils
         public const string API_GET_MAICHART_LIST = "maichart/list";
         public const string API_GET_MAICHART_INTERACT = "maichart/{0}/interact";
         public const string API_GET_MAICHART_SCORE = "maichart/{0}/score";
+        public const string API_GET_MACHINE_INFO = "machine/info";
 
         public const string API_POST_USER_LOGIN = "account/login";
         public const string API_POST_MAICHART_INTERACT = "maichart/{0}/interact";
         public const string API_POST_MAICHART_SCORE = "maichart/{0}/score";
+        public const string API_POST_MACHINE_REGISTER = "machine/register";
+        public const string API_POST_AUTH_REQUEST = "machine/auth/request";
+
+        static SpinLock _dictLock = new ();
+        readonly static Dictionary<ApiEndpoint, ApiEndpointStatistics> _endpointStatistics = new();
 
         public static async UniTask<bool> CheckLoginAsync(ApiEndpoint apiEndpoint, CancellationToken token = default)
         {
@@ -56,6 +63,137 @@ namespace MajdataPlay.Utils
                 var rsp = await GetAsync(uri, token);
 
                 return rsp.IsSuccessfully;
+#endif
+            }
+        }
+        public static async UniTask<bool> CheckMachineRegisterAsync(ApiEndpoint apiEndpoint, CancellationToken token = default)
+        {
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
+            {
+                await UniTask.SwitchToThreadPool();
+                var uri = apiEndpoint.Url.Combine(API_GET_MACHINE_INFO);
+#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
+                var rsp = await GetAsync(uri, token);
+
+                return rsp.IsSuccessfully;
+#else
+                var rsp = await GetAsync(uri, token);
+
+                return rsp.IsSuccessfully;
+#endif
+            }
+        }
+        public static async UniTask<EndpointResponse> RegisterAsync(ApiEndpoint apiEndpoint, MachineInfo machineInfo, CancellationToken token = default)
+        {
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
+            {
+                var statistics = GetApiEndpointStatistic(apiEndpoint);
+            FAST_RETURN:
+                if (statistics.IsMachineRegistrationSupported is false)
+                {
+                    return new()
+                    {
+                        IsSuccessfully = false,
+                        IsDeserializable = false,
+                        StatusCode = HttpStatusCode.NotFound,
+                        ErrorCode = HttpErrorCode.NotSupported,
+                        Message = "MACHINE_REGISTRATION_UNSUPPORTED"
+                    };
+                }
+                try
+                {
+                    await statistics.LockAsync();
+                    if(statistics.IsMachineRegistrationSupported is false)
+                    {
+                        goto FAST_RETURN;
+                    }
+                    var uri = apiEndpoint.Url.Combine(API_POST_MACHINE_REGISTER);
+                    var json = await Serializer.Json.SerializeAsync(machineInfo, DEFAULT_JSON_SERIALIZER);
+
+#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
+                    var rsp = await PostAsync(uri, json, "application/json", token);
+                    if (!rsp.IsSuccessfully && rsp.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        statistics.IsMachineRegistrationSupported = false;
+                        statistics.IsMachineRegistered = false;
+                        return new()
+                        {
+                            IsSuccessfully = false,
+                            IsDeserializable = false,
+                            StatusCode = HttpStatusCode.NotFound,
+                            ErrorCode = HttpErrorCode.NotSupported,
+                            Message = "MACHINE_REGISTRATION_UNSUPPORTED"
+                        };
+                    }
+                    statistics.IsMachineRegistrationSupported = true;
+                    statistics.IsMachineRegistered = rsp.IsSuccessfully;
+                    return rsp;
+#else
+                    var rsp = await PostAsync(uri, new StringContent(json, Encoding.UTF8, "application/json"), token);
+                    if (!rsp.IsSuccessfully && rsp.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        statistics.IsMachineRegistrationSupported = false;
+                        statistics.IsMachineRegistered = false;
+                        return new()
+                        {
+                            IsSuccessfully = false,
+                            IsDeserializable = false,
+                            StatusCode = HttpStatusCode.NotFound,
+                            ErrorCode = HttpErrorCode.NotSupported,
+                            Message = "MACHINE_REGISTRATION_UNSUPPORTED"
+                        };
+                    }
+                    statistics.IsMachineRegistrationSupported = true;
+                    statistics.IsMachineRegistered = rsp.IsSuccessfully;
+                    return rsp;
+#endif
+                }
+                finally
+                {
+                    statistics.Unlock();
+                }
+            }
+        }
+        public static async UniTask<EndpointResponse> AuthRequestAsync(ApiEndpoint apiEndpoint, MachineInfo machineInfo, CancellationToken token = default)
+        {
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
+            {
+                var statistics = GetApiEndpointStatistic(apiEndpoint);
+                if (statistics.IsMachineRegistrationSupported is false)
+                {
+                    return new()
+                    {
+                        IsSuccessfully = false,
+                        IsDeserializable = false,
+                        StatusCode = HttpStatusCode.NotFound,
+                        ErrorCode = HttpErrorCode.NotSupported,
+                        Message = "MACHINE_REGISTRATION_UNSUPPORTED"
+                    };
+                }
+                else if (statistics.IsMachineRegistrationSupported is null)
+                {
+                    throw new InvalidOperationException();
+                }
+                var uri = apiEndpoint.Url.Combine(API_POST_AUTH_REQUEST);
+#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
+#else
+                var rsp = await PostAsync(uri, token);
+                if (rsp.StatusCode == HttpStatusCode.Created)
+                {
+                    return rsp;
+                }
+                else
+                {
+                    return new()
+                    {
+                        IsSuccessfully = false,
+                        IsDeserializable = false,
+                        StatusCode = rsp.StatusCode,
+                        ErrorCode = rsp.ErrorCode,
+                        Headers = rsp.Headers,
+                        Message = "MACHINE_AUTH_REQUEST_FAILED"
+                    };
+                }
 #endif
             }
         }
@@ -114,7 +252,7 @@ namespace MajdataPlay.Utils
 #endif
             }
         }
-        public static async UniTask<EndpointResponse> SendLikeAsync(OnlineSongDetail song, CancellationToken token = default)
+        public static async UniTask<EndpointResponse> PostLikeAsync(OnlineSongDetail song, CancellationToken token = default)
         {
             await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
@@ -163,7 +301,7 @@ namespace MajdataPlay.Utils
                 return rsp;
 #else
                 var rsp = await GetAsync(interactUrl, token);
-                if(!rsp.IsDeserializable)
+                if (!rsp.IsDeserializable)
                 {
                     return rsp;
                 }
@@ -230,8 +368,8 @@ namespace MajdataPlay.Utils
                 return await GetAsync(url, token);
             }
         }
-        
-        
+
+
         static async ValueTask<EndpointResponse> GetAsync(Uri uri, CancellationToken token = default)
         {
 #if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
@@ -305,6 +443,7 @@ namespace MajdataPlay.Utils
                         IsDeserializable = false,
                         ErrorCode = HttpErrorCode.Unsuccessful,
                         StatusCode = rsp.StatusCode,
+                        Headers = rsp.Headers.ToDictionary(kv => kv.Key, kv => kv.Value),
                         Message = ""
                     };
                 }
@@ -315,6 +454,7 @@ namespace MajdataPlay.Utils
                     IsDeserializable = true,
                     ErrorCode = HttpErrorCode.NoError,
                     StatusCode = rsp.StatusCode,
+                    Headers = rsp.Headers.ToDictionary(kv => kv.Key, kv => kv.Value),
                     Message = "Ok"
                 };
             }
@@ -478,6 +618,10 @@ namespace MajdataPlay.Utils
             }
         }
 #else
+        static ValueTask<EndpointResponse> PostAsync(Uri uri, CancellationToken token = default)
+        {
+            return PostAsync(uri, (HttpContent?)null, token);
+        }
         static ValueTask<EndpointResponse> PostAsync(Uri uri, string content, CancellationToken token = default)
         {
             return PostAsync(uri, new StringContent(content), token);
@@ -490,20 +634,22 @@ namespace MajdataPlay.Utils
         {
             return PostAsync(uri, new ByteArrayContent(content.Array, content.Offset, content.Count), token);
         }
-        static async ValueTask<EndpointResponse> PostAsync(Uri uri, HttpContent content, CancellationToken token = default)
+        static async ValueTask<EndpointResponse> PostAsync(Uri uri, HttpContent? content, CancellationToken token = default)
         {
             try
             {
                 var client = MajEnv.SharedHttpClient;
-                var rsp = await client.PostAsync(uri, content, token);
+                var rsp = await (content is null ? client.PostAsync(uri, new StringContent(string.Empty, Encoding.UTF8, "application/json"), token) : client.PostAsync(uri, content, token));
                 if (rsp.StatusCode != HttpStatusCode.OK)
                 {
+                    rsp.Headers.ToDictionary(kv => kv.Key, kv => kv.Value);
                     return new EndpointResponse(Array.Empty<byte>(), DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
                     {
                         IsSuccessfully = false,
                         IsDeserializable = false,
                         ErrorCode = HttpErrorCode.Unsuccessful,
                         StatusCode = rsp.StatusCode,
+                        Headers = rsp.Headers.ToDictionary(kv => kv.Key, kv => kv.Value),
                         Message = ""
                     };
                 }
@@ -514,6 +660,7 @@ namespace MajdataPlay.Utils
                     IsDeserializable = true,
                     ErrorCode = HttpErrorCode.NoError,
                     StatusCode = rsp.StatusCode,
+                    Headers = rsp.Headers.ToDictionary(kv => kv.Key, kv => kv.Value),
                     Message = "Ok"
                 };
             }
@@ -558,6 +705,62 @@ namespace MajdataPlay.Utils
             sb.AppendFormat(api, chartId);
 
             return new Uri(sb.ToString());
+        }
+
+        static ApiEndpointStatistics GetApiEndpointStatistic(ApiEndpoint endpoint)
+        {
+            ref var @lock = ref _dictLock;
+            var isLocked = false;
+            try
+            {
+                @lock.Enter(ref isLocked);
+                if (!_endpointStatistics.TryGetValue(endpoint, out var stats))
+                {
+                    stats = new ApiEndpointStatistics
+                    {
+                        Endpoint = endpoint
+                    };
+                    _endpointStatistics[endpoint] = stats;
+                }
+                return stats;
+            }
+            finally
+            {
+                if (isLocked)
+                {
+                    @lock.Exit();
+                }
+            }
+        }
+        class ApiEndpointStatistics
+        {
+            public required ApiEndpoint Endpoint { get; init; }
+
+            public bool? IsMachineRegistered { get; set; }
+            public bool? IsUserLoggedIn { get; set; }
+            public bool? IsMachineRegistrationSupported { get; set; }
+
+            readonly SemaphoreSlim _lock = new (1, 1);
+
+            public void Lock()
+            {
+                _lock.Wait();
+            }
+            public Task LockAsync()
+            {
+                return _lock.WaitAsync();
+            }
+            public void Unlock()
+            {
+                _lock.Release();
+            }
+        }
+        readonly struct NetMachineInfo
+        {
+            public string Id { get; init; }
+            public string Name { get; init; }
+            public string Description { get; init; }
+            public string Place { get; init; }
         }
     }
 

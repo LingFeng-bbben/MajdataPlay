@@ -1,10 +1,11 @@
 ﻿using MajdataPlay.Utils;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-
+#nullable enable
 namespace MajdataPlay.Net;
 internal readonly struct EndpointResponse
 {
@@ -14,11 +15,13 @@ internal readonly struct EndpointResponse
     public HttpStatusCode? StatusCode { get; init; }
     public EndpointResponseCode ResponseCode { get; init; }
     public required HttpErrorCode ErrorCode { get; init; }
+    public IReadOnlyDictionary<string, IEnumerable<string>> Headers { get; init; } = _emptyDict;
     public required string Message { get; init; }
     
     readonly byte[] _data;
     readonly JsonSerializer _serializer;
     readonly JsonSerializerSettings _serializerSettings;
+    readonly static IReadOnlyDictionary<string, IEnumerable<string>> _emptyDict = new Dictionary<string, IEnumerable<string>>();
 
     public EndpointResponse(byte[] data, JsonSerializer serializer, JsonSerializerSettings serializerSettings)
     {
@@ -79,5 +82,17 @@ internal readonly struct EndpointResponse
     public ReadOnlyMemory<byte> AsMemory()
     {
         return _data;
+    }
+    public IEnumerable<string> TryGetHeader(string header)
+    {
+        if(string.IsNullOrEmpty(header))
+        {
+            throw new ArgumentNullException(nameof(header));
+        }
+        if(Headers.TryGetValue(header, out var values))
+        {
+            return values;
+        }
+        return Array.Empty<string>();
     }
 }

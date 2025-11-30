@@ -72,7 +72,7 @@ namespace MajdataPlay.Scenes.Result
             //LightManager.SetButtonLight(Color.blue, 4);
             try
             {
-                await Online.SendLikeAsync(song);
+                await Online.PostLikeAsync(song);
                 await UniTask.SwitchToMainThread();
                 infotext.text = "THUMBUP_SENDED".i18n();
                 MajInstances.AudioManager.PlaySFX(SFX_LIST[UnityEngine.Random.Range(0, SFX_LIST.Length)]);
