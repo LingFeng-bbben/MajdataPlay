@@ -244,7 +244,6 @@ namespace MajdataPlay.Scenes.Login
                                 goto RETRY_AUTH_CHECK;
                             }
                         }
-                        break;
                     default:
                         throw new NotSupportedException();
                 }
