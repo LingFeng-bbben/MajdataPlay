@@ -50,7 +50,7 @@ namespace MajdataPlay.Utils
         static SpinLock _dictLock = new ();
         readonly static Dictionary<ApiEndpoint, ApiEndpointStatistics> _endpointStatistics = new();
 
-        public static async UniTask<bool> CheckLoginAsync(ApiEndpoint apiEndpoint, CancellationToken token = default)
+        public static async ValueTask<bool> CheckLoginAsync(ApiEndpoint apiEndpoint, CancellationToken token = default)
         {
             await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
@@ -67,7 +67,7 @@ namespace MajdataPlay.Utils
 #endif
             }
         }
-        public static async UniTask<bool> CheckMachineRegisterAsync(ApiEndpoint apiEndpoint, CancellationToken token = default)
+        public static async ValueTask<bool> CheckMachineRegisterAsync(ApiEndpoint apiEndpoint, CancellationToken token = default)
         {
             await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
@@ -84,7 +84,7 @@ namespace MajdataPlay.Utils
 #endif
             }
         }
-        public static async UniTask<EndpointResponse> RegisterAsync(ApiEndpoint apiEndpoint, MachineInfo machineInfo, CancellationToken token = default)
+        public static async ValueTask<EndpointResponse> RegisterAsync(ApiEndpoint apiEndpoint, MachineInfo machineInfo, CancellationToken token = default)
         {
             await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
@@ -155,7 +155,7 @@ namespace MajdataPlay.Utils
                 }
             }
         }
-        public static async UniTask<EndpointResponse> AuthRequestAsync(ApiEndpoint apiEndpoint, CancellationToken token = default)
+        public static async ValueTask<EndpointResponse> AuthRequestAsync(ApiEndpoint apiEndpoint, CancellationToken token = default)
         {
             await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
@@ -198,7 +198,7 @@ namespace MajdataPlay.Utils
 #endif
             }
         }
-        public static async UniTask<EndpointResponse> AuthCheckAsync(ApiEndpoint apiEndpoint, string authId, CancellationToken token = default)
+        public static async ValueTask<EndpointResponse> AuthCheckAsync(ApiEndpoint apiEndpoint, string authId, CancellationToken token = default)
         {
             await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
@@ -228,11 +228,11 @@ namespace MajdataPlay.Utils
 #endif
             }
         }
-        public static UniTask<EndpointResponse> LoginAsync(ApiEndpoint apiEndpoint, CancellationToken token = default)
+        public static ValueTask<EndpointResponse> LoginAsync(ApiEndpoint apiEndpoint, CancellationToken token = default)
         {
             return LoginAsync(apiEndpoint, apiEndpoint?.Username ?? string.Empty, apiEndpoint?.Password ?? string.Empty, token);
         }
-        public static async UniTask<EndpointResponse> LoginAsync(ApiEndpoint apiEndpoint, string username, string password, CancellationToken token = default)
+        public static async ValueTask<EndpointResponse> LoginAsync(ApiEndpoint apiEndpoint, string username, string password, CancellationToken token = default)
         {
             await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
@@ -283,7 +283,7 @@ namespace MajdataPlay.Utils
 #endif
             }
         }
-        public static async UniTask<EndpointResponse> PostLikeAsync(OnlineSongDetail song, CancellationToken token = default)
+        public static async ValueTask<EndpointResponse> PostLikeAsync(OnlineSongDetail song, CancellationToken token = default)
         {
             await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
@@ -372,7 +372,7 @@ namespace MajdataPlay.Utils
 #endif
             }
         }
-        public static async UniTask<EndpointResponse> PostScoreAsync(OnlineSongDetail song, MaiScore score, CancellationToken token = default)
+        public static async ValueTask<EndpointResponse> PostScoreAsync(OnlineSongDetail song, MaiScore score, CancellationToken token = default)
         {
             await using (UniTask.ReturnToCurrentSynchronizationContext())
             {

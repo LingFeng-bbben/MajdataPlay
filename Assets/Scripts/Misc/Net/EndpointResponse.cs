@@ -42,11 +42,11 @@ internal readonly struct EndpointResponse
         _serializerSettings = serializerSettings;
         Length = data.Length;
     }
-    public T Deserialize<T>()
+    public T? Deserialize<T>()
     {
         return Deserialize<T>(Encoding.UTF8);
     }
-    public T Deserialize<T>(Encoding encoder)
+    public T? Deserialize<T>(Encoding encoder)
     {
         if(encoder is null)
         {
@@ -59,11 +59,28 @@ internal readonly struct EndpointResponse
 
         return Serializer.Json.Deserialize<T>(encoder.GetString(_data), _serializerSettings);
     }
-    public ValueTask<T> DeserializeAsync<T>()
+    public bool TryDeserialize<T>(out T? result)
+    {
+        return TryDeserialize(Encoding.UTF8, out result);
+    }
+    public bool TryDeserialize<T>(Encoding encoder, out T? result)
+    {
+        if (encoder is null)
+        {
+            throw new ArgumentNullException(nameof(encoder));
+        }
+        if (!IsDeserializable)
+        {
+            result = default;
+            return false;
+        }
+        return Serializer.Json.TryDeserialize<T>(encoder.GetString(_data), out result, _serializerSettings);
+    }
+    public ValueTask<T?> DeserializeAsync<T>()
     {
         return DeserializeAsync<T>(Encoding.UTF8);
     }
-    public async ValueTask<T> DeserializeAsync<T>(Encoding encoder)
+    public async ValueTask<T?> DeserializeAsync<T>(Encoding encoder)
     {
         if (encoder is null)
         {
