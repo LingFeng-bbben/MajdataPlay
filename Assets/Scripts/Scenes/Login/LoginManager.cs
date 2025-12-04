@@ -15,7 +15,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using static QRCoder.QRCodeGenerator;
-
+#nullable enable
 namespace MajdataPlay.Scenes.Login
 {
     internal class LoginManager : MonoBehaviour
@@ -28,6 +28,8 @@ namespace MajdataPlay.Scenes.Login
         GameObject _passwordComponent;
         [SerializeField]
         GameObject _qrCodeComponent;
+        [SerializeField]
+        GameObject _qrCodeLoading;
 
         [SerializeField]
         InputField _usernameInput;
@@ -132,8 +134,12 @@ namespace MajdataPlay.Scenes.Login
                     case NetAuthMethodOption.QRCode:
                         {
                             _qrCodeComponent.SetActive(true);
+                            _qrCodeLoading.SetActive(true);
                             _usernameComponent.SetActive(false);
                             _passwordComponent.SetActive(false);
+
+                            _qrCodeRawImage.texture = null!;
+                            _qrCodeRawImage.color = new Color(130, 130, 130);
 
                             var task = Online.RegisterAsync(endpoint, new()
                             {
@@ -212,7 +218,8 @@ namespace MajdataPlay.Scenes.Login
                             texture.LoadImage(pngBytes);
 
                             _qrCodeRawImage.texture = texture;
-
+                            _qrCodeLoading.SetActive(false);
+                            _qrCodeRawImage.color = Color.white;
                         RETRY_AUTH_CHECK:
                             task = Online.AuthCheckAsync(endpoint, authRequestId);
                             while (!task.IsCompleted)
