@@ -279,7 +279,7 @@ namespace MajdataPlay.Scenes.Title
             _flag = false;
             MajInstances.AudioManager.StopSFX("bgm_title.mp3");
             MajInstances.AudioManager.StopSFX("MajdataPlay.wav");
-            MajInstances.SceneSwitcher.SwitchScene("Login", true);
+            MajInstances.SceneSwitcher.SwitchScene("Login", false);
             //MajInstances.SceneSwitcher.SwitchScene("List", false);
         }
     }

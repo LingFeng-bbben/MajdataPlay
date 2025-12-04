@@ -80,6 +80,7 @@ namespace MajdataPlay.Scenes.Login
         async UniTaskVoid LoginProcessor()
         {
             var sceneSwitcher = MajInstances.SceneSwitcher;
+            await sceneSwitcher.FadeOutAsync();
             for (var i = 0; i < _enabledEndpoints.Length; i++)
             {
                 var endpoint = _enabledEndpoints[i];
@@ -257,7 +258,7 @@ namespace MajdataPlay.Scenes.Login
             CONTINUE:
                 continue;
             }
-            MajInstances.SceneSwitcher.SwitchScene("List", false);
+            sceneSwitcher.SwitchScene("List", false);
         }
         readonly struct AuthRequestResponse
         {
