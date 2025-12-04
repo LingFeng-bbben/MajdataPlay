@@ -139,7 +139,7 @@ namespace MajdataPlay.Scenes.Login
                             _passwordComponent.SetActive(false);
 
                             _qrCodeRawImage.texture = null!;
-                            _qrCodeRawImage.color = new Color(130, 130, 130);
+                            _qrCodeRawImage.color = new Color(0.5f, 0.5f, 0.5f);
 
                             var task = Online.RegisterAsync(endpoint, new()
                             {
@@ -257,6 +257,7 @@ namespace MajdataPlay.Scenes.Login
             CONTINUE:
                 continue;
             }
+            MajInstances.SceneSwitcher.SwitchScene("List", false);
         }
         readonly struct AuthRequestResponse
         {
