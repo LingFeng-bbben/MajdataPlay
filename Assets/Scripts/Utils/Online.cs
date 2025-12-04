@@ -14,8 +14,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using UnityEditor.PackageManager;
-using UnityEditor.PackageManager.Requests;
 using UnityEngine;
 using UnityEngine.Networking;
 #nullable enable
@@ -181,7 +179,15 @@ namespace MajdataPlay.Utils
                 var rsp = await PostAsync(uri, token);
                 if (rsp.StatusCode == HttpStatusCode.Created)
                 {
-                    return rsp;
+                    return new(rsp.AsMemory(), DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
+                    {
+                        IsSuccessfully = true,
+                        IsDeserializable = true,
+                        StatusCode = rsp.StatusCode,
+                        ErrorCode = HttpErrorCode.NoError,
+                        Headers = rsp.Headers,
+                        Message = string.Empty
+                    };
                 }
                 else
                 {
@@ -671,10 +677,11 @@ namespace MajdataPlay.Utils
             {
                 var client = MajEnv.SharedHttpClient;
                 var rsp = await (content is null ? client.PostAsync(uri, new StringContent(string.Empty, Encoding.UTF8, "application/json"), token) : client.PostAsync(uri, content, token));
+                var buffer = await rsp.Content.ReadAsByteArrayAsync();
                 if (rsp.StatusCode != HttpStatusCode.OK)
                 {
                     rsp.Headers.ToDictionary(kv => kv.Key, kv => kv.Value);
-                    return new EndpointResponse(Array.Empty<byte>(), DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
+                    return new EndpointResponse(buffer, DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
                     {
                         IsSuccessfully = false,
                         IsDeserializable = false,
@@ -684,7 +691,7 @@ namespace MajdataPlay.Utils
                         Message = ""
                     };
                 }
-                var buffer = await rsp.Content.ReadAsByteArrayAsync();
+                
                 return new EndpointResponse(buffer, DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
                 {
                     IsSuccessfully = true,

@@ -93,8 +93,8 @@ namespace MajdataPlay.Scenes.Login
                             _usernameComponent.SetActive(true);
                             _passwordComponent.SetActive(true);
 
-                            _usernameInput.text = endpoint.Username;
-                            _passwordInput.text = endpoint.Password;
+                            _usernameInput.text = endpoint.Username ?? string.Empty;
+                            _passwordInput.text = endpoint.Password ?? string.Empty;
 
                         RETRY:
                             _usernameInput.readOnly = false;

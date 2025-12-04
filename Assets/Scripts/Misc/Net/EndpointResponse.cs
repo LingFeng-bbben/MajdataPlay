@@ -18,17 +18,13 @@ internal readonly struct EndpointResponse
     public IReadOnlyDictionary<string, IEnumerable<string>> Headers { get; init; } = _emptyDict;
     public required string Message { get; init; }
     
-    readonly byte[] _data;
+    readonly ReadOnlyMemory<byte> _data;
     readonly JsonSerializer _serializer;
     readonly JsonSerializerSettings _serializerSettings;
     readonly static IReadOnlyDictionary<string, IEnumerable<string>> _emptyDict = new Dictionary<string, IEnumerable<string>>();
 
-    public EndpointResponse(byte[] data, JsonSerializer serializer, JsonSerializerSettings serializerSettings)
+    public EndpointResponse(ReadOnlyMemory<byte> data, JsonSerializer serializer, JsonSerializerSettings serializerSettings)
     {
-        if(data is null)
-        {
-            throw new ArgumentNullException(nameof(data));
-        }
         if (serializer is null)
         {
             throw new ArgumentNullException(nameof(serializer));
@@ -57,7 +53,7 @@ internal readonly struct EndpointResponse
             throw new InvalidOperationException("This response cannot be deserialized.");
         }
 
-        return Serializer.Json.Deserialize<T>(encoder.GetString(_data), _serializerSettings);
+        return Serializer.Json.Deserialize<T>(encoder.GetString(_data.Span), _serializerSettings);
     }
     public bool TryDeserialize<T>(out T? result)
     {
@@ -74,7 +70,7 @@ internal readonly struct EndpointResponse
             result = default;
             return false;
         }
-        return Serializer.Json.TryDeserialize<T>(encoder.GetString(_data), out result, _serializerSettings);
+        return Serializer.Json.TryDeserialize<T>(encoder.GetString(_data.Span), out result, _serializerSettings);
     }
     public ValueTask<T?> DeserializeAsync<T>()
     {
@@ -90,11 +86,11 @@ internal readonly struct EndpointResponse
         {
             throw new InvalidOperationException("This response cannot be deserialized.");
         }
-        return await Serializer.Json.DeserializeAsync<T>(encoder.GetString(_data), _serializerSettings);
+        return await Serializer.Json.DeserializeAsync<T>(encoder.GetString(_data.Span), _serializerSettings);
     }
     public ReadOnlySpan<byte> AsSpan()
     {
-        return _data;
+        return _data.Span;
     }
     public ReadOnlyMemory<byte> AsMemory()
     {

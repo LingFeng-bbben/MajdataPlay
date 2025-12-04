@@ -99,25 +99,25 @@ namespace MajdataPlay.Scenes.Title
                         }
                         else
                         {
-                            if (MajInstances.Settings.Online.Enable)
-                            {
-                                foreach (var endpoint in MajInstances.Settings.Online.ApiEndpoints)
-                                {
-                                    try
-                                    {
-                                        if (endpoint.Username is null || endpoint.Password is null) continue;
-                                        echoText.text = "Login " + endpoint.Name + " as " + endpoint.Username;
-                                        await Online.LoginAsync(endpoint);
-                                        await UniTask.Delay(1000);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        MajDebug.LogError(ex);
-                                        echoText.text = "Login failed for " + endpoint.Name;
-                                        await UniTask.Delay(1000);
-                                    }
-                                }
-                            }
+                            //if (MajInstances.Settings.Online.Enable)
+                            //{
+                            //    foreach (var endpoint in MajInstances.Settings.Online.ApiEndpoints)
+                            //    {
+                            //        try
+                            //        {
+                            //            if (endpoint.Username is null || endpoint.Password is null) continue;
+                            //            echoText.text = "Login " + endpoint.Name + " as " + endpoint.Username;
+                            //            await Online.LoginAsync(endpoint);
+                            //            await UniTask.Delay(1000);
+                            //        }
+                            //        catch (Exception ex)
+                            //        {
+                            //            MajDebug.LogError(ex);
+                            //            echoText.text = "Login failed for " + endpoint.Name;
+                            //            await UniTask.Delay(1000);
+                            //        }
+                            //    }
+                            //}
                             echoText.text = "MAJTEXT_PRESS_ANY_KEY".i18n();
                             InputManager.BindAnyArea(OnAreaDown);
 
@@ -279,7 +279,8 @@ namespace MajdataPlay.Scenes.Title
             _flag = false;
             MajInstances.AudioManager.StopSFX("bgm_title.mp3");
             MajInstances.AudioManager.StopSFX("MajdataPlay.wav");
-            MajInstances.SceneSwitcher.SwitchScene("List", false);
+            MajInstances.SceneSwitcher.SwitchScene("Login", true);
+            //MajInstances.SceneSwitcher.SwitchScene("List", false);
         }
     }
 }
