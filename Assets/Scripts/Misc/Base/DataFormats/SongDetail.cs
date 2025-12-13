@@ -17,10 +17,25 @@ namespace MajdataPlay
     {
         public string Title { get; init; } = string.Empty;
         public string Artist { get; init; } = string.Empty;
-        public string[] Designers { get; init; } = new string[7];
         public string Description { get; init; } = string.Empty;
-        public string[] Levels { get; init; } = new string[7];
-        public string Hash { get; init; } = string.Empty;
+        public ReadOnlySpan<string> Designers
+        {
+            get
+            {
+                return _simaiMetadata.Designers;
+            }
+        }
+        public ReadOnlySpan<string> Levels
+        {
+            get
+            {
+                return _simaiMetadata.Levels;
+            }
+        }
+        public string Hash 
+        { 
+            get => _simaiMetadata.Hash; 
+        }
         public DateTime Timestamp { get; init; }
         public ChartStorageLocation Location => ChartStorageLocation.Local;
 
@@ -37,6 +52,7 @@ namespace MajdataPlay
         AudioSampleWrap? _previewAudioTrack = null;
         Sprite? _cover = null;
         SimaiFile? _maidata = null;
+        SimaiMetadata _simaiMetadata;
 
         readonly AsyncLock _previewAudioTrackLock = new();
         readonly AsyncLock _audioTrackLock = new();
@@ -62,22 +78,19 @@ namespace MajdataPlay
             {
                 _cover = MajEnv.EmptySongCover;
             }
-
+            _simaiMetadata = metadata;
             Title = metadata.Title;
             Artist = metadata.Artist;
-            Designers = metadata.Designers;
-            Levels = metadata.Levels;
-            Hash = metadata.Hash;
             Timestamp = files.FirstOrDefault(x => x.Name is "maidata.txt")?.LastWriteTime ?? DateTime.UnixEpoch;
         }
         public static async Task<SongDetail> ParseAsync(string chartFolder)
         {
             var maidataPath = Path.Combine(chartFolder, "maidata.txt");
-            var metadata = await SimaiParser.Shared.ParseMetadataAsync(maidataPath);
+            var metadata = await SimaiParser.ParseMetadataAsync(File.OpenRead(maidataPath));
 
             return new SongDetail(chartFolder, metadata);
         }
-        public async UniTask PreloadAsync(INetProgress? progress = null, CancellationToken token = default)
+        public async ValueTask PreloadAsync(INetProgress? progress = null, CancellationToken token = default)
         {
             ThrowIfDisposed();
             if (_isPreloaded)
@@ -89,15 +102,15 @@ namespace MajdataPlay
             {
                 return;
             }
-            await UniTask.WhenAll(GetMaidataAsync(token: token), GetCoverAsync(true, token: token));
+            await Task.WhenAll(GetMaidataAsync(token: token).AsTask(), GetCoverAsync(true, token: token).AsTask());
             _isPreloaded = true;
         }
-        public UniTask<string> GetVideoPathAsync(INetProgress? progress = null, CancellationToken token = default)
+        public ValueTask<string> GetVideoPathAsync(INetProgress? progress = null, CancellationToken token = default)
         {
             ThrowIfDisposed();
             return UniTask.FromResult(_videoPath);
         }
-        public async UniTask<Sprite> GetCoverAsync(bool isCompressed, INetProgress? progress = null, CancellationToken token = default)
+        public async ValueTask<Sprite> GetCoverAsync(bool isCompressed, INetProgress? progress = null, CancellationToken token = default)
         {
             ThrowIfDisposed();
             if (_cover is not null)
@@ -112,12 +125,12 @@ namespace MajdataPlay
                 {
                     return _cover;
                 }
-
+                progress?.Report(1);
                 _cover = await SpriteLoader.LoadAsync(_coverPath, token);
                 return _cover;
             }
         }
-        public async UniTask<AudioSampleWrap> GetAudioTrackAsync(INetProgress? progress = null, CancellationToken token = default)
+        public async ValueTask<AudioSampleWrap> GetAudioTrackAsync(INetProgress? progress = null, CancellationToken token = default)
         {
             ThrowIfDisposed();
             if (_audioTrack is not null)
@@ -132,12 +145,12 @@ namespace MajdataPlay
                 {
                     return _audioTrack;
                 }
-
-                _audioTrack = await MajInstances.AudioManager.LoadMusicAsync(_trackPath, true);
+                progress?.Report(1);
+                _audioTrack = await MajInstances.AudioManager.LoadMusicAsync(_trackPath, true, true);
                 return _audioTrack;
             }
         }
-        public async UniTask<AudioSampleWrap> GetPreviewAudioTrackAsync(INetProgress? progress = null, CancellationToken token = default)
+        public async ValueTask<AudioSampleWrap> GetPreviewAudioTrackAsync(INetProgress? progress = null, CancellationToken token = default)
         {
             ThrowIfDisposed();
             if (_previewAudioTrack is not null)
@@ -152,12 +165,12 @@ namespace MajdataPlay
                 {
                     return _previewAudioTrack;
                 }
-
-                _previewAudioTrack = await MajInstances.AudioManager.LoadMusicAsync(_trackPath, false);
+                progress?.Report(1);
+                _previewAudioTrack = await MajInstances.AudioManager.LoadMusicAsync(_trackPath, true, false);
                 return _previewAudioTrack;
             }
         }
-        public async UniTask<SimaiFile> GetMaidataAsync(bool ignoreCache = false, INetProgress? progress = null, CancellationToken token = default)
+        public async ValueTask<SimaiFile> GetMaidataAsync(bool ignoreCache = false, INetProgress? progress = null, CancellationToken token = default)
         {
             ThrowIfDisposed();
             if (!ignoreCache && _maidata is not null)
@@ -172,9 +185,20 @@ namespace MajdataPlay
                 {
                     return _maidata;
                 }
-
-                _maidata = await SimaiParser.Shared.ParseAsync(_maidataPath);
-                return _maidata;
+                using var fileStream = File.OpenRead(_maidataPath);
+                progress?.Report(1);
+                var metadata = await SimaiParser.ParseMetadataAsync(fileStream);
+                if (metadata.Hash == _simaiMetadata.Hash)
+                {
+                    _maidata ??= await SimaiParser.ParseAsync(metadata);
+                    return _maidata;
+                }
+                else
+                {
+                    _maidata = await SimaiParser.ParseAsync(metadata);
+                    _simaiMetadata = metadata;
+                    return _maidata;
+                }
             }
         }
         public void Dispose()
@@ -186,7 +210,39 @@ namespace MajdataPlay
             _isDisposed = true;
             _audioTrack?.Dispose();
             _previewAudioTrack?.Dispose();
-            GameObject.DestroyImmediate(_cover, true);
+            UniTask.Post(() =>
+            {
+                var tex = _cover?.texture;
+                GameObject.DestroyImmediate(_cover, true);
+                GameObject.DestroyImmediate(tex, true);
+            });
+            _audioTrack = null;
+            _previewAudioTrack = null;
+            _cover = null;
+            _maidata = null;
+        }
+        public async ValueTask DisposeAsync()
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+            _isDisposed = true;
+            if(_audioTrack is not null)
+            {
+                await _audioTrack.DisposeAsync();
+            }
+            if(_previewAudioTrack is not null)
+            {
+                await _previewAudioTrack.DisposeAsync();
+            }
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
+            {
+                await UniTask.SwitchToMainThread();
+                var tex = _cover?.texture;
+                GameObject.DestroyImmediate(_cover, true);
+                GameObject.DestroyImmediate(tex, true);
+            }
             _audioTrack = null;
             _previewAudioTrack = null;
             _cover = null;

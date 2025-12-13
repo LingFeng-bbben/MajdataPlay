@@ -131,8 +131,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 return;
 
             StartPos = poolingInfo.StartPos;
-            Timing = poolingInfo.Timing;
-            _judgeTiming = Timing;
+            Timing = poolingInfo.Timing - TOUCH_DISPLAY_OFFSET_SEC;
+            _judgeTiming = poolingInfo.Timing;
             SortOrder = poolingInfo.NoteSortOrder;
             Speed = poolingInfo.Speed;
             IsEach = poolingInfo.IsEach;
@@ -203,9 +203,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             SetActive(false);
 
             if (_isFirework && !result.IsMissOrTooFast)
-                _effectManager.PlayFireworkEffect(transform.position);
+            {
+                _effectManager.PlayFireworkEffect(Transform.position);
+            }
 
             PlayJudgeSFX(result);
+            _noteManager.NextTouch(QueueInfo);
             _effectManager.PlayTouchEffect(_sensorPos, result);
             _objectCounter.ReportResult(this, result);
             _notePoolManager.Collect(this);
@@ -238,7 +241,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         {
             // Too late check
             if (IsEnded || _isJudged || AutoplayMode == AutoplayModeOption.Enable)
+            {
                 return;
+            }
 
             var isTooLate = GetTimeSpanToJudgeTiming() > TOUCH_JUDGE_GOOD_AREA_MSEC / 1000;
 
@@ -251,7 +256,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                         _isJudged = true;
                         _judgeResult = (JudgeGrade)GroupInfo.JudgeResult;
                         _judgeDiff = GroupInfo.JudgeDiff;
-                        _noteManager.NextTouch(QueueInfo);
+                        End();
                     }
                 }
             }
@@ -259,7 +264,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 _judgeResult = JudgeGrade.Miss;
                 _isJudged = true;
-                _noteManager.NextTouch(QueueInfo);
+                End();
             }
         }
         void Check()
@@ -268,50 +273,39 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 return;
             }
-            else if (_isJudged)
-            {
-                End();
-                return;
-            }
             else if (!_judgableRange.InRange(ThisFrameSec) || !_noteManager.IsCurrentNoteJudgeable(QueueInfo))
             {
                 return;
             }
-
-            ref bool isDeviceUsedInThisFrame = ref Unsafe.NullRef<bool>();
-            var isButton = false;
-            if (IsUseButtonRingForTouch && _noteManager.IsButtonClickedInThisFrame(_buttonPos))
-            {
-                isDeviceUsedInThisFrame = ref _noteManager.GetButtonUsageInThisFrame(_buttonPos);
-                isButton = true;
-            }
-            else if (_noteManager.IsSensorClickedInThisFrame(_sensorPos))
-            {
-                isDeviceUsedInThisFrame = ref _noteManager.GetSensorUsageInThisFrame(_sensorPos);
-            }
-            else
-            {
-                return;
-            }
-
-            if (isDeviceUsedInThisFrame)
-            {
-                return;
-            }
-            if (isButton)
-            {
-                Judge(ThisFrameSec);
-            }
-            else
+#if UNITY_ANDROID
+            if (_noteManager.IsSensorClickedInThisFrame(_sensorPos) && _noteManager.TryUseSensorClickEvent(_sensorPos))
             {
                 Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
             }
-
+            else
+            {
+                return;
+            }
+#else
+            if (IsUseButtonRingForTouch && 
+                _noteManager.IsButtonClickedInThisFrame(_buttonPos) && 
+                _noteManager.TryUseButtonClickEvent(_buttonPos))
+            {
+                Judge(ThisFrameSec);
+            }
+            else if (_noteManager.IsSensorClickedInThisFrame(_sensorPos) && _noteManager.TryUseSensorClickEvent(_sensorPos))
+            {
+                Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
+            }
+            else
+            {
+                return;
+            }
+#endif
             if (_isJudged)
             {
-                isDeviceUsedInThisFrame = true;
-                _noteManager.NextTouch(QueueInfo);
                 RegisterGrade();
+                End();
             }
         }
         protected override void Autoplay()
@@ -320,6 +314,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 case AutoplayModeOption.Enable:
                     base.Autoplay();
+                    if (_isJudged)
+                    {
+                        End();
+                    }
                     break;
                 case AutoplayModeOption.DJAuto_TouchPanel_First:
                 case AutoplayModeOption.DJAuto_ButtonRing_First:

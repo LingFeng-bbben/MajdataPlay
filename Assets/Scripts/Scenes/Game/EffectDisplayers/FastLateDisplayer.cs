@@ -1,15 +1,19 @@
 ﻿using MajdataPlay.Extensions;
-using MajdataPlay.Scenes.Game.Notes;
 using MajdataPlay.Numerics;
+using MajdataPlay.Scenes.Game.Notes;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Scenes.Game
 {
+    [Il2CppSetOption(Option.NullChecks, false)]
+    [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     internal sealed class FastLateDisplayer: MajComponent
     {
         public Vector3 Position
@@ -50,6 +54,7 @@ namespace MajdataPlay.Scenes.Game
                                  .ToArray();
             SetActiveInternal(false);
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void OnLateUpdate()
         {
             if (!Active || _animRemainingTime < 0)
@@ -60,10 +65,12 @@ namespace MajdataPlay.Scenes.Game
             _animator.Update(deltaTime);
             _animRemainingTime -= deltaTime;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset()
         {
             SetActive(false);
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Play(in NoteJudgeResult judgeResult)
         {
             if (judgeResult.IsMissOrTooFast || judgeResult.Diff == 0)
@@ -91,6 +98,7 @@ namespace MajdataPlay.Scenes.Game
             _animator.Update(0.000000114514f);
             _animRemainingTime = ANIM_LENGTH_SEC;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void SetActive(bool state)
         {
             if (Active == state)
@@ -99,6 +107,7 @@ namespace MajdataPlay.Scenes.Game
             }
             SetActiveInternal(state);
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void SetActiveInternal(bool state)
         {
             Active = state;

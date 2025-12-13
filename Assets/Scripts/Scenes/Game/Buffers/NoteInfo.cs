@@ -9,10 +9,13 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Buffers
 {
+    [Il2CppSetOption(Option.NullChecks, false)]
+    [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     public sealed class NoteInfo: IDisposable
     {
         public IStateful<NoteStatus>? Component
@@ -83,8 +86,7 @@ namespace MajdataPlay.Scenes.Game.Buffers
             var flags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic;
             if(!MajCache<(Type, BindingFlags), MethodInfo[]>.TryGetValue((componentType, flags),out var methods))
             {
-                methods = componentType.GetMethods(flags);
-                MajCache<(Type, BindingFlags), MethodInfo[]>.Add((componentType, flags), methods);
+                methods = MajCache<(Type, BindingFlags), MethodInfo[]>.GetOrAdd((componentType, flags), componentType.GetMethods(flags));
             }
             var delegateType = typeof(PlayerLoopFunction);
             _rentedArrayForOnPreUpdateFunctions = Pool<PlayerLoopFunction>.RentArray(methods.Length, true);
@@ -102,18 +104,17 @@ namespace MajdataPlay.Scenes.Game.Buffers
                 var paramCount = 0;
                 if (!MajCache<MethodInfo, ParameterInfo[]>.TryGetValue(method, out var paramInfos))
                 {
-                    paramInfos = method.GetParameters();
-                    MajCache<MethodInfo, ParameterInfo[]>.Add(method, paramInfos);
+                    paramInfos = MajCache<MethodInfo, ParameterInfo[]>.GetOrAdd(method, method.GetParameters());
                 }
                 paramCount = paramInfos.Length;
-                if (paramCount != 0)
+                if (paramCount != 0 || method.ReturnType != typeof(void))
                 {
                     continue;
                 }
                 if (!MajCache<MethodInfo, PlayerLoopFunctionAttribute[]>.TryGetValue(method, out var attributes))
                 {
                     attributes = (PlayerLoopFunctionAttribute[])Attribute.GetCustomAttributes(method, typeof(PlayerLoopFunctionAttribute));
-                    MajCache<MethodInfo, PlayerLoopFunctionAttribute[]>.Add(method, attributes);
+                    attributes = MajCache<MethodInfo, PlayerLoopFunctionAttribute[]>.GetOrAdd(method, attributes);
                 }
                 if (attributes.Length == 0)
                 {

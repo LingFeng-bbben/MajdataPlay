@@ -4,10 +4,15 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Unity.IL2CPP.CompilerServices;
 #nullable enable
 namespace MajdataPlay.Buffers;
+
+[Il2CppSetOption(Option.NullChecks, false)]
+[Il2CppSetOption(Option.ArrayBoundsChecks, false)]
 internal class RentedList<T> : IList<T>, ICollection<T>, IReadOnlyList<T>, IDisposable
 {
     
@@ -169,6 +174,7 @@ internal class RentedList<T> : IList<T>, ICollection<T>, IReadOnlyList<T>, IDisp
     }
     public int Count
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
             return _size;
@@ -176,11 +182,13 @@ internal class RentedList<T> : IList<T>, ICollection<T>, IReadOnlyList<T>, IDisp
     }
     public int Capacity
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
             ThrowIfDisposed();
             return _rentedArray.Length;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
             ThrowIfDisposed();
@@ -204,6 +212,7 @@ internal class RentedList<T> : IList<T>, ICollection<T>, IReadOnlyList<T>, IDisp
     }
     public T this[int index]
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
             ThrowIfDisposed();
@@ -213,6 +222,7 @@ internal class RentedList<T> : IList<T>, ICollection<T>, IReadOnlyList<T>, IDisp
             }
             return _array[index];
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         set
         {
             ThrowIfDisposed();
@@ -320,6 +330,8 @@ internal class RentedList<T> : IList<T>, ICollection<T>, IReadOnlyList<T>, IDisp
         _size++;
         _version++;
     }
+    [Il2CppSetOption(Option.NullChecks, false)]
+    [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     public void Clear()
     {
         ThrowIfDisposed();

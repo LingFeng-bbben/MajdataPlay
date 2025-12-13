@@ -16,14 +16,16 @@ using MajdataPlay.Settings;
 #nullable enable
 namespace MajdataPlay.IO
 {
+    using Unsafe = System.Runtime.CompilerServices.Unsafe;
     internal static unsafe partial class InputManager
     {
         static class ButtonRing
         {
             public static bool IsConnected { get; private set; } = false;
 
+            static SpinLock _syncLock = new();
             static Task _buttonRingUpdateLoop = Task.CompletedTask;
-
+            
             readonly static bool[] _buttonStates = new bool[12];
             readonly static bool[] _buttonRealTimeStates = new bool[12];
             readonly static bool[] _isBtnHadOn = new bool[12];
@@ -39,10 +41,10 @@ namespace MajdataPlay.IO
                 {
                     return;
                 }
-                var manufacturer = MajEnv.UserSettings.IO.Manufacturer;
+                var manufacturer = _deviceManufacturer;
                 if (manufacturer == DeviceManufacturerOption.General)
                 {
-                    switch (MajEnv.UserSettings.IO.InputDevice.ButtonRing.Type)
+                    switch (_buttonRingDevice)
                     {
                         case ButtonRingDeviceOption.Keyboard:
                             _buttonRingUpdateLoop = Task.Factory.StartNew(KeyboardUpdateLoop, TaskCreationOptions.LongRunning);
@@ -51,7 +53,7 @@ namespace MajdataPlay.IO
                             _buttonRingUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
                             break;
                         default:
-                            MajDebug.LogWarning($"Not supported button ring device: {MajEnv.UserSettings.IO.InputDevice.ButtonRing.Type}");
+                            MajDebug.LogWarning($"ButtonRing: Not supported button ring device: {_buttonRingDevice}");
                             break;
                     }
                 }
@@ -61,25 +63,39 @@ namespace MajdataPlay.IO
                 }
                 else
                 {
-                    MajDebug.LogWarning($"Not supported button ring manufacturer: {manufacturer}");
+                    MajDebug.LogWarning($"ButtonRing: Not supported button ring manufacturer: {manufacturer}");
                 }
             }
             /// <summary>
             /// Update the button ring state of the this frame
             /// </summary>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static void OnPreUpdate()
+            public unsafe static void OnPreUpdate()
             {
-                lock (_buttonRingUpdateLoop)
+                ref var @lock = ref _syncLock;
+                var isLocked = false;
+                try
                 {
-                    for (var i = 0; i < 12; i++)
-                    {
-                        _isBtnHadOn[i] = _isBtnHadOnInternal[i];
-                        _isBtnHadOff[i] = _isBtnHadOffInternal[i];
-                        _buttonStates[i] = _buttonRealTimeStates[i];
+                    @lock.Enter(ref isLocked);
+                    var isBtnHadOn = _isBtnHadOn.AsSpan();
+                    var isBtnHadOff = _isBtnHadOff.AsSpan();
+                    var buttonStates = _buttonStates.AsSpan();
+                    var isBtnHadOnInternal = _isBtnHadOnInternal.AsSpan();
+                    var isBtnHadOffInternal = _isBtnHadOffInternal.AsSpan();
+                    var buttonRealTimeStates = _buttonRealTimeStates.AsSpan();
 
-                        _isBtnHadOnInternal[i] = default;
-                        _isBtnHadOffInternal[i] = default;
+                    isBtnHadOnInternal.CopyTo(isBtnHadOn);
+                    isBtnHadOffInternal.CopyTo(isBtnHadOff);
+                    buttonRealTimeStates.CopyTo(buttonStates);
+
+                    isBtnHadOnInternal.Clear();
+                    isBtnHadOffInternal.Clear();
+                }
+                finally
+                {
+                    if(isLocked)
+                    {
+                        @lock.Exit();
                     }
                 }
             }
@@ -266,6 +282,7 @@ namespace MajdataPlay.IO
                 var gameButtons = _buttons.Span.Slice(0, 8);
                 var fnButtons = _buttons.Span.Slice(8);
                 var fnBuffer = _buttonRealTimeStates.AsSpan(8);
+                ref var @lock = ref _syncLock;
 
                 currentThread.Name = "IO/B Thread";
                 currentThread.IsBackground = true;
@@ -290,20 +307,34 @@ namespace MajdataPlay.IO
                             fnBuffer.Clear();
                             UpdateKeyboardFn(fnButtons, fnBuffer);
                             IsConnected = true;
-                            lock (_buttonRingUpdateLoop)
+                            
+                            var isLocked = false;
+                            try
                             {
-                                for (var i = 0; i < 12; i++)
+                                @lock.Enter(ref isLocked);
+                                var states = _buttonRealTimeStates.AsSpan();
+                                var hadOn = _isBtnHadOnInternal.AsSpan();
+                                var hadOff = _isBtnHadOffInternal.AsSpan();
+
+                                for (int i = 0; i < 12; i++)
                                 {
-                                    var state = _buttonRealTimeStates[i];
-                                    _isBtnHadOnInternal[i] |= state;
-                                    _isBtnHadOffInternal[i] |= !state;
+                                    var state = states[i];
+                                    hadOn[i] |= state;
+                                    hadOff[i] |= !state;
+                                }
+                            }
+                            finally
+                            {
+                                if(isLocked)
+                                {
+                                    @lock.Exit();
                                 }
                             }
                         }
                         catch (Exception e)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"From KeyBoard listener: \n{e}");
+                            MajDebug.LogError($"From Keyboard listener: \n{e}");
                         }
                         finally
                         {
@@ -313,7 +344,9 @@ namespace MajdataPlay.IO
                                 var elapsed = t2 - t1;
                                 t1 = t2;
                                 if (elapsed < pollingRate)
+                                {
                                     Thread.Sleep(pollingRate - elapsed);
+                                }
                             }
                         }
                     }
@@ -325,8 +358,8 @@ namespace MajdataPlay.IO
             }
             static void HIDUpdateLoop()
             {
-                var buttonRingOptions = MajEnv.UserSettings.IO.InputDevice.ButtonRing;
-                var hidOptions = buttonRingOptions.HidOptions;
+                ref var @lock = ref _syncLock;
+                var hidOptions = _buttonRingHidConnInfo;
                 var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
                 var pollingRate = _btnPollingRateMs;
@@ -336,8 +369,8 @@ namespace MajdataPlay.IO
                 var t1 = stopwatch.Elapsed;
                 var pid = hidOptions.ProductId;
                 var vid = hidOptions.VendorId;
-                var manufacturer = MajEnv.UserSettings.IO.Manufacturer;
-                var deviceType = MajEnv.UserSettings.IO.InputDevice.ButtonRing.Type;
+                var manufacturer = _deviceManufacturer;
+                var deviceType = _buttonRingDevice;
                 var deviceName = string.IsNullOrEmpty(hidOptions.DeviceName) ? GetHIDDeviceName(deviceType, manufacturer) : hidOptions.DeviceName;
                 var hidConfig = new OpenConfiguration();
                 var filter = new DeviceFilter()
@@ -382,7 +415,7 @@ namespace MajdataPlay.IO
                     _ioThreadSync.Notify();
                     Span<byte> buffer = memory.Span;
                     IsConnected = true;
-                    MajDebug.Log($"ButtonRing connected\nDevice: {device}");
+                    MajDebug.LogInfo($"ButtonRing: Connected\nDevice: {device}");
                     stopwatch.Start();
                     while (true)
                     {
@@ -407,13 +440,26 @@ namespace MajdataPlay.IO
                             }
                             UpdateKeyboardFn(fnButtons, fnBuffer);
                             IsConnected = true;
-                            lock (_buttonRingUpdateLoop)
+                            var isLocked = false;
+                            try
                             {
-                                for (var i = 0; i < 12; i++)
+                                @lock.Enter(ref isLocked);
+                                var states = _buttonRealTimeStates.AsSpan();
+                                var hadOn = _isBtnHadOnInternal.AsSpan();
+                                var hadOff = _isBtnHadOffInternal.AsSpan();
+
+                                for (int i = 0; i < 12; i++)
                                 {
-                                    var state = _buttonRealTimeStates[i];
-                                    _isBtnHadOnInternal[i] |= state;
-                                    _isBtnHadOffInternal[i] |= !state;
+                                    var state = states[i];
+                                    hadOn[i] |= state;
+                                    hadOff[i] |= !state;
+                                }
+                            }
+                            finally
+                            {
+                                if (isLocked)
+                                {
+                                    @lock.Exit();
                                 }
                             }
                         }
@@ -424,11 +470,11 @@ namespace MajdataPlay.IO
                         catch(IOException ioE)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"ButtonRing: from HID listener: \n{ioE}");
+                            MajDebug.LogError($"ButtonRing: \n{ioE}");
                         }
                         catch (Exception e)
                         {
-                            MajDebug.LogError($"ButtonRing: from HID listener: \n{e}");
+                            MajDebug.LogError($"ButtonRing: \n{e}");
                         }
                         finally
                         {
@@ -439,7 +485,9 @@ namespace MajdataPlay.IO
                                 var elapsed = t2 - t1;
                                 t1 = t2;
                                 if (elapsed < pollingRate)
+                                {
                                     Thread.Sleep(pollingRate - elapsed);
+                                }
                             }
                         }
                     }
@@ -564,14 +612,24 @@ namespace MajdataPlay.IO
                 const int IO4_SERVICE_OFFSET = 0b00000001;
                 const int IO4_SELECT_P2_OFFSET = 0b01000000;
 
-                const int IO4_BA1_INDEX = 28;
-                const int IO4_BA2_INDEX = 28;
-                const int IO4_BA3_INDEX = 28;
-                const int IO4_BA4_INDEX = 29;
-                const int IO4_BA5_INDEX = 29;
-                const int IO4_BA6_INDEX = 29;
-                const int IO4_BA7_INDEX = 29;
-                const int IO4_BA8_INDEX = 29;
+                const int IO4_BA1_1P_INDEX = 28;
+                const int IO4_BA2_1P_INDEX = 28;
+                const int IO4_BA3_1P_INDEX = 28;
+                const int IO4_BA4_1P_INDEX = 29;
+                const int IO4_BA5_1P_INDEX = 29;
+                const int IO4_BA6_1P_INDEX = 29;
+                const int IO4_BA7_1P_INDEX = 29;
+                const int IO4_BA8_1P_INDEX = 29;
+
+                const int IO4_BA1_2P_INDEX = 30;
+                const int IO4_BA2_2P_INDEX = 30;
+                const int IO4_BA3_2P_INDEX = 30;
+                const int IO4_BA4_2P_INDEX = 31;
+                const int IO4_BA5_2P_INDEX = 31;
+                const int IO4_BA6_2P_INDEX = 31;
+                const int IO4_BA7_2P_INDEX = 31;
+                const int IO4_BA8_2P_INDEX = 31;
+
                 const int IO4_TEST_INDEX = 29;
                 const int IO4_SELECT_P1_INDEX = 28;
                 const int IO4_SERVICE_INDEX = 25;
@@ -579,14 +637,29 @@ namespace MajdataPlay.IO
                 public static void Parse(ReadOnlySpan<byte> reportData,Span<bool> buffer)
                 {
                     reportData = reportData.Slice(1); // skip report id
-                    buffer[0] = (~reportData[IO4_BA1_INDEX] & IO4_BA1_OFFSET) != 0;
-                    buffer[1] = (~reportData[IO4_BA2_INDEX] & IO4_BA2_OFFSET) != 0;
-                    buffer[2] = (~reportData[IO4_BA3_INDEX] & IO4_BA3_OFFSET) != 0;
-                    buffer[3] = (~reportData[IO4_BA4_INDEX] & IO4_BA4_OFFSET) != 0;
-                    buffer[4] = (~reportData[IO4_BA5_INDEX] & IO4_BA5_OFFSET) != 0;
-                    buffer[5] = (~reportData[IO4_BA6_INDEX] & IO4_BA6_OFFSET) != 0;
-                    buffer[6] = (~reportData[IO4_BA7_INDEX] & IO4_BA7_OFFSET) != 0;
-                    buffer[7] = (~reportData[IO4_BA8_INDEX] & IO4_BA8_OFFSET) != 0;
+                    switch (_playerIndex)
+                    {
+                        case 1:
+                            buffer[0] = (~reportData[IO4_BA1_1P_INDEX] & IO4_BA1_OFFSET) != 0;
+                            buffer[1] = (~reportData[IO4_BA2_1P_INDEX] & IO4_BA2_OFFSET) != 0;
+                            buffer[2] = (~reportData[IO4_BA3_1P_INDEX] & IO4_BA3_OFFSET) != 0;
+                            buffer[3] = (~reportData[IO4_BA4_1P_INDEX] & IO4_BA4_OFFSET) != 0;
+                            buffer[4] = (~reportData[IO4_BA5_1P_INDEX] & IO4_BA5_OFFSET) != 0;
+                            buffer[5] = (~reportData[IO4_BA6_1P_INDEX] & IO4_BA6_OFFSET) != 0;
+                            buffer[6] = (~reportData[IO4_BA7_1P_INDEX] & IO4_BA7_OFFSET) != 0;
+                            buffer[7] = (~reportData[IO4_BA8_1P_INDEX] & IO4_BA8_OFFSET) != 0;
+                            break;
+                        case 2:
+                            buffer[0] = (~reportData[IO4_BA1_2P_INDEX] & IO4_BA1_OFFSET) != 0;
+                            buffer[1] = (~reportData[IO4_BA2_2P_INDEX] & IO4_BA2_OFFSET) != 0;
+                            buffer[2] = (~reportData[IO4_BA3_2P_INDEX] & IO4_BA3_OFFSET) != 0;
+                            buffer[3] = (~reportData[IO4_BA4_2P_INDEX] & IO4_BA4_OFFSET) != 0;
+                            buffer[4] = (~reportData[IO4_BA5_2P_INDEX] & IO4_BA5_OFFSET) != 0;
+                            buffer[5] = (~reportData[IO4_BA6_2P_INDEX] & IO4_BA6_OFFSET) != 0;
+                            buffer[6] = (~reportData[IO4_BA7_2P_INDEX] & IO4_BA7_OFFSET) != 0;
+                            buffer[7] = (~reportData[IO4_BA8_2P_INDEX] & IO4_BA8_OFFSET) != 0;
+                            break;
+                    }
                     buffer[8] = (reportData[IO4_TEST_INDEX] & IO4_TEST_OFFSET) != 0;
                     buffer[9] = (reportData[IO4_SELECT_P1_INDEX] & IO4_SELECT_P1_OFFSET) != 0;
                     buffer[10] = (reportData[IO4_SERVICE_INDEX] & IO4_SERVICE_OFFSET) != 0;

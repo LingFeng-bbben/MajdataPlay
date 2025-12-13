@@ -138,8 +138,18 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             switch (AutoplayMode)
             {
                 case AutoplayModeOption.Enable:
-                    if (_isJudged || !IsAutoplay)
+                    if (!IsAutoplay)
+                    {
                         return;
+                    }
+                    else if (_isJudged)
+                    {
+                        if (GetRemainingTime() == 0)
+                        {
+                            End();
+                        }
+                        return;
+                    }
                     if (GetTimeSpanToJudgeTiming() >= -0.016667f)
                     {
                         var autoplayGrade = AutoplayGrade;
@@ -207,8 +217,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             StartPos = poolingInfo.StartPos;
             areaPosition = poolingInfo.AreaPos;
-            Timing = poolingInfo.Timing;
-            _judgeTiming = Timing;
+            Timing = poolingInfo.Timing - TOUCH_HOLD_DISPLAY_OFFSET_SEC;
+            _judgeTiming = poolingInfo.Timing;
             SortOrder = poolingInfo.NoteSortOrder;
             Speed = poolingInfo.Speed;
             IsEach = poolingInfo.IsEach;
@@ -233,13 +243,13 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             _judgableRange = new(JudgeTiming - 0.15f, JudgeTiming + 0.316667f, ContainsType.Closed);
             _releaseTime = 0;
 
-            if (Length < TOUCHHOLD_HEAD_IGNORE_LENGTH_SEC + TOUCHHOLD_TAIL_IGNORE_LENGTH_SEC)
+            if (Length <= TOUCH_HOLD_HEAD_IGNORE_LENGTH_SEC + TOUCH_HOLD_TAIL_IGNORE_LENGTH_SEC)
             {
                 _bodyCheckRange = DEFAULT_HOLD_BODY_CHECK_RANGE;
             }
             else
             {
-                _bodyCheckRange = new Range<float>(Timing + TOUCHHOLD_HEAD_IGNORE_LENGTH_SEC, Timing + Length - TOUCHHOLD_TAIL_IGNORE_LENGTH_SEC, ContainsType.Closed);
+                _bodyCheckRange = new Range<float>(Timing + TOUCH_HOLD_HEAD_IGNORE_LENGTH_SEC, Timing + Length - TOUCH_HOLD_TAIL_IGNORE_LENGTH_SEC, ContainsType.Closed);
             }
 
             wholeDuration = 3.209385682f * Mathf.Pow(Speed, -0.9549621752f);
@@ -280,7 +290,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             State = NoteStatus.End;
             _multTouchHandler.Unregister(_sensorPos);
-            _judgeResult = HoldEndJudge(_judgeResult, TOUCHHOLD_HEAD_IGNORE_LENGTH_SEC + TOUCHHOLD_TAIL_IGNORE_LENGTH_SEC);
+            _judgeResult = HoldEndJudge(_judgeResult, TOUCH_HOLD_HEAD_IGNORE_LENGTH_SEC + TOUCH_HOLD_TAIL_IGNORE_LENGTH_SEC);
             ConvertJudgeGrade(ref _judgeResult);
             var result = new NoteJudgeResult()
             {
@@ -340,7 +350,14 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                     _fanRenderers[i].sprite = skin.Fans[i];
                 }
                 _borderRenderer.sprite = skin.Boader; // TouchHold Border
-                _pointRenderer.sprite = skin.Point;
+                if(IsEach)
+                {
+                    _pointRenderer.sprite = skin.Point_Each;
+                }
+                else
+                {
+                    _pointRenderer.sprite = skin.Point;
+                }
                 board_On = skin.Boader;
             }
             board_Off = skin.Off;
@@ -502,38 +519,33 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 return;
             }
 
-            ref bool isDeviceUsedInThisFrame = ref Unsafe.NullRef<bool>();
-            var isButton = false;
-            if (IsUseButtonRingForTouch && _noteManager.IsButtonClickedInThisFrame(_buttonPos))
-            {
-                isDeviceUsedInThisFrame = ref _noteManager.GetButtonUsageInThisFrame(_buttonPos);
-                isButton = true;
-            }
-            else if (_noteManager.IsSensorClickedInThisFrame(_sensorPos))
-            {
-                isDeviceUsedInThisFrame = ref _noteManager.GetSensorUsageInThisFrame(_sensorPos);
-            }
-            else
-            {
-                return;
-            }
-
-            if (isDeviceUsedInThisFrame)
-            {
-                return;
-            }
-            if (isButton)
-            {
-                Judge(ThisFrameSec);
-            }
-            else
+#if UNITY_ANDROID
+            if (_noteManager.IsSensorClickedInThisFrame(_sensorPos) && _noteManager.TryUseSensorClickEvent(_sensorPos))
             {
                 Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
             }
-
+            else
+            {
+                return;
+            }
+#else
+            if (IsUseButtonRingForTouch &&
+                _noteManager.IsButtonClickedInThisFrame(_buttonPos) &&
+                _noteManager.TryUseButtonClickEvent(_buttonPos))
+            {
+                Judge(ThisFrameSec);
+            }
+            else if (_noteManager.IsSensorClickedInThisFrame(_sensorPos) && _noteManager.TryUseSensorClickEvent(_sensorPos))
+            {
+                Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
+            }
+            else
+            {
+                return;
+            }
+#endif
             if (_isJudged)
             {
-                isDeviceUsedInThisFrame = true;
                 _noteManager.NextTouch(QueueInfo);
                 _effectManager.PlayHoldEffect(_sensorPos, _judgeResult);
                 RegisterGrade();

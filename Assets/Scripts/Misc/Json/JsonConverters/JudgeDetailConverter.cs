@@ -1,21 +1,30 @@
 ﻿using MajdataPlay.Collections;
 using MajdataPlay.Scenes.Game;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace MajdataPlay.Json
 {
     public class JudgeDetailConverter : JsonConverter<JudgeDetail>
     {
-        public override JudgeDetail Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override JudgeDetail ReadJson(JsonReader reader, Type objectType, JudgeDetail? existingValue, bool hasExistingValue, JsonSerializer serializer)
         {
-            var dict = JsonSerializer.Deserialize<Dictionary<ScoreNoteType, JudgeInfo>>(ref reader, options);
-
+            var obj = JObject.Load(reader);
+            var dict = obj.ToObject<Dictionary<ScoreNoteType, JudgeInfo>>(serializer);
             return new JudgeDetail(dict);
         }
 
-        public override void Write(Utf8JsonWriter writer, JudgeDetail value, JsonSerializerOptions options) => JsonSerializer.Serialize(writer, value, options);
+        public override void WriteJson(JsonWriter writer, JudgeDetail value, JsonSerializer serializer)
+        {
+            writer.WriteStartObject();
+            foreach (var kv in value)
+            {
+                writer.WritePropertyName(Enum.GetName(typeof(ScoreNoteType), kv.Key));
+                serializer.Serialize(writer, kv.Value);
+            }
+            writer.WriteEndObject();
+        }
     }
 }

@@ -151,6 +151,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 Diff = _judgeDiff
             };
             PlayJudgeSFX(result);
+            //MajDebug.LogDebug($"Note index: {QueueInfo.Index}");
+            _noteManager.NextNote(QueueInfo);
+            
             _effectManager.PlayEffect(StartPos, result);
             _objectCounter.ReportResult(this, result);
             _notePoolManager.Collect(this);
@@ -182,6 +185,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 case AutoplayModeOption.Enable:
                     base.Autoplay();
+                    if(_isJudged)
+                    {
+                        End();
+                    }
                     break;
                 case AutoplayModeOption.DJAuto_TouchPanel_First:
                 case AutoplayModeOption.DJAuto_ButtonRing_First:
@@ -277,16 +284,19 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         {
             // Too late check
             if (_isJudged || IsEnded || AutoplayMode == AutoplayModeOption.Enable)
+            {
                 return;
+            }
 
             var timing = GetTimeSpanToJudgeTiming();
             var isTooLate = timing > TAP_JUDGE_GOOD_AREA_MSEC / 1000;
 
             if (isTooLate)
             {
+                //MajDebug.LogWarning("Note too late");
                 _judgeResult = JudgeGrade.Miss;
                 _isJudged = true;
-                _noteManager.NextNote(QueueInfo);
+                End();
             }
         }
         void Check()
@@ -295,49 +305,38 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 return;
             }
-            else if (_isJudged)
-            {
-                End();
-                return;
-            }
             else if (!_judgableRange.InRange(ThisFrameSec) || !_noteManager.IsCurrentNoteJudgeable(QueueInfo))
             {
                 return;
             }
 
-            ref bool isDeviceUsedInThisFrame = ref Unsafe.NullRef<bool>();
-            var isButton = false;
-            if (_noteManager.IsButtonClickedInThisFrame(_buttonPos))
-            {
-                isDeviceUsedInThisFrame = ref _noteManager.GetButtonUsageInThisFrame(_buttonPos);
-                isButton = true;
-            }
-            else if (_noteManager.IsSensorClickedInThisFrame(_sensorPos))
-            {
-                isDeviceUsedInThisFrame = ref _noteManager.GetSensorUsageInThisFrame(_sensorPos);
-            }
-            else
-            {
-                return;
-            }
-
-            if (isDeviceUsedInThisFrame)
-            {
-                return;
-            }
-            if (isButton)
-            {
-                Judge(ThisFrameSec);
-            }
-            else
+#if UNITY_ANDROID
+            if (_noteManager.IsSensorClickedInThisFrame(_sensorPos) && _noteManager.TryUseSensorClickEvent(_sensorPos))
             {
                 Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
             }
-
+            else
+            {
+                return;
+            }
+#else
+            if (_noteManager.IsButtonClickedInThisFrame(_buttonPos) && _noteManager.TryUseButtonClickEvent(_buttonPos))
+            {
+                Judge(ThisFrameSec);
+            }
+            else if (_noteManager.IsSensorClickedInThisFrame(_sensorPos) && _noteManager.TryUseSensorClickEvent(_sensorPos))
+            {
+                Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
+            }
+            else
+            {
+                return;
+            }
+#endif
             if (_isJudged)
             {
-                isDeviceUsedInThisFrame = true;
-                _noteManager.NextNote(QueueInfo);
+                //MajDebug.LogError("Note is judged");
+                End();
             }
         }
         protected override void LoadSkin()

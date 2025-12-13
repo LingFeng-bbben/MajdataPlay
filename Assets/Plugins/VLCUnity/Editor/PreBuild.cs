@@ -41,10 +41,11 @@ namespace Videolabs.VLCUnity.Editor
         {
             if(target == BuildTarget.Android)
             {
-                if(IsVulkanConfigured)
-                {
-                    throw new BuildFailedException(AndroidVulkanErrorMessage);
-                }
+                return;
+                //if(IsVulkanConfigured)
+                //{
+                //    throw new BuildFailedException(AndroidVulkanErrorMessage);
+                //}
             }
             else if(target == BuildTarget.StandaloneWindows64 || target == BuildTarget.WSAPlayer)
             {

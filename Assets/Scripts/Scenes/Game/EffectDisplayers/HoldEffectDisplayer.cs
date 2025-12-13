@@ -1,9 +1,12 @@
 ﻿using MajdataPlay.Scenes.Game.Notes;
 using MajdataPlay.Utils;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Scenes.Game
 {
+    [Il2CppSetOption(Option.NullChecks, false)]
+    [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     internal sealed class HoldEffectDisplayer: MajComponent
     {
         public Vector3 Position

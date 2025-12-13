@@ -1,11 +1,13 @@
-﻿using MajdataPlay.Scenes.Game.Buffers;
-using MajdataPlay.Utils;
+﻿using MajdataPlay.Buffers;
+using MajdataPlay.Scenes.Game.Buffers;
 using MajdataPlay.Scenes.View;
+using MajdataPlay.Utils;
 using System;
-using System.Linq;
-using UnityEngine.Profiling;
-using MajdataPlay.Buffers;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using Unity.IL2CPP.CompilerServices;
+using UnityEngine.Profiling;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
@@ -52,30 +54,42 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 throw new ArgumentNullException();
             }
             using var buffer = new RentedList<SlideQueueInfo>();
-            buffer.AddRange(infos.OrderBy(x => x.AppearTiming));
+            buffer.AddRange(infos.Where(x => x is not null).OrderBy(x => x.AppearTiming));
             _rentedArrayForQueueInfos = Pool<SlideQueueInfo>.RentArray(buffer.Count, true);
             var queueInfos = _rentedArrayForQueueInfos.AsMemory(0, buffer.Count);
             buffer.CopyTo(queueInfos.Span);
             _queueInfos = queueInfos;
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal override void OnFixedUpdate()
         {
             Profiler.BeginSample(FIXED_UPDATE_METHOD_NAME);
             base.OnFixedUpdate();
             Profiler.EndSample();
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal override void OnLateUpdate()
         {
             Profiler.BeginSample(LATE_UPDATE_METHOD_NAME);
             base.OnLateUpdate();
             Profiler.EndSample();
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal override void OnUpdate()
         {
             Profiler.BeginSample(UPDATE_METHOD_NAME);
             base.OnUpdate();
             Profiler.EndSample();
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal override void OnPreUpdate()
         {
             Profiler.BeginSample(PRE_UPDATE_METHOD_NAME);
@@ -87,10 +101,6 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 for (; i < queueInfos.Length; i++)
                 {
                     var info = queueInfos[i];
-                    if (info is null)
-                    {
-                        continue;
-                    }
                     var appearTiming = info.AppearTiming;
                     if (thisFrameSec >= appearTiming)
                     {

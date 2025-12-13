@@ -1,14 +1,13 @@
 ﻿using Cysharp.Text;
+using MajdataPlay.Settings;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MajdataPlay.Utils;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 #nullable enable
@@ -21,65 +20,129 @@ namespace MajdataPlay
         readonly static ILogger _unityLogger;
         static StreamWriter? _fileStream;
 
+        readonly static Utf16PreparedFormat<DateTime, LogLevel> LOG_OUTPUT_FORMAT = ZString.PrepareUtf16<DateTime, LogLevel>("[{0:yyyy-MM-dd HH:mm:ss.ffff}][{1}] ");
+
+        static bool _isInited = false;
+        readonly static object _initLock = new();
+
         static MajDebug()
         {
             _unityLogger = Debug.unityLogger;
-            TaskScheduler.UnobservedTaskException += (sender,args) =>
+        }
+        internal static void Init()
+        {
+            if (_isInited)
+            {
+                return;
+            }
+            lock(_initLock)
+            {
+                if (_isInited)
+                {
+                    return;
+                }
+                _isInited = true;
+            }
+            TaskScheduler.UnobservedTaskException += (sender, args) =>
             {
                 LogException(args.Exception);
                 args.SetObserved();
             };
             StartLogWritebackTask();
             MajEnv.OnApplicationQuit += OnApplicationQuit;
-#if !(UNITY_EDITOR || DEBUG)
+            MajEnv.OnSave += OnSave;
             Application.logMessageReceivedThreaded += (string condition, string stackTrace, LogType type) =>
             {
-                MajDebug.Log($"{condition}\n{stackTrace}", type);
+                var sb = ZString.CreateStringBuilder();
+                sb.Append(condition);
+                var log = new GameLog()
+                {
+                    Date = DateTime.Now,
+                    Condition = sb,
+                    StackTrace = stackTrace,
+                    Level = ToMajdataLogLevel(type)
+                };
+                _logQueue.Enqueue(log);
             };
-#endif
         }
+
+
+        [HideInCallstack]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Log<T>(T obj,LogType logLevel = LogType.Log)
+        static void Log<T>(T obj, LogLevel level)
         {
-            var message = obj?.ToString() ?? string.Empty;
+            var sb = ZString.CreateStringBuilder();
+            sb.Append(obj);
+            if(obj is Exception)
+            {
+                sb.AppendLine();
+            }
             var log = new GameLog()
             {
                 Date = DateTime.Now,
-                Condition = message,
+                Condition = sb,
                 StackTrace = string.Empty,
-                Level = logLevel
+                Level = level
             };
-
+#if UNITY_EDITOR || (UNITY_ANDROID && DEBUG)
+            _unityLogger.Log(ToUnityLogLevel(level), sb.ToString());
+#endif
 #if UNITY_EDITOR || DEBUG
-            _unityLogger.Log(logLevel, message);    
-            if(obj is not Exception)
+            if (obj is not Exception)
             {
                 log.StackTrace = GetStackTrack();
             }
 #endif
             _logQueue.Enqueue(log);
         }
+        [HideInCallstack]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void LogError<T>(T obj) => Log(obj, LogType.Error);
+        public static void LogDebug<T>(T obj)
+        {
+            Log(obj, LogLevel.Debug);
+        }
+        [HideInCallstack]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void LogException<T>(T obj) where T: Exception => Log(obj, LogType.Exception);
+        public static void LogInfo<T>(T obj)
+        {
+            Log(obj, LogLevel.Info);
+        }
+        [HideInCallstack]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void LogWarning<T>(T obj) => Log(obj, LogType.Warning);
-        public static void OnApplicationQuit()
+        public static void LogWarning<T>(T obj)
+        {
+            Log(obj, LogLevel.Warning);
+        }
+        [HideInCallstack]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void LogError<T>(T obj)
+        {
+            Log(obj, LogLevel.Error);
+        }
+        [HideInCallstack]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void LogException<T>(T obj) where T: Exception
+        {
+            Log(obj, LogLevel.Error);
+        }
+        
+        static void OnApplicationQuit()
         {
             try
             {
-                lock (_lockObject)
+                if (_fileStream is null)
                 {
-                    if (_fileStream is null)
-                        return;
-                    using (_fileStream)
-                    {
-                        foreach (var log in _logQueue)
-                        {
-                            _fileStream.WriteLine($"[{log.Date:yyyy-MM-dd HH:mm:ss}][{log.Level}] {log.Condition}\n{log.StackTrace}\n");
-                        }
-                    }
+                    return;
+                }
+                var sb = ZString.CreateStringBuilder();
+                try
+                {
+                    WriteLog(ref sb);
+                }
+                finally
+                {
+                    _fileStream.Dispose();
+                    sb.Dispose();
                 }
             }
             finally
@@ -87,9 +150,18 @@ namespace MajdataPlay
                 MajEnv.OnApplicationQuit -= OnApplicationQuit;
             }
         }
+        static void OnSave()
+        {
+            if (_fileStream is null)
+            {
+                return;
+            }
+            var sb = ZString.CreateStringBuilder();
+            WriteLog(ref sb);
+        }
         static string GetStackTrack()
         {
-            return new StackTrace(2, true).ToString();
+            return new StackTrace(3, true).ToString();
         }
         static void StartLogWritebackTask()
         {
@@ -108,22 +180,19 @@ namespace MajdataPlay
                 currentThread.Priority = System.Threading.ThreadPriority.Lowest;
                 currentThread.IsBackground = true;
                 _fileStream = new StreamWriter(MajEnv.LogPath, append: true, encoding: Encoding.UTF8);
-                using (_fileStream)
+                _fileStream.AutoFlush = true;
+                var sb = ZString.CreateStringBuilder();
+                try
                 {
                     while (true)
                     {
                         try
                         {
-                            lock (_lockObject)
+                            if (token.IsCancellationRequested)
                             {
-                                if (token.IsCancellationRequested)
-                                    return;
-                                while (_logQueue.TryDequeue(out var log))
-                                {
-                                    var msg = ZString.Format("[{0:yyyy-MM-dd HH:mm:ss.ffff}][{1}] {2}\n{3}\n", log.Date, log.Level, log.Condition, log.StackTrace);
-                                    _fileStream.WriteLine(msg);
-                                }
+                                return;
                             }
+                            WriteLog(ref sb);
                         }
                         finally
                         {
@@ -131,14 +200,78 @@ namespace MajdataPlay
                         }
                     }
                 }
+                finally
+                {
+                    _fileStream.Dispose();
+                    sb.Dispose();
+                }
             }, TaskCreationOptions.LongRunning);
+        }
+        static void WriteLog(ref Utf16ValueStringBuilder sb)
+        {
+            if(_fileStream is null)
+            {
+                throw new InvalidOperationException("Log file stream is not initialized. Ensure that StartLogWritebackTask has been called.");
+            }
+            lock (_lockObject)
+            {
+                while (_logQueue.TryDequeue(out var log))
+                {
+                    using var condition = log.Condition;
+                    if(log.Level < (MajEnv.Settings?.Debug.DebugLevel ?? LogLevel.Debug))
+                    {
+                        continue;
+                    }
+                    LOG_OUTPUT_FORMAT.FormatTo(ref sb, log.Date, log.Level);
+                    sb.Append(condition.AsSpan());
+                    if (!string.IsNullOrEmpty(log.StackTrace))
+                    {
+                        sb.AppendLine();
+                        sb.Append(log.StackTrace);
+                        sb.AppendLine();
+                    }
+                    _fileStream.WriteLine(sb.AsSpan());
+                    sb.Clear();
+                }
+            }
+        }
+        static LogType ToUnityLogLevel(LogLevel level)
+        {
+            return level switch
+            {
+                LogLevel.Debug => LogType.Log,
+                LogLevel.Info => LogType.Log,
+                LogLevel.Warning => LogType.Warning,
+                LogLevel.Error => LogType.Error,
+                LogLevel.Fatal => LogType.Error,
+                _ => throw new ArgumentOutOfRangeException(nameof(level), level, null)
+            };
+        }
+        static LogLevel ToMajdataLogLevel(LogType level)
+        {
+            return level switch
+            {
+                LogType.Log => LogLevel.Info,
+                LogType.Warning => LogLevel.Warning,
+                LogType.Error => LogLevel.Error,
+                LogType.Exception => LogLevel.Error,
+                _ => LogLevel.Debug
+            };
         }
         struct GameLog
         {
-            public DateTime Date { get; set; }
-            public string? Condition { get; set; }
+            public DateTime Date { get; init; }
+            public Utf16ValueStringBuilder Condition { get; init; }
             public string? StackTrace { get; set; }
-            public LogType Level { get; set; }
+            public LogLevel Level { get; init; }
+        }
+        internal enum LogLevel
+        {
+            Debug,
+            Info,
+            Warning,
+            Error,
+            Fatal
         }
     }
 }

@@ -16,6 +16,7 @@ using MajdataPlay.Scenes.List;
 using MajdataPlay.Numerics;
 using MajdataPlay.Scenes.Game.Notes;
 using MajdataPlay.Settings;
+using System.Threading.Tasks;
 
 #nullable enable
 namespace MajdataPlay.Scenes.Result
@@ -61,20 +62,23 @@ namespace MajdataPlay.Scenes.Result
 
         GameInfo _gameInfo = Majdata<GameInfo>.Instance!;
 
-        UniTask _scoreSaveTask = UniTask.CompletedTask;
+        Task _scoreSaveTask = Task.CompletedTask;
+        bool _isAllTaskFinished = false;
+        bool _isInited = false;
+        bool _isExited = false;
 
         void Start()
         {
             rank.text = "";
-            var gameManager = MajInstances.GameManager;
+            var listConfig = MajEnv.RuntimeConfig.List;
             var result = _gameInfo.GetLastResult();
-            var isClassic = gameManager.Setting.Judge.Mode == JudgeModeOption.Classic;
+            var isClassic = MajEnv.Settings.Judge.Mode == JudgeModeOption.Classic;
 
             LedRing.SetAllLight(Color.white);
 
             var totalJudgeRecord = JudgeDetail.UnpackJudgeRecord(result.JudgeRecord.TotalJudgeInfo);
             var song = result.SongDetail;
-            var historyResult = ScoreManager.GetScore(song, gameManager.SelectedDiff);
+            var historyResult = ScoreManager.GetScore(song, listConfig.SelectedDiff);
 
             var intractSender = GetComponent<OnlineInteractionSender>();
             intractSender.Init(song);
@@ -121,7 +125,7 @@ namespace MajdataPlay.Scenes.Result
             subMonitor.text = BuildSubDisplayText(result.JudgeRecord);
 
             _noteJudgeDiffGraph.texture = DrawNoteJudgeDiffGraph(result.NoteJudgeDiffs);
-            if(MajEnv.UserSettings.Debug.OffsetUnit == OffsetUnitOption.Second)
+            if(MajEnv.Settings.Debug.OffsetUnit == OffsetUnitOption.Second)
             {
                 if (result.NoteJudgeDiffs.IsEmpty)
                 {
@@ -177,15 +181,14 @@ namespace MajdataPlay.Scenes.Result
                 var score = MaiScore.CreateFromResult(result,result.Level);
                 if (score is not null && song is OnlineSongDetail)
                 {
-                    var task = intractSender.SendScore(score);
-                    _scoreSaveTask = UniTask.WhenAll(localScoreSaveTask.AsUniTask(), task);
+                    var task = intractSender.SendScoreAsync(score);
+                    _scoreSaveTask = Task.WhenAll(localScoreSaveTask, task);
                 }
                 else
                 {
-                    _scoreSaveTask = localScoreSaveTask.AsUniTask();
+                    _scoreSaveTask = localScoreSaveTask;
                 }
             }
-            
         }
 
         async UniTask LoadCover(ISongDetail song)
@@ -236,7 +239,10 @@ namespace MajdataPlay.Scenes.Result
                     rank.text = "S";
                 }
 
-                while (lastSample != null && lastSample.IsPlaying) await UniTask.Yield();
+                while (lastSample != null && lastSample.IsPlaying)
+                {
+                    await UniTask.Yield();
+                }
 
                 if (isAP)
                 {
@@ -258,20 +264,30 @@ namespace MajdataPlay.Scenes.Result
                     lastSample = MajInstances.AudioManager.PlaySFX(list[Random.Range(0, list.Length)]);
                 }
 
-                while (lastSample != null && lastSample.IsPlaying) await UniTask.Yield();
+                while (lastSample != null && lastSample.IsPlaying)
+                {
+                    await UniTask.Yield();
+                }
 
                 if (song is OnlineSongDetail)
                 {
                     MajInstances.AudioManager.PlaySFX("dian_zan.wav");
                 }
             }
-            catch (Exception e){ MajDebug.LogException(e); }
-
-            await _scoreSaveTask;
-            await RecordHelper.StopRecordAsync();
-            InputManager.BindAnyArea(OnAreaDown);
-            LedRing.SetButtonLight(Color.green, 3);
+            catch (Exception e)
+            { 
+                MajDebug.LogException(e); 
+            }
+            _isInited = true;
             LedRing.SetButtonLight(Color.yellow, 4);
+            var t1 = _scoreSaveTask;
+            var t2 = RecordHelper.StopRecordAsync();
+            while(!t1.IsCompleted || !t2.IsCompleted)
+            {
+                await UniTask.Yield();
+            }
+            _isAllTaskFinished = true;
+            LedRing.SetButtonLight(Color.green, 3);
         }
 
 
@@ -295,46 +311,51 @@ namespace MajdataPlay.Scenes.Result
         }
 
 
-        private void OnAreaDown(object sender, InputEventArgs e)
+        void Update()
         {
-            if (e.IsDown && e.IsButton)
+            if(!_isInited || _isExited)
             {
-                switch (e.BZone)
-                {
-                    case ButtonZone.A4:
-                        var canNextRound = _gameInfo.NextRound();
-                        if (_gameInfo.IsDanMode)
-                        {
-                            if (!canNextRound)
-                            {
-                                InputManager.UnbindAnyArea(OnAreaDown);
-                                MajInstances.SceneSwitcher.SwitchScene("TotalResult");
-                                return;
-
-                            }
-                            else
-                            {
-                                InputManager.UnbindAnyArea(OnAreaDown);
-                                MajInstances.AudioManager.StopSFX("bgm_result.mp3");
-
-                                //TODO: Add Animation to show that
-                                //SongStorage.WorkingCollection.Index++;
-                                //MajInstances.GameManager.DanHP += SongStorage.WorkingCollection.DanInfo.RestoreHP;
-
-                                MajInstances.SceneSwitcher.SwitchScene("Game", false);
-                                return;
-                            }
-                        }
-                        InputManager.UnbindAnyArea(OnAreaDown);
-                        MajInstances.AudioManager.StopSFX("bgm_result.mp3");
-                        MajInstances.SceneSwitcher.SwitchScene("List", false);
-                        return;
-                    case ButtonZone.A5:
-                        favoriteAdder.FavoratePressed();
-                        break;
-                }
-                
+                return;
             }
+            if(InputManager.IsButtonClickedInThisFrame(ButtonZone.A5))
+            {
+                favoriteAdder.FavoratePressed();
+            }
+            if(!_isAllTaskFinished)
+            {
+                return;
+            }
+            if(InputManager.IsButtonClickedInThisFrame(ButtonZone.A4))
+            {
+                var canNextRound = _gameInfo.NextRound();
+                if (_gameInfo.IsDanMode)
+                {
+                    if (!canNextRound)
+                    {
+                        _isExited = true;
+                        MajInstances.SceneSwitcher.SwitchScene("TotalResult");
+                        return;
+                    }
+                    else
+                    {
+                        MajInstances.AudioManager.StopSFX("bgm_result.mp3");
+
+                        //TODO: Add Animation to show that
+                        //SongStorage.WorkingCollection.Index++;
+                        //MajInstances.GameManager.DanHP += SongStorage.WorkingCollection.DanInfo.RestoreHP;
+                        _isExited = true;
+                        MajInstances.SceneSwitcher.SwitchScene("Game", false);
+                        return;
+                    }
+                }
+                _isExited = true;
+                MajInstances.AudioManager.StopSFX("bgm_result.mp3");
+                MajInstances.SceneSwitcher.SwitchScene("List", false);
+            }
+        }
+        void OnDestroy()
+        {
+            DestroyImmediate(_noteJudgeDiffGraph.texture, true);
         }
         Texture DrawNoteJudgeDiffGraph(ReadOnlyMemory<float> noteJudgeDiffs)
         {

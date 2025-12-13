@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.IO;
-using System.Text.Json;
+using System.Text;
 using System.Threading.Tasks;
-using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Utils
 {
@@ -10,77 +10,148 @@ namespace MajdataPlay.Utils
     {
         public static class Json
         {
-            public static string Serialize<T>(in T obj, in JsonSerializerOptions? option = null)
+            readonly static JsonSerializer DEFAULT_JSON_SERIALIZER = JsonSerializer.Create(new()
             {
-                if (option is not null)
-                    return JsonSerializer.Serialize(obj, option);
-                else
-                    return JsonSerializer.Serialize(obj);
-            }
-            public static async ValueTask<string> SerializeAsync<T>(T obj, JsonSerializerOptions? option = null)
+                //DefaultValueHandling = DefaultValueHandling.Populate
+                ObjectCreationHandling = ObjectCreationHandling.Replace
+            });
+            static Json()
             {
-                await using (var memStream = new MemoryStream())
+                JsonConvert.DefaultSettings = () => new JsonSerializerSettings
                 {
-                    if (option is not null)
-                        await JsonSerializer.SerializeAsync(memStream, obj, option);
-                    else
-                        await JsonSerializer.SerializeAsync(memStream, obj);
+                    //DefaultValueHandling = DefaultValueHandling.Populate
+                    ObjectCreationHandling = ObjectCreationHandling.Replace
+                };
+            }
+            public static string Serialize<T>(in T obj, JsonSerializerSettings? settings = null)
+            {
+                return JsonConvert.SerializeObject(obj, settings);
+            }
+            public static Task<string> SerializeAsync<T>(T obj, JsonSerializerSettings? settings)
+            {
+                if(settings is null)
+                {
+                    return SerializeAsync<T>(obj, DEFAULT_JSON_SERIALIZER);
+                }
+                else
+                {
+                    return SerializeAsync<T>(obj, JsonSerializer.Create(settings));
+                } 
+            }
+            public static async Task<string> SerializeAsync<T>(T obj, JsonSerializer? serializer = null)
+            {
+                using var memStream = new MemoryStream();
+                using (var streamWriter = new StreamWriter(memStream))
+                using (var jsonWriter = new JsonTextWriter(streamWriter))
+                {
+                    serializer ??= DEFAULT_JSON_SERIALIZER;
+                    serializer.Serialize(jsonWriter, obj);
+                    await jsonWriter.FlushAsync();
                     memStream.Position = 0;
-                    using (var memReader = new StreamReader(memStream))
-                        return await memReader.ReadToEndAsync();
+                    using var reader = new StreamReader(memStream);
+                    return await reader.ReadToEndAsync();
                 }
             }
-            public static async ValueTask SerializeAsync<T>(Stream stream, T obj, JsonSerializerOptions? option = null)
+            public static Task SerializeAsync<T>(Stream stream, T obj, JsonSerializerSettings? settings)
             {
-                if (option is not null)
-                    await JsonSerializer.SerializeAsync(stream, obj, option);
+                if (settings is null)
+                {
+                    return SerializeAsync<T>(stream, obj, DEFAULT_JSON_SERIALIZER);
+                }
                 else
-                    await JsonSerializer.SerializeAsync(stream, obj);
+                {
+                    return SerializeAsync<T>(stream, obj, JsonSerializer.Create(settings));
+                }
+            }
+            public static async Task SerializeAsync<T>(Stream stream, T obj, JsonSerializer? serializer = null)
+            {
+                using var streamWriter = new StreamWriter(stream, Encoding.UTF8, 4096, true);
+                using var jsonWriter = new JsonTextWriter(streamWriter);
+                serializer ??= DEFAULT_JSON_SERIALIZER;
+                serializer.Serialize(jsonWriter, obj);
+                await jsonWriter.FlushAsync();
             }
 
-            public static T? Deserialize<T>(in string json, in JsonSerializerOptions? option = null)
+            public static T? Deserialize<T>(in string json, JsonSerializerSettings? settings = null)
             {
-                if (option is not null)
-                    return JsonSerializer.Deserialize<T>(json, option);
-                else
-                    return JsonSerializer.Deserialize<T>(json);
+                return JsonConvert.DeserializeObject<T>(json, settings);
             }
-            public static bool TryDeserialize<T>(in string json, out T? result, in JsonSerializerOptions? option = null)
+
+            public static bool TryDeserialize<T>(in string json, out T? result, JsonSerializerSettings? settings = null)
             {
                 try
                 {
-                    if (option is not null)
-                        result = JsonSerializer.Deserialize<T>(json, option);
-                    else
-                        result = JsonSerializer.Deserialize<T>(json);
+                    result = JsonConvert.DeserializeObject<T>(json, settings);
                     return true;
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     MajDebug.LogException(e);
                     result = default;
                     return false;
                 }
             }
-            public static async ValueTask<T?> DeserializeAsync<T>(Stream jsonStream, JsonSerializerOptions? option = null)
+            public static Task<T?> DeserializeAsync<T>(Stream jsonStream, JsonSerializerSettings? settings)
             {
-                if (option is not null)
-                    return await JsonSerializer.DeserializeAsync<T>(jsonStream, option);
+                if (settings is null)
+                {
+                    return DeserializeAsync<T>(jsonStream, DEFAULT_JSON_SERIALIZER);
+                }
                 else
-                    return await JsonSerializer.DeserializeAsync<T>(jsonStream);
+                {
+                    return DeserializeAsync<T>(jsonStream, JsonSerializer.Create(settings));
+                }
             }
-            public static async ValueTask<(bool, T?)> TryDeserializeAsync<T>(Stream jsonStream, JsonSerializerOptions? option = null)
+            public static Task<T?> DeserializeAsync<T>(Stream jsonStream, JsonSerializer? serializer = null)
+            {
+                return Task.Run(() =>
+                {
+                    using var streamReader = new StreamReader(jsonStream);
+                    using var jsonReader = new JsonTextReader(streamReader);
+                    serializer ??= DEFAULT_JSON_SERIALIZER;
+                    return serializer.Deserialize<T>(jsonReader);
+                });
+            }
+
+            public static async Task<(bool, T?)> TryDeserializeAsync<T>(Stream jsonStream, JsonSerializerSettings? settings)
             {
                 try
                 {
-                    T? result = default;
-                    if (option is not null)
-                        result = await JsonSerializer.DeserializeAsync<T>(jsonStream, option);
-                    else
-                        result = await JsonSerializer.DeserializeAsync<T>(jsonStream);
+                    var result = await DeserializeAsync<T>(jsonStream, settings);
                     return (true, result);
                 }
-                catch(Exception e)
+                catch (Exception e)
+                {
+                    MajDebug.LogError($"{nameof(T)}: {e}");
+                    return (false, default);
+                }
+            }
+            public static async Task<(bool, T?)> TryDeserializeAsync<T>(Stream jsonStream, JsonSerializer? serializer = null)
+            {
+                try
+                {
+                    var result = await DeserializeAsync<T>(jsonStream, serializer);
+                    return (true, result);
+                }
+                catch (Exception e)
+                {
+                    MajDebug.LogError($"{nameof(T)}: {e}");
+                    return (false, default);
+                }
+            }
+            public static Task<T?> DeserializeAsync<T>(string json, JsonSerializerSettings? settings = null)
+            {
+                return Task.Run(() => JsonConvert.DeserializeObject<T>(json, settings));
+            }
+
+            public static async Task<(bool, T?)> TryDeserializeAsync<T>(string json, JsonSerializerSettings? settings = null)
+            {
+                try
+                {
+                    var result = await DeserializeAsync<T>(json, settings);
+                    return (true, result);
+                }
+                catch (Exception e)
                 {
                     MajDebug.LogError($"{nameof(T)}: {e}");
                     return (false, default);

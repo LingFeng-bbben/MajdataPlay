@@ -1,4 +1,6 @@
-﻿using MajdataPlay.Scenes.Game.Notes;
+﻿using MajdataPlay.Json;
+using MajdataPlay.Scenes.Game.Notes;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,9 +10,11 @@ using System.Threading.Tasks;
 
 namespace MajdataPlay.Collections
 {
+    [JsonConverter(typeof(JudgeInfoConverter))]
     public class JudgeInfo : IReadOnlyDictionary<JudgeGrade, int>
     {
-        public static JudgeInfo Empty => new JudgeInfo(new Dictionary<JudgeGrade, int>()
+        [JsonIgnore]
+        public static JudgeInfo Empty { get; } = new JudgeInfo(new Dictionary<JudgeGrade, int>()
         {
             {JudgeGrade.TooFast, 0 },
             {JudgeGrade.FastGood, 0 },

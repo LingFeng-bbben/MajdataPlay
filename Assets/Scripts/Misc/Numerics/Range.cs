@@ -25,6 +25,7 @@ namespace MajdataPlay.Numerics
             Type = type;
         }
         public Range(T left, T right) : this(left, right, ContainsType.Closed) { }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool InRange(T value)
         {
             var inRange = value.InRange(_left, _right);

@@ -1,23 +1,29 @@
-﻿using MajdataPlay.Extensions;
+﻿using Cysharp.Text;
+using MajdataPlay.Buffers;
+using MajdataPlay.Collections;
+using MajdataPlay.Extensions;
+using MajdataPlay.Numerics;
+using MajdataPlay.Scenes.Game.Notes;
+using MajdataPlay.Scenes.Game.Notes.Behaviours;
+using MajdataPlay.Settings;
+using MajdataPlay.Utils;
 using MajSimai;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MajdataPlay.Utils;
-using UnityEngine;
-using UnityEngine.UI;
-using MajdataPlay.Collections;
-using TMPro;
-using Cysharp.Text;
 using System.Threading.Tasks;
-using MajdataPlay.Scenes.Game.Notes.Behaviours;
-using MajdataPlay.Numerics;
-using MajdataPlay.Scenes.Game.Notes;
-using MajdataPlay.Settings;
+using TMPro;
+using Unity.Burst.Intrinsics;
+using Unity.IL2CPP.CompilerServices;
+using UnityEngine;
+using UnityEngine.Profiling;
+using UnityEngine.UI;
 
 #nullable enable
 namespace MajdataPlay.Scenes.Game
 {
+    [Il2CppSetOption(Option.NullChecks, false)]
+    [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     public class ObjectCounter : MonoBehaviour
     {
         #region UIconsts
@@ -44,6 +50,14 @@ namespace MajdataPlay.Scenes.Game
         const string LATE_STRING = "LATE";
         const string FAST_STRING = "FAST";
         const string JUDGE_RESULT_STRING = "{0}\n{1}\n{2}\n{3}\n{4}\n\n{5}\n{6}";
+
+        readonly static Utf16PreparedFormat<double> DX_ACC_RATE_FORMAT = ZString.PrepareUtf16<double>(DX_ACC_RATE_STRING);
+        readonly static Utf16PreparedFormat<double> CLASSIC_ACC_RATE_FORMAT = ZString.PrepareUtf16<double>(CLASSIC_ACC_RATE_STRING);
+        readonly static Utf16PreparedFormat<double> COMBO_OR_DXSCORE_FORMAT = ZString.PrepareUtf16<double>(COMBO_OR_DXSCORE_STRING);
+        readonly static Utf16PreparedFormat<double> DIFF_FORMAT = ZString.PrepareUtf16<double>(DIFF_STRING);
+        readonly static Utf16PreparedFormat<double> DXSCORE_RANK_HEADER_FORMAT = ZString.PrepareUtf16<double>(DXSCORE_RANK_HEADER_STRING);
+        readonly static Utf16PreparedFormat<double> DXSCORE_RANK_BODY_FORMAT = ZString.PrepareUtf16<double>(DXSCORE_RANK_BODY_STRING);
+        readonly static Utf16PreparedFormat<long, long, long, long, long, long, long> JUDGE_RESULT_FORMAT = ZString.PrepareUtf16<long, long, long, long, long, long, long>(JUDGE_RESULT_STRING);
 
         #endregion
 
@@ -120,7 +134,7 @@ namespace MajdataPlay.Scenes.Game
         float _lastJudgeDiff = 0; // Note judge diff
         float _diffTimer = 3;
 
-        public long _totalDXScore = 0;
+        long _totalDXScore = 0;
         long _lostDXScore = 0;
 
         long _combo = 0; // Combo
@@ -147,48 +161,51 @@ namespace MajdataPlay.Scenes.Game
         #endregion
 
         #region UIrefs
-        Text _bgInfoHeader;
-        Text _bgInfoText;
-        Text _judgeResultCount;
+        TextMeshProUGUI _bgInfoHeader;
+        TextMeshProUGUI _bgInfoText;
+        TextMeshProUGUI _judgeResultCount;
         TextMeshProUGUI _rate;
 
         [SerializeField]
         GameObject _topInfoJudgeParent;
         [SerializeField]
-        Text _topInfoPerfect;
+        TextMeshProUGUI _topInfoPerfect;
         [SerializeField]
-        Text _topInfoGreat;
+        TextMeshProUGUI _topInfoGreat;
         [SerializeField]
-        Text _topInfoGood;
+        TextMeshProUGUI _topInfoGood;
         [SerializeField]
-        Text _topInfoMiss;
+        TextMeshProUGUI _topInfoMiss;
 
         [SerializeField]
         GameObject _topInfoTimingParent;
         [SerializeField]
-        Text _topInfoFast;
+        TextMeshProUGUI _topInfoFast;
         [SerializeField]
-        Text _topInfoLate;
+        TextMeshProUGUI _topInfoLate;
 
         #endregion
 
-        XxlbDanceRequest _xxlbDanceRequest = new();
+        
         bool _isOutlinePlayRequested = false;
+        XxlbDanceRequest _xxlbDanceRequest = new();
 
         GameInfo _gameInfo = Majdata<GameInfo>.Instance!;
         OutlineLoader _outline;
         GamePlayManager _gpManager;
         XxlbAnimationController _xxlbController;
 
+        Utf16ValueStringBuilder _sb = ZString.CreateStringBuilder();
+
 
         void Awake()
         {
             Majdata<ObjectCounter>.Instance = this;
-            _judgeResultCount = GameObject.Find("JudgeResultCount").GetComponent<Text>();
+            _judgeResultCount = GameObject.Find("JudgeResultCount").GetComponent<TextMeshProUGUI>();
             _rate = GameObject.Find("ObjectRate").GetComponent<TextMeshProUGUI>();
 
-            _bgInfoText = GameObject.Find("ComboText").GetComponent<Text>();
-            _bgInfoHeader = GameObject.Find("ComboTextHeader").GetComponent<Text>();
+            _bgInfoText = GameObject.Find("ComboText").GetComponent<TextMeshProUGUI>();
+            _bgInfoHeader = GameObject.Find("ComboTextHeader").GetComponent<TextMeshProUGUI>();
 
             //clean up
             Clear();
@@ -290,6 +307,7 @@ namespace MajdataPlay.Scenes.Game
         void OnDestroy()
         {
             Majdata<ObjectCounter>.Free();
+            _sb.Dispose();
         }
         void Start()
         {
@@ -315,8 +333,13 @@ namespace MajdataPlay.Scenes.Game
 
         internal void OnLateUpdate()
         {
+            Profiler.BeginSample("ObjectCounter.OnLateUpdate");
+            Profiler.BeginSample("ObjectCounter.UpdateAccRate");
             UpdateAccRate();
+            Profiler.EndSample();
+            Profiler.BeginSample("GamePlayManager.UpdateOutput");
             UpdateOutput();
+            Profiler.EndSample();
             if(_xxlbDanceRequest.IsRequested)
             {
                 _xxlbController.Dance(_xxlbDanceRequest.Grade);
@@ -327,6 +350,7 @@ namespace MajdataPlay.Scenes.Game
                 _outline.Play();
                 _isOutlinePlayRequested = false;
             }
+            Profiler.EndSample();
         }
         internal void Clear()
         {
@@ -604,7 +628,10 @@ namespace MajdataPlay.Scenes.Game
             else
             {
                 SetBgInfoActive(true);
-                _bgInfoText.text = ZString.Format(COMBO_OR_DXSCORE_STRING, combo);
+                _sb.Clear();
+                COMBO_OR_DXSCORE_FORMAT.FormatTo(ref _sb, combo);
+                var a = _sb.AsArraySegment();
+                _bgInfoText.SetCharArray(a.Array, a.Offset, a.Count);
             }
         }
         /// <summary>
@@ -615,12 +642,14 @@ namespace MajdataPlay.Scenes.Game
             var bgInfo = MajInstances.Settings.Game.BGInfo;
             if (MajEnv.Mode != RunningMode.View &&_gameInfo.IsDanMode)
             {
-                _bgInfoText.text = ZString.Concat(_gameInfo.CurrentHP);
+                _sb.Clear();
+                _sb.Append(_gameInfo.CurrentHP);
+                var a = _sb.AsArraySegment();
+                _bgInfoText.SetCharArray(a.Array, a.Offset, a.Count);
                 _bgInfoText.color = ComboColor;
                 SetBgInfoActive(true);
                 return;
             }
-            double accRate;
             switch (bgInfo)
             {
                 case BGInfoOption.CPCombo:
@@ -633,32 +662,72 @@ namespace MajdataPlay.Scenes.Game
                     UpdateCombo(_combo);
                     break;
                 case BGInfoOption.Achievement_101:
-                    accRate = Math.Floor(_accRate[2] * 10000) / 10000;
-                    _bgInfoText.text = ZString.Format(DX_ACC_RATE_STRING, accRate);
-                    UpdateAchievementColor(_accRate[2], _bgInfoText);
+                    {
+                        var accRate = Math.Floor(_accRate[2] * 10000) / 10000;
+
+                        _sb.Clear();
+                        DX_ACC_RATE_FORMAT.FormatTo(ref _sb, accRate);
+                        var a = _sb.AsArraySegment();
+                        _bgInfoText.SetCharArray(a.Array, a.Offset, a.Count);
+
+                        UpdateAchievementColor(_accRate[2], _bgInfoText);
+                    }
                     break;
                 case BGInfoOption.Achievement_100:
-                    accRate = Math.Floor(_accRate[3] * 10000) / 10000;
-                    _bgInfoText.text = ZString.Format(DX_ACC_RATE_STRING, accRate);
-                    UpdateAchievementColor(_accRate[3], _bgInfoText);
+                    {
+                        var accRate = Math.Floor(_accRate[3] * 10000) / 10000;
+
+                        _sb.Clear();
+                        DX_ACC_RATE_FORMAT.FormatTo(ref _sb, accRate);
+                        var a = _sb.AsArraySegment();
+                        _bgInfoText.SetCharArray(a.Array, a.Offset, a.Count);
+
+                        UpdateAchievementColor(_accRate[3], _bgInfoText);
+                    }
                     break;
                 case BGInfoOption.Achievement:
-                    accRate = Math.Floor(_accRate[4] * 10000) / 10000;
-                    _bgInfoText.text = ZString.Format(DX_ACC_RATE_STRING, accRate);
-                    UpdateAchievementColor(_accRate[4], _bgInfoText);
+                    {
+                        var accRate = Math.Floor(_accRate[4] * 10000) / 10000;
+
+                        _sb.Clear();
+                        DX_ACC_RATE_FORMAT.FormatTo(ref _sb, accRate);
+                        var a = _sb.AsArraySegment();
+                        _bgInfoText.SetCharArray(a.Array, a.Offset, a.Count);
+
+                        UpdateAchievementColor(_accRate[4], _bgInfoText);
+                    }
                     break;
                 case BGInfoOption.AchievementClassical:
-                    accRate = Math.Floor(_accRate[0] * 100) / 100;
-                    _bgInfoText.text = ZString.Format(CLASSIC_ACC_RATE_STRING, accRate);
-                    UpdateAchievementColor(_accRate[0], _bgInfoText);
+                    {
+                        var accRate = Math.Floor(_accRate[0] * 100) / 100;
+
+                        _sb.Clear();
+                        CLASSIC_ACC_RATE_FORMAT.FormatTo(ref _sb, accRate);
+                        var a = _sb.AsArraySegment();
+                        _bgInfoText.SetCharArray(a.Array, a.Offset, a.Count);
+
+                        UpdateAchievementColor(_accRate[0], _bgInfoText);
+                    }
                     break;
                 case BGInfoOption.AchievementClassical_100:
-                    accRate = Math.Floor(_accRate[1] * 100) / 100;
-                    _bgInfoText.text = ZString.Format(CLASSIC_ACC_RATE_STRING, accRate);
-                    UpdateAchievementColor(_accRate[1], _bgInfoText);
+                    {
+                        var accRate = Math.Floor(_accRate[1] * 100) / 100;
+
+                        _sb.Clear();
+                        CLASSIC_ACC_RATE_FORMAT.FormatTo(ref _sb, accRate);
+                        var a = _sb.AsArraySegment();
+                        _bgInfoText.SetCharArray(a.Array, a.Offset, a.Count);
+
+                        UpdateAchievementColor(_accRate[1], _bgInfoText);
+                    }
                     break;
                 case BGInfoOption.DXScore:
-                    _bgInfoText.text = ZString.Format(COMBO_OR_DXSCORE_STRING, _lostDXScore);
+                    {
+                        _sb.Clear();
+                        COMBO_OR_DXSCORE_FORMAT.FormatTo(ref _sb, _lostDXScore);
+                        var a = _sb.AsArraySegment();
+                        _bgInfoText.SetCharArray(a.Array, a.Offset, a.Count);
+                    }
                     break;
                 case BGInfoOption.DXScoreRank:
                     UpdateDXScoreRank();
@@ -670,28 +739,34 @@ namespace MajdataPlay.Scenes.Game
                     UpdateRankBoard(bgInfo);
                     break;
                 case BGInfoOption.Diff:
-                    _bgInfoText.text = ZString.Format(DIFF_STRING, _lastJudgeDiff);
-                    var oldColor = _bgInfoText.color;
-                    if (_lastJudgeDiff < 0)
                     {
-                        oldColor = EarlyDiffColor;
-                        _bgInfoHeader.text = FAST_STRING;
+                        _sb.Clear();
+                        DIFF_FORMAT.FormatTo(ref _sb, _lastJudgeDiff);
+                        var a = _sb.AsArraySegment();
+                        _bgInfoText.SetCharArray(a.Array, a.Offset, a.Count);
+
+                        var oldColor = _bgInfoText.color;
+                        if (_lastJudgeDiff < 0)
+                        {
+                            oldColor = EarlyDiffColor;
+                            _bgInfoHeader.text = FAST_STRING;
+                        }
+                        else
+                        {
+                            oldColor = LateDiffColor;
+                            _bgInfoHeader.text = LATE_STRING;
+                        }
+                        var newColor = new Color()
+                        {
+                            r = oldColor.r,
+                            g = oldColor.g,
+                            b = oldColor.b,
+                            a = _diffTimer.Clamp(0, 1)
+                        };
+                        _bgInfoHeader.color = newColor;
+                        _bgInfoText.color = newColor;
+                        _diffTimer -= MajTimeline.DeltaTime * 3;
                     }
-                    else
-                    {
-                        oldColor = LateDiffColor;
-                        _bgInfoHeader.text = LATE_STRING;
-                    }
-                    var newColor = new Color()
-                    {
-                        r = oldColor.r,
-                        g = oldColor.g,
-                        b = oldColor.b,
-                        a = _diffTimer.Clamp(0, 1)
-                    };
-                    _bgInfoHeader.color = newColor;
-                    _bgInfoText.color = newColor;
-                    _diffTimer -= Time.deltaTime * 3;
                     break;
                 default:
                     return;
@@ -719,8 +794,12 @@ namespace MajdataPlay.Scenes.Game
             }
             if (rate >= 0)
             {
+                _sb.Clear();
                 rate = Math.Floor(rate * 10000) / 10000;
-                _bgInfoText.text = ZString.Format(DX_ACC_RATE_STRING, rate);
+                DX_ACC_RATE_FORMAT.FormatTo(ref _sb, rate);
+                var a = _sb.AsArraySegment();
+                _bgInfoText.SetCharArray(a.Array, a.Offset, a.Count);
+                //_bgInfoText.text = ZString.Format(DX_ACC_RATE_STRING, rate);
             }
             else
             {
@@ -755,8 +834,16 @@ namespace MajdataPlay.Scenes.Game
             {
                 SetBgInfoActive(true);
             }
-            _bgInfoHeader.text = ZString.Format(DXSCORE_RANK_HEADER_STRING, dxRank.Rank);
-            _bgInfoText.text = ZString.Format(DXSCORE_RANK_BODY_STRING, num);
+            _sb.Clear();
+            DXSCORE_RANK_HEADER_FORMAT.FormatTo(ref _sb, dxRank.Rank);
+            var a = _sb.AsArraySegment();
+            _bgInfoHeader.SetCharArray(a.Array, a.Offset, a.Count);
+
+            _sb.Clear();
+            DXSCORE_RANK_BODY_FORMAT.FormatTo(ref _sb, num);
+            var b = _sb.AsArraySegment();
+            _bgInfoText.SetCharArray(b.Array, b.Offset, b.Count);
+
             switch (dxRank.Rank)
             {
                 case 5:
@@ -777,26 +864,81 @@ namespace MajdataPlay.Scenes.Game
         /// </summary>
         void UpdateJudgeResult()
         {
-            _judgeResultCount.text = ZString.Format(JUDGE_RESULT_STRING, 
-                                                    _cPerfectCount, 
-                                                    _perfectCount, 
-                                                    _greatCount, 
-                                                    _goodCount, 
-                                                    _missCount, 
-                                                    _fastCount, 
+            //_judgeResultCount.text = ZString.Format(JUDGE_RESULT_STRING, 
+            //                                        _cPerfectCount, 
+            //                                        _perfectCount, 
+            //                                        _greatCount, 
+            //                                        _goodCount, 
+            //                                        _missCount, 
+            //                                        _fastCount, 
+            //                                        _lateCount);
+            _sb.Clear();
+            JUDGE_RESULT_FORMAT.FormatTo(ref _sb, _cPerfectCount,
+                                                    _perfectCount,
+                                                    _greatCount,
+                                                    _goodCount,
+                                                    _missCount,
+                                                    _fastCount,
                                                     _lateCount);
+            var arraySegment = _sb.AsArraySegment();
+            _judgeResultCount.SetCharArray(arraySegment.Array, arraySegment.Offset, arraySegment.Count);
+
             switch (MajInstances.Settings.Game.TopInfo)
             {
                 case TopInfoDisplayOption.Judge:
-                    var p = _cPerfectCount + _perfectCount;
-                    _topInfoPerfect.text = p == 0 ? "" : p.ToString();
-                    _topInfoGreat.text = _greatCount == 0 ? "" : _greatCount.ToString();
-                    _topInfoGood.text = _goodCount == 0 ? "" : _goodCount.ToString();
-                    _topInfoMiss.text = _missCount == 0 ? "" : _missCount.ToString();
+                    {
+                        var p = _cPerfectCount + _perfectCount;
+                        _sb.Clear();
+                        if(p != 0)
+                        {
+                            _sb.Append(p);
+                        }
+                        var a = _sb.AsArraySegment();
+                        _topInfoPerfect.SetCharArray(a.Array, a.Offset, a.Count);
+
+                        _sb.Clear();
+                        if (_greatCount != 0)
+                        {
+                            _sb.Append(_greatCount);
+                        }
+                        var b = _sb.AsArraySegment();
+                        _topInfoGreat.SetCharArray(b.Array, b.Offset, b.Count);
+
+                        _sb.Clear();
+                        if (_goodCount != 0)
+                        {
+                            _sb.Append(_goodCount);
+                        }
+                        var c = _sb.AsArraySegment();
+                        _topInfoGood.SetCharArray(c.Array, c.Offset, c.Count);
+
+                        _sb.Clear();
+                        if (_missCount != 0)
+                        {
+                            _sb.Append(_missCount);
+                        }
+                        var d = _sb.AsArraySegment();
+                        _topInfoMiss.SetCharArray(d.Array, d.Offset, d.Count);
+                    }
                     break;
                 case TopInfoDisplayOption.Timing:
-                    _topInfoFast.text = _fastCount == 0 ? "" : _fastCount.ToString();
-                    _topInfoLate.text = _lateCount == 0 ? "" : _lateCount.ToString();
+                    {
+                        _sb.Clear();
+                        if (_fastCount != 0)
+                        {
+                            _sb.Append(_fastCount);
+                        }
+                        var a = _sb.AsArraySegment();
+                        _topInfoFast.SetCharArray(a.Array, a.Offset, a.Count);
+
+                        _sb.Clear();
+                        if (_lateCount != 0)
+                        {
+                            _sb.Append(_lateCount);
+                        }
+                        var b = _sb.AsArraySegment();
+                        _topInfoLate.SetCharArray(b.Array, b.Offset, b.Count);
+                    }
                     break;
                 case TopInfoDisplayOption.None:
                 default:
@@ -809,7 +951,7 @@ namespace MajdataPlay.Scenes.Game
         void UpdateTopAcc()
         {
             var isClassic = MajInstances.GameManager.Setting.Judge.Mode == JudgeModeOption.Classic;
-            var formatStr = isClassic ? CLASSIC_ACC_RATE_STRING : DX_ACC_RATE_STRING;
+            var format = isClassic ? CLASSIC_ACC_RATE_FORMAT : DX_ACC_RATE_FORMAT;
             double value;
             if(isClassic)
             {
@@ -819,7 +961,10 @@ namespace MajdataPlay.Scenes.Game
             {
                 value = Math.Floor(_accRate[4] * 10000) / 10000;
             }
-            _rate.SetTextFormat(formatStr, value);
+            _sb.Clear();
+            format.FormatTo(ref _sb, value);
+            var arraySegment = _sb.AsArraySegment();
+            _rate.SetCharArray(arraySegment.Array, arraySegment.Offset, arraySegment.Count);
         }
         /// <summary>
         /// 计算最终达成率
@@ -834,7 +979,7 @@ namespace MajdataPlay.Scenes.Game
         /// </summary>
         /// <param name="achievementRate"></param>
         /// <param name="textElement"></param>
-        void UpdateAchievementColor(double achievementRate, Text textElement)
+        void UpdateAchievementColor(double achievementRate, TextMeshProUGUI textElement)
         {
             var newColor = achievementRate switch
             {

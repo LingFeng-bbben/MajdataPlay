@@ -5,10 +5,14 @@ using MajdataPlay.Scenes.Game.Notes.Behaviours;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Buffers
 {
+    [Il2CppSetOption(Option.NullChecks, false)]
+    [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     internal sealed class EachLinePool : NotePool<EachLinePoolingInfo, NoteQueueInfo>
     {
         public EachLinePool(GameObject prefab, Transform parent, EachLinePoolingInfo[] noteInfos, int capacity) : base(prefab, parent, noteInfos, capacity)
@@ -19,6 +23,7 @@ namespace MajdataPlay.Scenes.Game.Buffers
         {
 
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void OnPreUpdate(float currentSec)
         {
             ThrowIfDisposed();
@@ -53,6 +58,7 @@ namespace MajdataPlay.Scenes.Game.Buffers
                 }
             }
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         bool Dequeue(ref TimingPoint<EachLinePoolingInfo> tp)
         {
             var infos = tp.Infos;
@@ -84,18 +90,27 @@ namespace MajdataPlay.Scenes.Game.Buffers
             }
             return true;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         new EachLineDrop? Dequeue()
         {
             EachLineDrop? idleEachLine;
             if(!_storage.TryRent(out var poolableNote))
             {
-                MajDebug.LogWarning($"No more EachLine can use");
+                switch (_flag)
+                {
+                    case 0:
+                        MajDebug.LogWarning($"No more EachLine can use");
+                        _flag = 1;
+                        break;
+                }
                 return null;
             }
+            _flag = 0;
             idleEachLine = poolableNote as EachLineDrop;
 
             return idleEachLine;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         bool ActiveObject(EachLinePoolingInfo info, EachLineDrop eachLine)
         {
             var noteA = info.MemberA?.Instance;
@@ -103,7 +118,9 @@ namespace MajdataPlay.Scenes.Game.Buffers
             IDistanceProvider? distanceProvider;
 
             if (noteA is null && noteB is null)
+            {
                 return false;
+            }
             if (noteA is TapDrop a && noteB is HoldDrop)
             {
                 distanceProvider = a;
@@ -124,6 +141,7 @@ namespace MajdataPlay.Scenes.Game.Buffers
 
             return true;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void Collect(in IPoolableNote<EachLinePoolingInfo, NoteQueueInfo> endNote)
         {
             ThrowIfDisposed();

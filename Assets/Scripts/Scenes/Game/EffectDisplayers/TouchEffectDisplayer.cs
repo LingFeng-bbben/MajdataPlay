@@ -1,12 +1,16 @@
-﻿using MajdataPlay.Scenes.Game.Notes;
+﻿using MajdataPlay.IO;
+using MajdataPlay.Scenes.Game.Notes;
 using MajdataPlay.Scenes.Game.Notes.Controllers;
 using MajdataPlay.Scenes.Game.Utils;
-using MajdataPlay.IO;
 using MajdataPlay.Utils;
+using System.Runtime.CompilerServices;
+using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 
 namespace MajdataPlay.Scenes.Game
 {
+    [Il2CppSetOption(Option.NullChecks, false)]
+    [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     public sealed class TouchEffectDisplayer: MonoBehaviour
     {
         public float DistanceRatio { get; set; } = 1f;
@@ -51,11 +55,12 @@ namespace MajdataPlay.Scenes.Game
 
             _isEnabled = MajInstances.Settings.Display.InnerJudgeDistance != 0;
         }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset()
         {
             _judgeEffectDisplayer.SetActive(false);
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ResetAll()
         {
             Reset();
@@ -63,6 +68,7 @@ namespace MajdataPlay.Scenes.Game
             _fastLateDisplayerA.Reset();
             _fastLateDisplayerB.Reset();
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void OnLateUpdate()
         {
             _judgeEffectDisplayer.OnLateUpdate();
@@ -70,6 +76,7 @@ namespace MajdataPlay.Scenes.Game
             _fastLateDisplayerA.OnLateUpdate();
             _fastLateDisplayerB.OnLateUpdate();
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Play(in NoteJudgeResult judgeResult)
         {
             _judgeTextDisplayer.Reset();
@@ -94,6 +101,7 @@ namespace MajdataPlay.Scenes.Game
                 }
             }
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void PlayEffect(in NoteJudgeResult judgeResult)
         {
             if (!judgeResult.IsMissOrTooFast)
@@ -106,6 +114,7 @@ namespace MajdataPlay.Scenes.Game
             }
             _judgeEffectDisplayer.PlayEffect(judgeResult);
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         bool PlayResult(in NoteJudgeResult judgeResult)
         {
             bool canPlay;
@@ -120,6 +129,7 @@ namespace MajdataPlay.Scenes.Game
             _judgeTextDisplayer.Play(judgeResult);
             return true;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         bool PlayFastLate(in NoteJudgeResult judgeResult, FastLateDisplayer displayer)
         {
             bool canPlay;

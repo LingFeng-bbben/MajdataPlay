@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Utils;
+﻿#if UNITY_STANDALONE_WIN
+using MajdataPlay.Utils;
 using MychIO;
 using MychIO.Device;
 using MychIO.Event;
@@ -81,7 +82,7 @@ namespace MajdataPlay.IO
         }
         void Log<T>(T msg)
         {
-            _executionQueue.Enqueue(() => MajDebug.Log(msg));
+            _executionQueue.Enqueue(() => MajDebug.LogInfo(msg));
         }
         void Warning<T>(T msg)
         {
@@ -93,3 +94,4 @@ namespace MajdataPlay.IO
         }
     }
 }
+#endif

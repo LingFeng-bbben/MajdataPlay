@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MajdataPlay.Settings;
 using UnityEngine;
+using MajdataPlay.Numerics;
 #nullable enable
 namespace MajdataPlay.IO
 {
@@ -28,6 +29,8 @@ namespace MajdataPlay.IO
 
             readonly static bool _isThrottlerEnabled = false;
             readonly static bool _isEnabled = true;
+
+            static float _brightness = 1.0f;
             static LedDevice()
             {
 #if !UNITY_STANDALONE_WIN
@@ -38,9 +41,9 @@ namespace MajdataPlay.IO
 
                 _isThrottlerEnabled = MajInstances.Settings.IO.OutputDevice.Led.Throttler;
 
-                if (MajInstances.Settings.IO.OutputDevice.Led.RefreshRateMs <= 100)
+                if (MajInstances.Settings.IO.OutputDevice.Led.RefreshRateMs <= 16)
                 {
-                    MajInstances.Settings.IO.OutputDevice.Led.RefreshRateMs = 100;
+                    MajInstances.Settings.IO.OutputDevice.Led.RefreshRateMs = 16;
                 }
             }
             public static void Init()
@@ -48,13 +51,14 @@ namespace MajdataPlay.IO
 #if !UNITY_STANDALONE_WIN
                 return;
 #endif
+                _brightness = MajInstances.Settings.IO.OutputDevice.Led.Brightness.Clamp(0, 1f);
                 try
                 {
                     if (!_ledDeviceUpdateLoop.IsCompleted || !_isEnabled)
                     {
                         return;
                     }
-                    var manufacturer = MajEnv.UserSettings.IO.Manufacturer;
+                    var manufacturer = _deviceManufacturer;
                     switch (manufacturer)
                     {
                         case DeviceManufacturerOption.General:
@@ -65,7 +69,7 @@ namespace MajdataPlay.IO
                             _ledDeviceUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
                             break;
                         default:
-                            MajDebug.LogWarning($"Not supported led device manufacturer: {manufacturer}");
+                            MajDebug.LogWarning($"Led: Not supported led device manufacturer: {manufacturer}");
                             break;
                     }
                 }
@@ -78,8 +82,7 @@ namespace MajdataPlay.IO
             static void SerialPortUpdateLoop()
             {
                 var currentThread = Thread.CurrentThread;
-                var ledOptions = MajEnv.UserSettings.IO.OutputDevice.Led;
-                var serialPortOptions = ledOptions.SerialPortOptions;
+                var serialPortOptions = _ledDeviceSerialConnInfo;
                 var token = MajEnv.GlobalCT;
                 var refreshRate = TimeSpan.FromMilliseconds(MajInstances.Settings.IO.OutputDevice.Led.RefreshRateMs);
                 var stopwatch = new Stopwatch();
@@ -142,7 +145,7 @@ namespace MajdataPlay.IO
 
                 if (!EnsureSerialPortIsOpen(serial))
                 {
-                    MajDebug.LogWarning($"Cannot open COM{serialPortOptions.Port}, using dummy lights");
+                    MajDebug.LogWarning($"Led: Cannot open COM{serialPortOptions.Port}, using dummy lights");
                     return;
                 }
                 while (true)
@@ -176,7 +179,7 @@ namespace MajdataPlay.IO
                     }
                     catch (Exception e)
                     {
-                        MajDebug.LogError($"From Led refresher: \n{e}");
+                        MajDebug.LogError($"Led: \n{e}");
                     }
                     finally
                     {
@@ -192,8 +195,8 @@ namespace MajdataPlay.IO
             }
             static void HIDUpdateLoop()
             {
-                var ledOptions = MajEnv.UserSettings.IO.OutputDevice.Led;
-                var hidOptions = ledOptions.HidOptions;
+                var ledOptions = MajEnv.Settings.IO.OutputDevice.Led;
+                var hidOptions = _ledDeviceHidConnInfo;
                 var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
                 var refreshRate = TimeSpan.FromMilliseconds(ledOptions.RefreshRateMs);
@@ -290,7 +293,7 @@ namespace MajdataPlay.IO
                     Span<byte> buffer = stackalloc byte[device.GetMaxOutputReportLength()];
                     buffer[0] = outputReportId;
                     IsConnected = true;
-                    MajDebug.Log($"Led device connected\nDevice: {device}");
+                    MajDebug.LogInfo($"Led: Connected\nDevice: {device}");
                     stopwatch.Start();
                     while (true)
                     {
@@ -327,11 +330,11 @@ namespace MajdataPlay.IO
                         catch (IOException ioE)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"Led: from HID listener: \n{ioE}");
+                            MajDebug.LogError($"Led: \n{ioE}");
                         }
                         catch (Exception e)
                         {
-                            MajDebug.LogError($"Led: from HID listener: \n{e}");
+                            MajDebug.LogError($"Led: \n{e}");
                         }
                         finally
                         {
@@ -343,7 +346,9 @@ namespace MajdataPlay.IO
                                 var elapsed = t2 - t1;
                                 t1 = t2;
                                 if (elapsed < refreshRate)
+                                {
                                     Thread.Sleep(refreshRate - elapsed);
+                                }
                             }
                         }
                     }
@@ -391,9 +396,9 @@ namespace MajdataPlay.IO
                 {
                     _templateSingle.Span.CopyTo(packet);
                     packet[5] = (byte)index;
-                    packet[6] = (byte)(newColor.r * 255);
-                    packet[7] = (byte)(newColor.g * 255);
-                    packet[8] = (byte)(newColor.b * 255);
+                    packet[6] = (byte)(newColor.r * 255 * _brightness);
+                    packet[7] = (byte)(newColor.g * 255 * _brightness);
+                    packet[8] = (byte)(newColor.b * 255 * _brightness);
                     packet[9] = CalculateCheckSum(packet.Slice(0, 9));
 
                     return packet.Slice(0, 10);
@@ -422,9 +427,9 @@ namespace MajdataPlay.IO
                     for (int i = 0,li = 0; li < ledColors.Length;)
                     {
                         var color = ledColors[li++];
-                        var r = (byte)(color.r * 255);
-                        var g = (byte)(color.g * 255);
-                        var b = (byte)(color.b * 255);
+                        var r = (byte)(color.r * 255 * _brightness);
+                        var g = (byte)(color.g * 255 * _brightness);
+                        var b = (byte)(color.b * 255 * _brightness);
 
                         buffer[i++] = r;
                         buffer[i++] = g;

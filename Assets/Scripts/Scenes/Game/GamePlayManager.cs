@@ -1,26 +1,29 @@
-﻿using MajdataPlay.Settings;
+﻿using Cysharp.Text;
+using Cysharp.Threading.Tasks;
+using MajdataPlay.Editor;
+using MajdataPlay.Extensions;
 using MajdataPlay.IO;
 using MajdataPlay.Net;
+using MajdataPlay.Numerics;
+using MajdataPlay.Recording;
+using MajdataPlay.Scenes.Game.Notes;
+using MajdataPlay.Scenes.Game.Notes.Controllers;
+using MajdataPlay.Scenes.List;
+using MajdataPlay.Settings;
+using MajdataPlay.Settings.Runtime;
+using MajdataPlay.Timer;
 using MajdataPlay.Utils;
-using MajdataPlay.Extensions;
 using MajSimai;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
-using Cysharp.Threading.Tasks;
-using MajdataPlay.Timer;
-using Cysharp.Text;
-using MajdataPlay.Scenes.List;
-using System.Text.Json;
-using MajdataPlay.Editor;
-using MajdataPlay.Scenes.Game.Notes.Controllers;
-using MajdataPlay.Recording;
 using UnityEngine.Profiling;
-using MajdataPlay.Numerics;
-using MajdataPlay.Scenes.Game.Notes;
+using UnityEngine.UI;
 
 namespace MajdataPlay.Scenes.Game
 {
@@ -29,7 +32,13 @@ namespace MajdataPlay.Scenes.Game
     {
         public float NoteSpeed { get; private set; } = 7f;
         public float TouchSpeed { get; private set; } = 7f;
-        public bool IsClassicMode => _setting.Judge.Mode == JudgeModeOption.Classic;
+        public bool IsClassicMode
+        {
+            get
+            {
+                return (_setting?.Judge.Mode ?? JudgeModeOption.Modern) == JudgeModeOption.Classic;
+            }
+        }
         // Timeline
         /// <summary>
         /// The timing of the current Update<para>Unit: Second</para>
@@ -47,10 +56,6 @@ namespace MajdataPlay.Scenes.Game
         /// Current audio Total length
         /// </summary>
         public float AudioLength { get; private set; } = 0f;
-        /// <summary>
-        /// Current audio playback time without offset correction
-        /// </summary>
-        public float AudioTimeNoOffset => _audioTimeNoOffset;
         /// <summary>
         /// The timing of audio starting to play
         /// </summary>
@@ -105,14 +110,11 @@ namespace MajdataPlay.Scenes.Game
         float _firstNoteAppearTiming = 0f;
         [ReadOnlyField]
         [SerializeField]
-        float _audioTimeNoOffset = -114514;
-        [ReadOnlyField]
-        [SerializeField]
         float _audioStartTime = -114514;
         int _chartRotation = 0;
 
-        bool _isTrackSkipAvailable = MajEnv.UserSettings.Game.TrackSkip;
-        bool _isFastRetryAvailable = MajEnv.UserSettings.Game.FastRetry;
+        bool _isTrackSkipAvailable = MajEnv.Settings?.Game.TrackSkip ?? false;
+        bool _isFastRetryAvailable = MajEnv.Settings?.Game.FastRetry ?? false;
         float? _allNotesFinishedTiming = null;
         float _2367PressTime = 0;
         float _3456PressTime = 0;
@@ -126,10 +128,8 @@ namespace MajdataPlay.Scenes.Game
         float _audioTimeOffsetSec = 0f;
         float _displayOffsetSec = 0f;
 
-        readonly SceneSwitcher _sceneSwitcher = MajInstances.SceneSwitcher;
-
         Task _generateAnswerSFXTask = Task.CompletedTask;
-        Text _errText;
+        TextMeshProUGUI _errText;
         MajTimer _timer = MajTimeline.CreateTimer();
         float _audioTrackStartAt = 0f;
 
@@ -137,7 +137,10 @@ namespace MajdataPlay.Scenes.Game
 
         SimaiFile _simaiFile;
         SimaiChart _chart;
+        ChartSetting _chartSetting;
         ISongDetail _songDetail;
+
+        float _trackVolume = 1f;
 
         AudioSampleWrap? _audioSample = null;
 
@@ -152,6 +155,10 @@ namespace MajdataPlay.Scenes.Game
         RecorderStatusDisplayer _recorderStateDisplayer;
 
         readonly CancellationTokenSource _cts = new();
+        readonly ListConfig _listConfig = MajEnv.RuntimeConfig?.List ?? new();
+        readonly SceneSwitcher _sceneSwitcher = MajInstances.SceneSwitcher;
+
+        readonly static Utf16PreparedFormat<float, float> ERROR_TEXT_FORMAT = ZString.PrepareUtf16<float, float>("Delta\nAudio {0:F4}\nVideo {1:F4}");
 
         #region GameLoading
 
@@ -166,21 +173,22 @@ namespace MajdataPlay.Scenes.Game
             }
             //print(MajInstances.GameManager.SelectedIndex);
             _songDetail = _gameInfo.Current;
-            HistoryScore = ScoreManager.GetScore(_songDetail, MajInstances.GameManager.SelectedDiff);
+            HistoryScore = ScoreManager.GetScore(_songDetail, _listConfig.SelectedDiff);
             _timer = MajTimeline.CreateTimer();
-            var chartSetting = ChartSettingStorage.GetSetting(_songDetail);
+            _chartSetting = ChartSettingStorage.GetSetting(_songDetail);
             if(_setting.Debug.OffsetUnit == OffsetUnitOption.Second)
             {
                 _audioTimeOffsetSec = _setting.Judge.AudioOffset;
-                _audioTimeOffsetSec += chartSetting.AudioOffset;
+                _audioTimeOffsetSec += _chartSetting.AudioOffset;
                 _displayOffsetSec = _setting.Debug.DisplayOffset;
             }
             else
             {
                 _audioTimeOffsetSec = _setting.Judge.AudioOffset * MajEnv.FRAME_LENGTH_SEC;
-                _audioTimeOffsetSec += chartSetting.AudioOffset * MajEnv.FRAME_LENGTH_SEC;
+                _audioTimeOffsetSec += _chartSetting.AudioOffset * MajEnv.FRAME_LENGTH_SEC;
                 _displayOffsetSec = _setting.Debug.DisplayOffset * MajEnv.FRAME_LENGTH_SEC;
             }
+            _trackVolume = (MajEnv.Settings.Audio.Volume.Track + _chartSetting.TrackVolumeOffset).Clamp(0, 2);
 #if !UNITY_EDITOR
             if(_setting.Debug.HideCursorInGame)
             {
@@ -210,7 +218,7 @@ namespace MajdataPlay.Scenes.Game
             _noteLoader = Majdata<NoteLoader>.Instance!;
             _recorderStateDisplayer = Majdata<RecorderStatusDisplayer>.Instance!;
 
-            _errText = GameObject.Find("ErrText").GetComponent<Text>();
+            _errText = GameObject.Find("ErrText").GetComponent<TextMeshProUGUI>();
             _chartRotation = _setting.Game.Rotation.Clamp(-7, 7);
             
             InitGame().Forget();
@@ -232,107 +240,83 @@ namespace MajdataPlay.Scenes.Game
             var noteMask = ModInfo.NoteMask;
             foreach (var (k,v) in danInfo!.Mods)
             {
-                switch(k)
+                switch (k)
                 {
                     case "PlaybackSpeed":
-                        if (v.ValueKind is JsonValueKind.Number && 
-                            v.TryGetSingle(out var playbackSpeed1) || (float.TryParse(v.ToString(), out playbackSpeed1)))
                         {
-                            playbackSpeed = playbackSpeed1;
+                            if (v.Type == JTokenType.Float || v.Type == JTokenType.Integer)
+                            {
+                                playbackSpeed = v.ToObject<float>();
+                            }
+                            else if (float.TryParse(v.ToString(), out var playbackSpeed1))
+                            {
+                                playbackSpeed = playbackSpeed1;
+                            }
                         }
                         break;
                     case "AllBreak":
-                        if(v.ValueKind is JsonValueKind.True or JsonValueKind.False)
-                        {
-                            isAllBreak = v.GetBoolean();
-                        }
-                        else if(bool.TryParse(v.ToString(), out var allBreak))
-                        {
-                            isAllBreak = allBreak;
-                        }
-                        break;
                     case "AllEx":
-                        if (v.ValueKind is JsonValueKind.True or JsonValueKind.False)
-                        {
-                            isAllEx = v.GetBoolean();
-                        }
-                        else if (bool.TryParse(v.ToString(), out var allEx))
-                        {
-                            isAllEx = allEx;
-                        }
-                        break;
                     case "AllTouch":
-                        if (v.ValueKind is JsonValueKind.True or JsonValueKind.False)
-                        {
-                            isAllTouch = v.GetBoolean();
-                        }
-                        else if (bool.TryParse(v.ToString(), out var allTouch))
-                        {
-                            isAllEx = allTouch;
-                        }
-                        break;
                     case "ButtonRingForTouch":
-                        if (v.ValueKind is JsonValueKind.True or JsonValueKind.False)
-                        {
-                            isUseButtonRingForTouch = v.GetBoolean();
-                        }
-                        else if (bool.TryParse(v.ToString(), out var buttonRingSlide))
-                        {
-                            isUseButtonRingForTouch = buttonRingSlide;
-                        }
-                        break;
                     case "IsSlideNoHead":
-                        if (v.ValueKind is JsonValueKind.True or JsonValueKind.False)
-                        {
-                            isSlideNoHead = v.GetBoolean();
-                        }
-                        else if (bool.TryParse(v.ToString(), out var slideNoHead))
-                        {
-                            isSlideNoHead = slideNoHead;
-                        }
-                        break;
                     case "IsSlideNoTrack":
-                        if (v.ValueKind is JsonValueKind.True or JsonValueKind.False)
+                    case "SubdivideSlideJudgeGrade":
                         {
-                            isSlideNoTrack = v.GetBoolean();
-                        }
-                        else if (bool.TryParse(v.ToString(), out var slideNoTrack))
-                        {
-                            isSlideNoTrack = slideNoTrack;
+                            if (v.Type == JTokenType.Boolean)
+                            {
+                                bool value = v.ToObject<bool>();
+                                switch (k)
+                                {
+                                    case "AllBreak": isAllBreak = value; break;
+                                    case "AllEx": isAllEx = value; break;
+                                    case "AllTouch": isAllTouch = value; break;
+                                    case "ButtonRingForTouch": isUseButtonRingForTouch = value; break;
+                                    case "IsSlideNoHead": isSlideNoHead = value; break;
+                                    case "IsSlideNoTrack": isSlideNoTrack = value; break;
+                                    case "SubdivideSlideJudgeGrade": subdivideSlideJudgeGrade = value; break;
+                                }
+                            }
+                            else if (bool.TryParse(v.ToString(), out var boolValue))
+                            {
+                                switch (k)
+                                {
+                                    case "AllBreak": isAllBreak = boolValue; break;
+                                    case "AllEx": isAllEx = boolValue; break;
+                                    case "AllTouch": isAllTouch = boolValue; break;
+                                    case "ButtonRingForTouch": isUseButtonRingForTouch = boolValue; break;
+                                    case "IsSlideNoHead": isSlideNoHead = boolValue; break;
+                                    case "IsSlideNoTrack": isSlideNoTrack = boolValue; break;
+                                    case "SubdivideSlideJudgeGrade": subdivideSlideJudgeGrade = boolValue; break;
+                                }
+                            }
                         }
                         break;
                     case "AutoPlay":
-                        if (v.ValueKind is JsonValueKind.Number && v.TryGetInt32(out var modeIndex))
                         {
-                            autoplayMode = (AutoplayModeOption)modeIndex;
-                        }
-                        else if(Enum.TryParse<AutoplayModeOption>(v.ToString(), false, out var mode))
-                        {
-                            autoplayMode = mode;
+                            if (v.Type == JTokenType.Integer)
+                            {
+                                autoplayMode = (AutoplayModeOption)v.ToObject<int>();
+                            }
+                            else if (Enum.TryParse<AutoplayModeOption>(v.ToString(), out var autoplayMode1))
+                            {
+                                autoplayMode = autoplayMode1;
+                            }
                         }
                         break;
                     case "JudgeStyle":
-                        if (v.ValueKind is JsonValueKind.Number && v.TryGetInt32(out var styleIndex))
                         {
-                            judgeStyle = (JudgeStyleOption)styleIndex;
-                        }
-                        else if (Enum.TryParse<JudgeStyleOption>(v.ToString(), false, out var style))
-                        {
-                            judgeStyle = style;
+                            if (v.Type == JTokenType.Integer)
+                            {
+                                judgeStyle = (JudgeStyleOption)v.ToObject<int>();
+                            }
+                            else if (Enum.TryParse<JudgeStyleOption>(v.ToString(), out var judgeStyle1))
+                            {
+                                judgeStyle = judgeStyle1;
+                            }
                         }
                         break;
                     case "NoteMask":
                         noteMask = v.ToString();
-                        break;
-                    case "SubdivideSlideJudgeGrade":
-                        if (v.ValueKind is JsonValueKind.True or JsonValueKind.False)
-                        {
-                            subdivideSlideJudgeGrade = v.GetBoolean();
-                        }
-                        else if (bool.TryParse(v.ToString(), out var ssjg))
-                        {
-                            subdivideSlideJudgeGrade = ssjg;
-                        }
                         break;
                 }
             }
@@ -373,7 +357,7 @@ namespace MajdataPlay.Scenes.Game
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading")}...");
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Audio Track")}...");
                     var task1 = _songDetail.GetAudioTrackAsync(progress, token: _cts.Token);
-                    while (!task1.Status.IsCompleted())
+                    while (!task1.IsCompleted)
                     {
                         await UniTask.Yield(cancellationToken: token);
                         _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Audio Track")}...\n{progress.Percent * 100:F2}%");
@@ -382,7 +366,7 @@ namespace MajdataPlay.Scenes.Game
                     token.ThrowIfCancellationRequested();
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Maidata")}...");
                     var task2 = _songDetail.GetMaidataAsync(false, progress, token: _cts.Token);
-                    while (!task2.Status.IsCompleted())
+                    while (!task2.IsCompleted)
                     {
                         await UniTask.Yield(cancellationToken: token);
                         _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Maidata")}...\n{progress.Percent * 100:F2}%");
@@ -391,7 +375,7 @@ namespace MajdataPlay.Scenes.Game
                     token.ThrowIfCancellationRequested();
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Picture")}...");
                     var task3 = _songDetail.GetCoverAsync(false, progress, token: _cts.Token);
-                    while (!task3.Status.IsCompleted())
+                    while (!task3.IsCompleted)
                     {
                         await UniTask.Yield(cancellationToken: token);
                         _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Picture")}...\n{progress.Percent * 100:F2}%");
@@ -400,7 +384,7 @@ namespace MajdataPlay.Scenes.Game
                     token.ThrowIfCancellationRequested();
                     _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Video")}...");
                     var task4 = _songDetail.GetVideoPathAsync(progress, token: _cts.Token);
-                    while (!task4.Status.IsCompleted())
+                    while (!task4.IsCompleted)
                     {
                         await UniTask.Yield(cancellationToken: token);
                         _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Video")}...\n{progress.Percent * 100:F2}%");
@@ -426,7 +410,7 @@ namespace MajdataPlay.Scenes.Game
                 //var ss = string.Format(Localization.GetLocalizedText("Return to {0} in {1} seconds"), "List", "1");
                 MajInstances.SceneSwitcher.SetLoadingText($"{s}", Color.red);
                 await UniTask.Delay(1000);
-                BackToList().Forget();
+                ReturnTo().Forget();
             }
             catch (OBSRecorderException)
             {
@@ -435,7 +419,7 @@ namespace MajdataPlay.Scenes.Game
                 var s = Localization.GetLocalizedText("OBSError");
                 MajInstances.SceneSwitcher.SetLoadingText($"{s}", Color.red);
                 await UniTask.Delay(1000);
-                BackToList().Forget();
+                ReturnTo().Forget();
             }
             catch(InvalidSimaiMarkupException syntaxE)
             {
@@ -444,17 +428,17 @@ namespace MajdataPlay.Scenes.Game
                 MajDebug.LogError(syntaxE);
                 return;
             }
-            catch(HttpTransmitException httpEx)
+            catch(HttpException httpEx)
             {
                 await UniTask.SwitchToMainThread();
-                MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Failed to download chart")}", Color.red);
+                MajInstances.SceneSwitcher.SetLoadingText("Failed to download chart".i18n(), Color.red);
                 MajDebug.LogError(httpEx);
                 return;
             }
             catch(InvalidAudioTrackException audioEx)
             {
                 await UniTask.SwitchToMainThread();
-                MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Failed to load chart")}\n{audioEx.Message}", Color.red);
+                MajInstances.SceneSwitcher.SetLoadingText($"{"Failed to load chart".i18n()}\n{audioEx.Message}", Color.red);
                 MajDebug.LogError(audioEx);
                 return;
             }
@@ -485,9 +469,10 @@ namespace MajdataPlay.Scenes.Game
                 throw new InvalidAudioTrackException("Failed to decode audio track", string.Empty);
             }
             _audioSample = audioSample;
-            _audioSample.SetVolume(_setting.Audio.Volume.BGM);
+            _audioSample.SetVolume(_trackVolume);
             _audioSample.Speed = PlaybackSpeed;
             _audioSample.IsLoop = false;
+            _audioSample.CurrentSec = 0;
             if(IsPracticeMode)
             {
                 if(_gameInfo.TimeRange is Range<double> timeRange)
@@ -527,7 +512,7 @@ namespace MajdataPlay.Scenes.Game
             _simaiFile = await _songDetail.GetMaidataAsync(true);
             _chartOffset = _simaiFile.Offset;
             var levelIndex = (int)_gameInfo.CurrentLevel;
-            var maidata = _simaiFile.RawCharts[levelIndex];
+            var maidata = _simaiFile.Charts[levelIndex].Fumen;
 
             if (string.IsNullOrEmpty(maidata))
             {
@@ -535,54 +520,55 @@ namespace MajdataPlay.Scenes.Game
             }
 
             ChartMirror(ref maidata);
-            var simaiParser = SimaiParser.Shared;
-            _chart = await simaiParser.ParseChartAsync(_songDetail.Levels[levelIndex], _songDetail.Designers[levelIndex], maidata);
+            _chart = await SimaiParser.ParseChartAsync(_songDetail.Levels[levelIndex], _songDetail.Designers[levelIndex], maidata);
 
             if (IsPracticeMode)
             {
                 if (_gameInfo.TimeRange is Range<double> timeRange)
                 {
                     var range = new Range<double>(timeRange.Start - _simaiFile.Offset, timeRange.End - _simaiFile.Offset);
-                    _chart.Clamp(range);
+                    _chart = _chart.Clamp(range);
                 }
-                else if (_gameInfo.ComboRange is Range<long> comboRange)
-                {
-                    _chart.Clamp(comboRange);
-                    if (_chart.NoteTimings.Length != 0)
-                    {
-                        var startAt = _chart.NoteTimings[0].Timing;
-                        startAt = Math.Max(startAt - 3, 0);
+                //else if (_gameInfo.ComboRange is Range<long> comboRange)
+                //{
+                //    _chart = _chart.Clamp(comboRange);
+                //    if (_chart.NoteTimings.Length != 0)
+                //    {
+                //        var startAt = _chart.NoteTimings[0].Timing;
+                //        startAt = Math.Max(startAt - 3, 0);
 
-                        _audioTrackStartAt = (float)startAt;
-                    }
-                }
+                //        _audioTrackStartAt = (float)startAt;
+                //    }
+                //}
             }
+            _chart = _chart.AddOffset(_chartOffset + _audioTimeOffsetSec);
             if (ModInfo.PlaybackSpeed != 1)
             {
-                _chart.Scale(PlaybackSpeed);
+                _chart = _chart.Scale(PlaybackSpeed);
             }
             if (ModInfo.AllBreak)
             {
-                _chart.ConvertToBreak();
+                _chart = _chart.ConvertToBreak();
             }
             if (ModInfo.AllEx)
             {
-                _chart.ConvertToEx();
+                _chart = _chart.ConvertToEx();
             }
             if (ModInfo.AllTouch)
             {
-                _chart.ConvertToTouch();
+                _chart = _chart.ConvertToTouch();
             }
             if (_chart.IsEmpty)
             {
                 throw new EmptyChartException();
             }
+            _chart = _chart.AddOffset(-_displayOffsetSec);
             await UniTask.SwitchToMainThread();
             GameObject.Find("ChartAnalyzer").GetComponent<ChartAnalyzer>().AnalyzeAndDrawGraphAsync(_chart, AudioLength).Forget();
             await UniTask.SwitchToThreadPool();
             var simaiCmd = _simaiFile.Commands.FirstOrDefault(x => x.Prefix == "clock_count");
             var countnum = 4;
-            if (!int.TryParse(simaiCmd?.Value ?? string.Empty, out countnum))
+            if (!int.TryParse(simaiCmd.Value, out countnum))
             {
                 countnum = 4;
             }
@@ -605,7 +591,7 @@ namespace MajdataPlay.Scenes.Game
                 {
                     var cover = await _songDetail.GetCoverAsync(false);
                     await UniTask.SwitchToMainThread();
-                    await _bgManager.SetBackgroundMovieAsync(videoPath, cover);
+                    await _bgManager.SetMovieAsync(videoPath, cover);
                 }
                 else
                 {
@@ -661,6 +647,8 @@ namespace MajdataPlay.Scenes.Game
                 throw e;
             }
             MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading Chart")}...\n100.00%");
+
+            _noteEffectPool.Init();
             await UniTask.Yield();
         }
         async UniTask PrepareToPlay()
@@ -687,7 +675,7 @@ namespace MajdataPlay.Scenes.Game
             var token = _cts.Token;
             const float BG_FADE_IN_LENGTH_SEC = 0.25f;
             Time.timeScale = 1f;
-            var firstClockTiming = _noteAudioManager.AnswerSFXTimings[0].Timing;
+            var firstClockTiming = _noteAudioManager.FirstClockTiming;
             float extraTime = 5f;
             if (firstClockTiming < 0f)
             {
@@ -711,7 +699,8 @@ namespace MajdataPlay.Scenes.Game
             while (!allBackgroundTasks.IsCompleted)
             {
                 token.ThrowIfCancellationRequested();
-                _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Waiting for all background tasks to suspend")}...");
+                await UniTask.SwitchToMainThread();
+                _sceneSwitcher.SetLoadingText($"{"Waiting for all background tasks to suspend".i18n()}...");
                 await UniTask.Yield();
             }
             token.ThrowIfCancellationRequested();
@@ -721,6 +710,7 @@ namespace MajdataPlay.Scenes.Game
             while (!wait4Recorder.IsCompleted)
             {
                 token.ThrowIfCancellationRequested();
+                await UniTask.SwitchToMainThread();
                 _sceneSwitcher.SetLoadingText($"{"Waiting for recorder".i18n()}...");
                 await UniTask.Yield();
             }
@@ -729,7 +719,8 @@ namespace MajdataPlay.Scenes.Game
             {
                 throw wait4Recorder.Exception.GetBaseException();
             }
-            _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading")}...");
+            await UniTask.SwitchToMainThread();
+            _sceneSwitcher.SetLoadingText($"{"Loading".i18n()}...");
             MajInstances.GameManager.DisableGC();
 
             await UniTask.Delay(1000, cancellationToken: token);
@@ -744,9 +735,9 @@ namespace MajdataPlay.Scenes.Game
                 var userSettingBGDim = _setting.Game.BackgroundDim;
                 var dimDiff = 1 - userSettingBGDim;
                 var isVideoStarted = false;
-                while (_timer.ElapsedSecondsAsFloat - AudioStartTime < 0)
+                while (_timer.ElapsedSecondsAsFloat - _audioStartTime < 0)
                 {
-                    var timeDiff = _timer.ElapsedSecondsAsFloat - AudioStartTime;
+                    var timeDiff = _timer.ElapsedSecondsAsFloat - _audioStartTime;
                     if (timeDiff > -0.1f && !isVideoStarted) 
                     {
                         _bgManager.PlayVideo(startSec, PlaybackSpeed);
@@ -771,12 +762,12 @@ namespace MajdataPlay.Scenes.Game
             _audioSample.CurrentSec = startSec;
 
             _audioStartTime = _timer.ElapsedSecondsAsFloat - _audioTrackStartAt;
-            MajDebug.Log($"Chart playback speed: {PlaybackSpeed}x");
+            MajDebug.LogInfo($"Chart playback speed: {PlaybackSpeed}x");
             _bgInfoHeaderAnim.SetTrigger("fadeIn");
             if(IsPracticeMode)
             {
                 var elapsedSeconds = 0f;
-                var originVol = _setting.Audio.Volume.BGM;
+                var originVol = _trackVolume;
                 
                 BgHeaderFadeOut();
                 try
@@ -801,7 +792,7 @@ namespace MajdataPlay.Scenes.Game
             else
             {
                 token.ThrowIfCancellationRequested();
-                _audioSample.Volume = _setting.Audio.Volume.BGM;
+                _audioSample.Volume = _trackVolume;
                 await UniTask.Delay(3000);
                 token.ThrowIfCancellationRequested();
                 BgHeaderFadeOut();
@@ -842,7 +833,9 @@ namespace MajdataPlay.Scenes.Game
         internal void OnPreUpdate()
         {
             Profiler.BeginSample("GamePlayManager.OnPreUpdate");
+            Profiler.BeginSample("GamePlayManager.AudioTimeUpdate");
             AudioTimeUpdate();
+            Profiler.EndSample();
             ComponentPreUpdate();
             Profiler.EndSample();
         }
@@ -850,8 +843,12 @@ namespace MajdataPlay.Scenes.Game
         {
             Profiler.BeginSample("GamePlayManager.OnUpdate");
             NoteManagerUpdate();
+            Profiler.BeginSample("GamePlayManager.GameControlUpdate");
             GameControlUpdate();
+            Profiler.EndSample();
+            Profiler.BeginSample("GamePlayManager.FnKeyStateUpdate");
             FnKeyStateUpdate();
+            Profiler.EndSample();
             Profiler.EndSample();
         }
         internal void OnLateUpdate()
@@ -963,7 +960,9 @@ namespace MajdataPlay.Scenes.Game
                     _notePoolManager.OnPreUpdate();
                     break;
             }
+            Profiler.BeginSample("TimeDisplayer.OnPreUpdate");
             _timeDisplayer.OnPreUpdate();
+            Profiler.EndSample();
         }
         void NoteManagerUpdate()
         {
@@ -1020,11 +1019,31 @@ namespace MajdataPlay.Scenes.Game
 #endif
                 if (_p1SkipTime > p1timeout)
                 {
-                    BackToList().Forget();
+                    if(IsPracticeMode)
+                    {
+                        var info = new GameInfo(GameMode.Practice, _gameInfo.Charts, _gameInfo.Levels, 114514);
+                        info.TimeRange = _gameInfo.TimeRange;
+                        Majdata<GameInfo>.Instance = info;
+                        ReturnTo("Practice").Forget();
+                    }
+                    else
+                    {
+                        ReturnTo().Forget();
+                    }
                 }
                 else if (_2367PressTime >= 0.5f && _isTrackSkipAvailable)
                 {
-                    BackToList().Forget();
+                    if (IsPracticeMode)
+                    {
+                        var info = new GameInfo(GameMode.Practice, _gameInfo.Charts, _gameInfo.Levels, 114514);
+                        info.TimeRange = _gameInfo.TimeRange;
+                        Majdata<GameInfo>.Instance = info;
+                        ReturnTo("Practice").Forget();
+                    }
+                    else
+                    {
+                        ReturnTo().Forget();
+                    }
                 }
                 else if (_3456PressTime >= 0.5f && _isFastRetryAvailable)
                 {
@@ -1055,16 +1074,34 @@ namespace MajdataPlay.Scenes.Game
                 case GamePlayStatus.Running:
                 case GamePlayStatus.Blocking:
                 case GamePlayStatus.WaitForEnd:
-                    //Do not use this!!!! This have connection with sample batch size
-                    //AudioTime = (float)audioSample.GetCurrentTime();
-                    var chartOffset = ((_chartOffset + _audioTimeOffsetSec) / PlaybackSpeed) - _displayOffsetSec;
-                    var timeOffset = _timer.ElapsedSecondsAsFloat - AudioStartTime;
-                    var realTimeDifference = (float)_audioSample.CurrentSec - (_timer.ElapsedSecondsAsFloat - AudioStartTime) * PlaybackSpeed;
-                    var realTimeDifferenceb = (float)_bgManager.CurrentSec - (_timer.ElapsedSecondsAsFloat - AudioStartTime) * PlaybackSpeed;
+                    {
+                        //Do not use this!!!! This have connection with sample batch size
+                        //AudioTime = (float)audioSample.GetCurrentTime();
+                        var elapsedSeconds = _timer.ElapsedSecondsAsFloat;
+                        var playbackSpeed = PlaybackSpeed;
+                        var timeOffset = elapsedSeconds - _audioStartTime;
+                        var realTimeDifference = (float)_audioSample.CurrentSec - (elapsedSeconds - _audioStartTime) * playbackSpeed;
+                        var realTimeDifferenceb = (float)_bgManager.CurrentSec - (elapsedSeconds - _audioStartTime) * playbackSpeed;
 
-                    _thisFrameSec = timeOffset - chartOffset;
-                    _audioTimeNoOffset = (float)_audioSample.CurrentSec;
-                    _errText.text = ZString.Format("Delta\nAudio {0:F4}\nVideo {1:F4}", Math.Abs(realTimeDifference),Math.Abs(realTimeDifferenceb));             
+                        _thisFrameSec = timeOffset;
+#if UNITY_ANDROID
+                        if(realTimeDifference < 0 && !_objectCounter.AllFinished && _audioSample.IsPlaying)
+                        {
+                            _thisFrameSec += realTimeDifference;
+                        }
+#endif
+                        var sb = ZString.CreateStringBuilder(true);
+                        try
+                        {
+                            ERROR_TEXT_FORMAT.FormatTo(ref sb, Math.Abs(realTimeDifference), Math.Abs(realTimeDifferenceb));
+                            var a = sb.AsArraySegment();
+                            _errText.SetCharArray(a.Array, a.Offset, a.Count);
+                        }
+                        finally
+                        {
+                            sb.Dispose();
+                        }
+                    }           
                     break;
             }
         }
@@ -1077,7 +1114,7 @@ namespace MajdataPlay.Scenes.Game
         {
             var acc = _objectCounter.CalculateFinalResult();
             print("GameResult: " + acc);
-            var result = _objectCounter.GetPlayRecord(_songDetail, MajInstances.GameManager.SelectedDiff);
+            var result = _objectCounter.GetPlayRecord(_songDetail, _listConfig.SelectedDiff);
             _gameInfo.RecordResult(result);
 
             if (!playEffect)
@@ -1096,25 +1133,25 @@ namespace MajdataPlay.Scenes.Game
                     AllPerfectAnimation.SetActive(true);
                     MajInstances.AudioManager.PlaySFX("all_perfect_plus.wav");
                     MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
-                    LedRing.SetAllLight(Color.yellow);
+                    LedRing.SetAllLightSineFunc(Color.yellow, 2000);
                     break;
                 case ComboState.AP:
                     AllPerfectAnimation.SetActive(true);
                     MajInstances.AudioManager.PlaySFX("all_perfect.wav");
                     MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
-                    LedRing.SetAllLight(Color.red);
+                    LedRing.SetAllLightSineFunc(Color.red, 2000);
                     break;
                 case ComboState.FCPlus:
                     FullComboAnimation.SetActive(true);
                     MajInstances.AudioManager.PlaySFX("full_combo_plus.wav");
                     MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
-                    LedRing.SetAllLight(Color.green);
+                    LedRing.SetAllLightSineFunc(Color.green, 2000);
                     break;
                 case ComboState.FC:
                     FullComboAnimation.SetActive(true);
                     MajInstances.AudioManager.PlaySFX("full_combo.wav");
                     MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
-                    LedRing.SetAllLight(Color.green);
+                    LedRing.SetAllLightSineFunc(Color.green, 2000);
                     break;
             }
         }
@@ -1128,7 +1165,7 @@ namespace MajdataPlay.Scenes.Game
             await UniTask.Delay(delayMiliseconds);
             ClearAllResources();
             var remainingSeconds = 1f;
-            var originVol = _setting.Audio.Volume.BGM;
+            var originVol = _trackVolume;
             _audioSample!.Volume = 0;
             while (remainingSeconds > 0)
             {
@@ -1175,7 +1212,7 @@ namespace MajdataPlay.Scenes.Game
             EndGame(targetScene: "TotalResult").Forget();
         }
 
-        async UniTaskVoid BackToList()
+        async UniTaskVoid ReturnTo(string sceneName = "List")
         {
             State = GamePlayStatus.Ended;
             var sceneSwitcher = MajInstances.SceneSwitcher;
@@ -1192,7 +1229,7 @@ namespace MajdataPlay.Scenes.Game
                 await UniTask.Yield();
             }
             _sceneSwitcher.SetLoadingText(string.Empty);
-            sceneSwitcher.SwitchScene("List",false);
+            sceneSwitcher.SwitchScene(sceneName, false);
         }
         public async UniTaskVoid EndGame(int delayMiliseconds = 100,string targetScene = "Result")
         {
@@ -1237,7 +1274,7 @@ namespace MajdataPlay.Scenes.Game
         {
             try
             {
-                MajDebug.Log("GPManagerDestroy");
+                MajDebug.LogInfo("GPManagerDestroy");
                 //we dont StopRecordAsync at here because we want the result screen as well
                 DisposeAudioTrack();
                 ClearAllResources();

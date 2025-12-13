@@ -2,8 +2,10 @@
 using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using Unity.IL2CPP.CompilerServices;
 
 namespace MajdataPlay.Buffers;
 internal static class Pool<T>
@@ -14,6 +16,9 @@ internal static class Pool<T>
     public readonly static ArrayPool<T> ArrayPool = ArrayPool<T>.Create(MAX_ARRAY_LENGTH, MAX_ARRAY_PER_BUCKET);
     public readonly static MemoryPool<T> MemoryPool = MemoryPool<T>.Shared;
 
+    [Il2CppSetOption(Option.NullChecks, false)]
+    [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T[] RentArray(int length, bool clearArray = false)
     {
         if (length < 0)
@@ -31,6 +36,8 @@ internal static class Pool<T>
         }
         return array;
     }
+    [Il2CppSetOption(Option.NullChecks, false)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static IMemoryOwner<T> RentMemory(int length)
     {
         if (length <= 0 || length > MemoryPool.MaxBufferSize)
@@ -39,6 +46,8 @@ internal static class Pool<T>
         }
         return MemoryPool.Rent(length);
     }
+    [Il2CppSetOption(Option.NullChecks, false)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void ReturnArray(T[] array, bool clearArray = false)
     {
         if (array == null)

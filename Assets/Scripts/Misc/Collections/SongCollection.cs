@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -13,6 +14,8 @@ namespace MajdataPlay.Collections
 {
     public class SongCollection : IEnumerable<ISongDetail>, IReadOnlyCollection<ISongDetail>
     {
+        public Guid Id { get; init; } = Guid.Empty;
+        public string Path { get; init; }
         public ISongDetail Current
         {
             get
@@ -42,24 +45,113 @@ namespace MajdataPlay.Collections
         public bool IsOnline => Location == ChartStorageLocation.Online;
         public string Name { get; private set; }
         public bool IsSorted { get; private set; } = false;
-        public int Count => _sorted.Length;
-        public bool IsEmpty => _sorted.Length == 0;
+        public int Count
+        {
+            get
+            {
+                return _sorted.Length;
+            }
+        }
+        public bool IsEmpty
+        {
+            get
+            {
+                return _sorted.Length == 0;
+            }
+        }
+        public bool IsVirtual { get; init; }
         public DanInfo? DanInfo { get; init; }
 
         protected ISongDetail[] _sorted;
         protected ISongDetail[] _origin;
 
-        public SongCollection(string name, in ISongDetail[] pArray)
+        readonly static Guid COLLECTION_ALL_GUID = new Guid(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1);
+        readonly static Guid COLLECTION_MY_FAVORITE_GUID = new Guid(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2);
+
+        public SongCollection(string name, ISongDetail[] pArray): this(null, name, pArray)
         {
-            _sorted = pArray;
-            _origin = pArray;
+
+        }
+        public SongCollection(string? dirPath, string name, ISongDetail[] pArray)
+        {
+            if (pArray.Length == 0)
+            {
+                _sorted = Array.Empty<ISongDetail>();
+                _origin = Array.Empty<ISongDetail>();
+            }
+            else
+            {
+                var array = new ISongDetail[pArray.Length];
+                Array.Copy(pArray, array, pArray.Length);
+                _sorted = array;
+                _origin = array;
+            }
+            if(string.IsNullOrEmpty(dirPath))
+            {
+                IsVirtual = true;
+                Path = string.Empty;
+                
+                switch(name)
+                {
+                    case "All":
+                        Id = COLLECTION_ALL_GUID;
+                        break;
+                    case "MyFavorites":
+                        Id = COLLECTION_MY_FAVORITE_GUID;
+                        break;
+                    default:
+                        //throw new ArgumentOutOfRangeException("Unexpected virtual collection name", nameof(name));
+                        Id = Guid.Empty;
+                        break;
+                }
+            }
+            else
+            {
+                if(!Directory.Exists(dirPath))
+                {
+                    throw new ArgumentException($"Directory '{dirPath}' is not exist.");
+                }
+                IsVirtual = false;
+                Path = dirPath!;
+                var flagDirPath = System.IO.Path.Combine(dirPath!, ".MajdataPlay");
+                var flagFilePath = System.IO.Path.Combine(flagDirPath, "id");
+
+                if (!Directory.Exists(flagDirPath))
+                {
+                    var info = Directory.CreateDirectory(flagDirPath);
+                    info.Attributes |= FileAttributes.Hidden;
+                }
+                if (File.Exists(flagFilePath))
+                {
+                    var guidStr = File.ReadAllText(flagFilePath);
+                    if(Guid.TryParse(guidStr, out var guid))
+                    {
+                        Id = guid;
+                    }
+                    else
+                    {
+                        guid = Guid.NewGuid();
+                        File.WriteAllText(flagFilePath, guid.ToString());
+                        Id = guid;
+                    }
+                }
+                else
+                {
+                    var guid = Guid.NewGuid();
+                    Id = guid;
+                    File.WriteAllText(flagFilePath, guid.ToString());
+                }
+            }
             Name = name;
         }
         public SongCollection()
         {
-            _origin = new ISongDetail[0];
+            _origin = Array.Empty<ISongDetail>();
             _sorted = _origin;
+            Path = string.Empty;
             Name = string.Empty;
+            Id = Guid.Empty;
+            IsVirtual = true;
         }
         public bool MoveNext()
         {
@@ -68,7 +160,10 @@ namespace MajdataPlay.Collections
             Index++;
             return true;
         }
-        public void Move(int diff) => Index = (Index + diff).Clamp(0, Count - 1);
+        public void Move(int diff)
+        {
+            Index = (Index + diff).Clamp(0, Count - 1);
+        }
         public void SortAndFilter(SongOrder orderBy)
         {
             if(Type == ChartStorageType.Dan || IsEmpty)
@@ -109,7 +204,7 @@ namespace MajdataPlay.Collections
         {
             SetCursor(target, _sorted);
         }
-        public void SetCursor(ISongDetail target, ISongDetail[] dataSet)
+        void SetCursor(ISongDetail target, ISongDetail[] dataSet)
         {
             if(IsEmpty)
             {
@@ -119,7 +214,17 @@ namespace MajdataPlay.Collections
             newIndex = newIndex is -1 ? 0 : newIndex;
             _index = newIndex;
         }
-        public ISongDetail[] ToArray() => _origin;
+        public ISongDetail[] ToArray()
+        {
+            if(_origin.Length == 0)
+            {
+                return Array.Empty<ISongDetail>();
+            }
+            var array = new ISongDetail[_origin.Length];
+            Array.Copy(_origin, array, _origin.Length);
+
+            return array;
+        }
         static ISongDetail[] Sort(ISongDetail[] origin, SortType sortType)
         {
             if (origin.IsEmpty())
@@ -160,6 +265,7 @@ namespace MajdataPlay.Collections
             return result.Slice(0, i).ToArray();
         }
         public static SongCollection Empty(string name) => new SongCollection(name, Array.Empty<ISongDetail>());
+        public static SongCollection Empty(string path, string name) => new SongCollection(path, name, Array.Empty<ISongDetail>());
         public IEnumerator<ISongDetail> GetEnumerator() => new Enumerator(_sorted);
 
         // Implementation for the GetEnumerator method.

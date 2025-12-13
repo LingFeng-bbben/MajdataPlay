@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using MajdataPlay.Settings;
 using TMPro;
 using UnityEngine;
@@ -101,7 +102,7 @@ namespace MajdataPlay.Scenes.List
         {
             _cts?.Cancel();    
         }
-        async UniTask SetCoverAsync(ISongDetail detail, CancellationToken ct = default)
+        async Task SetCoverAsync(ISongDetail detail, CancellationToken ct = default)
         {
             _loadingObj.SetActive(true);
             _cover.sprite = SpriteLoader.EmptySprite;

@@ -50,7 +50,7 @@ namespace MajdataPlay.Scenes.Setting
         int _lastIndex = 0;
 
         AudioManager _audioManager = MajInstances.AudioManager;
-        void Start()
+        public void Init()
         {
             Localization.OnLanguageChanged += OnLangChanged;
             nameText.text = $"MAJSETTING_PROPERTY_{PropertyInfo.Name}".i18n();
@@ -63,7 +63,7 @@ namespace MajdataPlay.Scenes.Setting
                 case "AnswerOffset":
                 case "TouchPanelOffset":
                 case "DisplayOffset":
-                    descriptionText.text += $"\n{$"MAJTEXT_SETTING_OFFSETUNIT_{MajEnv.UserSettings.Debug.OffsetUnit}".i18n()}";
+                    descriptionText.text += $"\n{$"MAJTEXT_SETTING_OFFSETUNIT_{MajEnv.Settings.Debug.OffsetUnit}".i18n()}";
                     break;
             }
             InitOptions();
@@ -82,7 +82,7 @@ namespace MajdataPlay.Scenes.Setting
                 case "AnswerOffset":
                 case "TouchPanelOffset":
                 case "DisplayOffset":
-                    descriptionText.text += $"\n{$"MAJTEXT_SETTING_OFFSETUNIT_{MajEnv.UserSettings.Debug.OffsetUnit}".i18n()}";
+                    descriptionText.text += $"\n{$"MAJTEXT_SETTING_OFFSETUNIT_{MajEnv.Settings.Debug.OffsetUnit}".i18n()}";
                     break;
             }
             UpdateOption();
@@ -123,6 +123,7 @@ namespace MajdataPlay.Scenes.Setting
                         break;
                     case "Answer":
                     case "BGM":
+                    case "Track":
                     case "Tap":
                     case "Judge":
                     case "Slide":
@@ -132,6 +133,11 @@ namespace MajdataPlay.Scenes.Setting
                         _maxValue = 2;
                         _step = 0.05m;
                         _minValue = 0;
+                        break;
+                    case "TrackVolumeOffset":
+                        _maxValue = 2;
+                        _step = 0.05m;
+                        _minValue = -2;
                         break;
                     case "OuterJudgeDistance":
                     case "InnerJudgeDistance":
@@ -177,7 +183,7 @@ namespace MajdataPlay.Scenes.Setting
                     case "AnswerOffset":
                     case "TouchPanelOffset":
                         {
-                            if(MajEnv.UserSettings.Debug.OffsetUnit == Settings.OffsetUnitOption.Second)
+                            if(MajEnv.Settings.Debug.OffsetUnit == Settings.OffsetUnitOption.Second)
                             {
                                 goto default;
                             }
@@ -191,7 +197,7 @@ namespace MajdataPlay.Scenes.Setting
                         break;
                     case "DisplayOffset":
                         {
-                            if (MajEnv.UserSettings.Debug.OffsetUnit == Settings.OffsetUnitOption.Second)
+                            if (MajEnv.Settings.Debug.OffsetUnit == Settings.OffsetUnitOption.Second)
                             {
                                 _maxValue = null;
                                 _minValue = 0;
@@ -281,7 +287,7 @@ namespace MajdataPlay.Scenes.Setting
 
                 if (_pressTime >= 0.4f)
                 {
-                    var iterationSpeed = MajEnv.UserSettings.Debug.MenuOptionIterationSpeed;
+                    var iterationSpeed = MajEnv.Settings.Debug.MenuOptionIterationSpeed;
                     if (_iterationThrottle <= 1f / (iterationSpeed is 0 ? 15 : iterationSpeed))
                     {
                         _iterationThrottle += MajTimeline.DeltaTime;
@@ -364,7 +370,7 @@ namespace MajdataPlay.Scenes.Setting
                 case "AnswerOffset":
                 case "TouchPanelOffset":
                     {
-                        if (MajEnv.UserSettings.Debug.OffsetUnit == OffsetUnitOption.Second)
+                        if (MajEnv.Settings.Debug.OffsetUnit == OffsetUnitOption.Second)
                         {
                             _maxValue = null;
                             _minValue = null;
@@ -380,7 +386,7 @@ namespace MajdataPlay.Scenes.Setting
                     }
                 case "DisplayOffset":
                     {
-                        if (MajEnv.UserSettings.Debug.OffsetUnit == OffsetUnitOption.Second)
+                        if (MajEnv.Settings.Debug.OffsetUnit == OffsetUnitOption.Second)
                         {
                             _maxValue = null;
                             _minValue = 0;
@@ -389,7 +395,7 @@ namespace MajdataPlay.Scenes.Setting
                         else
                         {
                             _maxValue = null;
-                            _minValue = null;
+                            _minValue = 0;
                             _step = 0.1m;
                         }
                         goto default;
@@ -430,7 +436,7 @@ namespace MajdataPlay.Scenes.Setting
                 case "AnswerOffset":
                 case "TouchPanelOffset":
                 case "DisplayOffset":
-                    descriptionText.text += $"\n{$"MAJTEXT_SETTING_OFFSETUNIT_{MajEnv.UserSettings.Debug.OffsetUnit}".i18n()}";
+                    descriptionText.text += $"\n{$"MAJTEXT_SETTING_OFFSETUNIT_{MajEnv.Settings.Debug.OffsetUnit}".i18n()}";
                     break;
             }
         }
@@ -512,22 +518,22 @@ namespace MajdataPlay.Scenes.Setting
                         }
                         else if(eNewValue == OffsetUnitOption.Second)
                         {
-                            MajEnv.UserSettings.Judge.AudioOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.UserSettings.Judge.AudioOffset, 3); 
-                            MajEnv.UserSettings.Judge.JudgeOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.UserSettings.Judge.JudgeOffset, 3);
-                            MajEnv.UserSettings.Judge.TouchPanelOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.UserSettings.Judge.TouchPanelOffset, 3); 
-                            MajEnv.UserSettings.Judge.AnswerOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.UserSettings.Judge.AnswerOffset, 3); 
-                            MajEnv.UserSettings.Game.SlideFadeInOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.UserSettings.Game.SlideFadeInOffset, 3); 
-                            MajEnv.UserSettings.Debug.DisplayOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.UserSettings.Debug.DisplayOffset, 3);
+                            MajEnv.Settings.Judge.AudioOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.Settings.Judge.AudioOffset, 3); 
+                            MajEnv.Settings.Judge.JudgeOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.Settings.Judge.JudgeOffset, 3);
+                            MajEnv.Settings.Judge.TouchPanelOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.Settings.Judge.TouchPanelOffset, 3); 
+                            MajEnv.Settings.Judge.AnswerOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.Settings.Judge.AnswerOffset, 3); 
+                            MajEnv.Settings.Game.SlideFadeInOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.Settings.Game.SlideFadeInOffset, 3); 
+                            MajEnv.Settings.Debug.DisplayOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.Settings.Debug.DisplayOffset, 3);
                             ChartSettingStorage.ConvertUnitToSecond();
                         }
                         else
                         {
-                            MajEnv.UserSettings.Judge.AudioOffset = MathF.Round(MajEnv.UserSettings.Judge.AudioOffset / MajEnv.FRAME_LENGTH_SEC, 1);
-                            MajEnv.UserSettings.Judge.JudgeOffset = MathF.Round(MajEnv.UserSettings.Judge.JudgeOffset / MajEnv.FRAME_LENGTH_SEC, 1);
-                            MajEnv.UserSettings.Judge.TouchPanelOffset = MathF.Round(MajEnv.UserSettings.Judge.TouchPanelOffset / MajEnv.FRAME_LENGTH_SEC, 1);
-                            MajEnv.UserSettings.Judge.AnswerOffset = MathF.Round(MajEnv.UserSettings.Judge.AnswerOffset / MajEnv.FRAME_LENGTH_SEC, 1);
-                            MajEnv.UserSettings.Game.SlideFadeInOffset = MathF.Round(MajEnv.UserSettings.Game.SlideFadeInOffset / MajEnv.FRAME_LENGTH_SEC, 1);
-                            MajEnv.UserSettings.Debug.DisplayOffset = MathF.Round(MajEnv.UserSettings.Debug.DisplayOffset / MajEnv.FRAME_LENGTH_SEC, 1);
+                            MajEnv.Settings.Judge.AudioOffset = MathF.Round(MajEnv.Settings.Judge.AudioOffset / MajEnv.FRAME_LENGTH_SEC, 1);
+                            MajEnv.Settings.Judge.JudgeOffset = MathF.Round(MajEnv.Settings.Judge.JudgeOffset / MajEnv.FRAME_LENGTH_SEC, 1);
+                            MajEnv.Settings.Judge.TouchPanelOffset = MathF.Round(MajEnv.Settings.Judge.TouchPanelOffset / MajEnv.FRAME_LENGTH_SEC, 1);
+                            MajEnv.Settings.Judge.AnswerOffset = MathF.Round(MajEnv.Settings.Judge.AnswerOffset / MajEnv.FRAME_LENGTH_SEC, 1);
+                            MajEnv.Settings.Game.SlideFadeInOffset = MathF.Round(MajEnv.Settings.Game.SlideFadeInOffset / MajEnv.FRAME_LENGTH_SEC, 1);
+                            MajEnv.Settings.Debug.DisplayOffset = MathF.Round(MajEnv.Settings.Debug.DisplayOffset / MajEnv.FRAME_LENGTH_SEC, 1);
                             ChartSettingStorage.ConvertUnitToFrame();
                         }
                     }

@@ -15,18 +15,21 @@ namespace MajdataPlay.IO
 {
     internal static class HidManager
     {
+        public static IEnumerable<HidDevice> Devices
+        {
+            get
+            {
+                return _hidDevices;
+            }
+        }
         static IEnumerable<HidDevice> _hidDevices = Array.Empty<HidDevice>();
         readonly static List<HidDevice> _cacheList = new(); 
         static HidManager()
         {
-            var manufacturer = MajEnv.UserSettings.IO.Manufacturer;
-            var buttonRingOptions = MajEnv.UserSettings.IO.InputDevice.ButtonRing;
-            var includeHidDevice = buttonRingOptions.Type == ButtonRingDeviceOption.HID || 
-                                   manufacturer == DeviceManufacturerOption.Dao;
-            if (!includeHidDevice)
-                return;
+            var manufacturer = MajEnv.Settings.IO.Manufacturer;
+            var buttonRingOptions = MajEnv.Settings.IO.InputDevice.ButtonRing;
+
             _hidDevices = DeviceList.Local.GetHidDevices();
-            MajDebug.Log($"All available HID devices:\n{string.Join('\n', _hidDevices)}");
             DeviceList.Local.Changed += OnDeviceListChanged;
         }
         public static bool TryGetDevices(DeviceFilter filter, [NotNullWhen(true)] out IEnumerable<HidDevice> devices)

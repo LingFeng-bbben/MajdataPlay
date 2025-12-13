@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        configuration: [Debug, Release]
+        configuration: [Release]
     env:
       COMMIT_HASH_FULL: ${{ github.sha }}
       OUTPUT_NAME: MajdataPlay-${{ matrix.configuration }}

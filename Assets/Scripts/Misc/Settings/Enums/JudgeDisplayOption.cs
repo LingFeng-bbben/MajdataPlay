@@ -1,5 +1,8 @@
-﻿namespace MajdataPlay.Settings
+﻿using UnityEngine.Scripting;
+
+namespace MajdataPlay.Settings
 {
+    [Preserve]
     public enum JudgeDisplayOption
     {
         /// <summary>
