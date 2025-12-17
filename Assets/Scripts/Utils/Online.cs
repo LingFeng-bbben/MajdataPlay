@@ -247,14 +247,6 @@ namespace MajdataPlay.Utils
                 {
                     throw new ArgumentNullException(nameof(apiEndpoint));
                 }
-                if (username == "YourUsername" || password == "YourUsername")
-                {
-                    throw new Exception("Username or Password is unset");
-                }
-                if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
-                {
-                    throw new Exception("Username or Password is null");
-                }
                 if (await CheckLoginAsync(apiEndpoint))
                 {
                     return new()
@@ -266,6 +258,25 @@ namespace MajdataPlay.Utils
                         Message = string.Empty
                     };
                 }
+                if(apiEndpoint.AuthMethod != Settings.NetAuthMethodOption.Plain)
+                {
+                    var returnValue = new EndpointResponse()
+                    {
+                        ErrorCode = HttpErrorCode.NotSupported,
+                        IsSuccessfully = false,
+                        IsDeserializable = false,
+                        Message = "Unsupported auth method"
+                    };
+                    if (username == "YourUsername" || password == "YourUsername")
+                    {
+                        return returnValue;
+                    }
+                    if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+                    {
+                        return returnValue;
+                    }
+                }
+                
                 var pwdHashStr = HashHelper.ToHexString(await HashHelper.ComputeHashAsync(Encoding.UTF8.GetBytes(password)));
                 var uri = apiEndpoint.Url.Combine(API_POST_USER_LOGIN);
 #if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
