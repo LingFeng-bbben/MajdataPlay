@@ -1,4 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using MajdataPlay.Buffers;
 using MajdataPlay.IO;
 using MajdataPlay.Net;
@@ -80,7 +80,6 @@ namespace MajdataPlay.Scenes.Login
         async UniTaskVoid LoginProcessor()
         {
             var sceneSwitcher = MajInstances.SceneSwitcher;
-            await sceneSwitcher.FadeOutAsync();
             for (var i = 0; i < _enabledEndpoints.Length; i++)
             {
                 var endpoint = _enabledEndpoints[i];
@@ -93,7 +92,7 @@ namespace MajdataPlay.Scenes.Login
                             _qrCodeComponent.SetActive(false);
                             _usernameComponent.SetActive(true);
                             _passwordComponent.SetActive(true);
-
+                            await sceneSwitcher.FadeOutAsync();
                             _usernameInput.text = endpoint.Username ?? string.Empty;
                             _passwordInput.text = endpoint.Password ?? string.Empty;
 
@@ -141,7 +140,7 @@ namespace MajdataPlay.Scenes.Login
 
                             _qrCodeRawImage.texture = null!;
                             _qrCodeRawImage.color = new Color(0.5f, 0.5f, 0.5f);
-
+                            await sceneSwitcher.FadeOutAsync();
                             var task = Online.RegisterAsync(endpoint, new()
                             {
                                 Name = "MajdataPlay Client",
@@ -238,7 +237,7 @@ namespace MajdataPlay.Scenes.Login
                             if (rsp.StatusCode is HttpStatusCode.OK)
                             {
                                 await Online.CheckLoginAsync(endpoint);
-                                continue;
+                                goto CONTINUE;
                             }
                             else if (rsp.StatusCode is HttpStatusCode.Accepted)
                             {
@@ -256,6 +255,7 @@ namespace MajdataPlay.Scenes.Login
                         throw new NotSupportedException();
                 }
             CONTINUE:
+                await sceneSwitcher.FadeInAsync();
                 continue;
             }
             sceneSwitcher.SwitchScene("List", false);

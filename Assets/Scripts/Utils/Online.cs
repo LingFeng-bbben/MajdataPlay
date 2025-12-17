@@ -1,5 +1,6 @@
 using Cysharp.Text;
 using Cysharp.Threading.Tasks;
+using MajdataPlay.Buffers;
 using MajdataPlay.Net;
 using MajdataPlay.Unsafe;
 using Newtonsoft.Json;
@@ -48,6 +49,75 @@ namespace MajdataPlay.Utils
         static SpinLock _dictLock = new ();
         readonly static Dictionary<ApiEndpoint, ApiEndpointStatistics> _endpointStatistics = new();
 
+        public static ValueTask HeartbeatAsync(CancellationToken token = default)
+        {
+            var rentedBuffer = new RentedList<ApiEndpointStatistics>();
+            ref var @lock = ref _dictLock;
+            var isLocked = false;
+            try
+            {
+                @lock.Enter(ref isLocked);
+                foreach (var (_, statistics) in _endpointStatistics)
+                {
+                    rentedBuffer.Add(statistics);
+                }
+            }
+            finally
+            {
+                if (isLocked)
+                {
+                    @lock.Exit();
+                }
+            }
+            return HeartbeatCoreAsync(rentedBuffer, token);
+        }
+        static async ValueTask HeartbeatCoreAsync(RentedList<ApiEndpointStatistics> rentedBuffer, CancellationToken token = default)
+        {
+            using (rentedBuffer)
+            {
+                await using (UniTask.ReturnToCurrentSynchronizationContext())
+                {
+                    await UniTask.SwitchToThreadPool();
+
+                    foreach (var statistics in rentedBuffer)
+                    {
+                        await statistics.LockAsync(token);
+                        try
+                        {
+                            if (statistics.IsMachineRegistered is true)
+                            {
+                                try
+                                {
+                                    var isAlive = await CheckMachineRegisterAsync(statistics.Endpoint, token);
+                                    statistics.IsMachineRegistered = isAlive;
+                                }
+                                catch (Exception e)
+                                {
+                                    MajDebug.LogException(e);
+                                }
+                            }
+                            if (statistics.IsUserLoggedIn is true)
+                            {
+                                try
+                                {
+                                    var isAlive = await CheckLoginAsync(statistics.Endpoint, token);
+                                    statistics.IsUserLoggedIn = isAlive;
+                                }
+                                catch (Exception e)
+                                {
+                                    MajDebug.LogException(e);
+                                }
+                            }
+                        }
+                        finally
+                        {
+                            statistics.Unlock();
+                        }
+                    }
+                    MajDebug.LogDebug("Online heartbeat has been completed");
+                }
+            }
+        }
         public static async ValueTask<bool> CheckLoginAsync(ApiEndpoint apiEndpoint, CancellationToken token = default)
         {
             await using (UniTask.ReturnToCurrentSynchronizationContext())
@@ -307,7 +377,7 @@ namespace MajdataPlay.Utils
                 await UniTask.SwitchToThreadPool();
                 var serverInfo = song.ServerInfo;
                 await LoginAsync(song.ServerInfo, token);
-                var interactUrl = BuildMaiChartUri(API_POST_MAICHART_INTERACT, song.Id);
+                var interactUrl = BuildMaiChartUri(song.ServerInfo, API_POST_MAICHART_INTERACT, song.Id);
 
 #if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
                 var rsp = await GetAsync(interactUrl, token);
@@ -396,7 +466,7 @@ namespace MajdataPlay.Utils
                 await UniTask.SwitchToThreadPool();
                 var serverInfo = song.ServerInfo;
                 await LoginAsync(serverInfo);
-                var scoreUrl = BuildMaiChartUri(API_POST_MAICHART_SCORE, song.Id);
+                var scoreUrl = BuildMaiChartUri(song.ServerInfo, API_POST_MAICHART_SCORE, song.Id);
                 var json = await Serializer.Json.SerializeAsync(score, DEFAULT_JSON_SERIALIZER);
 
 #if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
@@ -744,16 +814,16 @@ namespace MajdataPlay.Utils
         }
 #endif
 
-        static Uri BuildMaiChartUri(string api, string chartId)
+        static Uri BuildMaiChartUri(ApiEndpoint endpoint, string template, string chartId)
         {
-            return BuildMaiChartUri(api, Guid.Parse(chartId));
+            return BuildMaiChartUri(endpoint, template, Guid.Parse(chartId));
         }
-        static Uri BuildMaiChartUri(string api, Guid chartId)
+        static Uri BuildMaiChartUri(ApiEndpoint endpoint, string template, Guid chartId)
         {
             using var sb = ZString.CreateStringBuilder(true);
-            sb.AppendFormat(api, chartId);
+            sb.AppendFormat(template, chartId);
 
-            return new Uri(sb.ToString());
+            return new Uri(endpoint.Url, sb.ToString());
         }
 
         static ApiEndpointStatistics GetApiEndpointStatistic(ApiEndpoint endpoint)
@@ -795,9 +865,9 @@ namespace MajdataPlay.Utils
             {
                 _lock.Wait();
             }
-            public Task LockAsync()
+            public Task LockAsync(CancellationToken token = default)
             {
-                return _lock.WaitAsync();
+                return _lock.WaitAsync(token);
             }
             public void Unlock()
             {
