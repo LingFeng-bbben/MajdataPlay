@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using MajdataPlay.IO;
 using MajdataPlay.Net;
+using MajdataPlay.Settings;
 using MajdataPlay.Utils;
 using System;
 using System.Collections;
@@ -38,9 +39,8 @@ namespace MajdataPlay.Scenes.Result
             }
                 
             var serverInfo = onlineDetail.ServerInfo;
-            if (serverInfo is null)
+            if (serverInfo is null || serverInfo.AuthMethod == NetAuthMethodOption.None)
             {
-               
                 thumb.gameObject.SetActive(false);
                 return false;
             }

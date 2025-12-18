@@ -1,4 +1,4 @@
-﻿using MajdataPlay.IO;
+using MajdataPlay.IO;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -179,7 +179,7 @@ namespace MajdataPlay.Scenes.Result
             {
                 var localScoreSaveTask = ScoreManager.SaveScore(result, result.Level);
                 var score = MaiScore.CreateFromResult(result,result.Level);
-                if (score is not null && song is OnlineSongDetail)
+                if (score is not null && song is OnlineSongDetail onlineSong && onlineSong.ServerInfo.AuthMethod != NetAuthMethodOption.None)
                 {
                     var task = intractSender.SendScoreAsync(score);
                     _scoreSaveTask = Task.WhenAll(localScoreSaveTask, task);
