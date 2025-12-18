@@ -102,20 +102,7 @@ namespace MajdataPlay.Utils
                 await UniTask.SwitchToThreadPool();
                 var uri = apiEndpoint.Url.Combine(API_GET_USER_INFO);
                 var rsp = await GetAsync(uri, token);
-                var statistics = GetApiEndpointStatistic(apiEndpoint);
 
-                await statistics.LockAsync(token);
-                try
-                {
-                    if(rsp.StatusCode is (HttpStatusCode.OK or HttpStatusCode.Unauthorized))
-                    {
-                        statistics.IsUserLoggedIn = rsp.IsSuccessfully;
-                    }
-                }
-                finally
-                {
-                    statistics.Unlock();
-                }
                 return rsp.IsSuccessfully;
             }
         }
