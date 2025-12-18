@@ -387,6 +387,14 @@ namespace MajdataPlay.Scenes.List
                     return;
                 }
             }
+            else if (a5Statistic.IsPressed)
+            {
+                if(_coverListDisplayer.IsDirList && a5Statistic.PressTime > 3)
+                {
+                    EnterLogin();
+                    return;
+                }
+            }
             else
             {
                 _enterPracticeTimer = 0;
@@ -552,6 +560,37 @@ namespace MajdataPlay.Scenes.List
             _coverListDisplayer.SelectedCollection.Index = 0;
             _isExited = true;
             MajInstances.SceneSwitcher.SwitchScene("Game", false);
+        }
+        void EnterLogin()
+        {
+            _cts.Cancel();
+            _pressTime = 0;
+            _isExited = true;
+            EnterLoginBackgroundAsync();
+        }
+        async void EnterLoginBackgroundAsync()
+        {
+            var sceneSwitcher = MajInstances.SceneSwitcher;
+            await sceneSwitcher.FadeInAsync();
+            sceneSwitcher.SwitchScene("Empty", false);
+            await UniTask.Delay(400);
+            sceneSwitcher.SetLoadingText("Waiting for all background tasks to suspend".i18n());
+            await UniTask.Delay(100);
+            var bTasks = WaitForBackgroundTaskSuspendAsync();
+            while (!bTasks.IsCompleted)
+            {
+                await UniTask.Yield();
+            }
+            await UniTask.Delay(100);
+            sceneSwitcher.SetLoadingText("MAJTEXT_LOGGING_OUT".i18n() + "...");
+            var task = Online.LogoutAllAsync();
+            while (!task.IsCompleted)
+            {
+                await UniTask.Yield();
+            }
+            sceneSwitcher.SetLoadingText(string.Empty);
+            await UniTask.Delay(1000);
+            sceneSwitcher.SwitchScene("Login");
         }
         public static Task WaitForBackgroundTaskSuspendAsync()
         {

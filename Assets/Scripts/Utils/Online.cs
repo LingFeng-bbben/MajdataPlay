@@ -41,6 +41,7 @@ namespace MajdataPlay.Utils
         public const string API_GET_AUTH_CHECK = "machine/auth/check";
 
         public const string API_POST_USER_LOGIN = "account/login";
+        public const string API_POST_USER_LOGOUT = "account/logout";
         public const string API_POST_MAICHART_INTERACT = "maichart/{0}/interact";
         public const string API_POST_MAICHART_SCORE = "maichart/{0}/score";
         public const string API_POST_MACHINE_REGISTER = "machine/register";
@@ -49,73 +50,49 @@ namespace MajdataPlay.Utils
         static SpinLock _dictLock = new ();
         readonly static Dictionary<ApiEndpoint, ApiEndpointStatistics> _endpointStatistics = new();
 
-        public static ValueTask HeartbeatAsync(CancellationToken token = default)
+        public static async ValueTask HeartbeatAsync(CancellationToken token = default)
         {
-            var rentedBuffer = new RentedList<ApiEndpointStatistics>();
-            ref var @lock = ref _dictLock;
-            var isLocked = false;
-            try
+            using var rentedBuffer = new RentedList<ApiEndpointStatistics>();
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
-                @lock.Enter(ref isLocked);
-                foreach (var (_, statistics) in _endpointStatistics)
+                await UniTask.SwitchToThreadPool();
+                GetAllApiEndpointStatistic(rentedBuffer);
+                foreach (var statistics in rentedBuffer)
                 {
-                    rentedBuffer.Add(statistics);
-                }
-            }
-            finally
-            {
-                if (isLocked)
-                {
-                    @lock.Exit();
-                }
-            }
-            return HeartbeatCoreAsync(rentedBuffer, token);
-        }
-        static async ValueTask HeartbeatCoreAsync(RentedList<ApiEndpointStatistics> rentedBuffer, CancellationToken token = default)
-        {
-            using (rentedBuffer)
-            {
-                await using (UniTask.ReturnToCurrentSynchronizationContext())
-                {
-                    await UniTask.SwitchToThreadPool();
-
-                    foreach (var statistics in rentedBuffer)
+                    await statistics.LockAsync(token);
+                    try
                     {
-                        await statistics.LockAsync(token);
-                        try
+                        if (statistics.IsMachineRegistered is true)
                         {
-                            if (statistics.IsMachineRegistered is true)
+                            try
                             {
-                                try
-                                {
-                                    var isAlive = await CheckMachineRegisterAsync(statistics.Endpoint, token);
-                                    statistics.IsMachineRegistered = isAlive;
-                                }
-                                catch (Exception e)
-                                {
-                                    MajDebug.LogException(e);
-                                }
+                                var isAlive = await CheckMachineRegisterAsync(statistics.Endpoint, token);
+                                statistics.IsMachineRegistered = isAlive;
                             }
-                            if (statistics.IsUserLoggedIn is true)
+                            catch (Exception e)
                             {
-                                try
-                                {
-                                    var isAlive = await CheckLoginAsync(statistics.Endpoint, token);
-                                    statistics.IsUserLoggedIn = isAlive;
-                                }
-                                catch (Exception e)
-                                {
-                                    MajDebug.LogException(e);
-                                }
+                                MajDebug.LogException(e);
                             }
                         }
-                        finally
+                        if (statistics.IsUserLoggedIn is true)
                         {
-                            statistics.Unlock();
+                            try
+                            {
+                                var isAlive = await CheckLoginAsync(statistics.Endpoint, token);
+                                statistics.IsUserLoggedIn = isAlive;
+                            }
+                            catch (Exception e)
+                            {
+                                MajDebug.LogException(e);
+                            }
                         }
                     }
-                    MajDebug.LogDebug("Online heartbeat has been completed");
+                    finally
+                    {
+                        statistics.Unlock();
+                    }
                 }
+                MajDebug.LogDebug("Online heartbeat has been completed");
             }
         }
         public static async ValueTask<bool> CheckLoginAsync(ApiEndpoint apiEndpoint, CancellationToken token = default)
@@ -395,6 +372,39 @@ namespace MajdataPlay.Utils
                     };
                 }
                 return rsp;
+            }
+        }
+        public static async ValueTask LogoutAllAsync(CancellationToken token = default)
+        {
+            using var rentedBuffer = new RentedList<ApiEndpointStatistics>();
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
+            {
+                await UniTask.SwitchToThreadPool();
+                GetAllApiEndpointStatistic(rentedBuffer);
+                foreach(var statistics in rentedBuffer)
+                {
+                    await statistics.LockAsync(token);
+                    try
+                    {
+                        var apiEndpoint = statistics.Endpoint;
+                        if (statistics.IsUserLoggedIn is true)
+                        {
+                            try
+                            {
+                                var uri = apiEndpoint.Url.Combine(API_POST_USER_LOGOUT);
+                                var rsp = await PostAsync(uri, token);
+                            }
+                            catch (Exception e)
+                            {
+                                MajDebug.LogException(e);
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        statistics.Unlock();
+                    }
+                }
             }
         }
         public static async ValueTask<EndpointResponse> PostLikeAsync(OnlineSongDetail song, CancellationToken token = default)
@@ -869,6 +879,29 @@ namespace MajdataPlay.Utils
                     _endpointStatistics[endpoint] = stats;
                 }
                 return stats;
+            }
+            finally
+            {
+                if (isLocked)
+                {
+                    @lock.Exit();
+                }
+            }
+        }
+        static int GetAllApiEndpointStatistic(IList<ApiEndpointStatistics> buffer)
+        {
+            ref var @lock = ref _dictLock;
+            var isLocked = false;
+            try
+            {
+                @lock.Enter(ref isLocked);
+                var i = 0;
+                foreach (var (_, statistics) in _endpointStatistics)
+                {
+                    i++;
+                    buffer.Add(statistics);
+                }
+                return i;
             }
             finally
             {
