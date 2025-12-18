@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using static QRCoder.QRCodeGenerator;
 #nullable enable
@@ -46,15 +47,18 @@ namespace MajdataPlay.Scenes.Login
         TextMeshProUGUI _errText;
 
         RawImage _qrCodeRawImage = null!;
+        EventSystem _eventSystem = null!;
         ApiEndpoint[] _apiEndpoints = Array.Empty<ApiEndpoint>();
         ApiEndpoint[] _enabledEndpoints = Array.Empty<ApiEndpoint>();
 
+        bool _isReady = false;
         readonly static QRCodeGenerator _qrGenerator = new ();
 
         void Awake()
         {
             _apiEndpoints = MajEnv.Settings.Online.ApiEndpoints;
             _qrCodeRawImage = _qrCodeComponent.GetComponent<RawImage>();
+            _eventSystem = GetComponent<EventSystem>();
 
             using var rentedApiEndpoints = new RentedList<ApiEndpoint>();
             for (var i = 0; i < _apiEndpoints.Length; i++)
@@ -76,6 +80,45 @@ namespace MajdataPlay.Scenes.Login
             _errText.text = string.Empty;
             LoginProcessor().Forget();
         }
+        void Update()
+        {
+            if(!_isReady)
+            {
+                return;
+            }
+            var isUsernameInputClicked = InputManager.IsSensorClickedInThisFrame(SensorArea.B8) ||
+                                         InputManager.IsSensorClickedInThisFrame(SensorArea.B7) ||
+                                         InputManager.IsSensorClickedInThisFrame(SensorArea.B1) ||
+                                         InputManager.IsSensorClickedInThisFrame(SensorArea.B2);
+            var isPasswordInputClicked = InputManager.IsSensorClickedInThisFrame(SensorArea.B6) ||
+                                         InputManager.IsSensorClickedInThisFrame(SensorArea.B5) ||
+                                         InputManager.IsSensorClickedInThisFrame(SensorArea.B4) ||
+                                         InputManager.IsSensorClickedInThisFrame(SensorArea.B3);
+            var isUsernameClearBtnClicked = InputManager.IsSensorClickedInThisFrame(SensorArea.A2) ||
+                                            InputManager.IsSensorClickedInThisFrame(SensorArea.B2) ||
+                                            InputManager.IsSensorClickedInThisFrame(SensorArea.E2);
+            var isPasswordClearBtnClicked = InputManager.IsSensorClickedInThisFrame(SensorArea.A3) ||
+                                            InputManager.IsSensorClickedInThisFrame(SensorArea.B3) ||
+                                            InputManager.IsSensorClickedInThisFrame(SensorArea.E4);
+            if(isUsernameInputClicked)
+            {
+                _eventSystem.SetSelectedGameObject(_usernameInput.gameObject);
+            }
+            if(isUsernameClearBtnClicked)
+            {
+                _eventSystem.SetSelectedGameObject(_usernameInput.gameObject);
+                _usernameInput.text = string.Empty;
+            }
+            if (isPasswordInputClicked)
+            {
+                _eventSystem.SetSelectedGameObject(_passwordInput.gameObject);
+            }
+            if (isPasswordClearBtnClicked)
+            {
+                _eventSystem.SetSelectedGameObject(_passwordInput.gameObject);
+                _passwordInput.text = string.Empty;
+            }
+        }
 
         async UniTaskVoid LoginProcessor()
         {
@@ -85,6 +128,12 @@ namespace MajdataPlay.Scenes.Login
                 var endpoint = _enabledEndpoints[i];
                 _loading.SetActive(false);
                 _errText.text = string.Empty;
+                var siteName = endpoint.Name;
+                if(string.IsNullOrEmpty(siteName))
+                {
+                    siteName = endpoint.Url.Host;
+                }
+                _sceneTitle.text = $"Login to\n{siteName}";
                 switch(endpoint.AuthMethod)
                 {
                     case NetAuthMethodOption.Plain:
@@ -97,6 +146,7 @@ namespace MajdataPlay.Scenes.Login
                             _passwordInput.text = endpoint.Password ?? string.Empty;
 
                         RETRY:
+                            _isReady = true;
                             _usernameInput.readOnly = false;
                             _passwordInput.readOnly = false;
                             while(true)
@@ -111,6 +161,8 @@ namespace MajdataPlay.Scenes.Login
                                 }
                                 await UniTask.Yield();
                             }
+                            _isReady = false;
+                            _errText.text = string.Empty;
                             _usernameInput.readOnly = true;
                             _passwordInput.readOnly = true;
 
@@ -126,7 +178,16 @@ namespace MajdataPlay.Scenes.Login
                             _loading.SetActive(false);
                             if(!task.IsCompletedSuccessfully)
                             {
-                                _errText.text = "";
+                                var e = task.AsTask().Exception;
+                                MajDebug.LogException(e);
+                                _errText.text = e.ToString();
+                                goto RETRY;
+                            }
+                            var rsp = task.Result;
+                            if(!rsp.IsSuccessfully)
+                            {
+                                MajDebug.LogError($"Login failed:\nStatusCode:{rsp.StatusCode}\nErrorCode:{rsp.ErrorCode}\nMessage:{rsp.Message}");
+                                _errText.text = $"Login failed:\n{rsp.Message.i18n()}";
                                 goto RETRY;
                             }
                         }
@@ -152,9 +213,17 @@ namespace MajdataPlay.Scenes.Login
                             }
                             if (task.IsFaulted || !task.Result.IsSuccessfully)
                             {
-                                _errText.text = "Failed to register QR Code login session";
+                                _errText.text = "MAJTEXT_ONLINE_MACHINE_REGISTER_FAILED";
                                 MajDebug.LogError("Failed to register QR Code login session");
-                                MajDebug.LogException(task.AsTask().Exception);
+                                if(task.IsFaulted)
+                                {
+                                    MajDebug.LogException(task.AsTask().Exception);
+                                }
+                                else
+                                {
+                                    var tmpRsp = task.Result;
+                                    MajDebug.LogError($"StatusCode:{tmpRsp.StatusCode}\nErrorCode:{tmpRsp.ErrorCode}\nMessage:{tmpRsp.Message}");
+                                }
                                 while (true)
                                 {
                                     if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A5))
@@ -256,6 +325,7 @@ namespace MajdataPlay.Scenes.Login
                 }
             CONTINUE:
                 await sceneSwitcher.FadeInAsync();
+                _isReady = false;
                 continue;
             }
             sceneSwitcher.SwitchScene("List", false);

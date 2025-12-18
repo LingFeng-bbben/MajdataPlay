@@ -351,7 +351,7 @@ namespace MajdataPlay
             else
             {
                 _httpClientHandler.UseProxy = false;
-                _httpClientHandler.Proxy = null;
+                //_httpClientHandler.Proxy = null;
             }
         PROXY_CONFIG_EXIT:
 #endif

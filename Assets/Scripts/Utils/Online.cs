@@ -124,15 +124,22 @@ namespace MajdataPlay.Utils
             {
                 await UniTask.SwitchToThreadPool();
                 var uri = apiEndpoint.Url.Combine(API_GET_USER_INFO);
-#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
                 var rsp = await GetAsync(uri, token);
+                var statistics = GetApiEndpointStatistic(apiEndpoint);
 
+                await statistics.LockAsync(token);
+                try
+                {
+                    if(rsp.StatusCode is (HttpStatusCode.OK or HttpStatusCode.Unauthorized))
+                    {
+                        statistics.IsUserLoggedIn = rsp.IsSuccessfully;
+                    }
+                }
+                finally
+                {
+                    statistics.Unlock();
+                }
                 return rsp.IsSuccessfully;
-#else
-                var rsp = await GetAsync(uri, token);
-
-                return rsp.IsSuccessfully;
-#endif
             }
         }
         public static async ValueTask<bool> CheckMachineRegisterAsync(ApiEndpoint apiEndpoint, CancellationToken token = default)
@@ -166,7 +173,7 @@ namespace MajdataPlay.Utils
                         IsDeserializable = false,
                         StatusCode = HttpStatusCode.NotFound,
                         ErrorCode = HttpErrorCode.NotSupported,
-                        Message = "MACHINE_REGISTRATION_UNSUPPORTED"
+                        Message = "MAJTEXT_ONLINE_MACHINE_REGISTRATION_UNSUPPORTED"
                     };
                 }
                 try
@@ -191,7 +198,7 @@ namespace MajdataPlay.Utils
                             IsDeserializable = false,
                             StatusCode = HttpStatusCode.NotFound,
                             ErrorCode = HttpErrorCode.NotSupported,
-                            Message = "MACHINE_REGISTRATION_UNSUPPORTED"
+                            Message = "MAJTEXT_ONLINE_MACHINE_REGISTRATION_UNSUPPORTED"
                         };
                     }
                     statistics.IsMachineRegistrationSupported = true;
@@ -209,7 +216,7 @@ namespace MajdataPlay.Utils
                             IsDeserializable = false,
                             StatusCode = HttpStatusCode.NotFound,
                             ErrorCode = HttpErrorCode.NotSupported,
-                            Message = "MACHINE_REGISTRATION_UNSUPPORTED"
+                            Message = "MAJTEXT_ONLINE_MACHINE_REGISTRATION_UNSUPPORTED"
                         };
                     }
                     statistics.IsMachineRegistrationSupported = true;
@@ -236,7 +243,7 @@ namespace MajdataPlay.Utils
                         IsDeserializable = false,
                         StatusCode = HttpStatusCode.NotFound,
                         ErrorCode = HttpErrorCode.NotSupported,
-                        Message = "MACHINE_REGISTRATION_UNSUPPORTED"
+                        Message = "MAJTEXT_ONLINE_MACHINE_REGISTRATION_UNSUPPORTED"
                     };
                 }
                 else if (statistics.IsMachineRegistrationSupported is null)
@@ -268,7 +275,7 @@ namespace MajdataPlay.Utils
                         StatusCode = rsp.StatusCode,
                         ErrorCode = rsp.ErrorCode,
                         Headers = rsp.Headers,
-                        Message = "MACHINE_AUTH_REQUEST_FAILED"
+                        Message = "MAJTEXT_ONLINE_MACHINE_AUTH_REQUEST_FAILED"
                     };
                 }
 #endif
@@ -287,7 +294,7 @@ namespace MajdataPlay.Utils
                         IsDeserializable = false,
                         StatusCode = HttpStatusCode.NotFound,
                         ErrorCode = HttpErrorCode.NotSupported,
-                        Message = "MACHINE_REGISTRATION_UNSUPPORTED"
+                        Message = "MAJTEXT_ONLINE_MACHINE_REGISTRATION_UNSUPPORTED"
                     };
                 }
                 else if (statistics.IsMachineRegistrationSupported is null)
@@ -335,7 +342,17 @@ namespace MajdataPlay.Utils
                         ErrorCode = HttpErrorCode.NotSupported,
                         IsSuccessfully = false,
                         IsDeserializable = false,
-                        Message = "Unsupported auth method"
+                        Message = "MAJTEXT_ONLINE_UNSUPPORTED_AUTH_METHOD"
+                    };
+                }
+                else
+                {
+                    var returnValue = new EndpointResponse()
+                    {
+                        ErrorCode = HttpErrorCode.InvalidRequest,
+                        IsSuccessfully = false,
+                        IsDeserializable = false,
+                        Message = "MAJTEXT_ONLINE_USERNAME_OR_PASSWORD_UNSET"
                     };
                     if (username == "YourUsername" || password == "YourUsername")
                     {
@@ -346,8 +363,8 @@ namespace MajdataPlay.Utils
                         return returnValue;
                     }
                 }
-                
-                var pwdHashStr = HashHelper.ToHexString(await HashHelper.ComputeHashAsync(Encoding.UTF8.GetBytes(password)));
+
+               var pwdHashStr = HashHelper.ToHexString(await HashHelper.ComputeHashAsync(Encoding.UTF8.GetBytes(password)));
                 var uri = apiEndpoint.Url.Combine(API_POST_USER_LOGIN);
 #if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
                 await UniTask.SwitchToMainThread();
@@ -356,7 +373,6 @@ namespace MajdataPlay.Utils
                 form.AddField("password", pwdHashStr.Replace("-", "").ToLower());
                 var rsp = await PostAsync(uri, form, token);
 
-                return rsp;
 #else
                 var formData = new MultipartFormDataContent
                 {
@@ -365,9 +381,20 @@ namespace MajdataPlay.Utils
                 };
 
                 var rsp = await PostAsync(uri, formData, token);
-
-                return rsp;
 #endif
+                if(rsp.StatusCode is HttpStatusCode.Unauthorized)
+                {
+                    rsp = new(rsp.AsMemory(), DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
+                    {
+                        StatusCode = rsp.StatusCode,
+                        ErrorCode = rsp.ErrorCode,
+                        IsSuccessfully = rsp.IsSuccessfully,
+                        IsDeserializable = rsp.IsDeserializable,
+                        Headers = rsp.Headers,
+                        Message = "MAJTEXT_ONLINE_USERNAME_OR_PASSWORD_INCORRECT"
+                    };
+                }
+                return rsp;
             }
         }
         public static async ValueTask<EndpointResponse> PostLikeAsync(OnlineSongDetail song, CancellationToken token = default)
