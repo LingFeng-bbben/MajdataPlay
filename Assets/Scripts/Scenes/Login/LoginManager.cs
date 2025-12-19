@@ -9,13 +9,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TMPro;
+using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using static QRCoder.QRCodeGenerator;
+using static UnityEditor.FilePathAttribute;
 #nullable enable
 namespace MajdataPlay.Scenes.Login
 {
@@ -53,6 +57,7 @@ namespace MajdataPlay.Scenes.Login
 
         bool _isReady = false;
         readonly static QRCodeGenerator _qrGenerator = new ();
+        readonly static Exception _exception = new();
 
         void Awake()
         {
@@ -65,10 +70,7 @@ namespace MajdataPlay.Scenes.Login
             {
                 var endpoint = _apiEndpoints[i];
 
-                if (endpoint.AuthMethod is not (NetAuthMethodOption.None or NetAuthMethodOption.OAuth))
-                {
-                    rentedApiEndpoints.Add(endpoint);
-                }
+                rentedApiEndpoints.Add(endpoint);
             }
             _enabledEndpoints = rentedApiEndpoints.ToArray();
             if (_enabledEndpoints.Length == 0)
@@ -86,35 +88,33 @@ namespace MajdataPlay.Scenes.Login
             {
                 return;
             }
-            var isUsernameInputClicked = InputManager.IsSensorClickedInThisFrame(SensorArea.B8) ||
-                                         InputManager.IsSensorClickedInThisFrame(SensorArea.B7) ||
+            var isUsernameInputClicked = InputManager.IsSensorClickedInThisFrame(SensorArea.B2) ||
                                          InputManager.IsSensorClickedInThisFrame(SensorArea.B1) ||
-                                         InputManager.IsSensorClickedInThisFrame(SensorArea.B2);
-            var isPasswordInputClicked = InputManager.IsSensorClickedInThisFrame(SensorArea.B6) ||
-                                         InputManager.IsSensorClickedInThisFrame(SensorArea.B5) ||
+                                         InputManager.IsSensorClickedInThisFrame(SensorArea.E2);
+            var isPasswordInputClicked = InputManager.IsSensorClickedInThisFrame(SensorArea.B3) ||
                                          InputManager.IsSensorClickedInThisFrame(SensorArea.B4) ||
-                                         InputManager.IsSensorClickedInThisFrame(SensorArea.B3);
-            var isUsernameClearBtnClicked = InputManager.IsSensorClickedInThisFrame(SensorArea.A2) ||
-                                            InputManager.IsSensorClickedInThisFrame(SensorArea.B2) ||
-                                            InputManager.IsSensorClickedInThisFrame(SensorArea.E2);
-            var isPasswordClearBtnClicked = InputManager.IsSensorClickedInThisFrame(SensorArea.A3) ||
-                                            InputManager.IsSensorClickedInThisFrame(SensorArea.B3) ||
-                                            InputManager.IsSensorClickedInThisFrame(SensorArea.E4);
+                                         InputManager.IsSensorClickedInThisFrame(SensorArea.E4);
+            var isUsernameClearBtnClicked = InputManager.IsSensorClickedInThisFrame(SensorArea.A2);
+            var isPasswordClearBtnClicked = InputManager.IsSensorClickedInThisFrame(SensorArea.A3);
             if(isUsernameInputClicked)
             {
+                _eventSystem.SetSelectedGameObject(null!);
                 _eventSystem.SetSelectedGameObject(_usernameInput.gameObject);
             }
             if(isUsernameClearBtnClicked)
             {
+                _eventSystem.SetSelectedGameObject(null!);
                 _eventSystem.SetSelectedGameObject(_usernameInput.gameObject);
                 _usernameInput.text = string.Empty;
             }
             if (isPasswordInputClicked)
             {
+                _eventSystem.SetSelectedGameObject(null!);
                 _eventSystem.SetSelectedGameObject(_passwordInput.gameObject);
             }
             if (isPasswordClearBtnClicked)
             {
+                _eventSystem.SetSelectedGameObject(null!);
                 _eventSystem.SetSelectedGameObject(_passwordInput.gameObject);
                 _passwordInput.text = string.Empty;
             }
@@ -122,6 +122,10 @@ namespace MajdataPlay.Scenes.Login
 
         async UniTaskVoid LoginProcessor()
         {
+            const int AUTH_FLAG_REQUESTING = 0;
+            const int AUTH_FLAG_WAIT_FOR_PERMIT = 1;
+            const int AUTH_FLAG_ERROR = 2;
+
             var sceneSwitcher = MajInstances.SceneSwitcher;
             for (var i = 0; i < _enabledEndpoints.Length; i++)
             {
@@ -134,201 +138,290 @@ namespace MajdataPlay.Scenes.Login
                     siteName = endpoint.Url.Host;
                 }
                 _sceneTitle.text = $"Login to\n{siteName}";
-                switch(endpoint.AuthMethod)
-                {
-                    case NetAuthMethodOption.Plain:
-                        {
-                            _qrCodeComponent.SetActive(false);
-                            _usernameComponent.SetActive(true);
-                            _passwordComponent.SetActive(true);
-                            await sceneSwitcher.FadeOutAsync();
-                            _usernameInput.text = endpoint.Username ?? string.Empty;
-                            _passwordInput.text = endpoint.Password ?? string.Empty;
 
-                        RETRY:
-                            _isReady = true;
-                            _usernameInput.readOnly = false;
-                            _passwordInput.readOnly = false;
-                            while(true)
+                _qrCodeComponent.SetActive(true);
+                _qrCodeLoading.SetActive(true);
+                _usernameComponent.SetActive(true);
+                _passwordComponent.SetActive(true);
+
+                _qrCodeRawImage.texture = null!;
+                _qrCodeRawImage.color = new Color(0.5f, 0.5f, 0.5f);
+                _usernameInput.text = endpoint.Username ?? string.Empty;
+                _passwordInput.text = endpoint.Password ?? string.Empty;
+                await sceneSwitcher.FadeOutAsync();
+ 
+                var authSessionTask = default(ValueTask<(string, AuthRequestResponse)>);
+                var authCheckTask = default(ValueTask<EndpointResponse>?);
+                var authProcessFlag = AUTH_FLAG_REQUESTING;
+                var cts = new CancellationTokenSource();
+                var authRequestId = string.Empty;
+                var authCheckCooldownSec = 2d;
+                authSessionTask = RegistryAuthSession(endpoint, cts.Token);
+                while (true)
+                {
+                    _isReady = true;
+                    _usernameInput.readOnly = false;
+                    _passwordInput.readOnly = false;
+                    var isRefreshQRCodeRequested = InputManager.IsSensorClickedInThisFrame(SensorArea.A7) ||
+                                                   InputManager.IsSensorClickedInThisFrame(SensorArea.D7) ||
+                                                   InputManager.IsSensorClickedInThisFrame(SensorArea.A6) ||
+                                                   InputManager.IsSensorClickedInThisFrame(SensorArea.B7) ||
+                                                   InputManager.IsSensorClickedInThisFrame(SensorArea.B6) ||
+                                                   InputManager.IsSensorClickedInThisFrame(SensorArea.E7);
+                    try
+                    {
+                        if (authProcessFlag == AUTH_FLAG_REQUESTING)
+                        {
+                            if(authSessionTask.IsCompletedSuccessfully)
                             {
-                                if(InputManager.IsButtonClickedInThisFrame(ButtonZone.A5))
+                                var (location, authRsp) = authSessionTask.Result;
+                                var qrCodeData = _qrGenerator.CreateQrCode(location, ECCLevel.Q);
+                                var qrCode = new PngByteQRCode(qrCodeData);
+                                var pngBytes = qrCode.GetGraphic(20);
+                                var texture = new Texture2D(0, 0);
+                                authRequestId = authRsp.RequestId;
+
+                                texture.LoadImage(pngBytes);
+
+                                _qrCodeRawImage.texture = texture;
+                                _qrCodeLoading.SetActive(false);
+                                _qrCodeRawImage.color = Color.white;
+
+                                authProcessFlag = AUTH_FLAG_WAIT_FOR_PERMIT;
+                            }
+                            else if(authSessionTask.IsCompleted)// Faulted or canceled
+                            {
+                                authProcessFlag = AUTH_FLAG_ERROR;
+                                MajDebug.LogException(authSessionTask.AsTask().Exception);
+                            }
+                        }
+                        else if (authProcessFlag == AUTH_FLAG_WAIT_FOR_PERMIT)
+                        {
+                            if(authCheckTask is ValueTask<EndpointResponse> task)
+                            {
+                                if (task.IsCompleted && !task.IsCompletedSuccessfully)
                                 {
-                                    goto CONTINUE;
+                                    MajDebug.LogError("Auth check failed");
+                                    MajDebug.LogException(task.AsTask().Exception);
                                 }
-                                else if(InputManager.IsButtonClickedInThisFrame(ButtonZone.A4))
+                                else if(task.IsCompletedSuccessfully)
                                 {
-                                    break;
+                                    var rsp = task.Result;
+                                    if (rsp.StatusCode is HttpStatusCode.OK)
+                                    {
+                                        MajDebug.LogDebug("User has granted authorization");
+                                        _loading.SetActive(true);
+                                        _isReady = false;
+                                        MajDebug.LogDebug("Checking login status");
+                                        var checkLoginTask = Online.CheckLoginAsync(endpoint);
+                                        while(!checkLoginTask.IsCompleted)
+                                        {
+                                            await UniTask.Yield();
+                                        }
+                                        MajDebug.LogInfo("Logged in");
+                                        endpoint.AuthMethod = NetAuthMethodOption.QRCode;
+                                        break;
+                                    }
+                                    else if (rsp.StatusCode is HttpStatusCode.Accepted)
+                                    {
+                                        // Still waiting for user to authorize
+                                        authCheckTask = null;
+                                        MajDebug.LogDebug("No user has granted authorization");
+                                    }
+                                    else if(rsp.StatusCode is HttpStatusCode.NotFound)
+                                    {
+                                        MajDebug.LogDebug("The authorization session has expired.");
+                                        isRefreshQRCodeRequested = true;
+                                        authCheckTask = null;
+                                    }
+                                    else
+                                    {
+                                        MajDebug.LogError($"Auth check returned unexpected status code: {rsp.StatusCode}");
+                                        authCheckTask = null;
+                                    }
                                 }
-                                await UniTask.Yield();
+                            }
+                            else
+                            {
+                                if(authCheckCooldownSec < 0)
+                                {
+                                    authCheckTask = Online.AuthCheckAsync(endpoint, authRequestId, cts.Token);
+                                    authCheckCooldownSec = 2d;
+                                    MajDebug.LogDebug("Checking the auth session");
+                                }
+                                else
+                                {
+                                    authCheckCooldownSec -= MajTimeline.UnscaledDeltaTime;
+                                }                                
+                            }
+                        }
+
+                        if (isRefreshQRCodeRequested && authProcessFlag is (AUTH_FLAG_WAIT_FOR_PERMIT or AUTH_FLAG_ERROR))
+                        {
+                            cts.Cancel();
+                            cts = new();
+                            authProcessFlag = AUTH_FLAG_REQUESTING;
+                            _qrCodeLoading.SetActive(true);
+                            _qrCodeRawImage.texture = null!;
+                            _qrCodeRawImage.color = new Color(0.5f, 0.5f, 0.5f);
+                            if (!string.IsNullOrEmpty(authRequestId))
+                            {
+                                await RevokeAuthSession(endpoint, authRequestId);
+                            }
+                            authSessionTask = RegistryAuthSession(endpoint, cts.Token);
+                        }
+
+                        if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A5))
+                        {
+                            if(_passwordInput.isFocused || _usernameInput.isFocused)
+                            {
+                                continue;
+                            }
+                            cts.Cancel();
+                            if (!string.IsNullOrEmpty(authRequestId))
+                            {
+                                await sceneSwitcher.FadeInAsync();
+                                await RevokeAuthSession(endpoint, authRequestId);
+                            }
+                            _eventSystem.SetSelectedGameObject(null!);
+                            _usernameInput.DeactivateInputField();
+                            _passwordInput.DeactivateInputField();
+                            break;
+                        }
+                        else if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A4))
+                        {
+                            if (_passwordInput.isFocused || _usernameInput.isFocused)
+                            {
+                                continue;
                             }
                             _isReady = false;
                             _errText.text = string.Empty;
                             _usernameInput.readOnly = true;
                             _passwordInput.readOnly = true;
 
+                            _eventSystem.SetSelectedGameObject(null!);
+                            _usernameInput.DeactivateInputField();
+                            _passwordInput.DeactivateInputField();
+
                             var username = _usernameInput.text;
                             var password = _passwordInput.text;
+                            MajDebug.LogInfo("Trying to log in via Plain");
                             var task = Online.LoginAsync(endpoint, username, password);
 
                             _loading.SetActive(true);
-                            while(!task.IsCompleted)
+                            while (!task.IsCompleted)
                             {
                                 await UniTask.Yield();
                             }
                             _loading.SetActive(false);
-                            if(!task.IsCompletedSuccessfully)
+                            if (!task.IsCompletedSuccessfully)
                             {
                                 var e = task.AsTask().Exception;
                                 MajDebug.LogException(e);
                                 _errText.text = e.ToString();
-                                goto RETRY;
+                                continue;
                             }
                             var rsp = task.Result;
-                            if(!rsp.IsSuccessfully)
+                            if (!rsp.IsSuccessfully)
                             {
                                 MajDebug.LogError($"Login failed:\nStatusCode:{rsp.StatusCode}\nErrorCode:{rsp.ErrorCode}\nMessage:{rsp.Message}");
                                 _errText.text = $"Login failed:\n{rsp.Message.i18n()}";
-                                goto RETRY;
-                            }
-                        }
-                        break;
-                    case NetAuthMethodOption.QRCode:
-                        {
-                            _qrCodeComponent.SetActive(true);
-                            _qrCodeLoading.SetActive(true);
-                            _usernameComponent.SetActive(false);
-                            _passwordComponent.SetActive(false);
-
-                            _qrCodeRawImage.texture = null!;
-                            _qrCodeRawImage.color = new Color(0.5f, 0.5f, 0.5f);
-                            await sceneSwitcher.FadeOutAsync();
-                            var task = Online.RegisterAsync(endpoint, new()
-                            {
-                                Name = "MajdataPlay Client",
-                                Description = "MajdataPlay Client QR Code Authentication",
-                            });
-                            while (!task.IsCompleted)
-                            {
-                                await UniTask.Yield();
-                            }
-                            if (task.IsFaulted || !task.Result.IsSuccessfully)
-                            {
-                                _errText.text = "MAJTEXT_ONLINE_MACHINE_REGISTER_FAILED";
-                                MajDebug.LogError("Failed to register QR Code login session");
-                                if(task.IsFaulted)
-                                {
-                                    MajDebug.LogException(task.AsTask().Exception);
-                                }
-                                else
-                                {
-                                    var tmpRsp = task.Result;
-                                    MajDebug.LogError($"StatusCode:{tmpRsp.StatusCode}\nErrorCode:{tmpRsp.ErrorCode}\nMessage:{tmpRsp.Message}");
-                                }
-                                while (true)
-                                {
-                                    if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A5))
-                                    {
-                                        goto CONTINUE;
-                                    }
-                                    await UniTask.Yield();
-                                }
-                            }
-                        RETRY_AUTH_REQ:
-                            task = Online.AuthRequestAsync(endpoint);
-                            while (!task.IsCompleted)
-                            {
-                                await UniTask.Yield();
-                            }
-                            if (task.IsFaulted || !task.Result.IsDeserializable || task.Result.StatusCode != HttpStatusCode.Created)
-                            {
-                                _errText.text = "MAJTEXT_ONLINE_AUTH_REQ_FAILED";
-                                MajDebug.LogError("Attempt to request authorization session failed");
-                                MajDebug.LogException(task.AsTask().Exception);
-                                while (true)
-                                {
-                                    if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A5))
-                                    {
-                                        goto CONTINUE;
-                                    }
-                                    else if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A4))
-                                    {
-                                        goto RETRY_AUTH_REQ;
-                                    }
-                                    await UniTask.Yield();
-                                }
-                            }
-                            var location = string.Empty;
-                            var rsp = task.Result;
-                            if (rsp.Headers.TryGetValue("Location", out var headers))
-                            {
-                                location = headers.FirstOrDefault() ?? string.Empty;
-                            }
-
-                            if (string.IsNullOrEmpty(location) || !rsp.TryDeserialize<AuthRequestResponse?>(out var authRsp) || authRsp is null)
-                            {
-                                _errText.text = "MAJTEXT_ONLINE_INVALID_RESPONSE";
-                                MajDebug.LogError($"The server returned an invalid response\nEndpoint: {endpoint.Url}\nStatusCode: {rsp.StatusCode}\nErrorCode: {rsp.ErrorCode}\nIsDeserializable: {rsp.IsDeserializable}\nHeaders:\n" + string.Join('\n', rsp.Headers.Select(x => $"{x.Key}: {string.Join(';', x.Value)}")));
-                                while (true)
-                                {
-                                    if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A5))
-                                    {
-                                        goto CONTINUE;
-                                    }
-                                    await UniTask.Yield();
-                                }
-                            }
-
-                            var qrCodeData = _qrGenerator.CreateQrCode(location, ECCLevel.Q);
-                            var qrCode = new PngByteQRCode(qrCodeData);
-                            var pngBytes = qrCode.GetGraphic(20);
-                            var texture = new Texture2D(0, 0);
-                            var authRequestId = ((AuthRequestResponse)authRsp).RequestId;
-
-                            texture.LoadImage(pngBytes);
-
-                            _qrCodeRawImage.texture = texture;
-                            _qrCodeLoading.SetActive(false);
-                            _qrCodeRawImage.color = Color.white;
-                        RETRY_AUTH_CHECK:
-                            task = Online.AuthCheckAsync(endpoint, authRequestId);
-                            while (!task.IsCompleted)
-                            {
-                                await UniTask.Yield();
-                            }
-
-                            if (task.IsFaulted)
-                            {
-                                MajDebug.LogError("Auth check failed");
-                                MajDebug.LogException(task.AsTask().Exception);
-                                goto RETRY_AUTH_CHECK;
-                            }
-                            rsp = task.Result;
-                            if (rsp.StatusCode is HttpStatusCode.OK)
-                            {
-                                await Online.CheckLoginAsync(endpoint);
-                                goto CONTINUE;
-                            }
-                            else if (rsp.StatusCode is HttpStatusCode.Accepted)
-                            {
-                                // Still waiting for user to authorize
-                                await UniTask.Delay(2000);
-                                goto RETRY_AUTH_CHECK;
+                                continue;
                             }
                             else
                             {
-                                MajDebug.LogError($"Auth check returned unexpected status code: {rsp.StatusCode}");
-                                goto RETRY_AUTH_CHECK;
+                                MajDebug.LogInfo("Logged in");
+                                var checkLoginTask = Online.CheckLoginAsync(endpoint);
+                                if (!string.IsNullOrEmpty(authRequestId))
+                                {
+                                    await RevokeAuthSession(endpoint, authRequestId);
+                                }
+                                while(!checkLoginTask.IsCompleted)
+                                {
+                                    await UniTask.Yield();
+                                }
+                                endpoint.AuthMethod = NetAuthMethodOption.Plain;
+                                break;
                             }
                         }
-                    default:
-                        throw new NotSupportedException();
+                    }
+                    finally
+                    {
+                        await UniTask.Yield();
+                    }
                 }
-            CONTINUE:
                 await sceneSwitcher.FadeInAsync();
                 _isReady = false;
-                continue;
             }
             sceneSwitcher.SwitchScene("List", false);
+        }
+        async UniTask RevokeAuthSession(ApiEndpoint endpoint, string authId, CancellationToken token = default)
+        {
+            var revokeTask = Online.AuthRevokeAsync(endpoint, authId);
+            while (!revokeTask.IsCompleted)
+            {
+                await UniTask.Yield();
+            }
+            if (revokeTask.IsCompletedSuccessfully)
+            {
+                MajDebug.LogInfo("Successfully revoked the authorization session");
+            }
+            else if (revokeTask.IsFaulted)
+            {
+                MajDebug.LogError("Revoking the authorization session failed");
+                MajDebug.LogException(revokeTask.AsTask().Exception);
+            }
+        }
+        async ValueTask<(string, AuthRequestResponse)> RegistryAuthSession(ApiEndpoint endpoint, CancellationToken token = default)
+        {
+            await UniTask.SwitchToThreadPool();
+            var rsp = default(EndpointResponse);
+            try
+            {
+                rsp = await Online.RegisterAsync(endpoint, new()
+                {
+                    Name = "MajdataPlay Client",
+                    Description = "MajdataPlay Client QR Code Authentication",
+                }, token);
+            }
+            catch
+            {
+                MajDebug.LogError("Failed to register QR Code login session");
+                throw;
+            }
+            if(!rsp.IsSuccessfully)
+            {
+                MajDebug.LogError("Failed to register QR Code login session");
+                MajDebug.LogError($"StatusCode:{rsp.StatusCode}\nErrorCode:{rsp.ErrorCode}\nMessage:{rsp.Message}");
+                throw _exception;
+            }
+            try
+            {
+                rsp = await Online.AuthRequestAsync(endpoint, token);
+            }
+            catch
+            {
+                MajDebug.LogError("Attempt to request authorization session failed");
+                throw;
+            }
+            if (!rsp.IsDeserializable || rsp.StatusCode != HttpStatusCode.Created)
+            {
+                MajDebug.LogError("Attempt to request authorization session failed");
+                MajDebug.LogError($"StatusCode:{rsp.StatusCode}\nErrorCode:{rsp.ErrorCode}\nMessage:{rsp.Message}");
+                throw _exception;
+            }
+            var location = string.Empty;
+            if (rsp.Headers.TryGetValue("Location", out var headers))
+            {
+                location = headers.FirstOrDefault() ?? string.Empty;
+            }
+
+            if (string.IsNullOrEmpty(location) || !rsp.TryDeserialize<AuthRequestResponse?>(out var authRsp) || authRsp is null)
+            {
+                MajDebug.LogError($"The server returned an invalid response\nEndpoint: {endpoint.Url}\nStatusCode: {rsp.StatusCode}\nErrorCode: {rsp.ErrorCode}\nIsDeserializable: {rsp.IsDeserializable}\nHeaders:\n" + string.Join('\n', rsp.Headers.Select(x => $"{x.Key}: {string.Join(';', x.Value)}")));
+                throw _exception;
+            }
+            return (location, (AuthRequestResponse)authRsp);
         }
         readonly struct AuthRequestResponse
         {

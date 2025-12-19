@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Settings;
+using MajdataPlay.Settings;
+using Newtonsoft.Json;
 using System;
 using UnityEngine.Scripting;
 #nullable enable
@@ -12,7 +13,8 @@ namespace MajdataPlay.Net
         [Preserve]
         public required Uri Url { get; init; }
         [Preserve]
-        public NetAuthMethodOption AuthMethod { get; init; } = NetAuthMethodOption.None;
+        [JsonIgnore]
+        public NetAuthMethodOption AuthMethod { get; set; } = NetAuthMethodOption.None;
         [Preserve]
         public string? Username { get; init; }
         [Preserve]

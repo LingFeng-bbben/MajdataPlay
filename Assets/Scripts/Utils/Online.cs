@@ -46,6 +46,7 @@ namespace MajdataPlay.Utils
         public const string API_POST_MAICHART_SCORE = "maichart/{0}/score";
         public const string API_POST_MACHINE_REGISTER = "machine/register";
         public const string API_POST_AUTH_REQUEST = "machine/auth/request";
+        public const string API_POST_AUTH_REVOKE = "machine/auth/revoke";
 
         static SpinLock _dictLock = new ();
         readonly static Dictionary<ApiEndpoint, ApiEndpointStatistics> _endpointStatistics = new();
@@ -271,6 +272,36 @@ namespace MajdataPlay.Utils
 #if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
 #else
                 var rsp = await GetAsync(uri, token);
+                return rsp;
+#endif
+            }
+        }
+        public static async ValueTask<EndpointResponse> AuthRevokeAsync(ApiEndpoint apiEndpoint, string authId, CancellationToken token = default)
+        {
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
+            {
+                var statistics = GetApiEndpointStatistic(apiEndpoint);
+                if (statistics.IsMachineRegistrationSupported is false)
+                {
+                    return new()
+                    {
+                        IsSuccessfully = false,
+                        IsDeserializable = false,
+                        StatusCode = HttpStatusCode.NotFound,
+                        ErrorCode = HttpErrorCode.NotSupported,
+                        Message = "MAJTEXT_ONLINE_MACHINE_REGISTRATION_UNSUPPORTED"
+                    };
+                }
+                else if (statistics.IsMachineRegistrationSupported is null)
+                {
+                    throw new InvalidOperationException();
+                }
+                var uriBuilder = new UriBuilder(apiEndpoint.Url.Combine(API_POST_AUTH_REVOKE));
+                uriBuilder.Query = $"auth-id={authId}";
+                var uri = uriBuilder.Uri;
+#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
+#else
+                var rsp = await PostAsync(uri, token);
                 return rsp;
 #endif
             }
