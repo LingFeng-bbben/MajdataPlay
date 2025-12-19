@@ -14,12 +14,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TMPro;
-using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using static QRCoder.QRCodeGenerator;
-using static UnityEditor.FilePathAttribute;
 #nullable enable
 namespace MajdataPlay.Scenes.Login
 {
