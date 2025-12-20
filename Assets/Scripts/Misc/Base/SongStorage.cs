@@ -444,13 +444,13 @@ namespace MajdataPlay
             {
                 return collection;
             }
+            MajDebug.LogInfo("Loading online charts from:" + api.Url);
 
-            var listurl = apiroot + "/maichart/list";
-            MajDebug.LogInfo("Loading Online Charts from:" + listurl);
             try
             {
                 var client = MajEnv.SharedHttpClient;
                 var rspText = string.Empty;
+                var chartList = Array.Empty<MajnetSongDetail>();
                 for (var i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
                 {
                     try
@@ -461,55 +461,43 @@ namespace MajdataPlay
                                 ZString.Format("MAJTEXT_SCANNING_CHARTS_FROM_{0}".i18n(), api.Name) +
                                 $" ({i}/{MajEnv.HTTP_REQUEST_MAX_RETRY})");
                         }
-#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
-                        await UniTask.SwitchToMainThread();
-                        var getReq = UnityWebRequest.Get(listurl);
-                        getReq.timeout = MajEnv.HTTP_TIMEOUT_MS / 1000;
-                        getReq.SetRequestHeader("User-Agent", MajEnv.HTTP_USER_AGENT);
-                        var asyncOperation = getReq.SendWebRequest();
-                        while (!asyncOperation.isDone)
+                        var rsp = await Online.FetchChartListAsync(api);
+                        var isSuccessfully = !(!rsp.IsSuccessfully || !rsp.IsDeserializable || !rsp.TryDeserialize<MajnetSongDetail[]>(out chartList) || chartList is null);
+                        if (isSuccessfully)
                         {
-                            await UniTask.Yield();
+                            break;
                         }
-
-                        getReq.EnsureSuccessStatusCode();
-                        rspText = getReq.downloadHandler.text;
-#else
-                        rspText = await client.GetStringAsync(listurl);
-#endif
-                        break;
                     }
                     catch (Exception e)
                     {
-                        if (i == MajEnv.HTTP_REQUEST_MAX_RETRY)
-                        {
-                            progressReporter?.Report(ZString.Format("Failed to fetch list from {0}".i18n(), api.Name));
-                            MajDebug.LogException(e);
-                            await Task.Delay(2000);
-                            throw new OperationCanceledException();
-                        }
+                        MajDebug.LogException(e);
                     }
                     finally
                     {
                         await UniTask.SwitchToThreadPool();
                     }
+                    if (i == MajEnv.HTTP_REQUEST_MAX_RETRY)
+                    {
+                        progressReporter?.Report(ZString.Format("Failed to fetch list from {0}".i18n(), api.Name));
+                        await Task.Delay(2000);
+                        throw new OperationCanceledException();
+                    }
                 }
-                var list = await Serializer.Json.DeserializeAsync<MajnetSongDetail[]>(rspText);
-                if (list is null || list.IsEmpty())
+                if(chartList is null || chartList.Length == 0)
                 {
                     return collection;
                 }
 
-                var gameList = new ISongDetail[list.Length];
-                Parallel.For(0, list.Length, i =>
+                var gameList = new ISongDetail[chartList.Length];
+                Parallel.For(0, chartList.Length, i =>
                 {
-                    var song = list[i];
+                    var song = chartList[i];
                     var songDetail = new OnlineSongDetail(api, song);
                     gameList[i] = songDetail;
                 });
 
-                MajDebug.LogInfo("Loaded Online Charts List:" + gameList.Length);
-                Interlocked.Add(ref _totalChartCount, list.Length);
+                MajDebug.LogInfo("Loaded online charts list:" + gameList.Length);
+                Interlocked.Add(ref _totalChartCount, chartList.Length);
                 var cacheFolder = Path.Combine(MajEnv.CachePath, $"Net/{name}");
                 if (!Directory.Exists(cacheFolder))
                 {
@@ -527,7 +515,7 @@ namespace MajdataPlay
                     return collection;
                 }
                 var c = await GetCollection(cachePath);
-                MajDebug.LogInfo("Loaded Cached Online Charts List:" + c.Count);
+                MajDebug.LogInfo("Loaded cached online charts list:" + c.Count);
                 return c;
             }
             catch (Exception e)
