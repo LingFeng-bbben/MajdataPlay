@@ -31,6 +31,7 @@ namespace MajdataPlay
             if (song is not OnlineSongDetail)
             {
                 this.gameObject.SetActive(false);
+                return;
             }
 
             var serverInfo = ((OnlineSongDetail)song).ServerInfo;
