@@ -79,7 +79,7 @@ namespace MajdataPlay.Utils
                         {
                             try
                             {
-                                var isAlive = await CheckLoginAsync(statistics.Endpoint, token);
+                                var isAlive = await CheckLoginAsync(statistics.Endpoint, token) != null;
                                 statistics.IsUserLoggedIn = isAlive;
                             }
                             catch (Exception e)
@@ -96,15 +96,24 @@ namespace MajdataPlay.Utils
                 MajDebug.LogDebug("Online heartbeat has been completed");
             }
         }
-        public static async ValueTask<bool> CheckLoginAsync(ApiEndpoint apiEndpoint, CancellationToken token = default)
+        public static async ValueTask<UserSummary?> CheckLoginAsync(ApiEndpoint apiEndpoint, CancellationToken token = default)
         {
             await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
                 await UniTask.SwitchToThreadPool();
-                var uri = apiEndpoint.Url.Combine(API_GET_USER_INFO);
-                var rsp = await GetAsync(uri, token);
-
-                return rsp.IsSuccessfully;
+                try
+                {
+                    var uri = apiEndpoint.Url.Combine(API_GET_USER_INFO);
+                    var rsp = await GetAsync(uri, token);
+                    var userinfo = await rsp.DeserializeAsync<UserSummary>();
+                    MajDebug.LogInfo("Login as " + userinfo.Username);
+                    return userinfo;
+                }catch(Exception e)
+                {
+                    MajDebug.LogError("Get Userinfo failed: ");
+                    MajDebug.LogException(e);
+                    return null;
+                }
             }
         }
         public static async ValueTask<bool> CheckMachineRegisterAsync(ApiEndpoint apiEndpoint, CancellationToken token = default)
@@ -306,10 +315,6 @@ namespace MajdataPlay.Utils
 #endif
             }
         }
-        public static ValueTask<EndpointResponse> LoginAsync(ApiEndpoint apiEndpoint, CancellationToken token = default)
-        {
-            return LoginAsync(apiEndpoint, apiEndpoint?.Username ?? string.Empty, apiEndpoint?.Password ?? string.Empty, token);
-        }
         public static async ValueTask<EndpointResponse> LoginAsync(ApiEndpoint apiEndpoint, string username, string password, CancellationToken token = default)
         {
             await using (UniTask.ReturnToCurrentSynchronizationContext())
@@ -319,7 +324,7 @@ namespace MajdataPlay.Utils
                 {
                     throw new ArgumentNullException(nameof(apiEndpoint));
                 }
-                if (await CheckLoginAsync(apiEndpoint))
+                if (await CheckLoginAsync(apiEndpoint)!=null)
                 {
                     return new()
                     {
@@ -405,18 +410,17 @@ namespace MajdataPlay.Utils
                     try
                     {
                         var apiEndpoint = statistics.Endpoint;
-                        if (statistics.IsUserLoggedIn is true)
+                        try
                         {
-                            try
-                            {
-                                var uri = apiEndpoint.Url.Combine(API_POST_USER_LOGOUT);
-                                var rsp = await PostAsync(uri, token);
-                            }
-                            catch (Exception e)
-                            {
-                                MajDebug.LogException(e);
-                            }
+                            MajDebug.LogInfo("Logout");
+                            var uri = apiEndpoint.Url.Combine(API_POST_USER_LOGOUT);
+                            var rsp = await PostAsync(uri, token);
                         }
+                        catch (Exception e)
+                        {
+                            MajDebug.LogException(e);
+                        }
+
                     }
                     finally
                     {
@@ -431,7 +435,6 @@ namespace MajdataPlay.Utils
             {
                 await UniTask.SwitchToThreadPool();
                 var serverInfo = song.ServerInfo;
-                await LoginAsync(song.ServerInfo, token);
                 var interactUrl = BuildMaiChartUri(song.ServerInfo, API_POST_MAICHART_INTERACT, song.Id);
 
 #if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
@@ -520,7 +523,6 @@ namespace MajdataPlay.Utils
             {
                 await UniTask.SwitchToThreadPool();
                 var serverInfo = song.ServerInfo;
-                await LoginAsync(serverInfo);
                 var scoreUrl = BuildMaiChartUri(song.ServerInfo, API_POST_MAICHART_SCORE, song.Id);
                 var json = await Serializer.Json.SerializeAsync(score, DEFAULT_JSON_SERIALIZER);
 

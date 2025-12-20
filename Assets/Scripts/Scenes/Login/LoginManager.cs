@@ -89,9 +89,7 @@ namespace MajdataPlay.Scenes.Login
             var isUsernameInputClicked = InputManager.IsSensorClickedInThisFrame(SensorArea.B2) ||
                                          InputManager.IsSensorClickedInThisFrame(SensorArea.B1) ||
                                          InputManager.IsSensorClickedInThisFrame(SensorArea.E2);
-            var isPasswordInputClicked = InputManager.IsSensorClickedInThisFrame(SensorArea.B3) ||
-                                         InputManager.IsSensorClickedInThisFrame(SensorArea.B4) ||
-                                         InputManager.IsSensorClickedInThisFrame(SensorArea.E4);
+            var isPasswordInputClicked = InputManager.IsSensorClickedInThisFrame(SensorArea.B3);
             var isUsernameClearBtnClicked = InputManager.IsSensorClickedInThisFrame(SensorArea.A2);
             var isPasswordClearBtnClicked = InputManager.IsSensorClickedInThisFrame(SensorArea.A3);
             if(isUsernameInputClicked)
@@ -175,7 +173,7 @@ namespace MajdataPlay.Scenes.Login
                                 var (location, authRsp) = authSessionTask.Result;
                                 var qrCodeData = _qrGenerator.CreateQrCode(location, ECCLevel.Q);
                                 var qrCode = new PngByteQRCode(qrCodeData);
-                                var pngBytes = qrCode.GetGraphic(20);
+                                var pngBytes = qrCode.GetGraphic(20,false);
                                 var texture = new Texture2D(0, 0);
                                 authRequestId = authRsp.RequestId;
 
@@ -268,13 +266,10 @@ namespace MajdataPlay.Scenes.Login
                             }
                             authSessionTask = RegistryAuthSession(endpoint, cts.Token);
                         }
-
-                        if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A5))
+                        //cancel button
+                        if (InputManager.IsSensorClickedInThisFrame(SensorArea.B5) ||
+                            InputManager.IsSensorClickedInThisFrame(SensorArea.E6))
                         {
-                            if(_passwordInput.isFocused || _usernameInput.isFocused)
-                            {
-                                continue;
-                            }
                             cts.Cancel();
                             if (!string.IsNullOrEmpty(authRequestId))
                             {
@@ -286,12 +281,10 @@ namespace MajdataPlay.Scenes.Login
                             _passwordInput.DeactivateInputField();
                             break;
                         }
-                        else if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A4))
+                        //login button
+                        else if (InputManager.IsSensorClickedInThisFrame(SensorArea.B4) ||
+                                 InputManager.IsSensorClickedInThisFrame(SensorArea.E4))
                         {
-                            if (_passwordInput.isFocused || _usernameInput.isFocused)
-                            {
-                                continue;
-                            }
                             _isReady = false;
                             _errText.text = string.Empty;
                             _usernameInput.readOnly = true;
