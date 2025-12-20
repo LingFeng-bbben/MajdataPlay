@@ -1,22 +1,23 @@
 using Cysharp.Threading.Tasks;
-using MajdataPlay.Scenes.Game;
+using MajdataPlay.Buffers;
 using MajdataPlay.IO;
 using MajdataPlay.Recording;
+using MajdataPlay.Scenes.Game;
+using MajdataPlay.Scenes.Setting;
+using MajdataPlay.Settings.Runtime;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
-using UnityEngine;
-using MajdataPlay.Scenes.Setting;
 using System.Threading.Tasks;
-using MajdataPlay.Buffers;
-using MajdataPlay.Settings.Runtime;
-
+using UnityEngine;
+#nullable enable
 namespace MajdataPlay.Scenes.List
 {
     public class ListManager : MonoBehaviour
     {
+        const int MAX_ALLOWED_INACTIVE_TIME_MIN = 5;
         public CancellationToken CancellationToken => _cts.Token;
         public static List<Task> AllBackgroundTasks { get; } = new(8192);
 
@@ -32,6 +33,7 @@ namespace MajdataPlay.Scenes.List
 
         float _autoSlideTimer = 0f;
         float _enterPracticeTimer = 0f;
+        float _inactiveTimeSec = 0f;
 
         CoverListDisplayer _coverListDisplayer;
 
@@ -85,6 +87,7 @@ namespace MajdataPlay.Scenes.List
                     }
                 }
             }
+            InputManager.BindAnyArea(OnAnyInput);
         }
         void Start()
         {
@@ -123,6 +126,7 @@ namespace MajdataPlay.Scenes.List
         void OnDestroy()
         {
             _isExited = true;
+            InputManager.UnbindAnyArea(OnAnyInput);
             Majdata<ListManager>.Free();
             MajEnv.SharedHttpClient.CancelPendingRequests();
             _cts.Cancel();
@@ -132,6 +136,16 @@ namespace MajdataPlay.Scenes.List
             ButtonStatisticsUpdate();
             SensorCheck();
             ButtonCheck();
+            _inactiveTimeSec += MajTimeline.UnscaledDeltaTime;
+            if (TimeSpan.FromSeconds(_inactiveTimeSec) > TimeSpan.FromMinutes(MAX_ALLOWED_INACTIVE_TIME_MIN))
+            {
+                EnterLogin();
+                return;
+            }
+        }
+        void OnAnyInput(object? sender, InputEventArgs args)
+        {
+            _inactiveTimeSec = 0;
         }
         void SensorCheck()
         {
