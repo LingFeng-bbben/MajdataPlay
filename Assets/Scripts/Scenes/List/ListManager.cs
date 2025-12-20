@@ -4,10 +4,12 @@ using MajdataPlay.IO;
 using MajdataPlay.Recording;
 using MajdataPlay.Scenes.Game;
 using MajdataPlay.Scenes.Setting;
+using MajdataPlay.Settings;
 using MajdataPlay.Settings.Runtime;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,6 +38,8 @@ namespace MajdataPlay.Scenes.List
         float _inactiveTimeSec = 0f;
 
         CoverListDisplayer _coverListDisplayer;
+        [SerializeField]
+        UserInfoDisplayer _userInfoDisplayer;
 
         const float AUTO_SLIDE_INTERVAL_SEC = 0.15f;
         const float AUTO_SLIDE_TRIGGER_TIME_SEC = 0.4f;
@@ -100,7 +104,23 @@ namespace MajdataPlay.Scenes.List
                 var list = new string[] { "select_song.wav", "select_song_2.wav", "select_song_3.wav", "select_song_4.wav" };
                 MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
             }
+            DisplayUserInfo();
         }
+
+        void DisplayUserInfo()
+        {
+            //TODO: display multiple endpoints
+            var apiendpoint = MajEnv.Settings.Online.ApiEndpoints.FirstOrDefault();
+            if (apiendpoint is not null)
+            {
+                _userInfoDisplayer.DisplayUserInfo(apiendpoint);
+            }
+            else
+            {
+                _userInfoDisplayer.gameObject.SetActive(false);
+            }
+        }
+
         async UniTaskVoid InitializeCoverListAsync()
         {
             try

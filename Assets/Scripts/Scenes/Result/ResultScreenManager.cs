@@ -54,6 +54,8 @@ namespace MajdataPlay.Scenes.Result
         public GameObject clearLogo;
         public GameObject xxlb;
 
+        public UserInfoDisplayer userInfoDisplayer;
+
         public Image coverImg;
 
         public RawImage _noteJudgeDiffGraph;
@@ -83,6 +85,8 @@ namespace MajdataPlay.Scenes.Result
             var intractSender = GetComponent<OnlineInteractionSender>();
             intractSender.Init(song);
             favoriteAdder.SetSong(song);
+            userInfoDisplayer.DisplayFromSong(song);
+
 
             if (result.Acc.DX < 97)
             {
@@ -147,8 +151,8 @@ namespace MajdataPlay.Scenes.Result
                     avgJudgeTime.text = $"{result.NoteJudgeDiffs.ToArray().Average() / MajEnv.FRAME_LENGTH_MSEC:F1}f";
                 }
             }
-            
 
+            
             LoadCover(song).Forget();
 
             var breakJudgeInfo = JudgeDetail.UnpackJudgeRecord(result.JudgeRecord[ScoreNoteType.Break]);
@@ -189,6 +193,7 @@ namespace MajdataPlay.Scenes.Result
                     _scoreSaveTask = localScoreSaveTask;
                 }
             }
+
         }
 
         async UniTask LoadCover(ISongDetail song)
