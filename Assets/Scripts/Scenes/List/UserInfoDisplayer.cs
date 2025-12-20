@@ -56,31 +56,13 @@ namespace MajdataPlay
                     await UniTask.SwitchToMainThread();
                     username_text.text = userInfo.Username;
 
-                    var url = apiEndpoint.Url + "/account/Icon?username=" + userInfo.Username;
-                    print(url);
-                    UnityWebRequest m_webrequest = UnityWebRequestTexture.GetTexture(url);
-                    var req = m_webrequest.SendWebRequest();
-
-                    while (!req.isDone)
+                    var avatarTask = Online.GetUserIconAsync(apiEndpoint, userInfo.Username, token);
+                    while (!avatarTask.IsCompleted)
                     {
                         await UniTask.Yield();
                     }
-                    print(m_webrequest.result);
-                    // 检查下载是否成功
-                    if (m_webrequest.result != UnityWebRequest.Result.Success)
-                    {
-                        // 打印错误信息
-                        Debug.LogError("Failed to download image");
-                    }
-                    else
-                    {
-                        // 从下载处理器获取纹理
-                        Texture2D tex = ((DownloadHandlerTexture)m_webrequest.downloadHandler).texture;
-                        Sprite createSprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
-                        usericon.sprite = createSprite;
-                    }
-
-
+                    if (avatarTask.Result is null) return;
+                    usericon.sprite = avatarTask.Result;
                 }
                 catch (OperationCanceledException)
                 {

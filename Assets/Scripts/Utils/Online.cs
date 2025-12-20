@@ -8,6 +8,7 @@ using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing.Printing;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -50,6 +51,7 @@ namespace MajdataPlay.Utils
 
         static SpinLock _dictLock = new ();
         readonly static Dictionary<ApiEndpoint, ApiEndpointStatistics> _endpointStatistics = new();
+        static Dictionary<string, Sprite> _avatarCache = new();
 
         public static async ValueTask HeartbeatAsync(CancellationToken token = default)
         {
@@ -415,6 +417,7 @@ namespace MajdataPlay.Utils
                             MajDebug.LogInfo("Logout");
                             var uri = apiEndpoint.Url.Combine(API_POST_USER_LOGOUT);
                             var rsp = await PostAsync(uri, token);
+                            MajDebug.LogInfo(rsp.Message + rsp.ErrorCode + rsp.StatusCode);
                         }
                         catch (Exception e)
                         {
@@ -543,7 +546,36 @@ namespace MajdataPlay.Utils
                 return await GetAsync(url, token);
             }
         }
+        public static async ValueTask<Sprite?> GetUserIconAsync(ApiEndpoint apiEndpoint,string username, CancellationToken token = default)
+        {
+            var url = apiEndpoint.Url + "/account/Icon?username=" + username;
+            if(_avatarCache.TryGetValue(url, out var avatar))
+            {
+                return avatar;
+            }
+            UnityWebRequest m_webrequest = UnityWebRequestTexture.GetTexture(url);
+            var req = m_webrequest.SendWebRequest();
 
+            while (!req.isDone)
+            {
+                await UniTask.Yield();
+            }
+            // 检查下载是否成功
+            if (m_webrequest.result != UnityWebRequest.Result.Success)
+            {
+                // 打印错误信息
+                Debug.LogError("Failed to download user icon");
+                return null;
+            }
+            else
+            {
+                // 从下载处理器获取纹理
+                Texture2D tex = ((DownloadHandlerTexture)m_webrequest.downloadHandler).texture;
+                Sprite createSprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+                _avatarCache.Add(url, createSprite);
+                return createSprite;
+            }
+        }
 
         static async ValueTask<EndpointResponse> GetAsync(Uri uri, CancellationToken token = default)
         {
