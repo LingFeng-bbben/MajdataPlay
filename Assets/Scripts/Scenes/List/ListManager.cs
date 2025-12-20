@@ -133,6 +133,10 @@ namespace MajdataPlay.Scenes.List
         }
         void Update()
         {
+            if (_isExited || !_isInited)
+            {
+                return;
+            }
             ButtonStatisticsUpdate();
             SensorCheck();
             ButtonCheck();
