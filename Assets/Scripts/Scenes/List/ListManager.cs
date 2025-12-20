@@ -141,7 +141,7 @@ namespace MajdataPlay.Scenes.List
             SensorCheck();
             ButtonCheck();
             _inactiveTimeSec += MajTimeline.UnscaledDeltaTime;
-            if (TimeSpan.FromSeconds(_inactiveTimeSec) > TimeSpan.FromMinutes(MAX_ALLOWED_INACTIVE_TIME_MIN) && !_isExited)
+            if (TimeSpan.FromSeconds(_inactiveTimeSec) > TimeSpan.FromMinutes(MAX_ALLOWED_INACTIVE_TIME_MIN))
             {
                 EnterLogin();
                 return;
