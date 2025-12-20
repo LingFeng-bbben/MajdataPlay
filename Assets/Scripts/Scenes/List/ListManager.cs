@@ -400,10 +400,7 @@ namespace MajdataPlay.Scenes.List
                     SongStorage.WorkingCollection.Index = 0;
                     return;
                 }
-            }
-            else if (a5Statistic.IsPressed)
-            {
-                if(_coverListDisplayer.IsDirList && a5Statistic.PressTime > 3)
+                if (_coverListDisplayer.IsDirList)
                 {
                     EnterLogin();
                     return;
