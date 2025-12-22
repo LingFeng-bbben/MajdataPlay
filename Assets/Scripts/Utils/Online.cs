@@ -2,12 +2,14 @@ using Cysharp.Text;
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Buffers;
 using MajdataPlay.Net;
+using MajdataPlay.Settings;
 using MajdataPlay.Unsafe;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing.Printing;
 using System.Linq;
 using System.Net;
@@ -35,6 +37,7 @@ namespace MajdataPlay.Utils
         };
 
         public const string API_GET_USER_INFO = "account/info";
+        public const string API_GET_USER_ICON = "account/icon?username={0}";
         public const string API_GET_MAICHART_LIST = "maichart/list";
         public const string API_GET_MAICHART_INTERACT = "maichart/{0}/interact";
         public const string API_GET_MAICHART_SCORE = "maichart/{0}/score";
@@ -49,9 +52,8 @@ namespace MajdataPlay.Utils
         public const string API_POST_AUTH_REQUEST = "machine/auth/request";
         public const string API_POST_AUTH_REVOKE = "machine/auth/revoke";
 
-        static SpinLock _dictLock = new ();
+        static SpinLock _dictLock = new();
         readonly static Dictionary<ApiEndpoint, ApiEndpointStatistics> _endpointStatistics = new();
-        static Dictionary<string, Sprite> _avatarCache = new();
 
         public static async ValueTask HeartbeatAsync(CancellationToken token = default)
         {
@@ -81,7 +83,7 @@ namespace MajdataPlay.Utils
                         {
                             try
                             {
-                                var isAlive = await CheckLoginAsync(statistics.Endpoint, token) != null;
+                                var isAlive = await GetUserInfoAsync(statistics.Endpoint, token) != null;
                                 statistics.IsUserLoggedIn = isAlive;
                             }
                             catch (Exception e)
@@ -98,7 +100,7 @@ namespace MajdataPlay.Utils
                 MajDebug.LogDebug("Online heartbeat has been completed");
             }
         }
-        public static async ValueTask<UserSummary?> CheckLoginAsync(ApiEndpoint apiEndpoint, CancellationToken token = default)
+        public static async ValueTask<UserSummary?> GetUserInfoAsync(ApiEndpoint apiEndpoint, CancellationToken token = default)
         {
             await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
@@ -106,11 +108,27 @@ namespace MajdataPlay.Utils
                 try
                 {
                     var uri = apiEndpoint.Url.Combine(API_GET_USER_INFO);
-                    var rsp = await GetAsync(uri, token);
-                    var userinfo = await rsp.DeserializeAsync<UserSummary>();
-                    MajDebug.LogInfo("Login as " + userinfo.Username);
-                    return userinfo;
-                }catch(Exception e)
+                    var rsp = default(EndpointResponse);
+                    for (var i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
+                    {
+                        rsp = await GetAsync(uri, token);
+                        if(rsp.StatusCode is HttpStatusCode.Unauthorized)
+                        {
+                            return default;
+                        }
+                        else if(!rsp.IsSuccessfully || !rsp.IsDeserializable)
+                        {
+                            MajDebug.LogError("Failed to get user info");
+                            MajDebug.LogError($"Url:{uri}\nStatusCode:{rsp.StatusCode}\nErrorCode:{rsp.ErrorCode}\nMessage:{rsp.Message}");
+                            continue;
+                        }
+                        var userinfo = await rsp.DeserializeAsync<UserSummary>();
+                        MajDebug.LogInfo("Login as " + userinfo.Username);
+                        return userinfo;
+                    }
+                    return default;
+                }
+                catch(Exception e)
                 {
                     MajDebug.LogError("Get Userinfo failed: ");
                     MajDebug.LogException(e);
@@ -326,7 +344,7 @@ namespace MajdataPlay.Utils
                 {
                     throw new ArgumentNullException(nameof(apiEndpoint));
                 }
-                if (await CheckLoginAsync(apiEndpoint)!=null)
+                if (await GetUserInfoAsync(apiEndpoint)!=null)
                 {
                     return new()
                     {
@@ -337,7 +355,7 @@ namespace MajdataPlay.Utils
                         Message = string.Empty
                     };
                 }
-                if(apiEndpoint.AuthMethod != Settings.NetAuthMethodOption.Plain)
+                if(apiEndpoint.RuntimeConfig.AuthMethod != NetAuthMethodOption.Plain)
                 {
                     var returnValue = new EndpointResponse()
                     {
@@ -423,7 +441,14 @@ namespace MajdataPlay.Utils
                         {
                             MajDebug.LogException(e);
                         }
-
+                        finally
+                        {
+                            apiEndpoint.RuntimeConfig.AuthMethod = NetAuthMethodOption.None;
+                            apiEndpoint.RuntimeConfig.Avatar = null;
+                            apiEndpoint.RuntimeConfig.Username = "???";
+                            apiEndpoint.RuntimeConfig.AuthUsername = apiEndpoint.Username;
+                            apiEndpoint.RuntimeConfig.AuthPassword = apiEndpoint.Password;
+                        }
                     }
                     finally
                     {
@@ -548,32 +573,35 @@ namespace MajdataPlay.Utils
         }
         public static async ValueTask<Sprite?> GetUserIconAsync(ApiEndpoint apiEndpoint,string username, CancellationToken token = default)
         {
-            var url = apiEndpoint.Url + "/account/Icon?username=" + username;
-            if(_avatarCache.TryGetValue(url, out var avatar))
+            if(string.IsNullOrEmpty(username))
             {
-                return avatar;
-            }
-            UnityWebRequest m_webrequest = UnityWebRequestTexture.GetTexture(url);
-            var req = m_webrequest.SendWebRequest();
-
-            while (!req.isDone)
-            {
-                await UniTask.Yield();
-            }
-            // 检查下载是否成功
-            if (m_webrequest.result != UnityWebRequest.Result.Success)
-            {
-                // 打印错误信息
-                Debug.LogError("Failed to download user icon");
                 return null;
             }
-            else
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
-                // 从下载处理器获取纹理
-                Texture2D tex = ((DownloadHandlerTexture)m_webrequest.downloadHandler).texture;
-                Sprite createSprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
-                _avatarCache.Add(url, createSprite);
-                return createSprite;
+                await UniTask.SwitchToThreadPool();
+                var url = apiEndpoint.Url.Combine(string.Format(API_GET_USER_ICON, username));
+                for (var i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
+                {
+                    try
+                    {
+                        var rsp = await GetAsync(url, token);
+                        if(!rsp.IsSuccessfully)
+                        {
+                            MajDebug.LogError("Failed to download user icon");
+                            MajDebug.LogError($"Url:{url}\nStatusCode:{rsp.StatusCode}\nErrorCode:{rsp.ErrorCode}\nMessage:{rsp.Message}");
+                            continue;
+                        }
+                        var avatar = await SpriteLoader.LoadAsync(rsp.AsMemory());
+                        return avatar;
+                    }
+                    catch (Exception e)
+                    {
+                        MajDebug.LogError("Failed to download user icon");
+                        MajDebug.LogError(e);
+                    }
+                }
+                return null;
             }
         }
 

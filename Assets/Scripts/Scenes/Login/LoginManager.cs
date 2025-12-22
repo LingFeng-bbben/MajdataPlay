@@ -142,8 +142,8 @@ namespace MajdataPlay.Scenes.Login
 
                 _qrCodeRawImage.texture = null!;
                 _qrCodeRawImage.color = new Color(0.5f, 0.5f, 0.5f);
-                _usernameInput.text = endpoint.Username ?? string.Empty;
-                _passwordInput.text = endpoint.Password ?? string.Empty;
+                _usernameInput.text = endpoint.RuntimeConfig.AuthUsername ?? string.Empty;
+                _passwordInput.text = endpoint.RuntimeConfig.AuthPassword ?? string.Empty;
                 await sceneSwitcher.FadeOutAsync();
  
                 var authSessionTask = default(ValueTask<(string, AuthRequestResponse)>);
@@ -209,13 +209,19 @@ namespace MajdataPlay.Scenes.Login
                                         _loading.SetActive(true);
                                         _isReady = false;
                                         MajDebug.LogDebug("Checking login status");
-                                        var checkLoginTask = Online.CheckLoginAsync(endpoint);
-                                        while(!checkLoginTask.IsCompleted)
+                                        var getUserInfoTask = Online.GetUserInfoAsync(endpoint);
+                                        while(!getUserInfoTask.IsCompleted)
                                         {
                                             await UniTask.Yield();
                                         }
                                         MajDebug.LogInfo("Logged in");
-                                        endpoint.AuthMethod = NetAuthMethodOption.QRCode;
+                                        endpoint.RuntimeConfig.AuthMethod = NetAuthMethodOption.QRCode;
+                                        var userInfo = (UserSummary?)null;
+                                        if(getUserInfoTask.IsCompletedSuccessfully)
+                                        {
+                                            userInfo = getUserInfoTask.Result;
+                                        }
+                                        await UpdateApiEndpointRuntimeConfigAsync(endpoint, userInfo);
                                         break;
                                     }
                                     else if (rsp.StatusCode is HttpStatusCode.Accepted)
@@ -322,16 +328,24 @@ namespace MajdataPlay.Scenes.Login
                             else
                             {
                                 MajDebug.LogInfo("Logged in");
-                                var checkLoginTask = Online.CheckLoginAsync(endpoint);
+                                var getUserInfoTask = Online.GetUserInfoAsync(endpoint);
                                 if (!string.IsNullOrEmpty(authRequestId))
                                 {
                                     await RevokeAuthSession(endpoint, authRequestId);
                                 }
-                                while(!checkLoginTask.IsCompleted)
+                                while(!getUserInfoTask.IsCompleted)
                                 {
                                     await UniTask.Yield();
                                 }
-                                endpoint.AuthMethod = NetAuthMethodOption.Plain;
+                                endpoint.RuntimeConfig.AuthMethod = NetAuthMethodOption.Plain;
+                                endpoint.RuntimeConfig.AuthUsername = username;
+                                endpoint.RuntimeConfig.AuthPassword = password;
+                                var userInfo = (UserSummary?)null;
+                                if (getUserInfoTask.IsCompletedSuccessfully)
+                                {
+                                    userInfo = getUserInfoTask.Result;
+                                }
+                                await UpdateApiEndpointRuntimeConfigAsync(endpoint, userInfo);
                                 break;
                             }
                         }
@@ -345,6 +359,42 @@ namespace MajdataPlay.Scenes.Login
                 _isReady = false;
             }
             sceneSwitcher.SwitchScene("List", false);
+        }
+        async UniTask UpdateApiEndpointRuntimeConfigAsync(ApiEndpoint endpoint, UserSummary? userInfo)
+        {
+            var runtimeConfig = endpoint.RuntimeConfig;
+            if (userInfo is not null)
+            {
+                MajDebug.LogInfo("Downloading user avatar...");
+                var result = (UserSummary)userInfo;
+                var avatarTask = Online.GetUserIconAsync(endpoint, result.Username);
+                while (!avatarTask.IsCompleted)
+                {
+                    await UniTask.Yield();
+                }
+                if (avatarTask.IsCompletedSuccessfully && avatarTask.Result is not null)
+                {
+                    runtimeConfig.Avatar = avatarTask.Result;
+                    MajDebug.LogInfo("User avatar has been downloaded");
+                }
+                else
+                {
+                    MajDebug.LogInfo("Failed to download user avatar");
+                }
+                runtimeConfig.Username = result.Username;
+            }
+            else
+            {
+                runtimeConfig.Avatar = null;
+                if(runtimeConfig.AuthMethod == NetAuthMethodOption.Plain)
+                {
+                    runtimeConfig.Username = runtimeConfig.Username;
+                }
+                else
+                {
+                    runtimeConfig.Username = "???";
+                }
+            }
         }
         async UniTask RevokeAuthSession(ApiEndpoint endpoint, string authId, CancellationToken token = default)
         {

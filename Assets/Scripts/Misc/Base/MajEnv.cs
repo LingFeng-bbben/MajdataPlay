@@ -1,4 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using HidSharp.Platform.Windows;
 using LibVLCSharp;
 using MajdataPlay.Extensions;
@@ -262,11 +262,12 @@ namespace MajdataPlay
                             {
                                 Name = apiEndpoint.Name,
                                 Url = new Uri(uri.OriginalString + "/"),
-                                AuthMethod = apiEndpoint.AuthMethod,
                                 Username = apiEndpoint.Username,
                                 Password = apiEndpoint.Password,
                             };
                         }
+                        apiEndpoint.RuntimeConfig.AuthUsername = apiEndpoint.Username;
+                        apiEndpoint.RuntimeConfig.AuthPassword = apiEndpoint.Password;
                     }
                     //Reset Mod option after reboot
                     //Settings.Mod = new ModOptions();

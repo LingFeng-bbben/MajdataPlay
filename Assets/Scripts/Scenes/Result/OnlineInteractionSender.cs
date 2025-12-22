@@ -39,7 +39,7 @@ namespace MajdataPlay.Scenes.Result
             }
                 
             var serverInfo = onlineDetail.ServerInfo;
-            if (serverInfo is null || serverInfo.AuthMethod == NetAuthMethodOption.None)
+            if (serverInfo is null || serverInfo.RuntimeConfig.AuthMethod == NetAuthMethodOption.None)
             {
                 thumb.gameObject.SetActive(false);
                 return false;

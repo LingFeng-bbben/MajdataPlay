@@ -183,7 +183,7 @@ namespace MajdataPlay.Scenes.Result
             {
                 var localScoreSaveTask = ScoreManager.SaveScore(result, result.Level);
                 var score = MaiScore.CreateFromResult(result,result.Level);
-                if (score is not null && song is OnlineSongDetail onlineSong && onlineSong.ServerInfo.AuthMethod != NetAuthMethodOption.None)
+                if (score is not null && song is OnlineSongDetail onlineSong && onlineSong.ServerInfo.RuntimeConfig.AuthMethod != NetAuthMethodOption.None)
                 {
                     var task = intractSender.SendScoreAsync(score);
                     _scoreSaveTask = Task.WhenAll(localScoreSaveTask, task);

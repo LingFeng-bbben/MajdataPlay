@@ -13,11 +13,10 @@ namespace MajdataPlay.Net
         [Preserve]
         public required Uri Url { get; init; }
         [Preserve]
-        [JsonIgnore]
-        public NetAuthMethodOption AuthMethod { get; set; } = NetAuthMethodOption.None;
-        [Preserve]
         public string? Username { get; init; }
         [Preserve]
         public string? Password { get; init; }
+        [Preserve, JsonIgnore]
+        public ApiRuntimeConfig RuntimeConfig { get; init; } = new();
     }
 }

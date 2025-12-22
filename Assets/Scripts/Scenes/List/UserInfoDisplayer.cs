@@ -1,16 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
-using Cysharp.Threading.Tasks;
 using MajdataPlay.Net;
-using System.Threading;
-using MajdataPlay.Utils;
-using System;
-using UnityEngine.Networking;
-using System.Net;
+using MajdataPlay.Settings;
 
 namespace MajdataPlay
 {
@@ -23,7 +15,21 @@ namespace MajdataPlay
         
         public void DisplayUserInfo(ApiEndpoint apiEndpoint)
         {
-            _displayUserInfoInternal(apiEndpoint).Forget();
+            var runtimeConfig = apiEndpoint.RuntimeConfig;
+            if(runtimeConfig.AuthMethod == NetAuthMethodOption.None)
+            {
+                username_text.text = "Guest";
+            }
+            else
+            {
+                usericon.sprite = runtimeConfig.Avatar;
+                if (runtimeConfig.Avatar is null)
+                {
+
+                    Error_icon.SetActive(true);
+                }
+                username_text.text = runtimeConfig.Username;
+            }
         }
 
         public void DisplayFromSong(ISongDetail song)
@@ -33,57 +39,8 @@ namespace MajdataPlay
                 this.gameObject.SetActive(false);
                 return;
             }
-
             var serverInfo = ((OnlineSongDetail)song).ServerInfo;
-            _displayUserInfoInternal(serverInfo).Forget();
-        }
-
-        async UniTaskVoid _displayUserInfoInternal(ApiEndpoint apiEndpoint, CancellationToken token = default)
-        {
-            await using (UniTask.ReturnToCurrentSynchronizationContext())
-            {
-                try
-                {
-                    Loading_icon.SetActive(true);
-                    var userInfoTask = Online.CheckLoginAsync(apiEndpoint,token);
-                    while (!userInfoTask.IsCompleted)
-                    {
-                        await UniTask.Yield();
-                    }
-                    if (userInfoTask.Result is null) return;
-                    var userInfo = userInfoTask.Result.Value;
-
-                    await UniTask.SwitchToMainThread();
-                    username_text.text = userInfo.Username;
-
-                    var avatarTask = Online.GetUserIconAsync(apiEndpoint, userInfo.Username, token);
-                    while (!avatarTask.IsCompleted)
-                    {
-                        await UniTask.Yield();
-                    }
-                    if (avatarTask.Result is null) return;
-                    usericon.sprite = avatarTask.Result;
-                }
-                catch (OperationCanceledException)
-                {
-                    // Ignore cancellation
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogError("Failed to load user info: " + ex.Message);
-                    Error_icon.SetActive(true);
-                }
-                finally
-                {
-                    Loading_icon.SetActive(false);
-                }
-            }
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-        
+            DisplayUserInfo(serverInfo);     
         }
     }
 }
