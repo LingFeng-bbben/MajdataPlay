@@ -1,4 +1,4 @@
-﻿using Cysharp.Text;
+using Cysharp.Text;
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Editor;
 using MajdataPlay.Extensions;
@@ -354,40 +354,56 @@ namespace MajdataPlay.Scenes.Game
                 if (_songDetail.IsOnline)
                 {
                     var progress = new NetProgress();
-                    _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading")}...");
-                    _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Audio Track")}...");
+                    var lastPercent = 0f;
+                    _sceneSwitcher.SetLoadingText($"{"Downloading".i18n()}...");
+                    _sceneSwitcher.SetLoadingText($"{"Downloading Audio Track".i18n()}...");
                     var task1 = _songDetail.GetAudioTrackAsync(progress, token: _cts.Token);
                     while (!task1.IsCompleted)
                     {
                         await UniTask.Yield(cancellationToken: token);
-                        _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Audio Track")}...\n{progress.Percent * 100:F2}%");
+                        var percent = progress.Percent.Clamp(0, 1);
+                        LedRingLoadingUpdate(percent, lastPercent);
+                        lastPercent = percent;
+                        _sceneSwitcher.SetLoadingText($"{"Downloading Audio Track".i18n()}...\n{percent * 100:F2}%");
                     }
+                    lastPercent = 0;
                     progress.Reset();
                     token.ThrowIfCancellationRequested();
-                    _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Maidata")}...");
+                    _sceneSwitcher.SetLoadingText($"{"Downloading Maidata".i18n()}...");
                     var task2 = _songDetail.GetMaidataAsync(false, progress, token: _cts.Token);
                     while (!task2.IsCompleted)
                     {
                         await UniTask.Yield(cancellationToken: token);
-                        _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Maidata")}...\n{progress.Percent * 100:F2}%");
+                        var percent = progress.Percent.Clamp(0, 1);
+                        LedRingLoadingUpdate(percent, lastPercent);
+                        lastPercent = percent;
+                        _sceneSwitcher.SetLoadingText($"{"Downloading Maidata".i18n()}...\n{percent * 100:F2}%");
                     }
+                    lastPercent = 0;
                     progress.Reset();
                     token.ThrowIfCancellationRequested();
-                    _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Picture")}...");
+                    _sceneSwitcher.SetLoadingText($"{"Downloading Picture".i18n()}...");
                     var task3 = _songDetail.GetCoverAsync(false, progress, token: _cts.Token);
                     while (!task3.IsCompleted)
                     {
                         await UniTask.Yield(cancellationToken: token);
-                        _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Picture")}...\n{progress.Percent * 100:F2}%");
+                        var percent = progress.Percent.Clamp(0, 1);
+                        LedRingLoadingUpdate(percent, lastPercent);
+                        lastPercent = percent;
+                        _sceneSwitcher.SetLoadingText($"{"Downloading Picture".i18n()}...\n{percent * 100:F2}%");
                     }
+                    lastPercent = 0;
                     progress.Reset();
                     token.ThrowIfCancellationRequested();
-                    _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Video")}...");
+                    _sceneSwitcher.SetLoadingText($"{"Downloading Video".i18n()}...");
                     var task4 = _songDetail.GetVideoPathAsync(progress, token: _cts.Token);
                     while (!task4.IsCompleted)
                     {
                         await UniTask.Yield(cancellationToken: token);
-                        _sceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Downloading Video")}...\n{progress.Percent * 100:F2}%");
+                        var percent = progress.Percent.Clamp(0, 1);
+                        LedRingLoadingUpdate(percent, lastPercent);
+                        lastPercent = percent;
+                        _sceneSwitcher.SetLoadingText($"{"Downloading Video".i18n()}...\n{percent * 100:F2}%");
                     }
                     _sceneSwitcher.SetLoadingText(string.Empty);
                 }
@@ -460,7 +476,33 @@ namespace MajdataPlay.Scenes.Game
                 throw;
             }
         }
-        
+        void LedRingLoadingUpdate(float percent,float lastPercent)
+        {
+            var progress = (int)(8 * percent);
+            var lastProgress = (int)(8 * lastPercent);
+            if (progress == lastProgress)
+            {
+                return;
+            }
+            LedRing.SetAllLight(Color.black);
+            if (progress == 0)
+            {
+                LedRing.SetSineFunc(0, Color.green, 1000);
+                return;
+            }
+            else if(progress == 8)
+            {
+                LedRing.SetAllLight(Color.green);
+                return;
+            }
+            for (var i = 0; i < progress; i++)
+            {
+                LedRing.SetButtonLight(Color.green, i);
+            }
+            LedRing.SetSineFunc(progress, Color.green, 1000);
+        }
+
+
         async UniTask LoadAudioTrack()
         {
             var audioSample = await _songDetail.GetAudioTrackAsync();
@@ -626,14 +668,18 @@ namespace MajdataPlay.Scenes.Game
 
             //var loaderTask = noteLoader.LoadNotes(Chart);
             var loaderTask = _noteLoader.LoadNotesIntoPoolAsync(_chart, _cts.Token);
-
+            var lastPercent = 0f;
             while (!loaderTask.Status.IsCompleted())
             {
-                MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading Chart")}...\n{_noteLoader.Progress * 100:F2}%");
+                var percent = (float)_noteLoader.Progress.Clamp(0, 1);
+                MajInstances.SceneSwitcher.SetLoadingText($"{"Loading Chart".i18n()}...\n{_noteLoader.Progress * 100:F2}%");
+                LedRingLoadingUpdate(percent, lastPercent);
+                lastPercent = percent;
                 await UniTask.Yield();
             }
             if(loaderTask.Status.IsCanceled())
             {
+                LedRing.SetAllLight(Color.white);
                 return;
             }
             else if(loaderTask.Status.IsFaulted())
@@ -641,12 +687,13 @@ namespace MajdataPlay.Scenes.Game
                 var task = loaderTask.AsTask();
                 var e = task.Exception.InnerException;
 
-                MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Failed to load chart")}\n{e.Message}%", Color.red);
+                MajInstances.SceneSwitcher.SetLoadingText($"{"Failed to load chart".i18n()}\n{e.Message}%", Color.red);
+                LedRing.SetAllLight(Color.red);
                 MajDebug.LogException(task.Exception);
                 StopAllCoroutines();
                 throw e;
             }
-            MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Loading Chart")}...\n100.00%");
+            MajInstances.SceneSwitcher.SetLoadingText($"{"Loading Chart".i18n()}...\n100.00%");
 
             _noteEffectPool.Init();
             await UniTask.Yield();
@@ -657,6 +704,7 @@ namespace MajdataPlay.Scenes.Game
             {
                 return;
             }
+            LedRing.SetAllLight(Color.white);
             await UniTask.SwitchToMainThread();
             switch (ModInfo.NoteMask)
             {
