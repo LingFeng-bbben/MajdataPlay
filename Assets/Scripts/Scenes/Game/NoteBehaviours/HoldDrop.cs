@@ -1,4 +1,4 @@
-﻿using MajdataPlay.IO;
+using MajdataPlay.IO;
 using MajdataPlay.Utils;
 using System;
 using UnityEngine;
@@ -430,20 +430,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 case NoteStatus.Arrived:
                     var endTiming = timing - Length;
                     var endDistance = endTiming * Speed + 4.8f;
+                    var ratio = endDistance / 4.8f;
+                    var scale = Mathf.Abs(ratio);
                     _tapLineTransform.localScale = new Vector3(1f, 1f, 1f);
-
-                    if (IsClassic)
-                    {
-                        Distance = endDistance;
-                        var ratio = endDistance / 4.8f;
-                        var scale = Mathf.Abs(ratio);
-                        Transform.position = _outerPos * ratio;
-                        _tapLineTransform.localScale = new Vector3(scale, scale, 1f);
-                    }
-                    else
-                    {
-                        Transform.position = _outerPos;
-                    }
+                    Distance = endDistance;
+                    Transform.position = _outerPos * ratio;
+                    _tapLineTransform.localScale = new Vector3(scale, scale, 1f);
                     break;
                 default:
                     return;
