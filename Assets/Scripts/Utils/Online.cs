@@ -85,6 +85,12 @@ namespace MajdataPlay.Utils
                             {
                                 var isAlive = await GetUserInfoAsync(statistics.Endpoint, token) != null;
                                 statistics.IsUserLoggedIn = isAlive;
+                                if(!isAlive)
+                                {
+                                    var runtimeConfig = statistics.Endpoint.RuntimeConfig;
+                                    runtimeConfig.Avatar = null;
+                                    runtimeConfig.Username = string.Empty;
+                                }
                             }
                             catch (Exception e)
                             {
