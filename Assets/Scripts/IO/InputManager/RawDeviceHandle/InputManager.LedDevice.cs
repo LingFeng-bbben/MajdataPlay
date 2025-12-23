@@ -1,4 +1,4 @@
-﻿using HidSharp;
+using HidSharp;
 using MajdataPlay.Utils;
 using System;
 using System.Diagnostics;
@@ -155,6 +155,7 @@ namespace MajdataPlay.IO
                     {
                         var needUpdate = false;
                         EnsureSerialPortIsOpen(serial);
+                        LedRing.LedFuncUpdate();
                         for (var i = 0; i < 8; i++)
                         {
                             var color = ledColors[i];
@@ -300,8 +301,8 @@ namespace MajdataPlay.IO
                         token.ThrowIfCancellationRequested();
                         try
                         {
-                            var now = MajTimeline.UnscaledTime;
                             var needUpdate = false;
+                            LedRing.LedFuncUpdate();
                             for (var i = 0; i < 8; i++)
                             {
                                 var color = ledColors[i];

@@ -74,7 +74,6 @@ namespace MajdataPlay
             // Time Update
             MajTimeline.OnPreUpdate();
             InputManager.OnPreUpdate();
-            LedRing.OnPreUpdate();
             _dummyTouchPanelRenderer.OnPreUpdate();
             _dummyLedRenderer.OnPreUpdate();
             try
