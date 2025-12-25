@@ -523,32 +523,40 @@
       "Content": "この難易度は存在しません"
     },
     {
-      "Origin": "THUMBUP_INFO",
+      "Origin": "MAJTEXT_THUMBUP_INFO",
       "Content": "<面白かったらいいねしよ"
     },
     {
-      "Origin": "THUMBUP_SENDING",
+      "Origin": "MAJTEXT_THUMBUP_SENDING",
       "Content": "..."
     },
     {
-      "Origin": "THUMBUP_SENDED",
+      "Origin": "MAJTEXT_THUMBUP_SENDED",
       "Content": "いいねしました"
     },
     {
-      "Origin": "THUMBUP_ALREADY",
+      "Origin": "MAJTEXT_THUMBUP_ALREADY",
       "Content": "すでにいいねしました"
     },
     {
-      "Origin": "THUMBUP_FAILED",
+      "Origin": "MAJTEXT_THUMBUP_FAILED",
       "Content": "いいね失敗した"
     },
     {
-      "Origin": "SCORE_SENDING",
+      "Origin": "MAJTEXT_SCORE_SENDING",
       "Content": "..."
     },
     {
-      "Origin": "SCORE_SENDED",
+      "Origin": "MAJTEXT_SCORE_SENDED",
       "Content": "スコアアップしました"
+    },
+    {
+      "Origin": "MAJTEXT_SCORE_FAILED",
+      "Content": "スコアの送信に失敗しました"
+    },
+    {
+      "Origin": "MAJTEXT_LOGIN_SESSION_EXPIRED",
+      "Content": "ログインセッションの有効期限が切れました"
     },
     {
       "Origin": "MAJSETTING_PROPERTY_Random",

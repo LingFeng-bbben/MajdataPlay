@@ -8,6 +8,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
@@ -82,7 +83,7 @@ namespace MajdataPlay.Scenes.Result
             if (_onlineDetail is null || _isAlreadyThumbUp)
             {
                 await UniTask.SwitchToMainThread();
-                infotext.text = "THUMBUP_ALREADY".i18n();
+                infotext.text = "MAJTEXT_THUMBUP_ALREADY".i18n();
                 return;
             }
             var cts = CancellationTokenSource.CreateLinkedTokenSource(token, _cts.Token);
@@ -96,7 +97,7 @@ namespace MajdataPlay.Scenes.Result
                         return;
                     }
                     await UniTask.SwitchToMainThread();
-                    infotext.text = "THUMBUP_SENDING".i18n();
+                    infotext.text = "MAJTEXT_THUMBUP_SENDING".i18n();
                     var intList = await Online.GetChartInteractAsync(_onlineDetail, token);
                     if (intList is MajNetSongInteract interact)
                     {
@@ -104,26 +105,33 @@ namespace MajdataPlay.Scenes.Result
                         {
                             _isAlreadyThumbUp = true;
                             await UniTask.SwitchToMainThread();
-                            infotext.text = "THUMBUP_ALREADY".i18n();
+                            infotext.text = "MAJTEXT_THUMBUP_ALREADY".i18n();
                             return;
                         }
                     }
                     else
                     {
                         await UniTask.SwitchToMainThread();
-                        infotext.text = "THUMBUP_FAILED".i18n();
+                        infotext.text = "MAJTEXT_THUMBUP_FAILED".i18n();
                         return;
                     }
                     var rsp = await Online.PostLikeAsync(_onlineDetail, token);
                     await UniTask.SwitchToMainThread();
                     if(rsp.IsSuccessfully)
                     {
-                        infotext.text = "THUMBUP_SENDED".i18n();
+                        infotext.text = "MAJTEXT_THUMBUP_SENDED".i18n();
                         MajInstances.AudioManager.PlaySFX(SFX_LIST[UnityEngine.Random.Range(0, SFX_LIST.Length)]);
                     }
                     else
                     {
-                        infotext.text = "THUMBUP_FAILED".i18n();
+                        if (rsp.StatusCode is HttpStatusCode.Unauthorized)
+                        {
+                            uploadtext.text = "MAJTEXT_LOGIN_SESSION_EXPIRED".i18n();
+                        }
+                        else
+                        {
+                            uploadtext.text = "MAJTEXT_THUMBUP_FAILED".i18n();
+                        }
                     }
                 }
             }
@@ -145,19 +153,26 @@ namespace MajdataPlay.Scenes.Result
                         return;
                     }
                     await UniTask.SwitchToMainThread();
-                    uploadtext.text = "SCORE_SENDING".i18n();
+                    uploadtext.text = "MAJTEXT_SCORE_SENDING".i18n();
                     await UniTask.SwitchToThreadPool();
                     var rsp = await Online.PostScoreAsync(_onlineDetail, _score, token);
                     await UniTask.SwitchToMainThread();
 
                     if (rsp.IsSuccessfully)
                     {
-                        uploadtext.text = "SCORE_SENDED".i18n();
+                        uploadtext.text = "MAJTEXT_SCORE_SENDED".i18n();
                         _isScorePosted = true;
                     }
                     else
                     {
-                        uploadtext.text = "SCORE_FAILED".i18n();
+                        if(rsp.StatusCode is HttpStatusCode.Unauthorized)
+                        {
+                            uploadtext.text = "MAJTEXT_LOGIN_SESSION_EXPIRED".i18n();
+                        }
+                        else
+                        {
+                            uploadtext.text = "MAJTEXT_SCORE_FAILED".i18n();
+                        }
                     }
                 }
             }

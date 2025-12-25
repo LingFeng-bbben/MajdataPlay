@@ -571,32 +571,40 @@
       "Content": "This level is empty"
     },
     {
-      "Origin": "THUMBUP_INFO",
+      "Origin": "MAJTEXT_THUMBUP_INFO",
       "Content": "<Give me a thumb up if it was fun!"
     },
     {
-      "Origin": "THUMBUP_SENDING",
+      "Origin": "MAJTEXT_THUMBUP_SENDING",
       "Content": "..."
     },
     {
-      "Origin": "THUMBUP_SENDED",
+      "Origin": "MAJTEXT_THUMBUP_SENDED",
       "Content": "Thumb up sended"
     },
     {
-      "Origin": "THUMBUP_ALREADY",
+      "Origin": "MAJTEXT_THUMBUP_ALREADY",
       "Content": "Thumb up already given"
     },
     {
-      "Origin": "THUMBUP_FAILED",
+      "Origin": "MAJTEXT_THUMBUP_FAILED",
       "Content": "Failed to send thumb up"
     },
     {
-      "Origin": "SCORE_SENDING",
+      "Origin": "MAJTEXT_SCORE_SENDING",
       "Content": "..."
     },
     {
-      "Origin": "SCORE_SENDED",
+      "Origin": "MAJTEXT_SCORE_SENDED",
       "Content": "Score Uploaded"
+    },
+    {
+      "Origin": "MAJTEXT_SCORE_FAILED",
+      "Content": "Failed to send score"
+    },
+    {
+      "Origin": "MAJTEXT_LOGIN_SESSION_EXPIRED",
+      "Content": "Login session expired"
     },
     {
       "Origin": "MAJSETTING_PROPERTY_Random",
