@@ -17,10 +17,16 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Scenes.List
 {
-    public class ListManager : MonoBehaviour
+    public class ListManager : MonoBehaviour, ISceneManager
     {
         const int MAX_ALLOWED_INACTIVE_TIME_MIN = 5;
-        public CancellationToken CancellationToken => _cts.Token;
+        public CancellationToken CancellationToken
+        {
+            get
+            {
+                return _cts.Token;
+            }
+        }
         public static List<Task> AllBackgroundTasks { get; } = new(8192);
 
         int _delta = 0;
@@ -146,10 +152,10 @@ namespace MajdataPlay.Scenes.List
         void OnDestroy()
         {
             _isExited = true;
+            _cts.Cancel();
             InputManager.UnbindAnyArea(OnAnyInput);
             Majdata<ListManager>.Free();
             MajEnv.SharedHttpClient.CancelPendingRequests();
-            _cts.Cancel();
         }
         void Update()
         {
