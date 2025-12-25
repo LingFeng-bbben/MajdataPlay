@@ -33,6 +33,8 @@ namespace MajdataPlay.Scenes.Login
         GameObject _qrCodeComponent;
         [SerializeField]
         GameObject _qrCodeLoading;
+        [SerializeField]
+        GameObject _qrCodeErrorIcon;
 
         [SerializeField]
         InputField _usernameInput;
@@ -181,6 +183,7 @@ namespace MajdataPlay.Scenes.Login
 
                                 _qrCodeRawImage.texture = texture;
                                 _qrCodeLoading.SetActive(false);
+                                _qrCodeErrorIcon.SetActive(false);
                                 _qrCodeRawImage.color = Color.white;
 
                                 authProcessFlag = AUTH_FLAG_WAIT_FOR_PERMIT;
@@ -188,6 +191,8 @@ namespace MajdataPlay.Scenes.Login
                             else if(authSessionTask.IsCompleted)// Faulted or canceled
                             {
                                 authProcessFlag = AUTH_FLAG_ERROR;
+                                _qrCodeErrorIcon.SetActive(true);
+                                _qrCodeLoading.SetActive(false);
                                 MajDebug.LogException(authSessionTask.AsTask().Exception);
                             }
                         }
@@ -263,6 +268,7 @@ namespace MajdataPlay.Scenes.Login
                             cts.Cancel();
                             cts = new();
                             authProcessFlag = AUTH_FLAG_REQUESTING;
+                            _qrCodeErrorIcon.SetActive(false);
                             _qrCodeLoading.SetActive(true);
                             _qrCodeRawImage.texture = null!;
                             _qrCodeRawImage.color = new Color(0.5f, 0.5f, 0.5f);
