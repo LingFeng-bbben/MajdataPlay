@@ -3,6 +3,7 @@ using MajdataPlay.IO;
 using MajdataPlay.Net;
 using MajdataPlay.Settings;
 using MajdataPlay.Utils;
+using NeoSmart.AsyncLock;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,6 +11,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
@@ -22,103 +24,142 @@ namespace MajdataPlay.Scenes.Result
         public Text uploadtext;
         public Image thumb;
 
-        OnlineSongDetail _onlineDetail;
+        OnlineSongDetail? _onlineDetail;
 
         bool _isInited = false;
         bool _isThumbUpRequested = false;
+        bool _isAlreadyThumbUp = false;
+        bool _isScorePosted = false;
 
-        readonly static string[] SFX_LIST = new string[] { "dianzan_comment.wav", "dianzan_comment_2.wav", "dianzan_comment_3.wav" };
+        readonly AsyncLock _sendScoreLock = new();
+        readonly AsyncLock _thumbUpLock = new();
+        readonly CancellationTokenSource _cts = new();
+        readonly string[] SFX_LIST = new string[] { "dianzan_comment.wav", "dianzan_comment_2.wav", "dianzan_comment_3.wav" };
 
-        public bool Init(ISongDetail song)
+        public void Init(ISongDetail song)
         {
             if (song is not OnlineSongDetail onlineDetail)
             {
                 infotext.text = "";
                 thumb.gameObject.SetActive(false);
-                return false;
+                return;
             }
                 
             var serverInfo = onlineDetail.ServerInfo;
             if (serverInfo is null || serverInfo.RuntimeConfig.AuthMethod == NetAuthMethodOption.None)
             {
                 thumb.gameObject.SetActive(false);
-                return false;
+                return;
             }
             _isInited = true;
             _onlineDetail = onlineDetail;
             infotext.text = "THUMBUP_INFO".i18n();
-            return true;
         }
         void Update()
         {
-            if(!_isInited || _isThumbUpRequested)
+            if(!_isInited || _isThumbUpRequested || _onlineDetail is null)
             {
                 return;
             }
-            if(InputManager.IsSensorClickedInThisFrame(SensorArea.E3) || InputManager.IsSensorClickedInThisFrame(SensorArea.B3))
+            if(!_isAlreadyThumbUp && (InputManager.IsSensorClickedInThisFrame(SensorArea.E3) || InputManager.IsSensorClickedInThisFrame(SensorArea.B3)))
             {
                 SendInteraction(_onlineDetail);
             }
+        }
+        private void OnDestroy()
+        {
+            _cts.Cancel();
         }
         void SendInteraction(OnlineSongDetail song)
         {
             _ = SendLikeAsync(song);
         }
 
-        async Task SendLikeAsync(OnlineSongDetail song)
+        async Task SendLikeAsync(OnlineSongDetail song, CancellationToken token = default)
         {
-            await UniTask.SwitchToMainThread();
-            infotext.text = "THUMBUP_SENDING".i18n();
-            //LightManager.SetButtonLight(Color.blue, 4);
-            try
-            {
-                await Online.PostLikeAsync(song);
-                await UniTask.SwitchToMainThread();
-                infotext.text = "THUMBUP_SENDED".i18n();
-                MajInstances.AudioManager.PlaySFX(SFX_LIST[UnityEngine.Random.Range(0, SFX_LIST.Length)]);
-            }
-            catch (Exception ex)
+            if (_isAlreadyThumbUp)
             {
                 await UniTask.SwitchToMainThread();
-                infotext.text = ex.Message;
-                MajDebug.LogError(ex);
-                //LightManager.SetButtonLight(Color.red, 4);
+                infotext.text = "THUMBUP_ALREADY".i18n();
                 return;
             }
-        }
-
-        public async Task SendScoreAsync(MaiScore score)
-        {
-            for(int i = 0; i < MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
+            var cts = CancellationTokenSource.CreateLinkedTokenSource(token, _cts.Token);
+            token = cts.Token;
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
-                try
+                using (await _thumbUpLock.LockAsync(token))
                 {
-                    await UniTask.SwitchToMainThread();
-                    uploadtext.text = "SCORE_SENDING".i18n();
-                    await Online.PostScoreAsync(_onlineDetail, score);
-                    await UniTask.SwitchToMainThread();
-                    uploadtext.text = "SCORE_SENDED".i18n();
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    if(ex is TaskCanceledException)
+                    if (_isAlreadyThumbUp)
                     {
-                        await UniTask.SwitchToMainThread();
-                        uploadtext.text = "Retry in 1s..." + ex.Message;
-                        MajDebug.LogError(ex);
-                        await UniTask.Delay(1000);
+                        return;
+                    }
+                    await UniTask.SwitchToMainThread();
+                    infotext.text = "THUMBUP_SENDING".i18n();
+                    var intList = await Online.GetChartInteractAsync(song, token);
+                    if (intList is MajNetSongInteract interact)
+                    {
+                        if(interact.IsLiked)
+                        {
+                            _isAlreadyThumbUp = true;
+                            await UniTask.SwitchToMainThread();
+                            infotext.text = "THUMBUP_ALREADY".i18n();
+                            return;
+                        }
                     }
                     else
                     {
                         await UniTask.SwitchToMainThread();
-                        uploadtext.text = ex.Message;
-                        MajDebug.LogError(ex);
+                        infotext.text = "THUMBUP_FAILED".i18n();
                         return;
+                    }
+                    var rsp = await Online.PostLikeAsync(song, token);
+                    await UniTask.SwitchToMainThread();
+                    if(rsp.IsSuccessfully)
+                    {
+                        infotext.text = "THUMBUP_SENDED".i18n();
+                        MajInstances.AudioManager.PlaySFX(SFX_LIST[UnityEngine.Random.Range(0, SFX_LIST.Length)]);
+                    }
+                    else
+                    {
+                        infotext.text = "THUMBUP_FAILED".i18n();
                     }
                 }
             }
-            
+        }
+
+        public async Task SendScoreAsync(MaiScore score, CancellationToken token = default)
+        {
+            if(_onlineDetail is null || _isScorePosted)
+            {
+                return;
+            }
+            var cts = CancellationTokenSource.CreateLinkedTokenSource(token, _cts.Token);
+            token = cts.Token;
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
+            {
+                using (await _sendScoreLock.LockAsync(token))
+                {
+                    if(_isScorePosted)
+                    {
+                        return;
+                    }
+                    await UniTask.SwitchToMainThread();
+                    uploadtext.text = "SCORE_SENDING".i18n();
+                    await UniTask.SwitchToThreadPool();
+                    var rsp = await Online.PostScoreAsync(_onlineDetail, score, token);
+                    await UniTask.SwitchToMainThread();
+
+                    if (rsp.IsSuccessfully)
+                    {
+                        uploadtext.text = "SCORE_SENDED".i18n();
+                        _isScorePosted = true;
+                    }
+                    else
+                    {
+                        uploadtext.text = "SCORE_FAILED".i18n();
+                    }
+                }
+            }
         }
     }
 }

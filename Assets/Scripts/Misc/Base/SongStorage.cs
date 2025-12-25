@@ -450,40 +450,13 @@ namespace MajdataPlay
             {
                 var client = MajEnv.SharedHttpClient;
                 var rspText = string.Empty;
-                var chartList = Array.Empty<MajnetSongDetail>();
-                for (var i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
+                var chartList = await Online.GetChartListAsync(api);
+                if (chartList is null)
                 {
-                    try
-                    {
-                        if (i != 0)
-                        {
-                            progressReporter?.Report(
-                                ZString.Format("MAJTEXT_SCANNING_CHARTS_FROM_{0}".i18n(), api.Name) +
-                                $" ({i}/{MajEnv.HTTP_REQUEST_MAX_RETRY})");
-                        }
-                        var rsp = await Online.FetchChartListAsync(api);
-                        var isSuccessfully = !(!rsp.IsSuccessfully || !rsp.IsDeserializable || !rsp.TryDeserialize<MajnetSongDetail[]>(out chartList) || chartList is null);
-                        if (isSuccessfully)
-                        {
-                            break;
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        MajDebug.LogException(e);
-                    }
-                    finally
-                    {
-                        await UniTask.SwitchToThreadPool();
-                    }
-                    if (i == MajEnv.HTTP_REQUEST_MAX_RETRY)
-                    {
-                        progressReporter?.Report(ZString.Format("Failed to fetch list from {0}".i18n(), api.Name));
-                        await Task.Delay(2000);
-                        throw new OperationCanceledException();
-                    }
+                    progressReporter?.Report(ZString.Format("Failed to fetch list from {0}".i18n(), api.Name));
+                    throw new OperationCanceledException();
                 }
-                if(chartList is null || chartList.Length == 0)
+                if(chartList.Length == 0)
                 {
                     return collection;
                 }

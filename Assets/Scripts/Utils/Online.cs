@@ -463,6 +463,50 @@ namespace MajdataPlay.Utils
                 }
             }
         }
+        public static async ValueTask<MajNetSongInteract?> GetChartInteractAsync(OnlineSongDetail song, CancellationToken token = default)
+        {
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
+            {
+                await UniTask.SwitchToThreadPool();
+                var serverInfo = song.ServerInfo;
+                var interactUrl = BuildMaiChartUri(song.ServerInfo, API_POST_MAICHART_INTERACT, song.Id);
+                var rsp = default(EndpointResponse);
+
+                for (var i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
+                {
+#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
+                    rsp = await GetAsync(interactUrl, token);
+#else
+                    rsp = await GetAsync(interactUrl, token);
+#endif
+                    if (rsp.IsSuccessfully && rsp.IsDeserializable && rsp.TryDeserialize<MajNetSongInteract?>(out var intlist) && intlist is not null)
+                    {
+                        MajDebug.LogDebug(rsp);
+                        return intlist;
+                    }
+                    else
+                    {
+                        MajDebug.LogError(rsp);
+                    }
+                    if (rsp.ErrorCode == HttpErrorCode.Canceled)
+                    {
+                        break;
+                    }
+                    else if (rsp.StatusCode is HttpStatusCode.BadRequest
+                        or HttpStatusCode.NotFound
+                        or HttpStatusCode.Unauthorized
+                        or HttpStatusCode.Forbidden)
+                    {
+                        return null;
+                    }
+                    else if (!rsp.IsSuccessfully && rsp.StatusCode is not null)
+                    {
+                        return null;
+                    }
+                }
+                return null;                
+            }
+        }
         public static async ValueTask<EndpointResponse> PostLikeAsync(OnlineSongDetail song, CancellationToken token = default)
         {
             await using (UniTask.ReturnToCurrentSynchronizationContext())
@@ -470,85 +514,50 @@ namespace MajdataPlay.Utils
                 await UniTask.SwitchToThreadPool();
                 var serverInfo = song.ServerInfo;
                 var interactUrl = BuildMaiChartUri(song.ServerInfo, API_POST_MAICHART_INTERACT, song.Id);
+                var rsp = default(EndpointResponse);
 
+                for (var i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
+                {
 #if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
-                var rsp = await GetAsync(interactUrl, token);
+                    var form = new WWWForm();
+                    form.AddField("type", "like");
+                    form.AddField("content", "...");
 
-                if (!rsp.IsDeserializable)
-                {
-                    return rsp;
-                }
-                var intlist = await rsp.DeserializeAsync<MajNetSongInteract>();
-                if (intlist.IsLiked)
-                {
-                    return new()
-                    {
-                        ErrorCode = HttpErrorCode.NoError,
-                        StatusCode = rsp.StatusCode,
-                        IsSuccessfully = false,
-                        IsDeserializable = false,
-                        Message = "THUMBUP_ALREADY"
-                    };
-                }
-
-                var form = new WWWForm();
-                form.AddField("type", "like");
-                form.AddField("content", "...");
-
-                rsp = await PostAsync(interactUrl, form, token);
-
-                if (!rsp.IsSuccessfully)
-                {
-                    return new()
-                    {
-                        ErrorCode = rsp.ErrorCode,
-                        StatusCode = rsp.StatusCode,
-                        IsSuccessfully = false,
-                        IsDeserializable = false,
-                        Message = "THUMBUP_FAILED"
-                    };
-                }
-                return rsp;
+                    rsp = await PostAsync(interactUrl, form, token);
 #else
-                var rsp = await GetAsync(interactUrl, token);
-                if (!rsp.IsDeserializable)
-                {
-                    return rsp;
-                }
-                var intlist = await rsp.DeserializeAsync<MajNetSongInteract>();
-
-                if (intlist.IsLiked)
-                {
-                    return new()
+                    var formData = new MultipartFormDataContent
                     {
-                        ErrorCode = HttpErrorCode.NoError,
-                        StatusCode = rsp.StatusCode,
-                        IsSuccessfully = false,
-                        IsDeserializable = false,
-                        Message = "THUMBUP_ALREADY"
+                        { new StringContent("like"), "type" },
+                        { new StringContent("..."), "content" },
                     };
-                }
-
-                var formData = new MultipartFormDataContent
-                {
-                    { new StringContent("like"), "type" },
-                    { new StringContent("..."), "content" },
-                };
-                rsp = await PostAsync(interactUrl, formData, token);
-
-                if (!rsp.IsSuccessfully)
-                {
-                    return new()
+                    rsp = await PostAsync(interactUrl, formData, token);
+#endif
+                    if (rsp.IsSuccessfully)
                     {
-                        ErrorCode = rsp.ErrorCode,
-                        StatusCode = rsp.StatusCode,
-                        IsSuccessfully = false,
-                        IsDeserializable = false,
-                        Message = "THUMBUP_FAILED"
-                    };
+                        MajDebug.LogDebug(rsp);
+                        return rsp;
+                    }
+                    else
+                    {
+                        MajDebug.LogError(rsp);
+                    }
+                    if (rsp.ErrorCode == HttpErrorCode.Canceled)
+                    {
+                        break;
+                    }
+                    else if (rsp.StatusCode is HttpStatusCode.BadRequest
+                        or HttpStatusCode.NotFound
+                        or HttpStatusCode.Unauthorized
+                        or HttpStatusCode.Forbidden)
+                    {
+                        break;
+                    }
+                    else if (!rsp.IsSuccessfully && rsp.StatusCode is not null)
+                    {
+                        break;
+                    }
                 }
                 return rsp;
-#endif
             }
         }
         public static async ValueTask<EndpointResponse> PostScoreAsync(OnlineSongDetail song, MaiScore score, CancellationToken token = default)
@@ -559,22 +568,76 @@ namespace MajdataPlay.Utils
                 var serverInfo = song.ServerInfo;
                 var scoreUrl = BuildMaiChartUri(song.ServerInfo, API_POST_MAICHART_SCORE, song.Id);
                 var json = await Serializer.Json.SerializeAsync(score, DEFAULT_JSON_SERIALIZER);
+                var rsp = default(EndpointResponse);
 
+
+                for (var i = 0; i < MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
+                {
 #if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
-                return await PostAsync(scoreUrl, json, "application/json", token);
+                    rsp = await PostAsync(scoreUrl, json, "application/json", token);
 #else
-                return await PostAsync(scoreUrl, new StringContent(json, Encoding.UTF8, "application/json"), token);
+                    rsp = await PostAsync(scoreUrl, new StringContent(json, Encoding.UTF8, "application/json"), token);
 #endif
+                    if (rsp.IsSuccessfully)
+                    {
+                        MajDebug.LogDebug(rsp);
+                        return rsp;
+                    }
+                    else
+                    {
+                        MajDebug.LogError(rsp);
+                    }
+                    if (rsp.ErrorCode == HttpErrorCode.Canceled)
+                    {
+                        break;
+                    }
+                    else if(rsp.StatusCode is HttpStatusCode.BadRequest 
+                        or HttpStatusCode.NotFound 
+                        or HttpStatusCode.Unauthorized 
+                        or HttpStatusCode.Forbidden)
+                    {
+                        break;
+                    }
+                    else if (!rsp.IsSuccessfully && rsp.StatusCode is not null)
+                    {
+                        break;
+                    }
+                }
+
+                return rsp;
             }
         }
-        public static async ValueTask<EndpointResponse> FetchChartListAsync(ApiEndpoint apiEndpoint, CancellationToken token = default)
+        public static async ValueTask<MajnetSongDetail[]?> GetChartListAsync(ApiEndpoint apiEndpoint, CancellationToken token = default)
         {
             await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
                 await UniTask.SwitchToThreadPool();
                 var url = apiEndpoint.Url.Combine(API_GET_MAICHART_LIST);
+                var rsp = default(EndpointResponse);
 
-                return await GetAsync(url, token);
+                for (var i = 0; i < MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
+                {
+                    rsp = await GetAsync(url, token);
+                    if(rsp.IsSuccessfully && rsp.TryDeserialize<MajnetSongDetail[]>(out var chartList) && chartList is not null)
+                    {
+                        MajDebug.LogDebug(rsp);
+                        return chartList;
+                    }
+                    else
+                    {
+                        MajDebug.LogError(rsp);
+                    }
+                    if (rsp.ErrorCode == HttpErrorCode.Canceled)
+                    {
+                        break;
+                    }
+                    else if (!rsp.IsSuccessfully && rsp.StatusCode is not null)
+                    {
+                        break;
+                    }
+                }
+
+                return null;
             }
         }
         public static async ValueTask<Sprite?> GetUserIconAsync(ApiEndpoint apiEndpoint,string username, CancellationToken token = default)

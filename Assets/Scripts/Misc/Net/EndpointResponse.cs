@@ -1,7 +1,8 @@
-﻿using MajdataPlay.Utils;
+using MajdataPlay.Utils;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,7 +14,6 @@ internal readonly struct EndpointResponse
     public required bool IsSuccessfully { get; init; }
     public required bool IsDeserializable { get; init; }
     public HttpStatusCode? StatusCode { get; init; }
-    public EndpointResponseCode ResponseCode { get; init; }
     public required HttpErrorCode ErrorCode { get; init; }
     public IReadOnlyDictionary<string, IEnumerable<string>> Headers { get; init; } = _emptyDict;
     public required string Message { get; init; }
@@ -107,5 +107,9 @@ internal readonly struct EndpointResponse
             return values;
         }
         return Array.Empty<string>();
+    }
+    public override string ToString()
+    {
+        return $"StatusCode: {StatusCode}\nErrorCode: {ErrorCode}\nIsDeserializable: {IsDeserializable}\nMessage:{Message}\nHeaders:\n" + string.Join('\n', Headers.Select(x => $"{x.Key}: {string.Join(';', x.Value)}"));
     }
 }
