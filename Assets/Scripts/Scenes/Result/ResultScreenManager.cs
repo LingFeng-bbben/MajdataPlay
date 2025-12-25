@@ -81,9 +81,9 @@ namespace MajdataPlay.Scenes.Result
             var totalJudgeRecord = JudgeDetail.UnpackJudgeRecord(result.JudgeRecord.TotalJudgeInfo);
             var song = result.SongDetail;
             var historyResult = ScoreManager.GetScore(song, listConfig.SelectedDiff);
-
+            var score = MaiScore.CreateFromResult(result, result.Level);
             var intractSender = GetComponent<OnlineInteractionSender>();
-            intractSender.Init(song);
+            intractSender.Init(song, score);
             favoriteAdder.SetSong(song);
             userInfoDisplayer.DisplayFromSong(song);
 
@@ -182,10 +182,9 @@ namespace MajdataPlay.Scenes.Result
             if (!MajInstances.GameManager.Setting.Mod.IsAnyModActive())
             {
                 var localScoreSaveTask = ScoreManager.SaveScore(result, result.Level);
-                var score = MaiScore.CreateFromResult(result,result.Level);
-                if (score is not null && song is OnlineSongDetail onlineSong && onlineSong.ServerInfo.RuntimeConfig.AuthMethod != NetAuthMethodOption.None)
+                if (song is OnlineSongDetail onlineSong && onlineSong.ServerInfo.RuntimeConfig.AuthMethod != NetAuthMethodOption.None)
                 {
-                    var task = intractSender.SendScoreAsync(score);
+                    var task = intractSender.SendScoreAsync();
                     _scoreSaveTask = Task.WhenAll(localScoreSaveTask, task);
                 }
                 else

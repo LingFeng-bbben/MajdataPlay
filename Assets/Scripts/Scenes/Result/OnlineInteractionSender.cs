@@ -25,6 +25,7 @@ namespace MajdataPlay.Scenes.Result
         public Image thumb;
 
         OnlineSongDetail? _onlineDetail;
+        MaiScore? _score;
 
         bool _isInited = false;
         bool _isThumbUpRequested = false;
@@ -36,7 +37,7 @@ namespace MajdataPlay.Scenes.Result
         readonly CancellationTokenSource _cts = new();
         readonly string[] SFX_LIST = new string[] { "dianzan_comment.wav", "dianzan_comment_2.wav", "dianzan_comment_3.wav" };
 
-        public void Init(ISongDetail song)
+        public void Init(ISongDetail song, MaiScore score)
         {
             if (song is not OnlineSongDetail onlineDetail)
             {
@@ -52,6 +53,7 @@ namespace MajdataPlay.Scenes.Result
                 return;
             }
             _isInited = true;
+            _score = score;
             _onlineDetail = onlineDetail;
             infotext.text = "THUMBUP_INFO".i18n();
         }
@@ -63,21 +65,21 @@ namespace MajdataPlay.Scenes.Result
             }
             if(!_isAlreadyThumbUp && (InputManager.IsSensorClickedInThisFrame(SensorArea.E3) || InputManager.IsSensorClickedInThisFrame(SensorArea.B3)))
             {
-                SendInteraction(_onlineDetail);
+                _ = SendLikeAsync();
+            }
+            if (!_isAlreadyThumbUp && (InputManager.IsSensorClickedInThisFrame(SensorArea.E4) || InputManager.IsSensorClickedInThisFrame(SensorArea.D4) || InputManager.IsSensorClickedInThisFrame(SensorArea.A3)))
+            {
+                _ = SendScoreAsync();
             }
         }
         private void OnDestroy()
         {
             _cts.Cancel();
         }
-        void SendInteraction(OnlineSongDetail song)
-        {
-            _ = SendLikeAsync(song);
-        }
 
-        async Task SendLikeAsync(OnlineSongDetail song, CancellationToken token = default)
+        async Task SendLikeAsync(CancellationToken token = default)
         {
-            if (_isAlreadyThumbUp)
+            if (_onlineDetail is null || _isAlreadyThumbUp)
             {
                 await UniTask.SwitchToMainThread();
                 infotext.text = "THUMBUP_ALREADY".i18n();
@@ -95,7 +97,7 @@ namespace MajdataPlay.Scenes.Result
                     }
                     await UniTask.SwitchToMainThread();
                     infotext.text = "THUMBUP_SENDING".i18n();
-                    var intList = await Online.GetChartInteractAsync(song, token);
+                    var intList = await Online.GetChartInteractAsync(_onlineDetail, token);
                     if (intList is MajNetSongInteract interact)
                     {
                         if(interact.IsLiked)
@@ -112,7 +114,7 @@ namespace MajdataPlay.Scenes.Result
                         infotext.text = "THUMBUP_FAILED".i18n();
                         return;
                     }
-                    var rsp = await Online.PostLikeAsync(song, token);
+                    var rsp = await Online.PostLikeAsync(_onlineDetail, token);
                     await UniTask.SwitchToMainThread();
                     if(rsp.IsSuccessfully)
                     {
@@ -126,10 +128,9 @@ namespace MajdataPlay.Scenes.Result
                 }
             }
         }
-
-        public async Task SendScoreAsync(MaiScore score, CancellationToken token = default)
+        public async Task SendScoreAsync(CancellationToken token = default)
         {
-            if(_onlineDetail is null || _isScorePosted)
+            if(_onlineDetail is null || _score is null || _isScorePosted)
             {
                 return;
             }
@@ -146,7 +147,7 @@ namespace MajdataPlay.Scenes.Result
                     await UniTask.SwitchToMainThread();
                     uploadtext.text = "SCORE_SENDING".i18n();
                     await UniTask.SwitchToThreadPool();
-                    var rsp = await Online.PostScoreAsync(_onlineDetail, score, token);
+                    var rsp = await Online.PostScoreAsync(_onlineDetail, _score, token);
                     await UniTask.SwitchToMainThread();
 
                     if (rsp.IsSuccessfully)
