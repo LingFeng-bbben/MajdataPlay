@@ -1,4 +1,4 @@
-﻿using HidSharp;
+using HidSharp;
 using MajdataPlay.Scenes.Game;
 using MajdataPlay.Scenes.Game.Notes;
 using MajdataPlay.IO;
@@ -309,6 +309,8 @@ namespace MajdataPlay.Settings
         public ButtonRingOptions ButtonRing { get; set; } = new();
         [Preserve]
         public TouchPanelOptions TouchPanel { get; set; } = new();
+        [Preserve]
+        public PdxTouchOptions PdxTouch { get; set; } = new();
     }
     [Preserve]
     public class OutputDeviceOptions
@@ -375,6 +377,18 @@ namespace MajdataPlay.Settings
         public bool Exclusice { get; set; } = false;
         [Preserve]
         public OpenPriority OpenPriority { get; set; } = OpenPriority.VeryHigh;
+    }
+    [Preserve]
+    public class PdxTouchOptions
+    {
+        [Preserve]
+        public bool Enable { get; set; } = false;
+        [Preserve]
+        public string? Path1P { get; set; } = null;
+        [Preserve]
+        public string? Path2P { get; set; } = null;
+        [Preserve]
+        public int TouchRadius { get; set; } = 30;
     }
     [Preserve]
     public class SerialPortOptions

@@ -1,4 +1,4 @@
-﻿using HidSharp;
+using HidSharp;
 using HidSharp.Platform.Windows;
 using MajdataPlay.Collections;
 using MajdataPlay.Numerics;
@@ -407,6 +407,14 @@ namespace MajdataPlay.IO
         //}
         static void IODeviceDetect()
         {
+            // PDX 触摸面板（独立于其他设备）
+            var pdxOptions = MajEnv.Settings.IO.InputDevice.PdxTouch;
+            if (pdxOptions.Enable)
+            {
+                MajDebug.LogInfo("PdxTouchPanel: Enabled");
+                PdxTouchPanel.Start();
+            }
+
             const int YUAN_HID_1P_PID = 22352;
             const int YUAN_HID_1P_VID = 11836;
             const int YUAN_HID_2P_PID = 22352;
