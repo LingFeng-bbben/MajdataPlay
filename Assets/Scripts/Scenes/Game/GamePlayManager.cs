@@ -1262,6 +1262,13 @@ namespace MajdataPlay.Scenes.Game
 
             _cts.Cancel();
 
+            // 停止所有正在播放的音效
+            var noteAudioManager = Majdata<NoteAudioManager>.Instance;
+            if (noteAudioManager != null)
+            {
+                noteAudioManager.StopTouchHoldSound();
+            }
+
             InputManager.ClearAllSubscriber();
             MajInstances.SceneSwitcher.SetLoadingText(string.Empty, Color.white);
             MajInstances.GameManager.EnableGC();
