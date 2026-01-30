@@ -1,0 +1,219 @@
+<?xml version="1.0" standalone="yes"?>
+<object class="NSIBObjectData">
+  <string name="targetFramework">IBCarbonFramework</string>
+  <object name="rootObject" class="NSCustomObject" id="1">
+    <string name="customClass">NSApplication</string>
+  </object>
+  <array count="20" name="allObjects">
+    <object class="IBCarbonWindow" id="166">
+      <string name="windowRect">119 141 479 621 </string>
+      <string name="title">BASS_FX tempo / pitch / samplerate &amp; dsp fx</string>
+      <object name="rootControl" class="IBCarbonRootControl" id="167">
+        <string name="bounds">0 0 360 480 </string>
+        <string name="viewFrame">0 0 480 360 </string>
+        <array count="18" name="subviews">
+          <object class="IBCarbonSlider" id="200">
+            <string name="bounds">69 20 88 460 </string>
+            <string name="viewFrame">20 69 440 19 </string>
+            <int name="controlID">11</int>
+            <boolean name="isLive">TRUE</boolean>
+            <int name="initialValue">50</int>
+          </object>
+          <object class="IBCarbonSlider" id="201">
+            <string name="bounds">120 233 139 460 </string>
+            <string name="viewFrame">233 120 227 19 </string>
+            <int name="controlID">16</int>
+            <boolean name="isLive">TRUE</boolean>
+            <int name="minimumValue">-30</int>
+            <int name="maximumValue">30</int>
+          </object>
+          <object class="IBCarbonSlider" id="202">
+            <string name="bounds">187 233 206 460 </string>
+            <string name="viewFrame">233 187 227 19 </string>
+            <int name="controlID">18</int>
+            <boolean name="isLive">TRUE</boolean>
+            <int name="initialValue">44100</int>
+            <int name="minimumValue">30870</int>
+            <int name="maximumValue">57330</int>
+          </object>
+          <object class="IBCarbonSlider" id="203">
+            <string name="bounds">253 233 272 460 </string>
+            <string name="viewFrame">233 253 227 19 </string>
+            <int name="controlID">20</int>
+            <boolean name="isLive">TRUE</boolean>
+            <int name="minimumValue">-30</int>
+            <int name="maximumValue">30</int>
+          </object>
+          <object class="IBCarbonButton" id="205">
+            <string name="bounds">20 20 40 460 </string>
+            <string name="viewFrame">20 20 440 20 </string>
+            <int name="controlID">10</int>
+            <string name="title">click here to open a file &amp; play it...</string>
+            <ostype name="command">open</ostype>
+          </object>
+          <object class="IBCarbonStaticText" id="209">
+            <string name="bounds">281 20 292 51 </string>
+            <string name="viewFrame">20 281 31 11 </string>
+            <boolean name="small">TRUE</boolean>
+            <int name="controlSize">3</int>
+            <string name="title">125 hz</string>
+            <int name="justification">1</int>
+          </object>
+          <object class="IBCarbonStaticText" id="210">
+            <string name="bounds">281 99 292 126 </string>
+            <string name="viewFrame">99 281 27 11 </string>
+            <boolean name="small">TRUE</boolean>
+            <int name="controlSize">3</int>
+            <string name="title">1 Khz</string>
+            <int name="justification">1</int>
+          </object>
+          <object class="IBCarbonStaticText" id="211">
+            <string name="bounds">281 177 292 205 </string>
+            <string name="viewFrame">177 281 28 11 </string>
+            <boolean name="small">TRUE</boolean>
+            <int name="controlSize">3</int>
+            <string name="title">8 Khz</string>
+            <int name="justification">1</int>
+          </object>
+          <object class="IBCarbonStaticText" id="212">
+            <string name="bounds">96 20 112 205 </string>
+            <string name="viewFrame">20 96 185 16 </string>
+            <string name="title">-= DSP Peaking Equalizer =-</string>
+            <int name="justification">1</int>
+          </object>
+          <object class="IBCarbonStaticText" id="213">
+            <string name="bounds">48 20 61 460 </string>
+            <string name="viewFrame">20 48 440 13 </string>
+            <boolean name="small">TRUE</boolean>
+            <int name="controlSize">1</int>
+            <string name="title">Volume</string>
+            <int name="justification">1</int>
+          </object>
+          <object class="IBCarbonStaticText" id="214">
+            <string name="bounds">99 233 112 460 </string>
+            <string name="viewFrame">233 99 227 13 </string>
+            <int name="controlID">15</int>
+            <boolean name="small">TRUE</boolean>
+            <int name="controlSize">1</int>
+            <string name="title">Tempo = 0%</string>
+            <int name="justification">1</int>
+          </object>
+          <object class="IBCarbonStaticText" id="215">
+            <string name="bounds">166 233 179 460 </string>
+            <string name="viewFrame">233 166 227 13 </string>
+            <int name="controlID">17</int>
+            <boolean name="small">TRUE</boolean>
+            <int name="controlSize">1</int>
+            <string name="title">Samplerate = 44100Hz</string>
+            <int name="justification">1</int>
+          </object>
+          <object class="IBCarbonStaticText" id="216">
+            <string name="bounds">232 233 245 460 </string>
+            <string name="viewFrame">233 232 227 13 </string>
+            <int name="controlID">19</int>
+            <boolean name="small">TRUE</boolean>
+            <int name="controlSize">1</int>
+            <string name="title">Pitch Scaling = 0 semitones</string>
+            <int name="justification">1</int>
+          </object>
+          <object class="IBCarbonStaticText" id="217">
+            <string name="bounds">300 20 313 460 </string>
+            <string name="viewFrame">20 300 440 13 </string>
+            <int name="controlID">21</int>
+            <boolean name="small">TRUE</boolean>
+            <int name="controlSize">1</int>
+            <string name="title">Playing position: 00:00 / 00:00</string>
+            <int name="justification">1</int>
+          </object>
+          <object class="IBCarbonSlider" id="218">
+            <string name="bounds">321 20 340 460 </string>
+            <string name="viewFrame">20 321 440 19 </string>
+            <int name="controlID">22</int>
+            <boolean name="isLive">TRUE</boolean>
+          </object>
+          <object class="IBCarbonSlider" id="222">
+            <string name="bounds">120 184 274 198 </string>
+            <string name="viewFrame">184 120 14 154 </string>
+            <int name="controlID">14</int>
+            <boolean name="isLive">TRUE</boolean>
+            <int name="orientation">2</int>
+            <int name="minimumValue">-10</int>
+            <int name="maximumValue">10</int>
+          </object>
+          <object class="IBCarbonSlider" id="223">
+            <string name="bounds">120 105 274 119 </string>
+            <string name="viewFrame">105 120 14 154 </string>
+            <int name="controlID">13</int>
+            <boolean name="isLive">TRUE</boolean>
+            <int name="orientation">2</int>
+            <int name="minimumValue">-10</int>
+            <int name="maximumValue">10</int>
+          </object>
+          <object class="IBCarbonSlider" id="224">
+            <string name="bounds">120 26 274 40 </string>
+            <string name="viewFrame">26 120 14 154 </string>
+            <int name="controlID">12</int>
+            <boolean name="isLive">TRUE</boolean>
+            <int name="orientation">2</int>
+            <int name="minimumValue">-10</int>
+            <int name="maximumValue">10</int>
+          </object>
+        </array>
+      </object>
+      <boolean name="receiveUpdates">FALSE</boolean>
+      <boolean name="hasHorizontalZoom">FALSE</boolean>
+      <boolean name="isResizable">FALSE</boolean>
+      <boolean name="hasVerticalZoom">FALSE</boolean>
+      <boolean name="compositing">TRUE</boolean>
+      <int name="windowPosition">1</int>
+    </object>
+    <reference idRef="167"/>
+    <reference idRef="200"/>
+    <reference idRef="201"/>
+    <reference idRef="202"/>
+    <reference idRef="203"/>
+    <reference idRef="205"/>
+    <reference idRef="209"/>
+    <reference idRef="210"/>
+    <reference idRef="211"/>
+    <reference idRef="212"/>
+    <reference idRef="213"/>
+    <reference idRef="214"/>
+    <reference idRef="215"/>
+    <reference idRef="216"/>
+    <reference idRef="217"/>
+    <reference idRef="218"/>
+    <reference idRef="222"/>
+    <reference idRef="223"/>
+    <reference idRef="224"/>
+  </array>
+  <array count="20" name="allParents">
+    <reference idRef="1"/>
+    <reference idRef="166"/>
+    <reference idRef="167"/>
+    <reference idRef="167"/>
+    <reference idRef="167"/>
+    <reference idRef="167"/>
+    <reference idRef="167"/>
+    <reference idRef="167"/>
+    <reference idRef="167"/>
+    <reference idRef="167"/>
+    <reference idRef="167"/>
+    <reference idRef="167"/>
+    <reference idRef="167"/>
+    <reference idRef="167"/>
+    <reference idRef="167"/>
+    <reference idRef="167"/>
+    <reference idRef="167"/>
+    <reference idRef="167"/>
+    <reference idRef="167"/>
+    <reference idRef="167"/>
+  </array>
+  <dictionary count="2" name="nameTable">
+    <string>Files Owner</string>
+    <reference idRef="1"/>
+    <string>MainWindow</string>
+    <reference idRef="166"/>
+  </dictionary>
+  <unsigned_int name="nextObjectID">225</unsigned_int>
+</object>

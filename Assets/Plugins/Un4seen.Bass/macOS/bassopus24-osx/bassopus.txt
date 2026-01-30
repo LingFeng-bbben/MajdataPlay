@@ -1,0 +1,219 @@
+BASSOPUS 2.4
+Copyright (c) 2012-2026 Un4seen Developments Ltd. All rights reserved.
+
+
+BASSOPUS is an extension to the BASS audio library, enabling the playing of
+Opus encoded files and streams.
+
+
+Requirements
+============
+BASS 2.4 is required.
+
+
+Using BASSOPUS
+==============
+The plugin system (see BASS_PluginLoad) can be used to add Opus support to
+the standard BASS stream (and sample) creation functions. Dedicated Opus
+stream creation functions are also provided by BASSOPUS.
+
+The usage information in the BASS.TXT file (from the BASS package) is also
+applicable to BASSOPUS and other add-ons.
+
+TIP: The BASSOPUS.CHM file should be put in the same directory as the BASS.CHM
+     file, so that the BASSOPUS documentation can be accessed from within the
+     BASS documentation.
+
+
+Included files
+==============
+Win32 version
+-------------
+BASSOPUS.TXT    This file
+BASSOPUS.DLL    32-bit BASSOPUS module
+BASSOPUS.CHM    BASSOPUS documentation
+X64\
+  BASSOPUS.DLL    64-bit BASSOPUS module
+C\
+  BASSOPUS.H      BASSOPUS C/C++ header file
+  BASSOPUS.LIB    32-bit BASSOPUS import library
+  X64\
+    BASSOPUS.LIB    64-bit BASSOPUS import library
+DELPHI\
+  BASSOPUS.PAS    BASSOPUS Delphi/Pascal unit
+VB\
+  BASSOPUS.BAS    BASSOPUS Visual Basic module
+
+macOS version
+-------------
+BASSOPUS.TXT    This file
+LIBBASSOPUS.DYLIB  BASSOPUS module
+BASSOPUS.CHM    BASSOPUS documentation
+C\
+  BASSOPUS.H      BASSOPUS C/C++/Objective-C header file
+DELPHI\
+  BASSOPUS.PAS    BASSOPUS Delphi/Pascal unit
+
+Linux version
+-------------
+BASSOPUS.TXT    This file
+BASSOPUS.CHM    BASSOPUS documentation
+LIBS\           BASSOPUS modules
+  ...
+C\
+  BASSOPUS.H      BASSOPUS C/C++ header file
+DELPHI\
+  BASSOPUS.PAS    BASSOPUS Delphi/Pascal unit
+
+Android version
+---------------
+BASSOPUS.TXT    This file
+BASSOPUS.CHM    BASSOPUS documentation
+LIBS\           BASSOPUS modules
+  ...
+C\
+  BASSOPUS.H      BASSOPUS C/C++ header file
+JAVA\COM\UN4SEEN\BASS\
+  BASSOPUS.JAVA   BASSOPUS Java class
+
+iOS version
+-----------
+BASSOPUS.TXT    This file
+BASSOPUS.XCFRAMEWORK  BASSOPUS framework
+BASSOPUS.CHM    BASSOPUS documentation
+BASSOPUS.H      BASSOPUS C/C++/Objective-C header file
+
+
+Latest Version
+==============
+The latest versions of BASSOPUS & BASS can be found at the BASS website:
+
+	www.un4seen.com
+
+
+Licence
+=======
+BASSOPUS is free to use with BASS.
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, BASSOPUS IS PROVIDED
+"AS IS", WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY
+AND/OR FITNESS FOR A PARTICULAR PURPOSE. THE AUTHORS SHALL NOT BE HELD
+LIABLE FOR ANY DAMAGE THAT MAY RESULT FROM THE USE OF BASSOPUS. YOU USE
+BASSOPUS ENTIRELY AT YOUR OWN RISK.
+
+Usage of BASSOPUS indicates that you agree to the above conditions.
+
+All trademarks and other registered names contained in the BASSOPUS
+package are the property of their respective owners.
+
+
+Credits
+=======
+Opus decoding is based on libOpus, Copyright 2001-2011 Xiph.Org,
+ Skype Limited, Octasic, Jean-Marc Valin, Timothy B. Terriberry,
+ CSIRO, Gregory Maxwell, Mark Borgerding, Erik de Castro Lopo
+
+
+History
+=======
+These are the major (and not so major) changes in each release, along with the
+functions/options that are introduced/affected by them. There are other little
+tweaks and fixes made along the way too.
+
+2.4.3.1 - 2/1/2026
+------------------
+* Updated to libOpus 1.6
+
+2.4.3 - 2/8/2024
+----------------
+* Support for raw Opus without an Ogg container
+	BASS_OPUS_StreamCreate
+	BASS_OPUS_StreamPutData
+	BASS_OPUS_HEAD structure
+* Updated to libOpus 1.5.2
+
+2.4.2.4 - 27/9/2023
+-------------------
+* Multi-channel reordering only applies to channel mapping family 1
+* Channel order fix for 7 channel (6.1) files
+
+2.4.2.3 - 4/5/2023
+------------------
+* Updated to libOpus 1.4
+* SSE is required on x86 platforms
+
+2.4.2.1 - 9/9/2021
+------------------
+* Support for resetting of user file streams/decoders
+	BASS_POS_RESET (BASS_ChannelSetPosition flag)
+
+2.4.2 - 14/7/2021
+-----------------
+* Delayed file scanning when prescanning is disabled/impossible
+	BASS_ChannelGetLength
+	BASS_ChannelSetPosition
+	BASS_CONFIG_OGG_PRESCAN (BASS_SetConfig option)
+* Faster seeking in large files
+	BASS_ChannelSetPosition
+* Updated to libOpus 1.3.1
+
+2.4.1.12 - 29/10/2018
+---------------------
+* Updated to libOpus 1.3
+
+2.4.1.10 - 30/6/2017
+--------------------
+* Updated to libOpus 1.2.1
+
+2.4.1.9 - 24/1/2017
+-------------------
+* Updated to libOpus 1.1.4
+
+2.4.1.8 - 4/8/2016
+------------------
+* Updated to libOpus 1.1.3
+
+2.4.1.7 - 14/1/2016
+-------------------
+* Updated to libOpus 1.1.2
+
+2.4.1.6 - 11/12/2015
+--------------------
+* Updated to libOpus 1.1.1
+* ppc architecture (PowerPC) support dropped on OSX
+
+2.4.1.4 - 17/7/2015
+-------------------
+* Retrieval and overriding of the Opus "output gain" header field
+	BASS_ATTRIB_OPUS_GAIN attribute
+
+2.4.1.3 - 12/12/2013
+--------------------
+* Updated to libOpus 1.1
+
+2.4.1.1 - 1/8/2013
+------------------
+* Updated to libOpus 1.0.3
+
+2.4.1 - 25/2/2013
+-----------------
+* Chained Opus file pre-scanning is now optional
+	BASS_STREAM_PRESCAN (BASS_OPUS_StreamCreateFile/User flag)
+	BASS_CONFIG_OGG_PRESCAN (BASS_SetConfig option)
+* Bitstream seeking and count retrieval in chained Opus files
+	BASS_POS_OGG (BASS_ChannelSetPosition/ChannelGetLength mode)
+* Bitstream syncs are no longer automatically "mixtime"
+	BASS_SYNC_OGG_CHANGE (BASS_ChannelSetSync type)
+* Updated to libOpus 1.0.2
+
+2.4 - 17/8/2012
+---------------
+* First release
+
+
+Bug reports, Suggestions, Comments, Enquiries, etc
+==================================================
+If you have any of the aforementioned please visit the BASS forum at the
+website.
+
