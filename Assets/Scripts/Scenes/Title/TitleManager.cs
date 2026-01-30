@@ -27,7 +27,7 @@ namespace MajdataPlay.Scenes.Title
         float _pressTime = 0f;
         void Start()
         {
-#if UNITY_ANDROID 
+#if UNITY_ANDROID || UNITY_IOS
             //we extract the streaming assets files here and let the user to restart the app
             if (!Directory.Exists(MajEnv.AssetsPath))
             {
