@@ -142,7 +142,7 @@ namespace MajdataPlay
         }
         internal static void InitPath()
         {
-#if UNITY_STANDALONE_WIN
+#if UNITY_STANDALONE || UNITY_EDITOR
             RootPath = Path.Combine(Application.dataPath, "../");
             AssetsPath = Application.streamingAssetsPath;
             CachePath = Path.Combine(RootPath, "Cache");
@@ -220,6 +220,10 @@ namespace MajdataPlay
                 RootPath = Application.persistentDataPath;
                 AssetsPath = Path.Combine(Application.persistentDataPath, "ExtStreamingAssets/");
             }
+            CachePath = Application.temporaryCachePath;
+#elif UNITY_IOS
+            RootPath = Application.persistentDataPath;
+            AssetsPath = Path.Combine(Application.persistentDataPath, "ExtStreamingAssets/");
             CachePath = Application.temporaryCachePath;
 #else
             throw new NotImplementedException();
