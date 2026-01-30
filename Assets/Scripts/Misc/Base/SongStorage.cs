@@ -96,8 +96,12 @@ namespace MajdataPlay
                         (result, _userFavorites) = await Serializer.Json.TryDeserializeAsync<DanInfo>(File.OpenRead(MY_FAVORITE_EXPORT_PATH));
                         if (!result)
                         {
-                            var path = Path.Combine(MY_FAVORITE_EXPORT_PATH, $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.bak");
-                            File.Copy(MY_FAVORITE_EXPORT_PATH, path);
+                            var bakPath = $"{MY_FAVORITE_EXPORT_PATH}.bak";
+                            while (File.Exists(bakPath))
+                            {
+                                bakPath = $"{bakPath}.bak";
+                            }
+                            File.Copy(MY_FAVORITE_EXPORT_PATH, bakPath);
                             MajDebug.LogError($"Failed to load favorites\nPath: {MY_FAVORITE_EXPORT_PATH}");
                         }
                     }
@@ -107,8 +111,12 @@ namespace MajdataPlay
                         var (result, storageFav) = await Serializer.Json.TryDeserializeAsync<HashSet<string>>(File.OpenRead(MY_FAVORITE_STORAGE_PATH));
                         if (!result)
                         {
-                            var path = Path.Combine(MY_FAVORITE_STORAGE_PATH, $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.bak");
-                            File.Copy(MY_FAVORITE_STORAGE_PATH, path);
+                            var bakPath = $"{MY_FAVORITE_STORAGE_PATH}.bak";
+                            while (File.Exists(bakPath))
+                            {
+                                bakPath = $"{bakPath}.bak";
+                            }
+                            File.Copy(MY_FAVORITE_STORAGE_PATH, bakPath);
                             MajDebug.LogError($"Failed to load favorites\nPath: {MY_FAVORITE_STORAGE_PATH}");
                         }
                         else if(storageFav is not null)
