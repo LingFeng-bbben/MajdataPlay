@@ -1,20 +1,20 @@
 {
   "dependencies": {
+    "com.ammariqais.skiaforunity": {
+      "version": "https://github.com/ammariqais/SkiaForUnity.git?path=SkiaUnity/Assets/SkiaSharp",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {
+        "com.unity.nuget.newtonsoft-json": "3.2.0"
+      },
+      "hash": "67b16cb794b28a70661dc0de77dd4ee9a682b999"
+    },
     "com.github-glitchenzo.nugetforunity": {
       "version": "https://github.com/GlitchEnzo/NuGetForUnity.git?path=/src/NuGetForUnity",
       "depth": 0,
       "source": "git",
       "dependencies": {},
       "hash": "75f68222d0a4bd2b468dbf3e6a17a191d28041ab"
-    },
-    "com.u2sb.skiasharp": {
-      "version": "3.0.0-preview.4.1.1",
-      "depth": 0,
-      "source": "registry",
-      "dependencies": {
-        "com.unity.burst": "1.8.17"
-      },
-      "url": "https://package.openupm.com"
     },
     "com.unity.2d.animation": {
       "version": "9.1.2",
@@ -112,7 +112,7 @@
     },
     "com.unity.burst": {
       "version": "1.8.18",
-      "depth": 1,
+      "depth": 3,
       "source": "registry",
       "dependencies": {
         "com.unity.mathematics": "1.2.1",

@@ -1,4 +1,5 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
+using MajdataPlay.Utils;
 using SkiaSharp;
 using SkiaSharp.Unity;
 using System;
@@ -56,7 +57,7 @@ namespace MajdataPlay.Drawing
                 }
 
                 var data1 = writer.WrittenSpan.AsNativeArray();
-                var colors = ColorConverter.ConvertToColor32(data1, width * 64);
+                var colors = SKColorConverter.ConvertToColor32(data1, width * 64);
                 var pixels32 = colors.ToArray();
 
                 await UniTask.SwitchToMainThread();

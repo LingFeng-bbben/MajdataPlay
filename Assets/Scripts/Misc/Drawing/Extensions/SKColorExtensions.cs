@@ -1,4 +1,4 @@
-﻿using SkiaSharp;
+using SkiaSharp;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -14,6 +14,10 @@ namespace MajdataPlay.Drawing
         public static Color32 ToUnityColor32(this SKColor skColor)
         {
             return new Color32(skColor.Red, skColor.Green, skColor.Blue, skColor.Alpha);
+        }
+        public static Color ToUnityColor(this SKColorF skColorF)
+        {
+            return new Color(skColorF.Red, skColorF.Green, skColorF.Blue, skColorF.Alpha);
         }
         public static Color32[] ToUnityColor32(this ReadOnlySpan<SKColor> skColors)
         {
