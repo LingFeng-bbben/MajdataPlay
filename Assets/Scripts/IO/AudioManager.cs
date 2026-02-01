@@ -109,7 +109,7 @@ namespace MajdataPlay.IO
 
                 var backend = MajInstances.Settings.Audio.Backend;
                 var isBass = backend is (SoundBackendOption.BassSimple or SoundBackendOption.Asio or SoundBackendOption.Wasapi);
-#if !UNITY_ANDROID
+#if !(UNITY_ANDROID || UNITY_IOS)
                 var wasapiOptions = MajInstances.Settings.Audio.Wasapi;
                 var asioOptions = MajInstances.Settings.Audio.Asio;
                 var isExclusiveRequest = wasapiOptions.Exclusive;
@@ -124,7 +124,7 @@ namespace MajdataPlay.IO
                     MajInstances.Settings.Audio.Channel.Main = mainChannel;
                 }
 #endif
-#if !UNITY_EDITOR && !UNITY_ANDROID
+#if !UNITY_EDITOR && !(UNITY_ANDROID || UNITY_IOS)
             if (MajEnv.Mode == RunningMode.View)
             {
                 backend = SoundBackendOption.Wasapi;
@@ -146,7 +146,7 @@ namespace MajdataPlay.IO
 #endif
                 switch (backend)
                 {
-#if !UNITY_ANDROID
+#if !(UNITY_ANDROID || UNITY_IOS)
                     case SoundBackendOption.Asio:
                         {
                             MajDebug.LogInfo("Bass Init: " + Bass.Init(Bass.NoSoundDevice));
@@ -254,7 +254,7 @@ namespace MajdataPlay.IO
                             MajDebug.LogInfo($"[Bass] Current device buffer length: {Bass.GetConfig(Configuration.DeviceBufferLength)}");
                             MajDebug.LogInfo($"[Bass] Current device period: {Bass.GetConfig(Configuration.DevicePeriod)}");
                             MajDebug.LogInfo($"[Bass] Channel count: {Bass.Info.SpeakerCount}");
-#if !UNITY_ANDROID
+#if !(UNITY_ANDROID || UNITY_IOS)
                             GenerateMixingMatrix(Bass.Info.SpeakerCount, mainChannel);
 #else
                             GenerateMixingMatrix(Bass.Info.SpeakerCount, "Front");

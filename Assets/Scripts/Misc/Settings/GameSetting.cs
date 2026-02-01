@@ -1,4 +1,4 @@
-﻿using HidSharp;
+using HidSharp;
 using MajdataPlay.Scenes.Game;
 using MajdataPlay.Scenes.Game.Notes;
 using MajdataPlay.IO;
@@ -134,7 +134,7 @@ namespace MajdataPlay.Settings
         public bool Topmost { get; set; } = false;
         [Preserve]
         public int FPSLimit { get; set; } = 120;
-#if !UNITY_ANDROID
+#if !(UNITY_ANDROID || UNITY_IOS)
         [Preserve]
         public bool VSync { get; set; } = true;
 #endif
@@ -146,7 +146,7 @@ namespace MajdataPlay.Settings
         public bool ForceMono { get; set; } = false;
         [Preserve]
         public SFXVolume Volume { get; set; } = new();
-#if !UNITY_ANDROID
+#if !(UNITY_ANDROID || UNITY_IOS)
         [Preserve]
         public WasapiOptions Wasapi { get; set; } = new();
         [Preserve]
@@ -202,7 +202,7 @@ namespace MajdataPlay.Settings
         public bool SlideNoHead { get; set; } = false;
         [Preserve]
         public bool SlideNoTrack { get; set; } = false;
-#if !UNITY_ANDROID
+#if !(UNITY_ANDROID || UNITY_IOS)
         [Preserve]
         public bool ButtonRingForTouch { get; set; } = false;
 #endif

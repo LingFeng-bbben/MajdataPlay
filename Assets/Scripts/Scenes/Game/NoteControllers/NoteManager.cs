@@ -107,7 +107,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             _touchUpdater = Majdata<TouchUpdater>.Instance!;
             _touchHoldUpdater = Majdata<TouchHoldUpdater>.Instance!;
             _eachLineUpdater = Majdata<EachLineUpdater>.Instance!;
-#if !UNITY_ANDROID
+#if !(UNITY_ANDROID || UNITY_IOS)
             _isUseButtonRingForTouch = Majdata<INoteController>.Instance?.ModInfo.ButtonRingForTouch ?? false;
 #endif
         }
@@ -124,7 +124,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             Profiler.BeginSample("NoteManager.OnPreUpdate");
             for (var i = 0; i < 8; i++)
             {
-#if !UNITY_ANDROID
+#if !(UNITY_ANDROID || UNITY_IOS)
                 _isBtnUsedInThisFrame[i] = false;
 #endif
 
@@ -334,7 +334,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             for (var i = 0; i < 33; i++)
             {
                 var senState = _sensorStatusInNextFrame[i];
-#if !UNITY_ANDROID
+#if !(UNITY_ANDROID || UNITY_IOS)
                 if (_isUseButtonRingForTouch && i < 8)
                 {
                     senState |= _btnStatusInThisFrame[i];

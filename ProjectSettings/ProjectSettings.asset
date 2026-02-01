@@ -824,7 +824,7 @@ PlayerSettings:
     WebGL: dUI_TextMeshPro
     Windows Store Apps: dUI_TextMeshPro
     XboxOne: dUI_TextMeshPro
-    iPhone: dUI_TextMeshPro
+    iPhone: dUI_TextMeshPro;__STATIC_LINKING__;__IOS__;__UNIFIED__
     tvOS: dUI_TextMeshPro
   additionalCompilerArguments:
     Android:
