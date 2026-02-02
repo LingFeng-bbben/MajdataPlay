@@ -268,7 +268,7 @@ namespace MajdataPlay
             Screen.sleepTimeout = SleepTimeout.SystemSetting;
             MajEnv.OnApplicationQuitRequested();
         }
-#if UNITY_ANDROID
+#if UNITY_ANDROID || UNITY_IOS
         void OnApplicationFocus(bool focus)
         {
             if (!focus)

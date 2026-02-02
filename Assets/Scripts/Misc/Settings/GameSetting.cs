@@ -142,6 +142,11 @@ namespace MajdataPlay.Settings
     [Preserve]
     public class SoundOptions
     {
+#if UNITY_IOS || UNITY_ANDROID
+        readonly static SoundBackendOption DEFAULT_SOUND_BACKEND = SoundBackendOption.BassSimple;
+#else
+        readonly static SoundBackendOption DEFAULT_SOUND_BACKEND = SoundBackendOption.Wasapi;
+#endif
         [Preserve]
         public bool ForceMono { get; set; } = false;
         [Preserve]
@@ -154,10 +159,10 @@ namespace MajdataPlay.Settings
         [Preserve]
         public ChannelOptions Channel { get; set; } = new();
 #else
-        public AndroidAudioOptions Android { get; set; } = new();
+        public MobileAudioOptions Mobile { get; set; } = new();
 #endif
         [Preserve]
-        public SoundBackendOption Backend { get; set; } = SoundBackendOption.Wasapi;
+        public SoundBackendOption Backend { get; set; } = DEFAULT_SOUND_BACKEND;
     }
     [Preserve]
     public class SFXVolume
@@ -406,9 +411,11 @@ namespace MajdataPlay.Settings
         public float BufferSize { get; set; } = 0.02f;
         public float Period { get; set; } = 0.005f;
     }
-    public class AndroidAudioOptions
+    public class MobileAudioOptions
     {
+#if UNITY_ANDROID
         public bool EnableAAudio { get; set; } = true;
+#endif
         public int BufferLengthMs { get; set; } = 64;
         public int UpdatePeriodMs { get; set; } = 16;
         public int DeviceBufferLengthMs { get; set; } = 8;

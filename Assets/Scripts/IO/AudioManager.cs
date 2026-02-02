@@ -131,20 +131,24 @@ namespace MajdataPlay.IO
                 isExclusiveRequest = false;
             }
 #endif
-#if UNITY_ANDROID
+#if UNITY_ANDROID || UNITY_IOS
                 switch(backend)
                 {
                     case SoundBackendOption.BassSimple:
                     case SoundBackendOption.Unity:
                         break;
                     default:
+#if UNITY_IOS
+                        MajDebug.LogDebug("IOS: Fallback to BassSimple");
+#else
                         MajDebug.LogDebug("Android: Fallback to BassSimple");
+#endif
                         MajInstances.Settings.Audio.Backend = SoundBackendOption.BassSimple;
                         backend = SoundBackendOption.BassSimple;
                         break;
                 }
 #endif
-                switch (backend)
+                        switch (backend)
                 {
 #if !(UNITY_ANDROID || UNITY_IOS)
                     case SoundBackendOption.Asio:
@@ -230,21 +234,24 @@ namespace MajdataPlay.IO
 #endif
                     case SoundBackendOption.BassSimple:
                         {
+#if UNITY_ANDROID || UNITY_IOS
+                            var mobileOptions = MajInstances.Settings.Audio.Mobile;
+                            mobileOptions.UpdatePeriodMs = mobileOptions.UpdatePeriodMs.Clamp(5, 100);
+                            mobileOptions.BufferLengthMs = mobileOptions.BufferLengthMs.Clamp(mobileOptions.UpdatePeriodMs + 1, 5000);
+                            mobileOptions.DeviceUpdatePeriodMs = mobileOptions.DeviceUpdatePeriodMs.Clamp(1, int.MaxValue);
+                            mobileOptions.DeviceBufferLengthMs = mobileOptions.DeviceBufferLengthMs.Clamp(mobileOptions.DeviceUpdatePeriodMs * 2, int.MaxValue);
+                            var @return = default(bool);
 #if UNITY_ANDROID
-                            var androidOptions = MajInstances.Settings.Audio.Android;
-                            androidOptions.UpdatePeriodMs = androidOptions.UpdatePeriodMs.Clamp(5, 100);
-                            androidOptions.BufferLengthMs = androidOptions.BufferLengthMs.Clamp(androidOptions.UpdatePeriodMs + 1, 5000);
-                            androidOptions.DeviceUpdatePeriodMs = androidOptions.DeviceUpdatePeriodMs.Clamp(1, int.MaxValue);
-                            androidOptions.DeviceBufferLengthMs = androidOptions.DeviceBufferLengthMs.Clamp(androidOptions.DeviceUpdatePeriodMs * 2, int.MaxValue);
-                            var @return = Bass.Configure(Configuration.AndroidAAudio, androidOptions.EnableAAudio);
+                            @return = Bass.Configure(Configuration.AndroidAAudio, mobileOptions.EnableAAudio);
                             MajDebug.LogInfo($"[Bass] Set AndroidAAudio: {@return}");
-                            @return = Bass.Configure(Configuration.UpdatePeriod, androidOptions.UpdatePeriodMs);
+#endif
+                            @return = Bass.Configure(Configuration.UpdatePeriod, mobileOptions.UpdatePeriodMs);
                             MajDebug.LogInfo($"[Bass] Set UpdatePeriod: {@return}");
-                            @return = Bass.Configure(Configuration.PlaybackBufferLength, androidOptions.BufferLengthMs);
+                            @return = Bass.Configure(Configuration.PlaybackBufferLength, mobileOptions.BufferLengthMs);
                             MajDebug.LogInfo($"[Bass] Set PlaybackBufferLength: {@return}");
-                            @return = Bass.Configure(Configuration.DevicePeriod, androidOptions.DeviceUpdatePeriodMs);
+                            @return = Bass.Configure(Configuration.DevicePeriod, mobileOptions.DeviceUpdatePeriodMs);
                             MajDebug.LogInfo($"[Bass] Set DevicePeriod: {@return}");
-                            @return = Bass.Configure(Configuration.DeviceBufferLength, androidOptions.DeviceBufferLengthMs);
+                            @return = Bass.Configure(Configuration.DeviceBufferLength, mobileOptions.DeviceBufferLengthMs);
                             MajDebug.LogInfo($"[Bass] Set DeviceBufferLength: {@return}");
 #endif
                             MajDebug.LogInfo("Bass Init: " + Bass.Init());
