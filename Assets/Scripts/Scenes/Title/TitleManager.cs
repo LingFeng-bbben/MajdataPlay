@@ -137,6 +137,7 @@ namespace MajdataPlay.Scenes.Title
         }
         IEnumerator ExtractStreamingAss()
         {
+            #if UNITY_ANDROID
             var extractRoot = MajEnv.AssetsPath;
             echoText.text = $"Extracting Assets...";
             Directory.CreateDirectory(extractRoot);
@@ -172,6 +173,45 @@ namespace MajdataPlay.Scenes.Title
                 }
             }
             echoText.text = $"Please Reboot The Game";
+#elif UNITY_IOS
+            var extractRoot = MajEnv.AssetsPath;
+            echoText.text = $"Extracting Assets...";
+            Directory.CreateDirectory(extractRoot);
+            List<string> filePathsList = new List<string>();
+            TextAsset paths = Resources.Load<TextAsset>("StreamingAssetPaths");
+            string fs = paths.text;
+            MajDebug.LogInfo(fs);
+            string[] fLines = fs.Replace("\\", "/").Split("\n");
+            foreach (string line in fLines)
+            {
+                var srcPath = Path.Combine(Application.streamingAssetsPath,line);
+                var dstPath = Path.Combine(extractRoot, line);
+                var dstDir = Path.GetDirectoryName(dstPath);
+                if (!string.IsNullOrEmpty(dstDir)) Directory.CreateDirectory(dstDir);
+
+                echoText.text = $"Extracting {line}...";
+                MajDebug.LogInfo($"Extracting(iOS direct): {srcPath} -> {dstPath}");
+
+                try
+                {
+                    byte[] data = File.ReadAllBytes(srcPath);
+                    if (data == null || data.Length == 0)
+                    {
+                        MajDebug.LogError($"Extract failed(iOS): empty data: {line}\nsrc={srcPath}");
+                        continue;
+                    }
+
+                    File.WriteAllBytes(dstPath, data);
+                }
+                catch (Exception e)
+                {
+                    MajDebug.LogError($"Extract failed(iOS): {line}\nsrc={srcPath}\n{e}");
+                }
+
+                yield return null;
+            }
+            echoText.text = "Please Reboot The Game";
+#endif
         }
 
         async Task StartScanningChart()
