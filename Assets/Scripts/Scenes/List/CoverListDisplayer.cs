@@ -8,6 +8,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 #nullable enable
@@ -74,6 +75,14 @@ namespace MajdataPlay.Scenes.List
         ReadOnlyMemory<SongCollection> _collections = ReadOnlyMemory<SongCollection>.Empty;
         SongCollection _currentCollection = SongCollection.Empty("Empty");
 
+        SongCollection[] _easySortedCollections = Array.Empty<SongCollection>();
+        SongCollection[] _basicSortedCollections = Array.Empty<SongCollection>();
+        SongCollection[] _advanceSortedCollections = Array.Empty<SongCollection>();
+        SongCollection[] _expertSortedCollections = Array.Empty<SongCollection>();
+        SongCollection[] _masterSortedCollections = Array.Empty<SongCollection>();
+        SongCollection[] _reMasterSortedCollections = Array.Empty<SongCollection>();
+        SongCollection[] _utageSortedCollections = Array.Empty<SongCollection>();
+
         ReadOnlyMemory<SongCoverSmallDisplayer> _allocatedSongCoverDisplayer = ReadOnlyMemory<SongCoverSmallDisplayer>.Empty;
         ReadOnlyMemory<FolderCoverSmallDisplayer> _allocatedFolderCoverDisplayer = ReadOnlyMemory<FolderCoverSmallDisplayer>.Empty;
         ReadOnlyMemory<FolderCoverSmallDisplayer> _allocatedDanCoverDisplayer = ReadOnlyMemory<FolderCoverSmallDisplayer>.Empty;
@@ -81,9 +90,9 @@ namespace MajdataPlay.Scenes.List
         SongDetailBinding[]? _rentSongDetailBindings = null;
         SongCollectionBinding[]? _rentSongCollectionBindings = null;
 
-        static readonly Queue<SongCoverSmallDisplayer> _idleSongCoverDisplayer = new(16);
-        static readonly Queue<FolderCoverSmallDisplayer> _idleFolderCoverDisplayer = new(16);
-        static readonly Queue<FolderCoverSmallDisplayer> _idleDanCoverDisplayer = new(16);
+        readonly Queue<SongCoverSmallDisplayer> _idleSongCoverDisplayer = new(16);
+        readonly Queue<FolderCoverSmallDisplayer> _idleFolderCoverDisplayer = new(16);
+        readonly Queue<FolderCoverSmallDisplayer> _idleDanCoverDisplayer = new(16);
         readonly ListConfig _listConfig = MajEnv.RuntimeConfig?.List ?? new();
 
         private void Awake()
@@ -118,7 +127,97 @@ namespace MajdataPlay.Scenes.List
                 newCollections[i].SortAndFilter(SongStorage.OrderBy);
             });
             _collections = newCollections;
-            _currentCollection = _collections.Span[SongStorage.CollectionIndex];
+            var collection = _collections.Span[SongStorage.CollectionIndex];
+
+            if (SongStorage.OrderBy.SortBy == SortType.ByRank)
+            {
+                _easySortedCollections = new SongCollection[collections.Length];
+                _basicSortedCollections = new SongCollection[collections.Length];
+                _advanceSortedCollections = new SongCollection[collections.Length];
+                _expertSortedCollections = new SongCollection[collections.Length];
+                _masterSortedCollections = new SongCollection[collections.Length];
+                _reMasterSortedCollections = new SongCollection[collections.Length];
+                _utageSortedCollections = new SongCollection[collections.Length];
+
+                Parallel.For(0, newCollections.Length, i =>
+                {
+                    var originCollection = newCollections[i];
+                    var songs = originCollection.ToArray();
+                    var songAndScores = songs.Select(x => (x, ScoreManager.GetSongScores(x))).ToArray();
+                    var sortedEasy = Array.Empty<ISongDetail>();
+                    var sortedBasic = Array.Empty<ISongDetail>();
+                    var sortedAdvance = Array.Empty<ISongDetail>();
+                    var sortedExpert = Array.Empty<ISongDetail>();
+                    var sortedMaster = Array.Empty<ISongDetail>();
+                    var sortedReMaster = Array.Empty<ISongDetail>();
+                    var sortedUTAGE = Array.Empty<ISongDetail>();
+                    if (MajEnv.Settings.Judge.Mode == Settings.JudgeModeOption.Classic)
+                    {
+                        sortedEasy = songAndScores.OrderByDescending(x => x.Item2.Easy.Acc.Classic)
+                                                  .Select(x => x.x)
+                                                  .ToArray();
+                        sortedBasic = songAndScores.OrderByDescending(x => x.Item2.Basic.Acc.Classic)
+                                                   .Select(x => x.x)
+                                                   .ToArray();
+                        sortedAdvance = songAndScores.OrderByDescending(x => x.Item2.Advance.Acc.Classic)
+                                                     .Select(x => x.x)
+                                                     .ToArray();
+                        sortedExpert = songAndScores.OrderByDescending(x => x.Item2.Expert.Acc.Classic)
+                                                     .Select(x => x.x)
+                                                     .ToArray();
+                        sortedMaster = songAndScores.OrderByDescending(x => x.Item2.Master.Acc.Classic)
+                                                     .Select(x => x.x)
+                                                     .ToArray();
+                        sortedReMaster = songAndScores.OrderByDescending(x => x.Item2.ReMaster.Acc.Classic)
+                                                      .Select(x => x.x)
+                                                      .ToArray();
+                        sortedUTAGE = songAndScores.OrderByDescending(x => x.Item2.UTAGE.Acc.Classic)
+                                                   .Select(x => x.x)
+                                                   .ToArray();
+                    }
+                    else
+                    {
+                        sortedEasy = songAndScores.OrderByDescending(x => x.Item2.Easy.Acc.DX)
+                                                  .Select(x => x.x)
+                                                  .ToArray();
+                        sortedBasic = songAndScores.OrderByDescending(x => x.Item2.Basic.Acc.DX)
+                                                   .Select(x => x.x)
+                                                   .ToArray();
+                        sortedAdvance = songAndScores.OrderByDescending(x => x.Item2.Advance.Acc.DX)
+                                                     .Select(x => x.x)
+                                                     .ToArray();
+                        sortedExpert = songAndScores.OrderByDescending(x => x.Item2.Expert.Acc.DX)
+                                                    .Select(x => x.x)
+                                                    .ToArray();
+                        sortedMaster = songAndScores.OrderByDescending(x => x.Item2.Master.Acc.DX)
+                                                    .Select(x => x.x)
+                                                    .ToArray();
+                        sortedReMaster = songAndScores.OrderByDescending(x => x.Item2.ReMaster.Acc.DX)
+                                                      .Select(x => x.x)
+                                                      .ToArray();
+                        sortedUTAGE = songAndScores.OrderByDescending(x => x.Item2.UTAGE.Acc.DX)
+                                                       .Select(x => x.x)
+                                                       .ToArray();
+                    }
+                    _easySortedCollections[i] = new SongCollection($"{originCollection.Name}_Easy", sortedEasy);
+                    _basicSortedCollections[i] = new SongCollection($"{originCollection.Name}_Basic", sortedBasic);
+                    _advanceSortedCollections[i] = new SongCollection($"{originCollection.Name}_Advance", sortedAdvance);
+                    _expertSortedCollections[i] = new SongCollection($"{originCollection.Name}_Expert", sortedExpert);
+                    _masterSortedCollections[i] = new SongCollection($"{originCollection.Name}_Master", sortedMaster);
+                    _reMasterSortedCollections[i] = new SongCollection($"{originCollection.Name}_ReMaster", sortedReMaster);
+                    _utageSortedCollections[i] = new SongCollection($"{originCollection.Name}_UTAGE", sortedUTAGE);
+                });
+            }
+            else
+            {
+                _easySortedCollections = newCollections;
+                _basicSortedCollections = newCollections;
+                _advanceSortedCollections = newCollections;
+                _expertSortedCollections = newCollections;
+                _masterSortedCollections = newCollections;
+                _reMasterSortedCollections = newCollections;
+                _utageSortedCollections = newCollections;
+            }
 
             var allocatedSongCoverDisplayer = new SongCoverSmallDisplayer[16];
             var allocatedFolderCoverDisplayer = new FolderCoverSmallDisplayer[16];
@@ -160,16 +259,16 @@ namespace MajdataPlay.Scenes.List
         void OnDestroy()
         {
             Majdata<CoverListDisplayer>.Free();
-            var collections = SongStorage.Collections;
-            var thisCollections = _collections.Span;
-            for (var i = 0; i < collections.Length; i++)
-            {
-                if(thisCollections[i].IsEmpty)
-                {
-                    continue;
-                }
-                collections[i].SetCursor(thisCollections[i].Current);
-            }
+            //var collections = SongStorage.Collections;
+            //var thisCollections = _collections.Span;
+            //for (var i = 0; i < collections.Length; i++)
+            //{
+            //    if(thisCollections[i].IsEmpty)
+            //    {
+            //        continue;
+            //    }
+            //    collections[i].SetCursor(thisCollections[i].Current);
+            //}
             if(_rentSongDetailBindings is not null)
             {
                 Pool<SongDetailBinding>.ReturnArray(_rentSongDetailBindings);
@@ -283,6 +382,8 @@ namespace MajdataPlay.Scenes.List
             _songCollectionBindings = Memory<SongCollectionBinding>.Empty;
 
             Mode = CoverListMode.Chart;
+            SetCursor(SongStorage.WorkingCollection.Current);
+            UpdateCurrentSongCollection();
             desiredListPos = _currentCollection.Index;
 
             if (_rentSongDetailBindings is not null)
@@ -336,7 +437,11 @@ namespace MajdataPlay.Scenes.List
             CoverBigDisplayer.SetDifficulty(selectedDifficulty);
             if (IsChartList)
             {
-                var songinfo = _currentCollection[desiredListPos];
+                UpdateCurrentSongCollection();
+                RefreshSongCoverBindings();
+                desiredListPos = _currentCollection.Index;
+                listPosReal = desiredListPos;
+                var songinfo = _currentCollection.Current;
                 var songScore = ScoreManager.GetScore(songinfo, _listConfig.SelectedDiff);
                 CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
                 CoverBigDisplayer.SetScore(songScore);
@@ -361,18 +466,13 @@ namespace MajdataPlay.Scenes.List
                     _listConfig.SelectedDirGuid = SongStorage.WorkingCollection.Id;
                     break;
                 case CoverListMode.Chart:
-                    var collection = _currentCollection;
-                    collection.Move(delta);
                     var originPos = desiredListPos;
-                    //desiredListPos = collection.Index;
                     desiredListPos += delta;
                     if(originPos != desiredListPos)
                     {
                         _isNeedPreload = true;
                         _preloadCooldownTimer = 0.5f;
                     }
-                    _listConfig.SelectedSongIndex = collection.Index;
-                    _listConfig.SelectedSongHash = collection.Current.Hash;
                     break;
             }
             SlideListInternal(desiredListPos);
@@ -419,7 +519,7 @@ namespace MajdataPlay.Scenes.List
             switch(Mode)
             {
                 case CoverListMode.Directory:
-                    _currentCollection = _collections.Span[desiredListPos];
+                    UpdateCurrentSongCollection();
                     SongStorage.CollectionIndex = desiredListPos;
                     switch(_currentCollection.Type)
                     {
@@ -436,17 +536,17 @@ namespace MajdataPlay.Scenes.List
                     SongStorage.CollectionIndex = desiredListPos;
                     break;
                 case CoverListMode.Chart:
-                    var songinfo = _songDetailBindings.Span[desiredListPos].SongDetail;
-                    var songScore = ScoreManager.GetScore(songinfo, _listConfig.SelectedDiff);
-                    CoverBigDisplayer.SetSongDetail(songinfo);
-                    CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
-                    CoverBigDisplayer.SetScore(songScore);
-                    SubInfoDisplayer.RefreshContent(songinfo);
-                    _previewSoundPlayer.PlayPreviewSound(songinfo);
-                    chartAnalyzer.AnalyzeAndDrawGraphAsync(songinfo, (ChartLevel)selectedDifficulty).Forget();
-                    FavoriteAdder.SetSong(songinfo);
                     _currentCollection.Index = desiredListPos;
-                    SongStorage.WorkingCollection.Index = desiredListPos;
+                    var songInfo = _currentCollection.Current;
+                    var songScore = ScoreManager.GetScore(songInfo, _listConfig.SelectedDiff);
+                    CoverBigDisplayer.SetSongDetail(songInfo);
+                    CoverBigDisplayer.SetMeta(songInfo.Title, songInfo.Artist, songInfo.Designers[selectedDifficulty], songInfo.Levels[selectedDifficulty]);
+                    CoverBigDisplayer.SetScore(songScore);
+                    SubInfoDisplayer.RefreshContent(songInfo);
+                    _previewSoundPlayer.PlayPreviewSound(songInfo);
+                    chartAnalyzer.AnalyzeAndDrawGraphAsync(songInfo, (ChartLevel)selectedDifficulty).Forget();
+                    FavoriteAdder.SetSong(songInfo);
+                    SetCursor(songInfo);
                     break;
             }
         }
@@ -614,6 +714,68 @@ namespace MajdataPlay.Scenes.List
                     }
                 }
                 cover.RectTransform.anchoredPosition = GetCoverPosition(radius, (distance * angle - 90) * Mathf.Deg2Rad);
+            }
+        }
+        void SetCursor(ISongDetail songDetail)
+        {
+            var pos = SongStorage.CollectionIndex;
+            SongStorage.WorkingCollection.SetCursor(songDetail);
+            _currentCollection.SetCursor(songDetail);
+            _collections.Span[pos].SetCursor(songDetail);
+            _easySortedCollections[pos].SetCursor(songDetail);
+            _basicSortedCollections[pos].SetCursor(songDetail);
+            _advanceSortedCollections[pos].SetCursor(songDetail);
+            _expertSortedCollections[pos].SetCursor(songDetail);
+            _masterSortedCollections[pos].SetCursor(songDetail);
+            _reMasterSortedCollections[pos].SetCursor(songDetail);
+            _utageSortedCollections[pos].SetCursor(songDetail);
+            _listConfig.SelectedSongIndex = SongStorage.WorkingCollection.Index;
+            _listConfig.SelectedSongHash = songDetail.Hash;
+        }
+        void UpdateCurrentSongCollection()
+        {
+            var pos = SongStorage.CollectionIndex;
+            switch ((ChartLevel)selectedDifficulty)
+            {
+                case ChartLevel.Easy:
+                    _currentCollection = _easySortedCollections[pos];
+                    break;
+                case ChartLevel.Basic:
+                    _currentCollection = _basicSortedCollections[pos];
+                    break;
+                case ChartLevel.Advance:
+                    _currentCollection = _advanceSortedCollections[pos];
+                    break;
+                case ChartLevel.Expert:
+                    _currentCollection = _expertSortedCollections[pos];
+                    break;
+                case ChartLevel.Master:
+                    _currentCollection = _masterSortedCollections[pos];
+                    break;
+                case ChartLevel.ReMaster:
+                    _currentCollection = _reMasterSortedCollections[pos];
+                    break;
+                case ChartLevel.UTAGE:
+                    _currentCollection = _utageSortedCollections[pos];
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("sb");
+            }
+        }
+        void RefreshSongCoverBindings()
+        {
+            var bindings = _songDetailBindings.Span;
+            for (int i = 0; i < bindings.Length; i++)
+            {
+                ref var binding = ref bindings[i];
+                if (binding.Displayer is not null)
+                {
+                    var cover = binding.Displayer;
+                    binding.Displayer = null;
+                    cover.gameObject.SetActive(false);
+                    _idleSongCoverDisplayer.Enqueue(cover);
+                }
+                binding.SongDetail = _currentCollection[i];
             }
         }
         Vector3 GetCoverPosition(float radius, float position)
