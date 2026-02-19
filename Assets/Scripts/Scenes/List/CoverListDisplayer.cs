@@ -687,6 +687,7 @@ namespace MajdataPlay.Scenes.List
             var pos = SongStorage.CollectionIndex;
             SongStorage.WorkingCollection.SetCursor(songDetail);
             _currentCollection.SetCursor(songDetail);
+            _collections.Span[pos].SetCursor(songDetail);
             _easySortedCollections[pos].SetCursor(songDetail);
             _basicSortedCollections[pos].SetCursor(songDetail);
             _advanceSortedCollections[pos].SetCursor(songDetail);
