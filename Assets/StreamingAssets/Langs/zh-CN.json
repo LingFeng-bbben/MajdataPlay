@@ -547,6 +547,10 @@
       "Content": "默认"
     },
     {
+      "Origin": "MAJTEXT_SORTFIND_SortbyRank",
+      "Content":  "历史\n成绩"
+    },
+    {
       "Origin": "Inner",
       "Content": "内"
     },
