@@ -225,16 +225,16 @@ namespace MajdataPlay.Scenes.List
         void OnDestroy()
         {
             Majdata<CoverListDisplayer>.Free();
-            var collections = SongStorage.Collections;
-            var thisCollections = _collections.Span;
-            for (var i = 0; i < collections.Length; i++)
-            {
-                if(thisCollections[i].IsEmpty)
-                {
-                    continue;
-                }
-                collections[i].SetCursor(thisCollections[i].Current);
-            }
+            //var collections = SongStorage.Collections;
+            //var thisCollections = _collections.Span;
+            //for (var i = 0; i < collections.Length; i++)
+            //{
+            //    if(thisCollections[i].IsEmpty)
+            //    {
+            //        continue;
+            //    }
+            //    collections[i].SetCursor(thisCollections[i].Current);
+            //}
             if(_rentSongDetailBindings is not null)
             {
                 Pool<SongDetailBinding>.ReturnArray(_rentSongDetailBindings);
@@ -348,6 +348,8 @@ namespace MajdataPlay.Scenes.List
             _songCollectionBindings = Memory<SongCollectionBinding>.Empty;
 
             Mode = CoverListMode.Chart;
+            SetCursor(SongStorage.WorkingCollection.Current);
+            UpdateCurrentSongCollection();
             desiredListPos = _currentCollection.Index;
 
             if (_rentSongDetailBindings is not null)
@@ -430,18 +432,13 @@ namespace MajdataPlay.Scenes.List
                     _listConfig.SelectedDirGuid = SongStorage.WorkingCollection.Id;
                     break;
                 case CoverListMode.Chart:
-                    var collection = _currentCollection;
-                    collection.Move(delta);
                     var originPos = desiredListPos;
-                    //desiredListPos = collection.Index;
                     desiredListPos += delta;
                     if(originPos != desiredListPos)
                     {
                         _isNeedPreload = true;
                         _preloadCooldownTimer = 0.5f;
                     }
-                    _listConfig.SelectedSongIndex = SongStorage.WorkingCollection.Index;
-                    _listConfig.SelectedSongHash = collection.Current.Hash;
                     break;
             }
             SlideListInternal(desiredListPos);
@@ -505,6 +502,7 @@ namespace MajdataPlay.Scenes.List
                     SongStorage.CollectionIndex = desiredListPos;
                     break;
                 case CoverListMode.Chart:
+                    _currentCollection.Index = desiredListPos;
                     var songInfo = _currentCollection.Current;
                     var songScore = ScoreManager.GetScore(songInfo, _listConfig.SelectedDiff);
                     CoverBigDisplayer.SetSongDetail(songInfo);
@@ -514,7 +512,7 @@ namespace MajdataPlay.Scenes.List
                     _previewSoundPlayer.PlayPreviewSound(songInfo);
                     chartAnalyzer.AnalyzeAndDrawGraphAsync(songInfo, (ChartLevel)selectedDifficulty).Forget();
                     FavoriteAdder.SetSong(songInfo);
-                    SetSongCollectionCursor(songInfo);
+                    SetCursor(songInfo);
                     break;
             }
         }
@@ -684,7 +682,7 @@ namespace MajdataPlay.Scenes.List
                 cover.RectTransform.anchoredPosition = GetCoverPosition(radius, (distance * angle - 90) * Mathf.Deg2Rad);
             }
         }
-        void SetSongCollectionCursor(ISongDetail songDetail)
+        void SetCursor(ISongDetail songDetail)
         {
             var pos = SongStorage.CollectionIndex;
             SongStorage.WorkingCollection.SetCursor(songDetail);
@@ -696,6 +694,8 @@ namespace MajdataPlay.Scenes.List
             _masterSortedCollections[pos].SetCursor(songDetail);
             _reMasterSortedCollections[pos].SetCursor(songDetail);
             _utageSortedCollections[pos].SetCursor(songDetail);
+            _listConfig.SelectedSongIndex = SongStorage.WorkingCollection.Index;
+            _listConfig.SelectedSongHash = songDetail.Hash;
         }
         void UpdateCurrentSongCollection()
         {
