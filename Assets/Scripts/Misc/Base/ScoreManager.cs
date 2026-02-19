@@ -215,6 +215,7 @@ namespace MajdataPlay
                                   .Concat(songScores.Select(x => x.Master))
                                   .Concat(songScores.Select(x => x.ReMaster))
                                   .Concat(songScores.Select(x => x.UTAGE))
+                                  .Where(x => x.PlayCount != 0)
                                   .ToArray();
                 await Serializer.Json.SerializeAsync(stream, scores, _serializer);
 
