@@ -90,9 +90,9 @@ namespace MajdataPlay.Scenes.List
         SongDetailBinding[]? _rentSongDetailBindings = null;
         SongCollectionBinding[]? _rentSongCollectionBindings = null;
 
-        static readonly Queue<SongCoverSmallDisplayer> _idleSongCoverDisplayer = new(16);
-        static readonly Queue<FolderCoverSmallDisplayer> _idleFolderCoverDisplayer = new(16);
-        static readonly Queue<FolderCoverSmallDisplayer> _idleDanCoverDisplayer = new(16);
+        readonly Queue<SongCoverSmallDisplayer> _idleSongCoverDisplayer = new(16);
+        readonly Queue<FolderCoverSmallDisplayer> _idleFolderCoverDisplayer = new(16);
+        readonly Queue<FolderCoverSmallDisplayer> _idleDanCoverDisplayer = new(16);
         readonly ListConfig _listConfig = MajEnv.RuntimeConfig?.List ?? new();
 
         private void Awake()
@@ -402,7 +402,10 @@ namespace MajdataPlay.Scenes.List
             if (IsChartList)
             {
                 UpdateCurrentSongCollection();
-                var songinfo = _currentCollection[desiredListPos];
+                RefreshSongCoverBindings();
+                desiredListPos = _currentCollection.Index;
+                listPosReal = desiredListPos;
+                var songinfo = _currentCollection.Current;
                 var songScore = ScoreManager.GetScore(songinfo, _listConfig.SelectedDiff);
                 CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
                 CoverBigDisplayer.SetScore(songScore);
@@ -437,7 +440,7 @@ namespace MajdataPlay.Scenes.List
                         _isNeedPreload = true;
                         _preloadCooldownTimer = 0.5f;
                     }
-                    _listConfig.SelectedSongIndex = collection.Index;
+                    _listConfig.SelectedSongIndex = SongStorage.WorkingCollection.Index;
                     _listConfig.SelectedSongHash = collection.Current.Hash;
                     break;
             }
@@ -502,17 +505,16 @@ namespace MajdataPlay.Scenes.List
                     SongStorage.CollectionIndex = desiredListPos;
                     break;
                 case CoverListMode.Chart:
-                    var songinfo = _songDetailBindings.Span[desiredListPos].SongDetail;
-                    var songScore = ScoreManager.GetScore(songinfo, _listConfig.SelectedDiff);
-                    CoverBigDisplayer.SetSongDetail(songinfo);
-                    CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
+                    var songInfo = _currentCollection.Current;
+                    var songScore = ScoreManager.GetScore(songInfo, _listConfig.SelectedDiff);
+                    CoverBigDisplayer.SetSongDetail(songInfo);
+                    CoverBigDisplayer.SetMeta(songInfo.Title, songInfo.Artist, songInfo.Designers[selectedDifficulty], songInfo.Levels[selectedDifficulty]);
                     CoverBigDisplayer.SetScore(songScore);
-                    SubInfoDisplayer.RefreshContent(songinfo);
-                    _previewSoundPlayer.PlayPreviewSound(songinfo);
-                    chartAnalyzer.AnalyzeAndDrawGraphAsync(songinfo, (ChartLevel)selectedDifficulty).Forget();
-                    FavoriteAdder.SetSong(songinfo);
-                    _currentCollection.Index = desiredListPos;
-                    SongStorage.WorkingCollection.Index = desiredListPos;
+                    SubInfoDisplayer.RefreshContent(songInfo);
+                    _previewSoundPlayer.PlayPreviewSound(songInfo);
+                    chartAnalyzer.AnalyzeAndDrawGraphAsync(songInfo, (ChartLevel)selectedDifficulty).Forget();
+                    FavoriteAdder.SetSong(songInfo);
+                    SetSongCollectionCursor(songInfo);
                     break;
             }
         }
@@ -685,6 +687,7 @@ namespace MajdataPlay.Scenes.List
         void SetSongCollectionCursor(ISongDetail songDetail)
         {
             var pos = SongStorage.CollectionIndex;
+            SongStorage.WorkingCollection.SetCursor(songDetail);
             _currentCollection.SetCursor(songDetail);
             _easySortedCollections[pos].SetCursor(songDetail);
             _basicSortedCollections[pos].SetCursor(songDetail);
@@ -696,31 +699,48 @@ namespace MajdataPlay.Scenes.List
         }
         void UpdateCurrentSongCollection()
         {
+            var pos = SongStorage.CollectionIndex;
             switch ((ChartLevel)selectedDifficulty)
             {
                 case ChartLevel.Easy:
-                    _currentCollection = _easySortedCollections[desiredListPos];
+                    _currentCollection = _easySortedCollections[pos];
                     break;
                 case ChartLevel.Basic:
-                    _currentCollection = _basicSortedCollections[desiredListPos];
+                    _currentCollection = _basicSortedCollections[pos];
                     break;
                 case ChartLevel.Advance:
-                    _currentCollection = _advanceSortedCollections[desiredListPos];
+                    _currentCollection = _advanceSortedCollections[pos];
                     break;
                 case ChartLevel.Expert:
-                    _currentCollection = _expertSortedCollections[desiredListPos];
+                    _currentCollection = _expertSortedCollections[pos];
                     break;
                 case ChartLevel.Master:
-                    _currentCollection = _masterSortedCollections[desiredListPos];
+                    _currentCollection = _masterSortedCollections[pos];
                     break;
                 case ChartLevel.ReMaster:
-                    _currentCollection = _reMasterSortedCollections[desiredListPos];
+                    _currentCollection = _reMasterSortedCollections[pos];
                     break;
                 case ChartLevel.UTAGE:
-                    _currentCollection = _utageSortedCollections[desiredListPos];
+                    _currentCollection = _utageSortedCollections[pos];
                     break;
                 default:
                     throw new ArgumentOutOfRangeException("sb");
+            }
+        }
+        void RefreshSongCoverBindings()
+        {
+            var bindings = _songDetailBindings.Span;
+            for (int i = 0; i < bindings.Length; i++)
+            {
+                ref var binding = ref bindings[i];
+                if (binding.Displayer is not null)
+                {
+                    var cover = binding.Displayer;
+                    binding.Displayer = null;
+                    cover.gameObject.SetActive(false);
+                    _idleSongCoverDisplayer.Enqueue(cover);
+                }
+                binding.SongDetail = _currentCollection[i];
             }
         }
         Vector3 GetCoverPosition(float radius, float position)

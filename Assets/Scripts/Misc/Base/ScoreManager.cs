@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MajdataPlay
@@ -14,6 +15,8 @@ namespace MajdataPlay
     internal static class ScoreManager
     {
         static bool _isInited = false;
+
+        static SpinLock _lock = new();
 
         readonly static Dictionary<string, SongScores> _buckets = new();
 
@@ -144,12 +147,8 @@ namespace MajdataPlay
         public static MaiScore GetScore(ISongDetail song, ChartLevel level)
         {
             var hash = song.Hash;
-            if(!_buckets.TryGetValue(hash, out var records))
-            {
-                records = SongScores.Create(hash);
-                _buckets.Add(hash, records);
-            }
-            switch(level)
+            var records = CheckAndGetSongScores(hash);
+            switch (level)
             {
                 case ChartLevel.Easy:
                     return records.Easy;
@@ -172,13 +171,8 @@ namespace MajdataPlay
         public static SongScores GetSongScores(ISongDetail song)
         {
             var hash = song.Hash;
-            if (!_buckets.TryGetValue(hash, out var records))
-            {
-                records = SongScores.Create(hash);
-                _buckets.Add(hash, records);
-            }
 
-            return records;
+            return CheckAndGetSongScores(hash);
         }
         public static async Task<bool> SaveScore(GameResult result, ChartLevel level)
         {
@@ -186,11 +180,7 @@ namespace MajdataPlay
             {
                 var songInfo = result.SongDetail;
                 var hash = songInfo.Hash;
-                if (!_buckets.TryGetValue(hash, out var records))
-                {
-                    records = SongScores.Create(hash);
-                    _buckets.Add(hash, records);
-                }
+                var records = CheckAndGetSongScores(hash);
                 var record = level switch
                 {
                     ChartLevel.Easy => records.Easy,
@@ -234,6 +224,28 @@ namespace MajdataPlay
             {
                 MajDebug.LogError(ex);
                 return false;
+            }
+        }
+        static SongScores CheckAndGetSongScores(string hash)
+        {
+            ref var @lock = ref _lock;
+            var isLocked = false;
+            try
+            {
+                @lock.Enter(ref isLocked);
+                if (!_buckets.TryGetValue(hash, out var records))
+                {
+                    records = SongScores.Create(hash);
+                    _buckets.Add(hash, records);
+                }
+                return records;
+            }
+            finally
+            {
+                if(isLocked)
+                {
+                    @lock.Exit();
+                }
             }
         }
     }
