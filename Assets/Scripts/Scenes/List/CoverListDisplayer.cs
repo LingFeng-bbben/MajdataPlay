@@ -144,27 +144,61 @@ namespace MajdataPlay.Scenes.List
                     var originCollection = newCollections[i];
                     var songs = originCollection.ToArray();
                     var songAndScores = songs.Select(x => (x, ScoreManager.GetSongScores(x))).ToArray();
-                    var sortedEasy = songAndScores.OrderByDescending(x => x.Item2.Easy.Acc.DX)
+                    var sortedEasy = Array.Empty<ISongDetail>();
+                    var sortedBasic = Array.Empty<ISongDetail>();
+                    var sortedAdvance = Array.Empty<ISongDetail>();
+                    var sortedExpert = Array.Empty<ISongDetail>();
+                    var sortedMaster = Array.Empty<ISongDetail>();
+                    var sortedReMaster = Array.Empty<ISongDetail>();
+                    var sortedUTAGE = Array.Empty<ISongDetail>();
+                    if (MajEnv.Settings.Judge.Mode == Settings.JudgeModeOption.Classic)
+                    {
+                        sortedEasy = songAndScores.OrderByDescending(x => x.Item2.Easy.Acc.Classic)
                                                   .Select(x => x.x)
                                                   .ToArray();
-                    var sortedBasic = songAndScores.OrderByDescending(x => x.Item2.Basic.Acc.DX)
+                        sortedBasic = songAndScores.OrderByDescending(x => x.Item2.Basic.Acc.Classic)
                                                    .Select(x => x.x)
                                                    .ToArray();
-                    var sortedAdvance = songAndScores.OrderByDescending(x => x.Item2.Advance.Acc.DX)
+                        sortedAdvance = songAndScores.OrderByDescending(x => x.Item2.Advance.Acc.Classic)
                                                      .Select(x => x.x)
                                                      .ToArray();
-                    var sortedExpert = songAndScores.OrderByDescending(x => x.Item2.Expert.Acc.DX)
-                                                    .Select(x => x.x)
-                                                    .ToArray();
-                    var sortedMaster = songAndScores.OrderByDescending(x => x.Item2.Master.Acc.DX)
-                                                    .Select(x => x.x)
-                                                    .ToArray();
-                    var sortedReMaster = songAndScores.OrderByDescending(x => x.Item2.ReMaster.Acc.DX)
+                        sortedExpert = songAndScores.OrderByDescending(x => x.Item2.Expert.Acc.Classic)
+                                                     .Select(x => x.x)
+                                                     .ToArray();
+                        sortedMaster = songAndScores.OrderByDescending(x => x.Item2.Master.Acc.Classic)
+                                                     .Select(x => x.x)
+                                                     .ToArray();
+                        sortedReMaster = songAndScores.OrderByDescending(x => x.Item2.ReMaster.Acc.Classic)
                                                       .Select(x => x.x)
                                                       .ToArray();
-                    var sortedUTAGE = songAndScores.OrderByDescending(x => x.Item2.UTAGE.Acc.DX)
+                        sortedUTAGE = songAndScores.OrderByDescending(x => x.Item2.UTAGE.Acc.Classic)
                                                    .Select(x => x.x)
                                                    .ToArray();
+                    }
+                    else
+                    {
+                        sortedEasy = songAndScores.OrderByDescending(x => x.Item2.Easy.Acc.DX)
+                                                  .Select(x => x.x)
+                                                  .ToArray();
+                        sortedBasic = songAndScores.OrderByDescending(x => x.Item2.Basic.Acc.DX)
+                                                   .Select(x => x.x)
+                                                   .ToArray();
+                        sortedAdvance = songAndScores.OrderByDescending(x => x.Item2.Advance.Acc.DX)
+                                                     .Select(x => x.x)
+                                                     .ToArray();
+                        sortedExpert = songAndScores.OrderByDescending(x => x.Item2.Expert.Acc.DX)
+                                                    .Select(x => x.x)
+                                                    .ToArray();
+                        sortedMaster = songAndScores.OrderByDescending(x => x.Item2.Master.Acc.DX)
+                                                    .Select(x => x.x)
+                                                    .ToArray();
+                        sortedReMaster = songAndScores.OrderByDescending(x => x.Item2.ReMaster.Acc.DX)
+                                                      .Select(x => x.x)
+                                                      .ToArray();
+                        sortedUTAGE = songAndScores.OrderByDescending(x => x.Item2.UTAGE.Acc.DX)
+                                                       .Select(x => x.x)
+                                                       .ToArray();
+                    }
                     _easySortedCollections[i] = new SongCollection($"{originCollection.Name}_Easy", sortedEasy);
                     _basicSortedCollections[i] = new SongCollection($"{originCollection.Name}_Basic", sortedBasic);
                     _advanceSortedCollections[i] = new SongCollection($"{originCollection.Name}_Advance", sortedAdvance);
