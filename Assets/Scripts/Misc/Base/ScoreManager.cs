@@ -5,18 +5,17 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
+using System.Linq;
 using System.Threading.Tasks;
-using Unity.VisualScripting;
 
 namespace MajdataPlay
 {
 #nullable enable
     internal static class ScoreManager
     {
-        static List<MaiScore> _scores = new();
-
         static bool _isInited = false;
+
+        readonly static Dictionary<string, SongScores> _buckets = new();
 
         readonly static JsonSerializer _serializer = JsonSerializer.Create(new()
         {
@@ -42,16 +41,99 @@ namespace MajdataPlay
 
                 if (!File.Exists(path))
                 {
-                    var json = await Serializer.Json.SerializeAsync(_scores);
+                    var songScores = _buckets.Select(x => x.Value);
+                    var scores = Array.Empty<MaiScore>()
+                                      .Concat(songScores.Select(x => x.Easy))
+                                      .Concat(songScores.Select(x => x.Basic))
+                                      .Concat(songScores.Select(x => x.Advance))
+                                      .Concat(songScores.Select(x => x.Expert))
+                                      .Concat(songScores.Select(x => x.Master))
+                                      .Concat(songScores.Select(x => x.ReMaster))
+                                      .Concat(songScores.Select(x => x.UTAGE))
+                                      .ToArray();
+                    var json = await Serializer.Json.SerializeAsync(scores);
                     await File.WriteAllTextAsync(path, json);
                     return;
                 }
                 using var storageStream = File.OpenRead(path);
                 List<MaiScore>? result = await Serializer.Json.DeserializeAsync<List<MaiScore>>(storageStream, _serializer);
                 //shoud do some warning here, or all score will be lost and overwirtten
-                if (result != null)
+                var grouped = result.GroupBy(x => x.Hash);
+                var dicts = grouped.Select(x => (x.Key ,x.ToDictionary(x => x.ChartLevel, x => x)));
+                foreach(var (hash, dict) in dicts)
                 {
-                    _scores = result;
+                    if(string.IsNullOrEmpty(hash))
+                    {
+                        continue;
+                    }
+                    if(!dict.TryGetValue(ChartLevel.Easy,out var easy))
+                    {
+                        easy = new MaiScore()
+                        {
+                            Hash = hash,
+                            PlayCount = 0
+                        };
+                    }
+                    if (!dict.TryGetValue(ChartLevel.Basic, out var basic))
+                    {
+                        basic = new MaiScore()
+                        {
+                            Hash = hash,
+                            PlayCount = 0
+                        };
+                    }
+                    if (!dict.TryGetValue(ChartLevel.Advance, out var advance))
+                    {
+                        advance = new MaiScore()
+                        {
+                            Hash = hash,
+                            PlayCount = 0
+                        };
+                    }
+                    if (!dict.TryGetValue(ChartLevel.Expert, out var expert))
+                    {
+                        expert = new MaiScore()
+                        {
+                            Hash = hash,
+                            PlayCount = 0
+                        };
+                    }
+                    if (!dict.TryGetValue(ChartLevel.Master, out var master))
+                    {
+                        master = new MaiScore()
+                        {
+                            Hash = hash,
+                            PlayCount = 0
+                        };
+                    }
+                    if (!dict.TryGetValue(ChartLevel.ReMaster, out var remas))
+                    {
+                        remas = new MaiScore()
+                        {
+                            Hash = hash,
+                            PlayCount = 0
+                        };
+                    }
+                    if (!dict.TryGetValue(ChartLevel.UTAGE, out var utage))
+                    {
+                        utage = new MaiScore()
+                        {
+                            Hash = hash,
+                            PlayCount = 0
+                        };
+                    }
+
+                    var scores = new SongScores()
+                    {
+                        Easy = easy,
+                        Basic = basic,
+                        Advance = advance,
+                        Expert = expert,
+                        Master = master,
+                        ReMaster = remas,
+                        UTAGE = utage
+                    };
+                    _buckets.Add(hash!, scores);
                 }
             }
             finally
@@ -61,35 +143,65 @@ namespace MajdataPlay
         }
         public static MaiScore GetScore(ISongDetail song, ChartLevel level)
         {
-            var record = _scores.Find(x => x.Hash == song.Hash && x.ChartLevel == level);
-            if (record is null)
+            var hash = song.Hash;
+            if(!_buckets.TryGetValue(hash, out var records))
             {
-                var newRecord = new MaiScore()
-                {
-                    Hash = song.Hash,
-                    PlayCount = 0
-                };
-                return newRecord;
+                records = SongScores.Create(hash);
+                _buckets.Add(hash, records);
             }
-            return record;
+            switch(level)
+            {
+                case ChartLevel.Easy:
+                    return records.Easy;
+                case ChartLevel.Basic:
+                    return records.Basic;
+                case ChartLevel.Advance:
+                    return records.Advance;
+                case ChartLevel.Expert:
+                    return records.Expert;
+                case ChartLevel.Master:
+                    return records.Master;
+                case ChartLevel.ReMaster:
+                    return records.ReMaster;
+                case ChartLevel.UTAGE:
+                    return records.UTAGE;
+                default:
+                    throw new ArgumentOutOfRangeException("sb");
+            }
+        }
+        public static SongScores GetSongScores(ISongDetail song)
+        {
+            var hash = song.Hash;
+            if (!_buckets.TryGetValue(hash, out var records))
+            {
+                records = SongScores.Create(hash);
+                _buckets.Add(hash, records);
+            }
+
+            return records;
         }
         public static async Task<bool> SaveScore(GameResult result, ChartLevel level)
         {
             try
             {
                 var songInfo = result.SongDetail;
-
-                var record = _scores.Find(x => x.Hash == songInfo.Hash && x.ChartLevel == level);
-                if (record is null)
+                var hash = songInfo.Hash;
+                if (!_buckets.TryGetValue(hash, out var records))
                 {
-                    record = new MaiScore()
-                    {
-                        ChartLevel = level,
-                        Hash = songInfo.Hash,
-                        PlayCount = 0
-                    };
-                    _scores.Add(record);
+                    records = SongScores.Create(hash);
+                    _buckets.Add(hash, records);
                 }
+                var record = level switch
+                {
+                    ChartLevel.Easy => records.Easy,
+                    ChartLevel.Basic => records.Basic,
+                    ChartLevel.Advance => records.Advance,
+                    ChartLevel.Expert => records.Expert,
+                    ChartLevel.Master => records.Master,
+                    ChartLevel.ReMaster => records.ReMaster,
+                    ChartLevel.UTAGE => records.UTAGE,
+                    _ => throw new ArgumentOutOfRangeException(nameof(level))
+                };
 
                 record.Acc = result.Acc > record.Acc ? record.Acc.Update(result.Acc) : record.Acc;
 
@@ -104,7 +216,17 @@ namespace MajdataPlay
                 record.PlayCount++;
 
                 using var stream = File.Create(MajEnv.ScoreDBPath);
-                await Serializer.Json.SerializeAsync(stream, _scores, _serializer);
+                var songScores = _buckets.Select(x => x.Value);
+                var scores = Array.Empty<MaiScore>()
+                                  .Concat(songScores.Select(x => x.Easy))
+                                  .Concat(songScores.Select(x => x.Basic))
+                                  .Concat(songScores.Select(x => x.Advance))
+                                  .Concat(songScores.Select(x => x.Expert))
+                                  .Concat(songScores.Select(x => x.Master))
+                                  .Concat(songScores.Select(x => x.ReMaster))
+                                  .Concat(songScores.Select(x => x.UTAGE))
+                                  .ToArray();
+                await Serializer.Json.SerializeAsync(stream, scores, _serializer);
 
                 return true;
             }
