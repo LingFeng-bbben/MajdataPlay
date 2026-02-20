@@ -476,8 +476,7 @@ namespace MajdataPlay
             {
 #if UNITY_STANDALONE_WIN
                 WinHidManager.QuitThisBs();
-#endif
-#if UNITY_STANDALONE_OSX
+#elif UNITY_STANDALONE_OSX
                 MacHidManager.QuitThisBs();
 #endif
             }
