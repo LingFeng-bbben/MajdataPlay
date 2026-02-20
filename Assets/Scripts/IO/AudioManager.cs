@@ -285,7 +285,9 @@ namespace MajdataPlay.IO
                 InitSFXSample(VoiceFileNames, VoiceFilePath);
 
                 if (backend == SoundBackendOption.Wasapi || backend == SoundBackendOption.Asio || backend == SoundBackendOption.BassSimple)
+                {
                     MajDebug.LogInfo(Bass.LastError);
+                }
 
                 if (PlayDebug)
                 {
@@ -361,11 +363,17 @@ namespace MajdataPlay.IO
         void OnAnyAreaDown(object sender, InputEventArgs e)
         {
             if (e.Status != SwitchStatus.On)
+            {
                 return;
+            }
             if(e.IsButton)
+            {
                 PlaySFX("answer.wav");
+            }
             else
+            {
                 PlaySFX("touch.wav");
+            }
         }
 
         private void OnDestroy()
@@ -530,7 +538,7 @@ namespace MajdataPlay.IO
             MajDebug.LogInfo("Channel created");
             return sample;
         }
-        public AudioSampleWrap? PlaySFX(string name, bool isLoop = false)
+        public AudioSampleWrap PlaySFX(string name, bool isLoop = false)
         {
             var psp = SFXSamples.FirstOrDefault(o => o.Name == name);
             if (psp is not null)
@@ -540,7 +548,9 @@ namespace MajdataPlay.IO
                     foreach (var voice in SFXSamples.FindAll(o => o.SampleType == SFXSampleType.Voice))
                     {
                         if (voice is not null)
+                        {
                             voice.Stop();
+                        }
                     }
                 }
                 psp.PlayOneShot();
@@ -549,8 +559,8 @@ namespace MajdataPlay.IO
             }
             else
             {
-                MajDebug.LogError("No such SFX");
-                return null;
+                MajDebug.LogError($"No such SFX\nName: {name}");
+                return AudioSampleWrap.Empty;
             }
         }
 
@@ -571,9 +581,13 @@ namespace MajdataPlay.IO
         {
             var psp = SFXSamples.FirstOrDefault(o => o.Name == name);
             if (psp is not null)
+            {
                 psp.Stop();
+            }
             else
-                MajDebug.LogError("No such SFX");
+            {
+                MajDebug.LogError($"No such SFX\nName: {name}");
+            }
         }
         public void OpenAsioPannel()
         {
