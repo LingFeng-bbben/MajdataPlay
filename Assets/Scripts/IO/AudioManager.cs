@@ -381,10 +381,12 @@ namespace MajdataPlay.IO
                 }
 
                 Bass.StreamFree(BassGlobalMixer);
+#if UNITY_STANDALONE_WIN
                 BassAsio.Stop();
                 BassAsio.Free();
                 BassWasapi.Stop();
                 BassWasapi.Free();
+#endif
                 Bass.Stop();
                 Bass.Free();
             }
