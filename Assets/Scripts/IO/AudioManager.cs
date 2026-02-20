@@ -109,7 +109,7 @@ namespace MajdataPlay.IO
 
                 var backend = MajInstances.Settings.Audio.Backend;
                 var isBass = backend is (SoundBackendOption.BassSimple or SoundBackendOption.Asio or SoundBackendOption.Wasapi);
-#if !(UNITY_ANDROID || UNITY_IOS)
+#if UNITY_STANDALONE
                 var wasapiOptions = MajInstances.Settings.Audio.Wasapi;
                 var asioOptions = MajInstances.Settings.Audio.Asio;
                 var isExclusiveRequest = wasapiOptions.Exclusive;
@@ -124,33 +124,34 @@ namespace MajdataPlay.IO
                     MajInstances.Settings.Audio.Channel.Main = mainChannel;
                 }
 #endif
-#if !UNITY_EDITOR && !(UNITY_ANDROID || UNITY_IOS)
-            if (MajEnv.Mode == RunningMode.View)
-            {
-                backend = SoundBackendOption.Wasapi;
-                isExclusiveRequest = false;
-            }
+#if !UNITY_EDITOR && UNITY_STANDALONE
+                if (MajEnv.Mode == RunningMode.View)
+                {
+                    backend = SoundBackendOption.Wasapi;
+                    isExclusiveRequest = false;
+                }
 #endif
-#if UNITY_ANDROID || UNITY_IOS
-                switch(backend)
+#if UNITY_ANDROID || UNITY_IOS || !UNITY_STANDALONE_WIN
+                switch (backend)
                 {
                     case SoundBackendOption.BassSimple:
                     case SoundBackendOption.Unity:
                         break;
                     default:
-#if UNITY_IOS
-                        MajDebug.LogDebug("IOS: Fallback to BassSimple");
-#else
-                        MajDebug.LogDebug("Android: Fallback to BassSimple");
-#endif
-                        MajInstances.Settings.Audio.Backend = SoundBackendOption.BassSimple;
+
+#if UNITY_STANDALONE || UNITY_IOS || UNITY_ANDROID
                         backend = SoundBackendOption.BassSimple;
+#else
+                        backend = SoundBackendOption.Unity;
+#endif
+                        MajInstances.Settings.Audio.Backend = backend;
+                        MajDebug.LogDebug($"Fallback to {backend}");
                         break;
                 }
 #endif
-                        switch (backend)
+                switch (backend)
                 {
-#if !(UNITY_ANDROID || UNITY_IOS)
+#if UNITY_STANDALONE_WIN
                     case SoundBackendOption.Asio:
                         {
                             MajDebug.LogInfo("Bass Init: " + Bass.Init(Bass.NoSoundDevice));
@@ -405,8 +406,10 @@ namespace MajdataPlay.IO
             var volume = MajInstances.Settings.Audio.Volume;
             foreach(var sample in SFXSamples)
             {
-                if(sample is null || sample.IsEmpty) 
+                if(sample is null || sample.IsEmpty)
+                {
                     continue;
+                }
                 var vol = sample.SampleType switch
                 {
                     SFXSampleType.Answer => volume.Answer,
