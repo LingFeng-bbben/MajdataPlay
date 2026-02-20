@@ -21,6 +21,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
+using HidSharp.Platform.MacOS;
 using UnityEngine;
 using UnityEngine.Android;
 using UnityEngine.Scripting;
@@ -475,6 +476,9 @@ namespace MajdataPlay
             {
 #if UNITY_STANDALONE_WIN
                 WinHidManager.QuitThisBs();
+#endif
+#if UNITY_STANDALONE_OSX
+                MacHidManager.QuitThisBs();
 #endif
             }
         }
