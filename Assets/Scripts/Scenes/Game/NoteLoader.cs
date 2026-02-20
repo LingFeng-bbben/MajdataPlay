@@ -409,7 +409,9 @@ namespace MajdataPlay.Scenes.Game
                 var endPos = noteB.StartPos;
                 endPos = endPos - startPos;
                 if (endPos == 0)
+                {
                     return null;
+                }
                 var time = (float)timing.Timing;
                 var speed = NoteSpeed * timing.HSpeed;
                 var scaleRate = MajInstances.Settings.Debug.NoteAppearRate;
@@ -463,18 +465,22 @@ namespace MajdataPlay.Scenes.Game
                 var sortOrder = _noteSortOrder;
                 var isEach = timing.Notes.Length > 1;
                 if (appearTiming < -5f && _gpManager is not null)
+                {
                     _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
+                }
                 if (isEach)
                 {
                     var noteCount = timing.Notes.Length;
                     var noHeadSlideCount = timing.Notes.FindAll(x => x.Type == SimaiNoteType.Slide && x.IsSlideNoHead).Length;
                     if (noteCount - noHeadSlideCount == 1)
+                    {
                         isEach = false;
+                    }
                 }
-                _isHasTap[startPos - 1] = true;
                 _noteSortOrder -= NOTE_LAYER_COUNT[note.Type];
                 startPos = NoteCreateHelper.Rotation(startPos, ChartRotation);
                 NoteCreateHelper.SetNewPositionIfRequested(ref startPos, _buttonRingMappingTable);
+                _isHasTap[startPos - 1] = true;
                 return new()
                 {
                     StartPos = startPos,
@@ -518,19 +524,23 @@ namespace MajdataPlay.Scenes.Game
                 var sortOrder = _noteSortOrder;
                 var isEach = timing.Notes.Length > 1;
                 if (appearTiming < -5f && _gpManager is not null)
+                {
                     _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
+                }
                 if (isEach)
                 {
                     var noteCount = timing.Notes.Length;
                     var noHeadSlideCount = timing.Notes.FindAll(x => x.Type == SimaiNoteType.Slide && x.IsSlideNoHead).Length;
                     if (noteCount - noHeadSlideCount == 1)
+                    {
                         isEach = false;
+                    }
                 }
-                _isHasHold[startPos - 1] = true;
-                _isHasTap[startPos - 1] = true;
                 _noteSortOrder -= NOTE_LAYER_COUNT[note.Type];
                 startPos = NoteCreateHelper.Rotation(startPos, ChartRotation);
                 NoteCreateHelper.SetNewPositionIfRequested(ref startPos, _buttonRingMappingTable);
+                _isHasHold[startPos - 1] = true;
+                _isHasTap[startPos - 1] = true;
                 return new()
                 {
                     StartPos = startPos,
@@ -578,7 +588,9 @@ namespace MajdataPlay.Scenes.Game
                 appearTiming = Math.Min(appearTiming, slideFadeInTiming);
 
                 if (appearTiming < -5f && _gpManager is not null)
+                {
                     _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
+                }
                 _noteSortOrder -= NOTE_LAYER_COUNT[note.Type];
                 _isHasTap[startPos - 1] = true;
                 if (isEach)
@@ -665,7 +677,9 @@ namespace MajdataPlay.Scenes.Game
                 var moveDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
                 var appearTiming = Math.Min(noteTiming - moveDuration, noteTiming - 0.15f);
                 if (appearTiming < -5f && _gpManager is not null)
+                {
                     _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
+                }
                 _isHasTouch[(int)sensorPos] = true;
                 _touchSortOrder -= NOTE_LAYER_COUNT[note.Type];
                 if (isEach)
@@ -733,7 +747,9 @@ namespace MajdataPlay.Scenes.Game
                 var appearTiming = Math.Min(noteTiming - moveDuration, noteTiming - 0.15f);
                 var noteSortOrder = _touchSortOrder;
                 if (appearTiming < -5f && _gpManager is not null)
+                {
                     _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
+                }
 
                 _isHasTouchHold[(int)sensorPos] = true;
                 _touchSortOrder -= NOTE_LAYER_COUNT[note.Type];
