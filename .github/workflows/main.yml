@@ -79,7 +79,7 @@ jobs:
         if: ${{ env.TARGET_PLATFORM == 'Android' }}
         uses: actions/upload-artifact@v4
         with:
-          name: "${{ env.OUTPUT_NAME }}.armeabi-v7a.apk"
+          name: "${{ env.OUTPUT_NAME }}.arm64-v8a.apk"
           path: "${{ env.CONFIGURATION }}/Android/MajdataPlay.apk/MajdataPlay.arm64-v8a.apk"
           
   build-apple:
