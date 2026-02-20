@@ -39,8 +39,8 @@ jobs:
           key: Library-${{ env.TARGET_PLATFORM }}-${{ env.CONFIGURATION }}
           restore-keys: Library-${{ env.TARGET_PLATFORM }}-${{ env.CONFIGURATION }}
           
-      - if: env.CONFIGURATION == 'Debug'
-        name: Debug build
+      - name: Debug build
+        if: env.CONFIGURATION == 'Debug'
         uses: game-ci/unity-builder@v4.3.0
         with:
           targetPlatform: ${{ env.TARGET_PLATFORM }}
@@ -49,8 +49,8 @@ jobs:
           buildsPath: ${{ env.CONFIGURATION }}
           buildMethod: MajdataPlay.Misc.Editor.CustomBuild.BuildDebug
 
-      - if: env.CONFIGURATION == 'Release'
-        name: Release build
+      - name: Release build
+        if: env.CONFIGURATION == 'Release'
         uses: game-ci/unity-builder@v4.3.0
         with:
           targetPlatform: ${{ env.TARGET_PLATFORM }}
@@ -62,10 +62,25 @@ jobs:
         run: ls -R ${{ env.CONFIGURATION }}
 
       - name: Upload build
+        if: ${{ env.TARGET_PLATFORM != 'Android' }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.OUTPUT_NAME }}
           path: ${{ env.CONFIGURATION }}
+
+      - name: Upload Android ARMv7 build
+        if: ${{ env.TARGET_PLATFORM == 'Android' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: "${{ env.OUTPUT_NAME }}.armeabi-v7a.apk"
+          path: "${{ env.CONFIGURATION }}/Android/MajdataPlay.apk/MajdataPlay.armeabi-v7a.apk"
+
+      - name: Upload Android ARM64 build
+        if: ${{ env.TARGET_PLATFORM == 'Android' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: "${{ env.OUTPUT_NAME }}.armeabi-v7a.apk"
+          path: "${{ env.CONFIGURATION }}/Android/MajdataPlay.apk/MajdataPlay.arm64-v8a.apk"
           
   build-apple:
     runs-on: macos-latest
@@ -119,10 +134,35 @@ jobs:
           buildName: MajdataPlay
           buildsPath: ${{ env.CONFIGURATION }}
 
+      - name: Build iOS Xcode Project
+        if: ${{ env.TARGET_PLATFORM == 'iOS' }}
+        run: |
+          xcodebuild -project ${{ env.CONFIGURATION }}/iOS/MajdataPlay/Unity-iPhone.xcodeproj \
+            -scheme Unity-iPhone \
+            -configuration ${{ env.CONFIGURATION }} \
+            -sdk iphoneos \
+            -archivePath ${{ env.CONFIGURATION }}/iOS/MajdataPlay/Unity-iPhone.xcarchive archive
+
+      - name: Export IPA
+        if: ${{ env.TARGET_PLATFORM == 'iOS' }}
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath ${{ env.CONFIGURATION }}/iOS/MajdataPlay/Unity-iPhone.xcarchive \
+            -exportPath ${{ env.CONFIGURATION }}/iOS/MajdataPlay/MajdataPlay.ipa \
+            -exportOptionsPlist ./ExportOptions.plist
+
       - name: List files in build directory
         run: ls -R ${{ env.CONFIGURATION }}
 
       - name: Upload build
+        if: ${{ env.TARGET_PLATFORM == 'iOS' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.OUTPUT_NAME }}
+          path: ${{ env.CONFIGURATION }}/iOS/MajdataPlay/MajdataPlay.ipa
+
+      - name: Upload build
+        if: ${{ env.TARGET_PLATFORM != 'iOS' }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.OUTPUT_NAME }}
