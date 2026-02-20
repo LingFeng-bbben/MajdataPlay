@@ -1,0 +1,6 @@
+framework module libHarfBuzzSharp {
+  umbrella header "libHarfBuzzSharp.h"
+  export *
+
+  module * { export * }
+}
