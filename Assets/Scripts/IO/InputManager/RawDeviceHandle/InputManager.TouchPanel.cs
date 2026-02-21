@@ -1,16 +1,18 @@
-﻿using System;
-using System.Threading.Tasks;
-using MajdataPlay.Utils;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Diagnostics;
-using System.IO.Ports;
-using System.Text;
-using HidSharp;
-using System.IO;
-using UnityEngine;
+﻿using HidSharp;
+using HidSharp.Reports;
+using MajdataPlay.IO.PdxTouch;
 using MajdataPlay.Numerics;
 using MajdataPlay.Settings;
+using MajdataPlay.Utils;
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.IO.Ports;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using UnityEngine;
 
 //using Microsoft.Win32;
 //using System.Windows.Forms;
@@ -40,7 +42,9 @@ namespace MajdataPlay.IO
             public static void Init()
             {
                 if (!_touchPanelUpdateLoop.IsCompleted)
+                {
                     return;
+                }
                 switch (_deviceManufacturer)
                 {
                     case DeviceManufacturerOption.Yuan:
@@ -49,6 +53,9 @@ namespace MajdataPlay.IO
                         break;
                     case DeviceManufacturerOption.Dao:
                         _touchPanelUpdateLoop = Task.Factory.StartNew(SlaveThreadUpdateLoop, TaskCreationOptions.LongRunning);
+                        break;
+                    case DeviceManufacturerOption.Nov:
+                        _touchPanelUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
                         break;
                     default:
                         MajDebug.LogWarning($"Not supported touch panel manufacturer: {MajEnv.Settings.IO.Manufacturer}");
@@ -82,7 +89,7 @@ namespace MajdataPlay.IO
                 }
                 finally
                 {
-                    if(isLocked)
+                    if (isLocked)
                     {
                         @lock.Exit();
                     }
@@ -96,15 +103,15 @@ namespace MajdataPlay.IO
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsHadOn(SensorArea area)
             {
-                if(area < SensorArea.C)
+                if (area < SensorArea.C)
                 {
                     return _isSensorHadOn[(int)area];
                 }
-                else if(area == SensorArea.C)
+                else if (area == SensorArea.C)
                 {
                     return _isSensorHadOn[16] || _isSensorHadOn[17];
                 }
-                else if(area <= SensorArea.E8)
+                else if (area <= SensorArea.E8)
                 {
                     return _isSensorHadOn[(int)area + 1];
                 }
@@ -299,7 +306,7 @@ namespace MajdataPlay.IO
             {
                 return !IsCurrentlyOn(index);
             }
-#endregion
+            #endregion
 
             static void SerialPortUpdateLoop()
             {
@@ -417,108 +424,131 @@ namespace MajdataPlay.IO
                     serial.Dispose();
                 }
             }
-            //static void HIDUpdateLoop()
-            //{
-            //    var touchPanelOptions = MajEnv.UserSettings.IO.InputDevice.TouchPanel;
-            //    var hidOptions = touchPanelOptions.HidOptions;
-            //    var currentThread = Thread.CurrentThread;
-            //    var token = MajEnv.GlobalCT;
-            //    var pollingRate = _sensorPollingRateMs;
-            //    var stopwatch = new Stopwatch();
-            //    var t1 = stopwatch.Elapsed;
-            //    var pid = hidOptions.ProductId;
-            //    var vid = hidOptions.VendorId;
-            //    var manufacturer = hidOptions.Manufacturer;
-            //    var deviceType = MajEnv.UserSettings.IO.InputDevice.TouchPanel.Type;
-            //    var deviceName = string.IsNullOrEmpty(hidOptions.DeviceName) ? GetHIDDeviceName(deviceType, manufacturer) : hidOptions.DeviceName;
-            //    var hidConfig = new OpenConfiguration();
-            //    var filter = new DeviceFilter()
-            //    {
-            //        DeviceName = deviceName,
-            //        ProductId = pid,
-            //        VendorId = vid,
-            //    };
+            static void HIDUpdateLoop()
+            {
+                ref var @lock = ref _syncLock;
+                var touchPanelOptions = MajEnv.Settings.IO.InputDevice.TouchPanel;
+                var hidOptions = _touchPanelHidConnInfo;
+                var currentThread = Thread.CurrentThread;
+                var token = MajEnv.GlobalCT;
+                var pollingRate = _sensorPollingRateMs;
+                var stopwatch = new Stopwatch();
+                var t1 = stopwatch.Elapsed;
+                var pid = hidOptions.ProductId;
+                var vid = hidOptions.VendorId;
+                var manufacturer = _deviceManufacturer;
+                var deviceName = string.IsNullOrEmpty(hidOptions.DeviceName) ? GetHIDDeviceName(manufacturer) : hidOptions.DeviceName;
+                var hidConfig = new OpenConfiguration();
+                var filter = new DeviceFilter()
+                {
+                    DeviceName = deviceName,
+                    ProductId = pid,
+                    VendorId = vid,
+                };
 
-                
-            //    currentThread.Name = "IO/T Thread";
-            //    currentThread.IsBackground = true;
-            //    currentThread.Priority = MajEnv.UserSettings.Debug.IOThreadPriority;
 
-            //    hidConfig.SetOption(OpenOption.Exclusive, hidOptions.Exclusice);
-            //    hidConfig.SetOption(OpenOption.Priority, hidOptions.OpenPriority);
-            //    HidDevice? device = null;
-            //    HidStream? hidStream = null;
+                currentThread.Name = "IO/T Thread";
+                currentThread.IsBackground = true;
+                currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
 
-                
-            //    if (!HidManager.TryGetDevice(filter,out device))
-            //    {
-            //        MajDebug.LogWarning("TouchPanel: hid device not found");
-            //        return;
-            //    }
-            //    else if (!device.TryOpen(hidConfig, out hidStream))
-            //    {
-            //        MajDebug.LogError($"TouchPanel: cannot open hid device:\n{device}");
-            //        return;
-            //    }
+                hidConfig.SetOption(OpenOption.Exclusive, hidOptions.Exclusice);
+                hidConfig.SetOption(OpenOption.Priority, hidOptions.OpenPriority);
+                HidDevice? device = null;
+                HidStream? hidStream = null;
 
-            //    try
-            //    {
-            //        Span<byte> buffer = stackalloc byte[device.GetMaxInputReportLength()];
-            //        IsConnected = true;
-            //        MajDebug.Log($"TouchPanel connected\nDevice: {device}");
-            //        stopwatch.Start();
-            //        while (true)
-            //        {
-            //            token.ThrowIfCancellationRequested();
-            //            try
-            //            {
-            //                var now = MajTimeline.UnscaledTime;
-            //                hidStream.Read(buffer);
-            //                DaoHIDTouchPanel.Parse(buffer, _sensorRealTimeStates);
-            //                IsConnected = true;
-            //                lock (_touchPanelUpdateLoop)
-            //                {
-            //                    for (var i = 0; i < 35; i++)
-            //                    {
-            //                        var state = _sensorRealTimeStates[i];
-            //                        _isSensorHadOnInternal[i] |= state;
-            //                        _isSensorHadOffInternal[i] |= !state;
-            //                    }
-            //                }
-            //            }
-            //            catch (OperationCanceledException)
-            //            {
-            //                break;
-            //            }
-            //            catch (IOException ioE)
-            //            {
-            //                IsConnected = false;
-            //                MajDebug.LogError($"TouchPanel: from HID listener: \n{ioE}");
-            //            }
-            //            catch (Exception e)
-            //            {
-            //                MajDebug.LogError($"TouchPanel: from HID listener: \n{e}");
-            //            }
-            //            finally
-            //            {
-            //                buffer.Clear();
-            //                if (pollingRate.TotalMilliseconds > 0)
-            //                {
-            //                    var t2 = stopwatch.Elapsed;
-            //                    var elapsed = t2 - t1;
-            //                    t1 = t2;
-            //                    if (elapsed < pollingRate)
-            //                        Thread.Sleep(pollingRate - elapsed);
-            //                }
-            //            }
-            //        }
-            //    }
-            //    finally
-            //    {
-            //        hidStream.Dispose();
-            //        IsConnected = false;
-            //    }
-            //}
+
+                if (!HidManager.TryGetDevices(filter, out var devices))
+                {
+                    MajDebug.LogWarning("TouchPanel: hid device not found");
+                    return;
+                }
+                foreach (var d in devices)
+                {
+                    if (d.TryOpen(hidConfig, out hidStream))
+                    {
+                        device = d;
+                        break;
+                    }
+                }
+                if (hidStream is null || device is null)
+                {
+                    MajDebug.LogError($"TouchPanel: cannot open hid devices:\n{string.Join('\n', devices)}");
+                    return;
+                }
+
+                try
+                {
+                    Span<byte> buffer = stackalloc byte[device.GetMaxInputReportLength()];
+                    IsConnected = true;
+                    MajDebug.LogInfo($"TouchPanel connected\nDevice: {device}");
+                    stopwatch.Start();
+                    while (true)
+                    {
+                        token.ThrowIfCancellationRequested();
+                        try
+                        {
+                            var now = MajTimeline.UnscaledTime;
+                            hidStream.Read(buffer);
+                            NovHIDTouchPanel.Parse(buffer, _sensorRealTimeStates);
+                            IsConnected = true;
+                            var isLocked = false;
+                            try
+                            {
+                                @lock.Enter(ref isLocked);
+                                var sensorRealTimeStates = _sensorRealTimeStates.AsSpan();
+                                var isSensorHadOnInternal = _isSensorHadOnInternal.AsSpan();
+                                var isSensorHadOffInternal = _isSensorHadOffInternal.AsSpan();
+
+                                for (var i = 0; i < 35; i++)
+                                {
+                                    var state = sensorRealTimeStates[i];
+                                    isSensorHadOnInternal[i] |= state;
+                                    isSensorHadOffInternal[i] |= !state;
+                                }
+                            }
+                            finally
+                            {
+                                if (isLocked)
+                                {
+                                    @lock.Exit();
+                                }
+                            }
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            break;
+                        }
+                        catch (IOException ioE)
+                        {
+                            IsConnected = false;
+                            MajDebug.LogError($"TouchPanel: from HID listener: \n{ioE}");
+                        }
+                        catch (Exception e)
+                        {
+                            MajDebug.LogError($"TouchPanel: from HID listener: \n{e}");
+                        }
+                        finally
+                        {
+                            buffer.Clear();
+                            if (pollingRate.TotalMilliseconds > 0)
+                            {
+                                var t2 = stopwatch.Elapsed;
+                                var elapsed = t2 - t1;
+                                t1 = t2;
+                                if (elapsed < pollingRate)
+                                {
+                                    Thread.Sleep(pollingRate - elapsed);
+                                }
+                            }
+                        }
+                    }
+                }
+                finally
+                {
+                    hidStream.Dispose();
+                    IsConnected = false;
+                }
+            }
             static void SlaveThreadUpdateLoop()
             {
                 ref var @lock = ref _syncLock;
@@ -699,8 +729,8 @@ namespace MajdataPlay.IO
 
                 var (A, B, C, D, E) = sens;
                 var s = 0;
-                
-                switch(sensor)
+
+                switch (sensor)
                 {
                     case A1:
                     case A2:
@@ -780,6 +810,20 @@ namespace MajdataPlay.IO
                         return 0x28;
                 }
             }
+            static string GetHIDDeviceName(DeviceManufacturerOption manufacturer)
+            {
+                switch (manufacturer)
+                {
+                    case DeviceManufacturerOption.General:
+                    case DeviceManufacturerOption.Yuan:
+                    case DeviceManufacturerOption.Dao:
+                        throw new NotSupportedException();
+                    case DeviceManufacturerOption.Nov:
+                        return string.Empty;
+                    default:
+                        throw new NotSupportedException();
+                }
+            }
             static class GeneralSerialTouchPanel
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -843,7 +887,7 @@ namespace MajdataPlay.IO
                     }
                     return packet[(start + 1)..endIndex];
                 }
-                
+
             }
             static class DaoHIDTouchPanel
             {
@@ -867,6 +911,97 @@ namespace MajdataPlay.IO
                     }
                     buffer[16] = (C & (1 << 0)) != 0; //C1
                     buffer[17] = (C & (1 << 1)) != 0; //C2
+                }
+            }
+            static class NovHIDTouchPanel
+            {
+                const byte REPORT_ID = 2;
+                const int MAX_TOUCH_POINTS = 10;
+                const int TOUCH_POINT_SIZE = 6;
+
+                // PDX 坐标范围
+                const float MIN_X = 18432f;
+                const float MIN_Y = 0f;
+                const float MAX_X = 0f;
+                const float MAX_Y = 32767f;
+                const bool FLIP = true;
+
+                readonly static TouchSensorMapper _mapper;
+                readonly static FingerPoint[] _fingerPoints = new FingerPoint[256];
+
+                static NovHIDTouchPanel()
+                {
+                    var rad = MajEnv.Settings.IO.InputDevice.TouchPanel.PdxTouchPanelOptions.TouchRadius;
+                    _mapper = new TouchSensorMapper(MIN_X, MIN_Y, MAX_X, MAX_Y, rad, FLIP);
+                }
+
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                public static void Parse(ReadOnlySpan<byte> reportData, Span<bool> buffer)
+                {
+                    if (reportData[0] != REPORT_ID)
+                    {
+                        return;
+                    }
+                    reportData = reportData.Slice(1); //skip report id
+                    var touchMask = 0UL;
+                    // 解析触摸点
+                    for (int i = 0; i < MAX_TOUCH_POINTS; i++)
+                    {
+                        var index = i * TOUCH_POINT_SIZE + 1;
+                        if (reportData[index] == 0)
+                        {
+                            continue;
+                        }
+
+                        var isPressed = (reportData[index] & 0x01) == 1;
+                        var fingerId = reportData[index + 1];
+                        var x = BitConverter.ToUInt16(reportData.Slice(index + 2));
+                        var y = BitConverter.ToUInt16(reportData.Slice(index + 4));
+
+                        HandleFinger(x, y, fingerId, isPressed, ref touchMask);
+                    }
+                    for (int i = 0; i < _fingerPoints.Length; i++)
+                    {
+                        if (_fingerPoints[i].IsActive)
+                        {
+                            touchMask |= _fingerPoints[i].Mask;
+                        }
+                    }
+                    for (int i = 0; i < 34; i++)
+                    {
+                        buffer[i] = (touchMask & (1UL << i)) != 0;
+                    }
+                }
+                static void HandleFinger(ushort x, ushort y, int fingerId, bool isPressed, ref ulong touchMask)
+                {
+                    // 安全检查
+                    if (fingerId < 0 || fingerId >= 256)
+                    {
+                        return;
+                    }
+
+                    ref var point = ref _fingerPoints[fingerId];
+
+                    if (isPressed)
+                    {
+                        ulong fingerTouchMask = _mapper.ParseTouchPoint(x, y);
+                        point.IsActive = true;
+                        point.Mask = fingerTouchMask;
+                        touchMask |= fingerTouchMask;
+                    }
+                    else
+                    {
+                        if (point.IsActive)
+                        {
+                            point.IsActive = false;
+                            point.Mask = 0;
+                        }
+                    }
+                }
+                struct FingerPoint
+                {
+                    public bool IsActive;
+                    public ulong Mask;
                 }
             }
         }

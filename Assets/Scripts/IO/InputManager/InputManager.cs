@@ -282,6 +282,7 @@ namespace MajdataPlay.IO
         static SerialPortConnInfo _ledDeviceSerialConnInfo = default;
         static HidConnInfo _ledDeviceHidConnInfo = default;
         static HidConnInfo _buttonRingHidConnInfo = default;
+        static HidConnInfo _touchPanelHidConnInfo = default;
 
         static int _playerIndex = 1;
         static DeviceManufacturerOption _deviceManufacturer = DeviceManufacturerOption.General;
@@ -407,20 +408,14 @@ namespace MajdataPlay.IO
         //}
         static void IODeviceDetect()
         {
-            // PDX 触摸面板（独立于其他设备）
-            var pdxOptions = MajEnv.Settings.IO.InputDevice.PdxTouch;
-            if (pdxOptions.Enable)
-            {
-                MajDebug.LogInfo("PdxTouchPanel: Enabled");
-                PdxTouchPanel.Start();
-            }
-
             const int YUAN_HID_1P_PID = 22352;
             const int YUAN_HID_1P_VID = 11836;
             const int YUAN_HID_2P_PID = 22352;
             const int YUAN_HID_2P_VID = 11852;
             const int DAO_HID_PID = 4644;
             const int DAO_HID_VID = 3727;
+            const int NOV_HID_PID = 0x3003;
+            const int NOV_HID_VID = 0x3356;
             const int GENERAL_HID_1P_PID = 33;
             const int GENERAL_HID_1P_VID = 3235;
             const int GENERAL_HID_2P_PID = 33;
@@ -463,7 +458,7 @@ namespace MajdataPlay.IO
                         PortName = touchPanelSettings.SerialPortOptions.Port ?? WinSerialPortToLinuxPortName((playerIndex == 1 ? 3 : 4)),
 #endif
                         BaudRate = touchPanelSettings.SerialPortOptions.BaudRate ?? 9600,
-                    };
+                    }; 
                     _ledDeviceSerialConnInfo = new()
                     {
 #if UNITY_STANDALONE_WIN
@@ -475,8 +470,7 @@ namespace MajdataPlay.IO
                     };
                     return;
                 }
-
-                if (userManufacturer is not null)
+                else if (userManufacturer is not null)
                 {
                     MajDebug.LogInfo("User has set the IO manufacturer and button ring type, use the user-set values");
                     manufacturer = (DeviceManufacturerOption)userManufacturer;
@@ -559,6 +553,26 @@ namespace MajdataPlay.IO
                                 OpenPriority = ledDeviceSettings.HidOptions.OpenPriority
                             };
                             break;
+                        case DeviceManufacturerOption.Nov:
+                            buttonRingType = ButtonRingDeviceOption.Keyboard;
+                            _touchPanelHidConnInfo = new()
+                            {
+                                DeviceName = touchPanelSettings.HidOptions.DeviceName ?? string.Empty,
+                                ProductId = touchPanelSettings.HidOptions.ProductId ?? NOV_HID_PID,
+                                VendorId = touchPanelSettings.HidOptions.VendorId ?? NOV_HID_VID,
+                                Exclusice = touchPanelSettings.HidOptions.Exclusice,
+                                OpenPriority = touchPanelSettings.HidOptions.OpenPriority
+                            };
+                            _ledDeviceSerialConnInfo = new()
+                            {
+#if UNITY_STANDALONE_WIN
+                                PortName = "COM" + (ledDeviceSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 3 : 4)),
+#else
+                                PortName = ledDeviceSettings.SerialPortOptions.Port ?? WinSerialPortToLinuxPortName((playerIndex == 1 ? 21 : 22)),
+#endif
+                                BaudRate = ledDeviceSettings.SerialPortOptions.BaudRate ?? 115200,
+                            };
+                            break;
                     }
                 }
                 else
@@ -567,6 +581,8 @@ namespace MajdataPlay.IO
                     var yuanDefaultHidVID = YUAN_HID_1P_VID;
                     var daoDefaultHidPID = DAO_HID_PID;
                     var daoDefaultHidVID = DAO_HID_VID;
+                    var novDefaultHidPID = NOV_HID_PID;
+                    var novDefaultHidVID = NOV_HID_VID;
                     var generalDefaultHidPID = GENERAL_HID_1P_PID;
                     var generalDefaultHidVID = GENERAL_HID_1P_VID;
 
@@ -590,6 +606,7 @@ namespace MajdataPlay.IO
                         var isYuan = x.ProductID == yuanDefaultHidPID && x.VendorID == yuanDefaultHidVID;
                         var isDao = x.ProductID == daoDefaultHidPID && x.VendorID == daoDefaultHidVID;
                         var isGeneral = x.ProductID == generalDefaultHidPID && x.VendorID == generalDefaultHidVID;
+                        var isNov = x.ProductID == novDefaultHidPID && x.VendorID == novDefaultHidVID;
                         var result = isYuan || isDao || isGeneral;
 
                         return result;
@@ -648,6 +665,29 @@ namespace MajdataPlay.IO
                                 VendorId = daoDefaultHidVID,
                                 Exclusice = false,
                                 OpenPriority = OpenPriority.VeryHigh
+                            };
+                        }
+                        else if (hidDevices.Any(x => x.ProductID == novDefaultHidPID && x.VendorID == novDefaultHidVID))
+                        {
+                            MajDebug.LogInfo("Manufacturer detect result: Nov");
+                            manufacturer = DeviceManufacturerOption.Nov;
+                            buttonRingType = ButtonRingDeviceOption.Keyboard;
+                            _touchPanelHidConnInfo = new()
+                            {
+                                DeviceName = string.Empty,
+                                ProductId = novDefaultHidPID,
+                                VendorId = novDefaultHidVID,
+                                Exclusice = false,
+                                OpenPriority = OpenPriority.VeryHigh
+                            };
+                            _ledDeviceSerialConnInfo = new()
+                            {
+#if UNITY_STANDALONE_WIN
+                                PortName = "COM" + ledDeviceDefaultSerialPort,
+#else
+                                PortName = WinSerialPortToLinuxPortName(ledDeviceDefaultSerialPort),
+#endif
+                                BaudRate = 115200,
                             };
                         }
                         else if (hidDevices.Any(x => x.ProductID == generalDefaultHidPID && x.VendorID == generalDefaultHidVID))

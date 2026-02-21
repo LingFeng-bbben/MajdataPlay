@@ -305,8 +305,6 @@ namespace MajdataPlay.Settings
         public ButtonRingOptions ButtonRing { get; set; } = new();
         [Preserve]
         public TouchPanelOptions TouchPanel { get; set; } = new();
-        [Preserve]
-        public PdxTouchOptions PdxTouch { get; set; } = new();
     }
     [Preserve]
     public class OutputDeviceOptions
@@ -359,6 +357,10 @@ namespace MajdataPlay.Settings
         public float TouchSimulationRadius { get; set; } = 0.5f;
         [Preserve]
         public SerialPortOptions SerialPortOptions { get; set; } = new();
+        [Preserve]
+        public HidOptions HidOptions { get; set; } = new();
+        [Preserve]
+        public PdxTouchPanelOptions PdxTouchPanelOptions { get; set; } = new();
     }
     [Preserve]
     public class HidOptions
@@ -375,14 +377,10 @@ namespace MajdataPlay.Settings
         public OpenPriority OpenPriority { get; set; } = OpenPriority.VeryHigh;
     }
     [Preserve]
-    public class PdxTouchOptions
+    public class PdxTouchPanelOptions
     {
         [Preserve]
-        public bool Enable { get; set; } = false;
-        [Preserve]
-        public string? Path1P { get; set; } = null;
-        [Preserve]
-        public string? Path2P { get; set; } = null;
+        public string? Path { get; set; } = null;
         [Preserve]
         public int TouchRadius { get; set; } = 30;
     }

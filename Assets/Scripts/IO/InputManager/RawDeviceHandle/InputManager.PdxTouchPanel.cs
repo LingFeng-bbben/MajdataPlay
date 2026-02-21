@@ -35,13 +35,7 @@ namespace MajdataPlay.IO
 
             public static void Start()
             {
-                var pdxOptions = MajEnv.Settings.IO.InputDevice.PdxTouch;
-                if (!pdxOptions.Enable)
-                {
-                    MajDebug.LogInfo("PdxTouchPanel: Disabled in settings");
-                    return;
-                }
-
+                var pdxOptions = MajEnv.Settings.IO.InputDevice.TouchPanel.PdxTouchPanelOptions;
                 var touchRadius = pdxOptions.TouchRadius;
 
                 // 1P 设备
