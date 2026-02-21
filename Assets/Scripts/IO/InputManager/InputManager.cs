@@ -450,7 +450,7 @@ namespace MajdataPlay.IO
                     _touchPanelSerialConnInfo = new()
                     {
 #if UNITY_STANDALONE_WIN
-                        Port = "COM" + touchPanelSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 3 : 4),
+                        PortName = "COM" + (touchPanelSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 3 : 4)),
 #else
                         PortName = touchPanelSettings.SerialPortOptions.Port ?? WinSerialPortToLinuxPortName((playerIndex == 1 ? 3 : 4)),
 #endif
@@ -459,7 +459,7 @@ namespace MajdataPlay.IO
                     _ledDeviceSerialConnInfo = new()
                     {
 #if UNITY_STANDALONE_WIN
-                        Port = "COM" + ledDeviceSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 3 : 4),
+                        PortName = "COM" + (ledDeviceSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 3 : 4)),
 #else
                         PortName = ledDeviceSettings.SerialPortOptions.Port ?? WinSerialPortToLinuxPortName((playerIndex == 1 ? 21 : 22)),
 #endif
@@ -479,7 +479,7 @@ namespace MajdataPlay.IO
                             _touchPanelSerialConnInfo = new()
                             {
 #if UNITY_STANDALONE_WIN
-                                Port = "COM" + touchPanelSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 3 : 4),
+                                PortName = "COM" + (touchPanelSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 3 : 4)),
 #else
                                 PortName = touchPanelSettings.SerialPortOptions.Port ?? WinSerialPortToLinuxPortName((playerIndex == 1 ? 3 : 4)),
 #endif
@@ -496,7 +496,7 @@ namespace MajdataPlay.IO
                             _ledDeviceSerialConnInfo = new()
                             {
 #if UNITY_STANDALONE_WIN
-                                Port = "COM" + ledDeviceSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 3 : 4),
+                                PortName = "COM" + (ledDeviceSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 3 : 4)),
 #else
                                 PortName = ledDeviceSettings.SerialPortOptions.Port ?? WinSerialPortToLinuxPortName((playerIndex == 1 ? 21 : 22)),
 #endif
@@ -508,7 +508,7 @@ namespace MajdataPlay.IO
                             _touchPanelSerialConnInfo = new()
                             {
 #if UNITY_STANDALONE_WIN
-                                Port = "COM" + touchPanelSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 3 : 4),
+                                PortName = "COM" + (touchPanelSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 3 : 4)),
 #else
                                 PortName = touchPanelSettings.SerialPortOptions.Port ?? WinSerialPortToLinuxPortName((playerIndex == 1 ? 3 : 4)),
 #endif
@@ -525,7 +525,7 @@ namespace MajdataPlay.IO
                             _ledDeviceSerialConnInfo = new()
                             {
 #if UNITY_STANDALONE_WIN
-                                Port = "COM" + ledDeviceSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 3 : 4),
+                                PortName = "COM" + (ledDeviceSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 3 : 4)),
 #else
                                 PortName = ledDeviceSettings.SerialPortOptions.Port ?? WinSerialPortToLinuxPortName((playerIndex == 1 ? 21 : 22)),
 #endif
@@ -604,7 +604,7 @@ namespace MajdataPlay.IO
                             _touchPanelSerialConnInfo = new()
                             {
 #if UNITY_STANDALONE_WIN
-                                Port = "COM" + touchPanelDefaultSerialPort,
+                                PortName = "COM" + touchPanelDefaultSerialPort,
 #else
                                 PortName = WinSerialPortToLinuxPortName(touchPanelDefaultSerialPort),
 #endif
@@ -613,7 +613,7 @@ namespace MajdataPlay.IO
                             _ledDeviceSerialConnInfo = new()
                             {
 #if UNITY_STANDALONE_WIN
-                                Port = "COM" + ledDeviceDefaultSerialPort,
+                                PortName = "COM" + ledDeviceDefaultSerialPort,
 #else
                                 PortName = WinSerialPortToLinuxPortName(ledDeviceDefaultSerialPort),
 #endif
@@ -650,7 +650,7 @@ namespace MajdataPlay.IO
                             _touchPanelSerialConnInfo = new()
                             {
 #if UNITY_STANDALONE_WIN
-                                Port = "COM" + touchPanelDefaultSerialPort,
+                                PortName = "COM" + touchPanelDefaultSerialPort,
 #else
                                 PortName = WinSerialPortToLinuxPortName(touchPanelDefaultSerialPort),
 #endif
@@ -667,7 +667,7 @@ namespace MajdataPlay.IO
                             _ledDeviceSerialConnInfo = new()
                             {
 #if UNITY_STANDALONE_WIN
-                                Port = "COM" + ledDeviceDefaultSerialPort,
+                                PortName = "COM" + ledDeviceDefaultSerialPort,
 #else
                                 PortName = WinSerialPortToLinuxPortName(ledDeviceDefaultSerialPort),
 #endif
@@ -687,7 +687,7 @@ namespace MajdataPlay.IO
                         _touchPanelSerialConnInfo = new()
                         {
 #if UNITY_STANDALONE_WIN
-                            Port = "COM" + touchPanelDefaultSerialPort,
+                            PortName = "COM" + touchPanelDefaultSerialPort,
 #else
                             PortName = WinSerialPortToLinuxPortName(touchPanelDefaultSerialPort),
 #endif
@@ -696,7 +696,7 @@ namespace MajdataPlay.IO
                         _ledDeviceSerialConnInfo = new()
                         {
 #if UNITY_STANDALONE_WIN
-                            Port = "COM" + ledDeviceDefaultSerialPort,
+                            PortName = "COM" + ledDeviceDefaultSerialPort,
 #else
                             PortName = WinSerialPortToLinuxPortName(ledDeviceDefaultSerialPort),
 #endif
