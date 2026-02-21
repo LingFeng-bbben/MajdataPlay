@@ -931,7 +931,7 @@ namespace MajdataPlay.IO
 
                 static NovHIDTouchPanel()
                 {
-                    var rad = MajEnv.Settings.IO.InputDevice.TouchPanel.PdxTouchPanelOptions.TouchRadius;
+                    var rad = MajEnv.Settings.IO.InputDevice.TouchPanel.CapacitivePanelOptions.TouchRadius;
                     _mapper = new TouchSensorMapper(MIN_X, MIN_Y, MAX_X, MAX_Y, rad, FLIP);
                 }
 

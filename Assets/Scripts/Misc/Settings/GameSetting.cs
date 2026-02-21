@@ -360,7 +360,7 @@ namespace MajdataPlay.Settings
         [Preserve]
         public HidOptions HidOptions { get; set; } = new();
         [Preserve]
-        public PdxTouchPanelOptions PdxTouchPanelOptions { get; set; } = new();
+        public CapacitiveTouchPanelOptions CapacitivePanelOptions { get; set; } = new();
     }
     [Preserve]
     public class HidOptions
@@ -377,10 +377,8 @@ namespace MajdataPlay.Settings
         public OpenPriority OpenPriority { get; set; } = OpenPriority.VeryHigh;
     }
     [Preserve]
-    public class PdxTouchPanelOptions
+    public class CapacitiveTouchPanelOptions
     {
-        [Preserve]
-        public string? Path { get; set; } = null;
         [Preserve]
         public int TouchRadius { get; set; } = 30;
     }
