@@ -564,7 +564,8 @@ namespace MajdataPlay.IO
                                 ProductId = touchPanelSettings.UsbOptions.ProductId ?? NOV_USB_PID,
                                 VendorId = touchPanelSettings.UsbOptions.VendorId ?? NOV_USB_VID,
                                 Configuration = 1,
-                                Interface = 1
+                                Interface = 1,
+                                PacketSize = 64
                             };
                             _ledDeviceSerialConnInfo = new()
                             {
@@ -688,7 +689,8 @@ namespace MajdataPlay.IO
                                 ProductId = novDefaultUsbPID,
                                 VendorId = novDefaultUsbVID,
                                 Configuration = 1,
-                                Interface = 1
+                                Interface = 1,
+                                PacketSize = 64
                             };
                             _ledDeviceSerialConnInfo = new()
                             {
