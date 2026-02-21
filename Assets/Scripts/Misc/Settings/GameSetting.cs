@@ -376,7 +376,11 @@ namespace MajdataPlay.Settings
     public class SerialPortOptions
     {
         [Preserve]
+#if UNITY_STANDALONE_WIN
         public int? Port { get; set; } = null;
+#else
+        public string? Port { get; set; } = null;
+#endif
         [Preserve]
         public int? BaudRate { get; set; } = null;
     }

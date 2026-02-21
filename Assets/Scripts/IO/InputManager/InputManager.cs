@@ -13,6 +13,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Policy;
 using System.Threading;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.InputSystem.EnhancedTouch;
 //using Microsoft.Win32;
@@ -449,12 +450,20 @@ namespace MajdataPlay.IO
                     _buttonRingDevice = buttonRingType;
                     _touchPanelSerialConnInfo = new()
                     {
-                        Port = touchPanelSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 3 : 4),
+#if UNITY_STANDALONE_WIN
+                        Port = "COM" + touchPanelSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 3 : 4),
+#else
+                        PortName = touchPanelSettings.SerialPortOptions.Port ?? WinSerialPortToLinuxPortName((playerIndex == 1 ? 3 : 4)),
+#endif
                         BaudRate = touchPanelSettings.SerialPortOptions.BaudRate ?? 9600,
                     };
                     _ledDeviceSerialConnInfo = new()
                     {
-                        Port = ledDeviceSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 21 : 22),
+#if UNITY_STANDALONE_WIN
+                        Port = "COM" + ledDeviceSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 3 : 4),
+#else
+                        PortName = ledDeviceSettings.SerialPortOptions.Port ?? WinSerialPortToLinuxPortName((playerIndex == 1 ? 21 : 22)),
+#endif
                         BaudRate = ledDeviceSettings.SerialPortOptions.BaudRate ?? 115200,
                     };
                     return;
@@ -470,7 +479,11 @@ namespace MajdataPlay.IO
                             buttonRingType = ButtonRingDeviceOption.HID;
                             _touchPanelSerialConnInfo = new()
                             {
-                                Port = touchPanelSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 3 : 4),
+#if UNITY_STANDALONE_WIN
+                                Port = "COM" + touchPanelSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 3 : 4),
+#else
+                                PortName = touchPanelSettings.SerialPortOptions.Port ?? WinSerialPortToLinuxPortName((playerIndex == 1 ? 3 : 4)),
+#endif
                                 BaudRate = touchPanelSettings.SerialPortOptions.BaudRate ?? 9600,
                             };
                             _buttonRingHidConnInfo = new()
@@ -483,7 +496,11 @@ namespace MajdataPlay.IO
                             };
                             _ledDeviceSerialConnInfo = new()
                             {
-                                Port = ledDeviceSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 21 : 22),
+#if UNITY_STANDALONE_WIN
+                                Port = "COM" + ledDeviceSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 3 : 4),
+#else
+                                PortName = ledDeviceSettings.SerialPortOptions.Port ?? WinSerialPortToLinuxPortName((playerIndex == 1 ? 21 : 22)),
+#endif
                                 BaudRate = ledDeviceSettings.SerialPortOptions.BaudRate ?? 115200,
                             };
                             break;
@@ -491,7 +508,11 @@ namespace MajdataPlay.IO
                             buttonRingType = ButtonRingDeviceOption.HID;
                             _touchPanelSerialConnInfo = new()
                             {
-                                Port = touchPanelSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 3 : 4),
+#if UNITY_STANDALONE_WIN
+                                Port = "COM" + touchPanelSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 3 : 4),
+#else
+                                PortName = touchPanelSettings.SerialPortOptions.Port ?? WinSerialPortToLinuxPortName((playerIndex == 1 ? 3 : 4)),
+#endif
                                 BaudRate = touchPanelSettings.SerialPortOptions.BaudRate ?? 9600,
                             };
                             _buttonRingHidConnInfo = new()
@@ -504,7 +525,11 @@ namespace MajdataPlay.IO
                             };
                             _ledDeviceSerialConnInfo = new()
                             {
-                                Port = ledDeviceSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 21 : 22),
+#if UNITY_STANDALONE_WIN
+                                Port = "COM" + ledDeviceSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 3 : 4),
+#else
+                                PortName = ledDeviceSettings.SerialPortOptions.Port ?? WinSerialPortToLinuxPortName((playerIndex == 1 ? 21 : 22)),
+#endif
                                 BaudRate = ledDeviceSettings.SerialPortOptions.BaudRate ?? 115200,
                             };
                             break;
@@ -579,12 +604,20 @@ namespace MajdataPlay.IO
                             };
                             _touchPanelSerialConnInfo = new()
                             {
-                                Port = touchPanelDefaultSerialPort,
+#if UNITY_STANDALONE_WIN
+                                Port = "COM" + touchPanelDefaultSerialPort,
+#else
+                                PortName = WinSerialPortToLinuxPortName(touchPanelDefaultSerialPort),
+#endif
                                 BaudRate = 9600,
                             };
                             _ledDeviceSerialConnInfo = new()
                             {
-                                Port = ledDeviceDefaultSerialPort,
+#if UNITY_STANDALONE_WIN
+                                Port = "COM" + ledDeviceDefaultSerialPort,
+#else
+                                PortName = WinSerialPortToLinuxPortName(ledDeviceDefaultSerialPort),
+#endif
                                 BaudRate = 115200,
                             };
                         }
@@ -617,7 +650,11 @@ namespace MajdataPlay.IO
                             buttonRingType = ButtonRingDeviceOption.HID;
                             _touchPanelSerialConnInfo = new()
                             {
-                                Port = touchPanelDefaultSerialPort,
+#if UNITY_STANDALONE_WIN
+                                Port = "COM" + touchPanelDefaultSerialPort,
+#else
+                                PortName = WinSerialPortToLinuxPortName(touchPanelDefaultSerialPort),
+#endif
                                 BaudRate = 9600,
                             };
                             _buttonRingHidConnInfo = new()
@@ -630,7 +667,11 @@ namespace MajdataPlay.IO
                             };
                             _ledDeviceSerialConnInfo = new()
                             {
-                                Port = ledDeviceDefaultSerialPort,
+#if UNITY_STANDALONE_WIN
+                                Port = "COM" + ledDeviceDefaultSerialPort,
+#else
+                                PortName = WinSerialPortToLinuxPortName(ledDeviceDefaultSerialPort),
+#endif
                                 BaudRate = 115200,
                             };
                         }
@@ -646,12 +687,20 @@ namespace MajdataPlay.IO
                         buttonRingType = ButtonRingDeviceOption.Keyboard;
                         _touchPanelSerialConnInfo = new()
                         {
-                            Port = touchPanelDefaultSerialPort,
+#if UNITY_STANDALONE_WIN
+                            Port = "COM" + touchPanelDefaultSerialPort,
+#else
+                            PortName = WinSerialPortToLinuxPortName(touchPanelDefaultSerialPort),
+#endif
                             BaudRate = 9600,
                         };
                         _ledDeviceSerialConnInfo = new()
                         {
-                            Port = ledDeviceDefaultSerialPort,
+#if UNITY_STANDALONE_WIN
+                            Port = "COM" + ledDeviceDefaultSerialPort,
+#else
+                            PortName = WinSerialPortToLinuxPortName(ledDeviceDefaultSerialPort),
+#endif
                             BaudRate = 115200,
                         };
                     }
@@ -1099,6 +1148,10 @@ namespace MajdataPlay.IO
         {
             return (int)area;
         }
+        static string WinSerialPortToLinuxPortName(int port)
+        {
+            return $"/dev/ttyUSB{port - 1}";
+        }
         class IOThreadSynchronization
         {
             public ReadOnlySpan<byte> ReadBuffer
@@ -1139,7 +1192,7 @@ namespace MajdataPlay.IO
         }
         readonly struct SerialPortConnInfo
         {
-            public int Port { get; init; }
+            public string PortName { get; init; }
             public int BaudRate { get; init; }
         }
     }

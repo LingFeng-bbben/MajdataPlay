@@ -89,7 +89,7 @@ namespace MajdataPlay.IO
                 var t1 = stopwatch.Elapsed;
                 var ledColors = LedRing.LedColors;
                 var updatePacket = GeneralSerialLedDevice.BuildUpdatePacket();
-                using var serial = new SerialPort($"COM{serialPortOptions.Port}", serialPortOptions.BaudRate);
+                using var serial = new SerialPort(serialPortOptions.PortName, serialPortOptions.BaudRate);
 
                 serial.WriteTimeout = 2000;
                 serial.WriteBufferSize = 16;
@@ -145,7 +145,7 @@ namespace MajdataPlay.IO
 
                 if (!EnsureSerialPortIsOpen(serial))
                 {
-                    MajDebug.LogWarning($"Led: Cannot open COM{serialPortOptions.Port}, using dummy lights");
+                    MajDebug.LogWarning($"Led: Cannot open {serialPortOptions.PortName}, using dummy lights");
                     return;
                 }
                 while (true)

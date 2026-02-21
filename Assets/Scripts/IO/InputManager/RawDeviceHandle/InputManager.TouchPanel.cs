@@ -310,7 +310,7 @@ namespace MajdataPlay.IO
                 var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
                 var pollingRate = _sensorPollingRateMs;
-                var comPort = $"COM{serialPortOptions.Port}";
+                var comPort = serialPortOptions.PortName;
                 var stopwatch = new Stopwatch();
                 var t1 = stopwatch.Elapsed;
                 var isReconnecting = false;
