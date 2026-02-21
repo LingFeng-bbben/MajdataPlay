@@ -11,6 +11,7 @@ env:
   UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
   UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
   UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+  UNITY_VERSION: 2022.3.62f3
 
 jobs:
   build:
@@ -49,9 +50,9 @@ jobs:
             Library-${{ env.TARGET_PLATFORM }}-
 
       - name: Build (Release)
-        if: env.CONFIGURATION == 'Release'
-        uses: game-ci/unity-builder@v4.3.0
+        uses: game-ci/unity-builder@v4
         with:
+          unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: ${{ env.TARGET_PLATFORM }}
           versioning: Semantic
           buildName: MajdataPlay
@@ -60,7 +61,6 @@ jobs:
       - name: List files in build directory
         run: ls -R ${{ env.CONFIGURATION }} || true
 
-      # 非 Android：直接把整个 buildsPath 上传
       - name: Upload build (non-Android)
         if: ${{ env.TARGET_PLATFORM != 'Android' }}
         uses: actions/upload-artifact@v4
@@ -68,7 +68,6 @@ jobs:
           name: ${{ env.OUTPUT_NAME }}
           path: ${{ env.CONFIGURATION }}
 
-      # Android：分别上传两个 ABI 的 APK（路径需要与你的 Unity 输出保持一致）
       - name: Upload Android ARMv7 build
         if: ${{ env.TARGET_PLATFORM == 'Android' }}
         uses: actions/upload-artifact@v4
@@ -119,9 +118,9 @@ jobs:
             Library-${{ env.TARGET_PLATFORM }}-
 
       - name: Build (Release)
-        if: env.CONFIGURATION == 'Release'
-        uses: game-ci/unity-builder@v4.3.0
+        uses: game-ci/unity-builder@v4
         with:
+          unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: ${{ env.TARGET_PLATFORM }}
           versioning: Semantic
           buildName: MajdataPlay
@@ -136,6 +135,7 @@ jobs:
           set -e
           PROJECT_PATH="${{ env.CONFIGURATION }}/iOS/MajdataPlay/Unity-iPhone.xcodeproj"
           ARCHIVE_PATH="${{ env.CONFIGURATION }}/iOS/MajdataPlay/Unity-iPhone.xcarchive"
+
           xcodebuild \
             -project "$PROJECT_PATH" \
             -scheme "Unity-iPhone" \
@@ -162,13 +162,12 @@ jobs:
             ls -la "$ARCHIVE_PATH/Products/Applications" || true
             exit 1
           fi
-          echo "Found app: $APP_PATH"
 
           rm -rf "$EXPORT_DIR/Payload"
           mkdir -p "$EXPORT_DIR/Payload"
           cp -R "$APP_PATH" "$EXPORT_DIR/Payload/"
 
-          IPA_PATH="$EXPORT_DIR/MajdataPlay.ipa"
+          IPA_PATH="$EXPORT_DIR/${{ env.OUTPUT_NAME }}.ipa"
           (cd "$EXPORT_DIR" && /usr/bin/zip -qry "$(basename "$IPA_PATH")" Payload)
 
           echo "IPA created at: $IPA_PATH"
@@ -179,7 +178,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.OUTPUT_NAME }}.ipa
-          path: ${{ env.CONFIGURATION }}/iOS/MajdataPlay/export-ipa/MajdataPlay.ipa
+          path: ${{ env.CONFIGURATION }}/iOS/MajdataPlay/export-ipa/${{ env.OUTPUT_NAME }}.ipa
 
       - name: Upload build (macOS)
         if: ${{ env.TARGET_PLATFORM != 'iOS' }}
