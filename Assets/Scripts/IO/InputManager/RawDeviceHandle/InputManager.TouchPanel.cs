@@ -1,5 +1,7 @@
 ﻿using HidSharp;
 using HidSharp.Reports;
+using LibUsbDotNet;
+using LibUsbDotNet.Main;
 using MajdataPlay.Numerics;
 using MajdataPlay.Settings;
 using MajdataPlay.Utils;
@@ -55,7 +57,7 @@ namespace MajdataPlay.IO
                         _touchPanelUpdateLoop = Task.Factory.StartNew(SlaveThreadUpdateLoop, TaskCreationOptions.LongRunning);
                         break;
                     case DeviceManufacturerOption.Nov:
-                        _touchPanelUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
+                        _touchPanelUpdateLoop = Task.Factory.StartNew(UsbUpdateLoop, TaskCreationOptions.LongRunning);
                         break;
                     default:
                         MajDebug.LogWarning($"Not supported touch panel manufacturer: {MajEnv.Settings.IO.Manufacturer}");
@@ -424,63 +426,45 @@ namespace MajdataPlay.IO
                     serial.Dispose();
                 }
             }
-            static void HIDUpdateLoop()
+            static void UsbUpdateLoop()
             {
                 ref var @lock = ref _syncLock;
                 var touchPanelOptions = MajEnv.Settings.IO.InputDevice.TouchPanel;
-                var hidOptions = _touchPanelHidConnInfo;
+                var usbOptions = _touchPanelUsbConnInfo;
                 var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
                 var pollingRate = _sensorPollingRateMs;
                 var stopwatch = new Stopwatch();
                 var t1 = stopwatch.Elapsed;
-                var pid = hidOptions.ProductId;
-                var vid = hidOptions.VendorId;
+                var pid = usbOptions.ProductId;
+                var vid = usbOptions.VendorId;
                 var manufacturer = _deviceManufacturer;
-                var deviceName = string.IsNullOrEmpty(hidOptions.DeviceName) ? GetHIDDeviceName(manufacturer) : hidOptions.DeviceName;
-                var hidConfig = new OpenConfiguration();
-                var filter = new DeviceFilter()
-                {
-                    DeviceName = deviceName,
-                    ProductId = pid,
-                    VendorId = vid,
-                };
-
+                var deviceName = string.IsNullOrEmpty(usbOptions.DeviceName) ? GetUsbDeviceName(manufacturer) : usbOptions.DeviceName;
+                
+                var deviceFinder = new UsbDeviceFinder(vid, pid);
+                var usbDevice = UsbDevice.OpenUsbDevice(deviceFinder);
 
                 currentThread.Name = "IO/T Thread";
                 currentThread.IsBackground = true;
                 currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
 
-                hidConfig.SetOption(OpenOption.Exclusive, hidOptions.Exclusice);
-                hidConfig.SetOption(OpenOption.Priority, hidOptions.OpenPriority);
-                HidDevice? device = null;
-                HidStream? hidStream = null;
-
-
-                if (!HidManager.TryGetDevices(filter, out var devices))
+                if (usbDevice is null)
                 {
-                    MajDebug.LogWarning("TouchPanel: hid device not found");
+                    MajDebug.LogError("TouchPanel: usb device not found or cannot open usb device");
                     return;
                 }
-                foreach (var d in devices)
+                else if(usbDevice is IUsbDevice wholeDevice)
                 {
-                    if (d.TryOpen(hidConfig, out hidStream))
-                    {
-                        device = d;
-                        break;
-                    }
-                }
-                if (hidStream is null || device is null)
-                {
-                    MajDebug.LogError($"TouchPanel: cannot open hid devices:\n{string.Join('\n', devices)}");
-                    return;
+                    wholeDevice.SetConfiguration(usbOptions.Configuration);
+                    wholeDevice.ClaimInterface(usbOptions.Interface);
                 }
 
                 try
                 {
-                    Span<byte> buffer = stackalloc byte[device.GetMaxInputReportLength()];
-                    IsConnected = true;
-                    MajDebug.LogInfo($"TouchPanel connected\nDevice: {device}");
+                    var bufferPtr = stackalloc byte[usbOptions.PacketSize];
+                    Span<byte> buffer = new Span<byte>(bufferPtr, usbOptions.PacketSize);
+                    MajDebug.LogInfo($"TouchPanel connected\nDevice: {usbDevice.Info} (VID {vid}, PID {pid})");
+                    using var usbReader = usbDevice.OpenEndpointReader(ReadEndpointID.Ep02);
                     stopwatch.Start();
                     while (true)
                     {
@@ -488,7 +472,7 @@ namespace MajdataPlay.IO
                         try
                         {
                             var now = MajTimeline.UnscaledTime;
-                            hidStream.Read(buffer);
+                            var usbReadResult = usbReader.Read((IntPtr)bufferPtr, 100, out int bytesRead); ;
                             NovHIDTouchPanel.Parse(buffer, _sensorRealTimeStates);
                             IsConnected = true;
                             var isLocked = false;
@@ -521,11 +505,11 @@ namespace MajdataPlay.IO
                         catch (IOException ioE)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"TouchPanel: from HID listener: \n{ioE}");
+                            MajDebug.LogError($"TouchPanel: from USB reader: \n{ioE}");
                         }
                         catch (Exception e)
                         {
-                            MajDebug.LogError($"TouchPanel: from HID listener: \n{e}");
+                            MajDebug.LogError($"TouchPanel: from USB reader: \n{e}");
                         }
                         finally
                         {
@@ -545,10 +529,135 @@ namespace MajdataPlay.IO
                 }
                 finally
                 {
-                    hidStream.Dispose();
+                    usbDevice.Close();
                     IsConnected = false;
                 }
             }
+            //static void HIDUpdateLoop()
+            //{
+            //    ref var @lock = ref _syncLock;
+            //    var touchPanelOptions = MajEnv.Settings.IO.InputDevice.TouchPanel;
+            //    var hidOptions = _touchPanelHidConnInfo;
+            //    var currentThread = Thread.CurrentThread;
+            //    var token = MajEnv.GlobalCT;
+            //    var pollingRate = _sensorPollingRateMs;
+            //    var stopwatch = new Stopwatch();
+            //    var t1 = stopwatch.Elapsed;
+            //    var pid = hidOptions.ProductId;
+            //    var vid = hidOptions.VendorId;
+            //    var manufacturer = _deviceManufacturer;
+            //    var deviceName = string.IsNullOrEmpty(hidOptions.DeviceName) ? GetHIDDeviceName(manufacturer) : hidOptions.DeviceName;
+            //    var hidConfig = new OpenConfiguration();
+            //    var filter = new DeviceFilter()
+            //    {
+            //        DeviceName = deviceName,
+            //        ProductId = pid,
+            //        VendorId = vid,
+            //    };
+
+
+            //    currentThread.Name = "IO/T Thread";
+            //    currentThread.IsBackground = true;
+            //    currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
+
+            //    hidConfig.SetOption(OpenOption.Exclusive, hidOptions.Exclusice);
+            //    hidConfig.SetOption(OpenOption.Priority, hidOptions.OpenPriority);
+            //    HidDevice? device = null;
+            //    HidStream? hidStream = null;
+
+
+            //    if (!HidManager.TryGetDevices(filter, out var devices))
+            //    {
+            //        MajDebug.LogWarning("TouchPanel: hid device not found");
+            //        return;
+            //    }
+            //    foreach (var d in devices)
+            //    {
+            //        if (d.TryOpen(hidConfig, out hidStream))
+            //        {
+            //            device = d;
+            //            break;
+            //        }
+            //    }
+            //    if (hidStream is null || device is null)
+            //    {
+            //        MajDebug.LogError($"TouchPanel: cannot open hid devices:\n{string.Join('\n', devices)}");
+            //        return;
+            //    }
+
+            //    try
+            //    {
+            //        Span<byte> buffer = stackalloc byte[device.GetMaxInputReportLength()];
+            //        IsConnected = true;
+            //        MajDebug.LogInfo($"TouchPanel connected\nDevice: {device}");
+            //        stopwatch.Start();
+            //        while (true)
+            //        {
+            //            token.ThrowIfCancellationRequested();
+            //            try
+            //            {
+            //                var now = MajTimeline.UnscaledTime;
+            //                hidStream.Read(buffer);
+            //                NovHIDTouchPanel.Parse(buffer, _sensorRealTimeStates);
+            //                IsConnected = true;
+            //                var isLocked = false;
+            //                try
+            //                {
+            //                    @lock.Enter(ref isLocked);
+            //                    var sensorRealTimeStates = _sensorRealTimeStates.AsSpan();
+            //                    var isSensorHadOnInternal = _isSensorHadOnInternal.AsSpan();
+            //                    var isSensorHadOffInternal = _isSensorHadOffInternal.AsSpan();
+
+            //                    for (var i = 0; i < 35; i++)
+            //                    {
+            //                        var state = sensorRealTimeStates[i];
+            //                        isSensorHadOnInternal[i] |= state;
+            //                        isSensorHadOffInternal[i] |= !state;
+            //                    }
+            //                }
+            //                finally
+            //                {
+            //                    if (isLocked)
+            //                    {
+            //                        @lock.Exit();
+            //                    }
+            //                }
+            //            }
+            //            catch (OperationCanceledException)
+            //            {
+            //                break;
+            //            }
+            //            catch (IOException ioE)
+            //            {
+            //                IsConnected = false;
+            //                MajDebug.LogError($"TouchPanel: from HID listener: \n{ioE}");
+            //            }
+            //            catch (Exception e)
+            //            {
+            //                MajDebug.LogError($"TouchPanel: from HID listener: \n{e}");
+            //            }
+            //            finally
+            //            {
+            //                buffer.Clear();
+            //                if (pollingRate.TotalMilliseconds > 0)
+            //                {
+            //                    var t2 = stopwatch.Elapsed;
+            //                    var elapsed = t2 - t1;
+            //                    t1 = t2;
+            //                    if (elapsed < pollingRate)
+            //                    {
+            //                        Thread.Sleep(pollingRate - elapsed);
+            //                    }
+            //                }
+            //            }
+            //        }
+            //    }
+            //    finally
+            //    {
+            //        hidStream.Dispose();
+            //        IsConnected = false;
+            //    }
+            //}
             static void SlaveThreadUpdateLoop()
             {
                 ref var @lock = ref _syncLock;
@@ -810,7 +919,7 @@ namespace MajdataPlay.IO
                         return 0x28;
                 }
             }
-            static string GetHIDDeviceName(DeviceManufacturerOption manufacturer)
+            static string GetUsbDeviceName(DeviceManufacturerOption manufacturer)
             {
                 switch (manufacturer)
                 {

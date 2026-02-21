@@ -358,7 +358,7 @@ namespace MajdataPlay.Settings
         [Preserve]
         public SerialPortOptions SerialPortOptions { get; set; } = new();
         [Preserve]
-        public HidOptions HidOptions { get; set; } = new();
+        public UsbOptions UsbOptions { get; set; } = new();
         [Preserve]
         public CapacitiveTouchPanelOptions CapacitivePanelOptions { get; set; } = new();
     }
@@ -375,6 +375,18 @@ namespace MajdataPlay.Settings
         public bool Exclusice { get; set; } = false;
         [Preserve]
         public OpenPriority OpenPriority { get; set; } = OpenPriority.VeryHigh;
+    }
+    [Preserve]
+    public class UsbOptions
+    {
+        [Preserve]
+        public string? DeviceName { get; set; } = null;
+        [Preserve]
+        public int? ProductId { get; set; } = null;
+        [Preserve]
+        public int? VendorId { get; set; } = null;
+        [Preserve]
+        public bool Exclusice { get; set; } = false;
     }
     [Preserve]
     public class CapacitiveTouchPanelOptions
