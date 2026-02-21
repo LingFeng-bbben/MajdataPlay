@@ -42,7 +42,7 @@ namespace MajdataPlay.IO
         {
             get
             {
-                return MajEnv.Settings.IO.InputDevice.TouchPanel.TouchSimulationRadius;
+                return MajEnv.Settings.Debug.TouchSimulationRadius;
             }
         }
         public static ReadOnlySpan<SwitchStatus> ButtonStatusInThisFrame
@@ -738,11 +738,12 @@ namespace MajdataPlay.IO
 #endif
                 var height = Screen.height;
                 var width = Screen.width;
-
-                if(height != _lastScreenHeight || width != _lastScreenWidth)
+                var fingerRad = FingerRadius;
+                if (height != _lastScreenHeight || width != _lastScreenWidth || fingerRad != _lastFingerRadius)
                 {
                     _lastScreenWidth = width;
                     _lastScreenHeight = height;
+                    _lastFingerRadius = fingerRad;
                     _version++;
                 }
 

@@ -252,6 +252,8 @@ namespace MajdataPlay.Settings
         [Preserve]
         public bool DisplaySensor { get; set; } = false;
         [Preserve]
+        public float TouchSimulationRadius { get; set; } = 0.5f;
+        [Preserve]
         public bool DisplayFPS { get; set; } = true;
         [SettingVisualizationIgnore]
         public bool FullScreen { get; set; } = true;
@@ -353,8 +355,6 @@ namespace MajdataPlay.Settings
         public int PollingRateMs { get; set; } = 0;
         [Preserve]
         public int DebounceThresholdMs { get; set; } = 0;
-        [Preserve]
-        public float TouchSimulationRadius { get; set; } = 0.5f;
         [Preserve]
         public SerialPortOptions SerialPortOptions { get; set; } = new();
     }

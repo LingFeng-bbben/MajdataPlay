@@ -31,6 +31,7 @@ namespace MajdataPlay.IO
         static ushort _version = 0;
         static int _lastScreenWidth = -1;
         static int _lastScreenHeight = -1;
+        static float _lastFingerRadius = 0.5f;
         //readonly static Dictionary<SensorArea, HashSet<int>> _touchRecords = new(8);
         public static bool UseOuterTouchAsSensor { get; set; }
         static void UpdateMousePosition()
