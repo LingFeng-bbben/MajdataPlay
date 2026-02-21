@@ -621,7 +621,7 @@ namespace MajdataPlay.IO
 
                         return result;
                     });
-                    if (filteredHidDevices.Count() != 0)
+                    if (filteredHidDevices.Count() != 0 || filteredUsbDevices.Count() != 0)
                     {
                         if (hidDevices.Any(x => x.ProductID == yuanDefaultHidPID && x.VendorID == yuanDefaultHidVID))
                         {
@@ -677,7 +677,7 @@ namespace MajdataPlay.IO
                                 OpenPriority = OpenPriority.VeryHigh
                             };
                         }
-                        else if (filteredUsbDevices.Any(x => x.Pid == novDefaultUsbPID && x.Vid == novDefaultUsbVID))
+                        else if (usbDevices.Any(x => x.Pid == novDefaultUsbPID && x.Vid == novDefaultUsbVID))
                         {
                             MajDebug.LogInfo("Manufacturer detect result: Nov");
                             manufacturer = DeviceManufacturerOption.Nov;
