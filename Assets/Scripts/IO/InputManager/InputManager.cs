@@ -734,7 +734,7 @@ namespace MajdataPlay.IO
 #if UNITY_STANDALONE
                 ButtonRing.OnPreUpdate();
                 TouchPanel.OnPreUpdate();
-#elif UNITY_ANDROID
+#elif UNITY_ANDROID || UNITY_IOS
                 Array.Fill(_sensorClickedCountInThisFrame, 0);
 #endif
                 var height = Screen.height;
