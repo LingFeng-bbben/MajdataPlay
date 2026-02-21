@@ -739,7 +739,7 @@ namespace MajdataPlay.IO
                     }
                     else
                     {
-                        MajDebug.LogWarning("No HID device detected, fallback to keyboard");
+                        MajDebug.LogWarning("No HID or USB device detected, fallback to keyboard");
                         manufacturer = DeviceManufacturerOption.General;
                         buttonRingType = ButtonRingDeviceOption.Keyboard;
                         _touchPanelSerialConnInfo = new()
