@@ -57,7 +57,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         readonly bool[] _isBtnClickedInThisFrame = new bool[8];
         readonly bool[] _isSensorClickedInThisFrame = new bool[33];
 
-#if UNITY_ANDROID
+#if UNITY_ANDROID || UNITY_IOS
         readonly int[] _sensorClickedCountInThisFrame = new int[33];
         readonly int[] _sensorUsedCountInThisFrame = new int[33];
 
@@ -89,7 +89,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             Array.Fill(_sensorStatusInPreviousFrame, SwitchStatus.Off);
             Array.Fill(_isBtnClickedInThisFrame, false);
             Array.Fill(_isSensorClickedInThisFrame, false);
-#if UNITY_ANDROID
+#if UNITY_ANDROID || UNITY_IOS
             Array.Fill(_sensorUsedCountInThisFrame, 0);
 #else
             Array.Fill(_isBtnUsedInThisFrame, false);
@@ -107,7 +107,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             _touchUpdater = Majdata<TouchUpdater>.Instance!;
             _touchHoldUpdater = Majdata<TouchHoldUpdater>.Instance!;
             _eachLineUpdater = Majdata<EachLineUpdater>.Instance!;
-#if !UNITY_ANDROID
+#if !(UNITY_ANDROID || UNITY_IOS)
             _isUseButtonRingForTouch = Majdata<INoteController>.Instance?.ModInfo.ButtonRingForTouch ?? false;
 #endif
         }
@@ -115,16 +115,15 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         {
             Majdata<NoteManager>.Free();
         }
-#if UNITY_ANDROID
-#else
-#endif
+
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void OnPreUpdate()
         {
             Profiler.BeginSample("NoteManager.OnPreUpdate");
             for (var i = 0; i < 8; i++)
             {
-#if !UNITY_ANDROID
+#if !(UNITY_ANDROID || UNITY_IOS)
                 _isBtnUsedInThisFrame[i] = false;
 #endif
 
@@ -132,7 +131,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             }
             for (var i = 0; i < 33; i++)
             {
-#if UNITY_ANDROID
+#if UNITY_ANDROID || UNITY_IOS
                 _sensorUsedCountInThisFrame[i] = 0;
                 _sensorClickedCountInThisFrame[i] = 0;
 #else
@@ -255,7 +254,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             Array.Fill(_sensorStatusInNextFrame, SwitchStatus.Off);
             Array.Fill(_sensorStatusInThisFrame, SwitchStatus.Off);
             Array.Fill(_sensorStatusInPreviousFrame, SwitchStatus.Off);
-#if UNITY_ANDROID
+#if UNITY_ANDROID || UNITY_IOS
             Array.Fill(_sensorUsedCountInThisFrame, 0);
 #else
             Array.Fill(_isBtnUsedInThisFrame, false);
@@ -284,7 +283,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             var previousSensorStatus = InputManager.SensorStatusInPreviousFrame;
             var currentSensorStatus = InputManager.SensorStatusInThisFrame;
 
-#if UNITY_ANDROID
+#if UNITY_ANDROID || UNITY_IOS
             var sensorClickedCount = InputManager.SensorClickedCountInThisFrame;
             for (var i = 0; i < 33; i++)
             {
@@ -326,7 +325,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 _btnStatusInNextFrame[i] = SwitchStatus.Off;
                 _isBtnClickedInThisFrame[i] = _btnStatusInPreviousFrame[i] == SwitchStatus.Off &&
                                               _btnStatusInThisFrame[i] == SwitchStatus.On;
-#if UNITY_ANDROID
+#if UNITY_ANDROID || UNITY_IOS
                 _isSensorClickedInThisFrame[i] |= _isBtnClickedInThisFrame[i];
                 _sensorClickedCountInThisFrame[i] += Convert.ToInt32(_isBtnClickedInThisFrame[i]);
 #endif
@@ -334,7 +333,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             for (var i = 0; i < 33; i++)
             {
                 var senState = _sensorStatusInNextFrame[i];
-#if !UNITY_ANDROID
+#if !(UNITY_ANDROID || UNITY_IOS)
                 if (_isUseButtonRingForTouch && i < 8)
                 {
                     senState |= _btnStatusInThisFrame[i];
@@ -344,7 +343,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 _sensorStatusInThisFrame[i] = senState;
                 _sensorStatusInNextFrame[i] = SwitchStatus.Off;
 
-#if UNITY_ANDROID
+#if UNITY_ANDROID || UNITY_IOS
                 var isClicked = _sensorStatusInPreviousFrame[i] == SwitchStatus.Off &&
                                 _sensorStatusInThisFrame[i] == SwitchStatus.On;
                 _isSensorClickedInThisFrame[i] |= isClicked;
@@ -408,7 +407,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
 
             currentIndex++;
         }
-#if UNITY_ANDROID
+#if UNITY_ANDROID || UNITY_IOS
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryUseSensorClickEvent(SensorArea? area)
         {

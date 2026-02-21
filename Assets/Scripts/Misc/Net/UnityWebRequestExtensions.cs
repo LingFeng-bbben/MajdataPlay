@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -42,7 +42,7 @@ internal static class UnityWebRequestExtensions
                     throw new HttpException(request.url, HttpErrorCode.Unsuccessful, rspCode);
                 }
         }
-        if (rspCode is not HttpStatusCode.OK)
+        if (rspCode is not (HttpStatusCode.OK or HttpStatusCode.Created or HttpStatusCode.Accepted))
         {
             throw new HttpException(request.url, HttpErrorCode.Unsuccessful, rspCode);
         }

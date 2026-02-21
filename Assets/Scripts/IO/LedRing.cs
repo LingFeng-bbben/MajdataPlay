@@ -1,4 +1,4 @@
-﻿using MajdataPlay.Utils;
+using MajdataPlay.Utils;
 using System;
 using System.Runtime.CompilerServices;
 using Unity.IL2CPP.CompilerServices;
@@ -31,7 +31,8 @@ namespace MajdataPlay.IO
                 return _ledColors;
             }
         }
-        
+
+        static TimeSpan _lastUpdateTime = TimeSpan.Zero;
         readonly static Color[] _ledColors = new Color[8];
         readonly static Led[] _ledDevices = new Led[8];
         readonly static LedCommonUpdateFunction[] _ledCommFuncs = new LedCommonUpdateFunction[8];
@@ -67,12 +68,13 @@ namespace MajdataPlay.IO
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void OnPreUpdate()
+        internal static void LedFuncUpdate()
         {
             var ledDevices = _ledDevices;
             var ledColors = _ledColors;
-            var deltaMs = MajTimeline.DeltaTime * 1000f;
-
+            var currentTime = MajTimeline.UnscaledTime;
+            var deltaMs = (float)(currentTime - _lastUpdateTime).TotalMilliseconds;
+            _lastUpdateTime = currentTime;
             for (var i = 0; i < 8; i++)
             {
                 var device = ledDevices[i];
@@ -81,6 +83,7 @@ namespace MajdataPlay.IO
                 func.Update(deltaMs);
                 ledColors[i] = device.Color;
             }
+
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SetAllLight(Color lightColor)

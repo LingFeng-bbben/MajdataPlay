@@ -1,7 +1,11 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using HidSharp.Platform.Windows;
+#if UNITY_STANDALONE_WIN
 using LibVLCSharp;
+#endif
+using MajdataPlay.Buffers;
 using MajdataPlay.Extensions;
+using MajdataPlay.Net;
 using MajdataPlay.Numerics;
 using MajdataPlay.Settings;
 using MajdataPlay.Settings.Runtime;
@@ -12,13 +16,16 @@ using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
+using HidSharp.Platform.MacOS;
 using UnityEngine;
 using UnityEngine.Android;
 using UnityEngine.Scripting;
+
 #nullable enable
 namespace MajdataPlay
 {
@@ -28,18 +35,23 @@ namespace MajdataPlay
         public const int HIDDEN_LAYER = 3;
         public const int HTTP_BUFFER_SIZE = 8192;
         public const int HTTP_REQUEST_MAX_RETRY = 4;
-        public const int HTTP_TIMEOUT_MS = 8000;
+        public const int HTTP_TIMEOUT_MS = 10000;
         public const float FRAME_LENGTH_SEC = 1f / 60;
         public const float FRAME_LENGTH_MSEC = FRAME_LENGTH_SEC * 1000;
 
-        public static readonly System.Threading.ThreadPriority THREAD_PRIORITY_IO = System.Threading.ThreadPriority.AboveNormal;
-        public static readonly System.Threading.ThreadPriority THREAD_PRIORITY_MAIN = System.Threading.ThreadPriority.Normal;
+        public static readonly System.Threading.ThreadPriority THREAD_PRIORITY_IO =
+            System.Threading.ThreadPriority.AboveNormal;
+
+        public static readonly System.Threading.ThreadPriority THREAD_PRIORITY_MAIN =
+            System.Threading.ThreadPriority.Normal;
 
         public static event Action? OnApplicationQuit;
         public static event Action? OnSave;
 
-#if UNITY_ANDROID
+#if UNITY_ANDROID // Android Only (User Agent)
         public static string HTTP_USER_AGENT { get; } = $"MajdataPlay Android/{MajInstances.GameVersion.ToString()}";
+#elif UNITY_IOS // iOS Only (User Agent)
+        public static string HTTP_USER_AGENT { get; } = $"MajdataPlay iOS/{MajInstances.GameVersion.ToString()}";
 #else
         public static string HTTP_USER_AGENT { get; } = $"MajdataPlay/{MajInstances.GameVersion.ToString()}";
 #endif
@@ -53,22 +65,17 @@ namespace MajdataPlay
 #if UNITY_STANDALONE_WIN
         public static LibVLC VLCLibrary { get; private set; }
 #endif
-        public static int AndroidSdkVersion 
+        public static int AndroidSdkVersion
         {
-#if UNITY_ANDROID && !UNITY_EDITOR
+#if UNITY_ANDROID && !UNITY_EDITOR // Android Only (Sdk Version Declare)
             get; 
             private set;
 #else
-            get
-            {
-                throw new NotSupportedException();
-            }
-            private set
-            {
-                throw new NotSupportedException();
-            }
+            get { throw new NotSupportedException(); }
+            private set { throw new NotSupportedException(); }
 #endif
         }
+
         public static string RootPath { get; private set; } = string.Empty;
         public static string AssetsPath { get; private set; } = string.Empty;
         public static string CachePath { get; private set; } = string.Empty;
@@ -80,16 +87,13 @@ namespace MajdataPlay
         public static string ScoreDBPath { get; private set; } = string.Empty;
         public static string LogPath { get; private set; } = string.Empty;
         public static string RecordOutputsPath { get; private set; } = string.Empty;
-        [Preserve]
-        public static Sprite EmptySongCover { get; }
-        [Preserve]
-        public static Material BreakMaterial { get; }
-        [Preserve]
-        public static Material DefaultMaterial { get; }
-        [Preserve]
-        public static Material HoldShineMaterial { get; }
+        [Preserve] public static Sprite EmptySongCover { get; }
+        [Preserve] public static Material BreakMaterial { get; }
+        [Preserve] public static Material DefaultMaterial { get; }
+        [Preserve] public static Material HoldShineMaterial { get; }
         public static Thread MainThread { get; } = Thread.CurrentThread;
         public static Process GameProcess { get; } = Process.GetCurrentProcess();
+
         readonly static HttpClientHandler _httpClientHandler = new HttpClientHandler()
         {
             AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
@@ -98,23 +102,24 @@ namespace MajdataPlay
             UseCookies = true,
             CookieContainer = new CookieContainer(),
         };
+
         public static HttpClient SharedHttpClient { get; } = new HttpClient(_httpClientHandler)
         {
             Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS),
-            DefaultRequestHeaders = 
+            DefaultRequestHeaders =
             {
                 UserAgent = { new ProductInfoHeaderValue("MajdataPlay", MajInstances.GameVersion.ToString()) },
             }
         };
+
         public static GameSetting Settings { get; private set; }
         public static RuntimeConfig RuntimeConfig { get; private set; }
+
         public static CancellationToken GlobalCT
         {
-            get
-            {
-                return _globalCTS.Token;
-            }
+            get { return _globalCTS.Token; }
         }
+
         public static JsonSerializerSettings UserJsonReaderOption { get; } = new()
         {
             Formatting = Formatting.Indented,
@@ -135,9 +140,10 @@ namespace MajdataPlay
             SynchronizationContext.SetSynchronizationContext(new UniTaskSynchronizationContext());
 #endif
         }
+
         internal static void InitPath()
         {
-#if UNITY_STANDALONE_WIN
+#if UNITY_STANDALONE || UNITY_EDITOR
             RootPath = Path.Combine(Application.dataPath, "../");
             AssetsPath = Application.streamingAssetsPath;
             CachePath = Path.Combine(RootPath, "Cache");
@@ -156,10 +162,10 @@ namespace MajdataPlay
 
             //}
             var androidStoragePermissions = new string[]
-                {
+            {
                 Permission.ExternalStorageRead,
                 Permission.ExternalStorageWrite,
-                };
+            };
             var isGranted = true;
             for (var i = 0; i < androidStoragePermissions.Length; i++)
             {
@@ -190,6 +196,24 @@ namespace MajdataPlay
                 {
                     Directory.CreateDirectory(RootPath);
                 }
+                var noMediaFlag = new FileInfo(Path.Combine(RootPath, ".nomedia"));
+                if(!noMediaFlag.Exists)
+                {
+                    try
+                    {
+                        noMediaFlag.Create().Dispose();
+                        MajDebug.LogDebug("Created .nomedia flag file");
+                    }
+                    catch(Exception e)
+                    {
+                        MajDebug.LogError("Failed to create .nomedia flag file");
+                        MajDebug.LogException(e);
+                    }
+                }
+                else
+                {
+                    MajDebug.LogDebug(".nomedia flag file exists");
+                }
                 AssetsPath = Path.Combine(RootPath, "ExtStreamingAssets/");
             }
             else
@@ -197,6 +221,10 @@ namespace MajdataPlay
                 RootPath = Application.persistentDataPath;
                 AssetsPath = Path.Combine(Application.persistentDataPath, "ExtStreamingAssets/");
             }
+            CachePath = Application.temporaryCachePath;
+#elif UNITY_IOS
+            RootPath = Application.persistentDataPath;
+            AssetsPath = Path.Combine(Application.persistentDataPath, "ExtStreamingAssets/");
             CachePath = Application.temporaryCachePath;
 #else
             throw new NotImplementedException();
@@ -207,10 +235,12 @@ namespace MajdataPlay
             SkinPath = Path.Combine(RootPath, "Skins");
             LogsPath = Path.Combine(RootPath, $"Logs");
             LangPath = Path.Combine(AssetsPath, "Langs");
-            ScoreDBPath = Path.Combine(RootPath, "MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db");
+            ScoreDBPath = Path.Combine(RootPath,
+                "MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db");
             LogPath = Path.Combine(LogsPath, $"MajPlayRuntime.log");
             RecordOutputsPath = Path.Combine(RootPath, "RecordOutputs");
-}
+        }
+
         internal static void Init()
         {
             ChangedSynchronizationContext();
@@ -226,6 +256,19 @@ namespace MajdataPlay
             CreateDirectoryIfNotExists(RecordOutputsPath);
             SharedHttpClient.Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS);
             MainThread.Priority = THREAD_PRIORITY_MAIN;
+            
+#if UNITY_IOS && !UNITY_EDITOR // iOS Native Setting (No Cache)
+            if (IosSettings.GetBool("no_cache", false))
+            {
+                TryDeleteDirectory(Path.Combine(CachePath, "Net"));
+                TryDeleteDirectory(Path.Combine(CachePath, "View"));
+                MajDebug.LogInfo("iOS setting 'no_cache' is enabled. Cleared cache folders: Net, View.");
+            }
+            else
+            {
+                MajDebug.LogInfo("iOS setting 'no_cache' is disabled.");
+            }
+#endif
 
             if (File.Exists(SettingsPath))
             {
@@ -241,15 +284,48 @@ namespace MajdataPlay
                     {
                         bakFileName = $"{bakFileName}.bak";
                     }
+
                     try
                     {
                         File.Copy(SettingsPath, bakFileName, true);
                     }
-                    catch { }
+                    catch
+                    {
+                    }
                 }
                 else
                 {
                     Settings = setting;
+                    using var buffer = new RentedList<ApiEndpoint>();
+                    for (var i = 0; i < Settings.Online.ApiEndpoints.Length; i++)
+                    {
+                        var apiEndpoint = Settings.Online.ApiEndpoints[i];
+                        var uri = apiEndpoint.Url;
+                        if (uri is null || string.IsNullOrEmpty(apiEndpoint.Name))
+                        {
+                            continue;
+                        }
+
+                        if (uri.OriginalString.LastOrDefault() != '/')
+                        {
+                            apiEndpoint = new()
+                            {
+                                Name = apiEndpoint.Name,
+                                Url = new Uri(uri.OriginalString + "/"),
+                                Username = apiEndpoint.Username,
+                                Password = apiEndpoint.Password,
+                            };
+                        }
+
+                        apiEndpoint.RuntimeConfig.AuthUsername = apiEndpoint.Username;
+                        apiEndpoint.RuntimeConfig.AuthPassword = apiEndpoint.Password;
+                        buffer.Add(apiEndpoint);
+                    }
+
+                    Settings.Online.ApiEndpoints = buffer.GroupBy(x => x.Url)
+                        .Select(x => x.FirstOrDefault())
+                        .Where(x => x is not null)
+                        .ToArray();
                     //Reset Mod option after reboot
                     //Settings.Mod = new ModOptions();
                 }
@@ -285,10 +361,14 @@ namespace MajdataPlay
                 File.WriteAllText(_runtimeConfigPath, json);
             }
 
-            Settings.IO.InputDevice.ButtonRing.PollingRateMs = Math.Max(0, Settings.IO.InputDevice.ButtonRing.PollingRateMs);
-            Settings.IO.InputDevice.TouchPanel.PollingRateMs = Math.Max(0, Settings.IO.InputDevice.TouchPanel.PollingRateMs);
-            Settings.IO.InputDevice.ButtonRing.DebounceThresholdMs = Math.Max(0, Settings.IO.InputDevice.ButtonRing.DebounceThresholdMs);
-            Settings.IO.InputDevice.TouchPanel.DebounceThresholdMs = Math.Max(0, Settings.IO.InputDevice.TouchPanel.DebounceThresholdMs);
+            Settings.IO.InputDevice.ButtonRing.PollingRateMs =
+                Math.Max(0, Settings.IO.InputDevice.ButtonRing.PollingRateMs);
+            Settings.IO.InputDevice.TouchPanel.PollingRateMs =
+                Math.Max(0, Settings.IO.InputDevice.TouchPanel.PollingRateMs);
+            Settings.IO.InputDevice.ButtonRing.DebounceThresholdMs =
+                Math.Max(0, Settings.IO.InputDevice.ButtonRing.DebounceThresholdMs);
+            Settings.IO.InputDevice.TouchPanel.DebounceThresholdMs =
+                Math.Max(0, Settings.IO.InputDevice.TouchPanel.DebounceThresholdMs);
             Settings.Display.InnerJudgeDistance = Settings.Display.InnerJudgeDistance.Clamp(0, 1);
             Settings.Display.OuterJudgeDistance = Settings.Display.OuterJudgeDistance.Clamp(0, 1);
 
@@ -333,7 +413,7 @@ namespace MajdataPlay
             else
             {
                 _httpClientHandler.UseProxy = false;
-                _httpClientHandler.Proxy = null;
+                //_httpClientHandler.Proxy = null;
             }
         PROXY_CONFIG_EXIT:
 #endif
@@ -354,6 +434,25 @@ namespace MajdataPlay
             VLCLibrary = new LibVLC(enableDebugLogs: true, "--no-audio"); // we dont need it to produce sound here
 #endif
         }
+
+        static void TryDeleteDirectory(string path)
+        {
+            if (!Directory.Exists(path))
+            {
+                return;
+            }
+
+            try
+            {
+                Directory.Delete(path, true);
+            }
+            catch (Exception e)
+            {
+                MajDebug.LogWarning($"Failed to clear cache folder: {path}");
+                MajDebug.LogException(e);
+            }
+        }
+
         internal static void OnApplicationQuitRequested()
         {
             SharedHttpClient.CancelPendingRequests();
@@ -377,9 +476,12 @@ namespace MajdataPlay
             {
 #if UNITY_STANDALONE_WIN
                 WinHidManager.QuitThisBs();
+#elif UNITY_STANDALONE_OSX
+                MacHidManager.QuitThisBs();
 #endif
             }
         }
+
         internal static void RequestSave()
         {
             try
@@ -394,6 +496,7 @@ namespace MajdataPlay
                 MajDebug.LogException(ex);
             }
         }
+
         static void SaveConfig()
         {
             //var listConfig = RuntimeConfig.List;
@@ -406,6 +509,7 @@ namespace MajdataPlay
             File.WriteAllText(SettingsPath, json);
             File.WriteAllText(_runtimeConfigPath, json2);
         }
+
         static void CheckNoteSkinFolder()
         {
             if (!Directory.Exists(SkinPath))
@@ -413,6 +517,7 @@ namespace MajdataPlay
                 Directory.CreateDirectory(SkinPath);
             }
         }
+
         static void CreateDirectoryIfNotExists(string path)
         {
             if (!Directory.Exists(path))

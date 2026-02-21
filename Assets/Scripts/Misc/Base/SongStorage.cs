@@ -6,7 +6,6 @@ using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
 using MajdataPlay.Net;
 using MajdataPlay.Numerics;
-using MajdataPlay.Settings;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
@@ -97,8 +96,12 @@ namespace MajdataPlay
                         (result, _userFavorites) = await Serializer.Json.TryDeserializeAsync<DanInfo>(File.OpenRead(MY_FAVORITE_EXPORT_PATH));
                         if (!result)
                         {
-                            var path = Path.Combine(MY_FAVORITE_EXPORT_PATH, $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.bak");
-                            File.Copy(MY_FAVORITE_EXPORT_PATH, path);
+                            var bakPath = $"{MY_FAVORITE_EXPORT_PATH}.bak";
+                            while (File.Exists(bakPath))
+                            {
+                                bakPath = $"{bakPath}.bak";
+                            }
+                            File.Copy(MY_FAVORITE_EXPORT_PATH, bakPath);
                             MajDebug.LogError($"Failed to load favorites\nPath: {MY_FAVORITE_EXPORT_PATH}");
                         }
                     }
@@ -108,8 +111,12 @@ namespace MajdataPlay
                         var (result, storageFav) = await Serializer.Json.TryDeserializeAsync<HashSet<string>>(File.OpenRead(MY_FAVORITE_STORAGE_PATH));
                         if (!result)
                         {
-                            var path = Path.Combine(MY_FAVORITE_STORAGE_PATH, $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.bak");
-                            File.Copy(MY_FAVORITE_STORAGE_PATH, path);
+                            var bakPath = $"{MY_FAVORITE_STORAGE_PATH}.bak";
+                            while (File.Exists(bakPath))
+                            {
+                                bakPath = $"{bakPath}.bak";
+                            }
+                            File.Copy(MY_FAVORITE_STORAGE_PATH, bakPath);
                             MajDebug.LogError($"Failed to load favorites\nPath: {MY_FAVORITE_STORAGE_PATH}");
                         }
                         else if(storageFav is not null)
@@ -225,7 +232,119 @@ namespace MajdataPlay
                 throw;
             }
         }
+        internal static async Task RefreshLocalAsync(IProgress<string>? progressReporter = null)
+        {
+            if (!_isInited)
+            {
+                return;
+            }
+            await UniTask.SwitchToThreadPool();
+            using var chartListBackup = new RentedList<ISongDetail>(_allCharts);
+            var onlineCollections = MajInstances.Settings.Online.Enable
+                ? Collections.Where(x => x.IsOnline).ToArray()
+                : Array.Empty<SongCollection>();
+            try
+            {
+                _allCharts.Clear();
+                _parsedChartCount = 0;
+                _totalChartCount = 0;
+                var listConfig = MajEnv.RuntimeConfig.List;
+                var selectedDiff = listConfig.SelectedDiff;
+                var selectedIndex = listConfig.SelectedSongIndex;
+                var selectedDir = listConfig.SelectedDir;
+
+                var collections = await GetLocalCollections(MajEnv.ChartPath, progressReporter);
+                if (onlineCollections.Length != 0)
+                {
+                    collections.AddRange(onlineCollections);
+                    var onlineCount = onlineCollections.Sum(x => (long)x.Count);
+                    Interlocked.Add(ref _totalChartCount, onlineCount);
+                }
+                await Task.Delay(100);
+                progressReporter?.Report($"{"MAJTEXT_CLEANING_UP".i18n()}");
+                await Task.Delay(100);
+
+                var localDetails = chartListBackup.Where(x => !x.IsOnline).ToArray();
+                var tasks = new Task[localDetails.Length];
+                Parallel.For(0, localDetails.Length, i =>
+                {
+                    var songDetail = localDetails[i];
+                    switch (songDetail)
+                    {
+                        case SongDetail local:
+                            tasks[i] = local.DisposeAsync().AsTask();
+                            break;
+                        default:
+                            tasks[i] = Task.CompletedTask;
+                            break;
+                    }
+                });
+                var waitAllTask = Task.WhenAll(tasks);
+                await using (UniTask.ReturnToCurrentSynchronizationContext())
+                {
+                    while (!waitAllTask.IsCompleted)
+                    {
+                        await UniTask.Yield();
+                    }
+                }
+                tasks = null;
+                waitAllTask = null;
+                Collections = await FinalizeCollections(MajEnv.ChartPath, collections);
+                MajDebug.LogInfo($"Loaded chart count: {TotalChartCount}");
+                GC.Collect();
+
+                CollectionIndex = selectedDir;
+                var selectedCollection = WorkingCollection;
+
+                if (selectedCollection.IsEmpty)
+                {
+                    return;
+                }
+                else if (selectedIndex >= selectedCollection.Count)
+                {
+                    selectedCollection.Index = 0;
+                }
+                else
+                {
+                    selectedCollection.Index = selectedIndex;
+                }
+            }
+            catch (Exception e)
+            {
+                _allCharts.Clear();
+                _allCharts.AddRange(chartListBackup);
+                MajDebug.LogException(e);
+                throw;
+            }
+        }
         static async Task<SongCollection[]> GetCollections(string rootPath, IProgress<string>? progressReporter)
+        {
+            var collections = await GetLocalCollections(rootPath, progressReporter);
+            //Online Charts
+            if (MajInstances.Settings.Online.Enable)
+            {
+                foreach (var item in MajInstances.Settings.Online.ApiEndpoints.OrderBy(x => x.Name).GroupBy(x => x.Url))
+                {
+                    var api = item.FirstOrDefault();
+                    if (api is null)
+                    {
+                        continue;
+                    }
+                    if (string.IsNullOrEmpty(api.Name))
+                    {
+                        continue;
+                    }
+                    progressReporter?.Report(ZString.Format("MAJTEXT_SCANNING_CHARTS_FROM_{0}".i18n(), api.Name));
+                    var result = await GetOnlineCollection(api, progressReporter);
+                    if (!result.IsEmpty)
+                    {
+                        collections.Add(result);
+                    }
+                }
+            }
+            return await FinalizeCollections(rootPath, collections);
+        }
+        static async Task<List<SongCollection>> GetLocalCollections(string rootPath, IProgress<string>? progressReporter)
         {
             var dirs = new DirectoryInfo(rootPath).GetDirectories();
             var tasks = new List<Task<SongCollection>>(dirs.Length);
@@ -236,14 +355,6 @@ namespace MajdataPlay
             {
                 var dir = dirs[i];
                 var path = dir.FullName;
-                var files = dir.GetFiles();
-                var maidataFile = files.FirstOrDefault(o => o.Name.ToLower() is "maidata.txt");
-                var trackFile = files.FirstOrDefault(o => o.Name.ToLower() is "track.mp3" or "track.ogg");
-
-                if (maidataFile is not null || trackFile is not null)
-                {
-                    return;
-                }
 
                 tasks.Add(GetCollection(path));
             });
@@ -276,28 +387,10 @@ namespace MajdataPlay
             }
             collections = collections.OrderBy(x => x.Name).ToList();
             await Task.Delay(1000);
-            //Online Charts
-            if (MajInstances.Settings.Online.Enable)
-            {
-                foreach (var item in MajInstances.Settings.Online.ApiEndpoints.OrderBy(x => x.Name).GroupBy(x => x.Url))
-                {
-                    var api = item.FirstOrDefault();
-                    if (api is null)
-                    {
-                        continue;
-                    }
-                    if (string.IsNullOrEmpty(api.Name))
-                    {
-                        continue;
-                    }
-                    progressReporter?.Report(ZString.Format(Localization.GetLocalizedText("MAJTEXT_SCANNING_CHARTS_FROM_{0}"), api.Name));
-                    var result = await GetOnlineCollection(api, progressReporter);
-                    if (!result.IsEmpty)
-                    {
-                        collections.Add(result);
-                    }
-                }
-            }
+            return collections;
+        }
+        static async Task<SongCollection[]> FinalizeCollections(string rootPath, List<SongCollection> collections)
+        {
             //Add all songs to "All" folder
             foreach (var collection in collections)
             {
@@ -378,8 +471,8 @@ namespace MajdataPlay
             var dirs = thisDir.GetDirectories()
                               .OrderBy(o => o.CreationTime)
                               .ToList();
-            var flagDirPath = System.IO.Path.Combine(rootPath, ".MajdataPlay");
-
+            var flagDirPath = Path.Combine(rootPath, ".MajdataPlay");
+            MajDebug.LogDebug($"[MaiChart Scanner]Enter folder: {rootPath}");
             if (!Directory.Exists(flagDirPath))
             {
                 var info = Directory.CreateDirectory(flagDirPath);
@@ -387,10 +480,11 @@ namespace MajdataPlay
             }
             if (dirs.Count == 0)
             {
+                MajDebug.LogDebug($"[MaiChart Scanner][{thisDir.Name}]Empty folder, skipping");
                 return SongCollection.Empty(rootPath, thisDir.Name);
             }
             using var charts = new RentedList<SongDetail>();
-            using var tasks = new RentedList<Task<SongDetail>>();
+            using var tasks = new RentedList<Task<SongDetail?>>();
             
             foreach (var songDir in dirs)
             {
@@ -398,36 +492,55 @@ namespace MajdataPlay
                 {
                     continue;
                 }
+                MajDebug.LogDebug($"[MaiChart Scanner][{thisDir.Name}]Enter folder: {songDir.Name}");
                 var files = songDir.GetFiles();
-                var maidataFile = files.FirstOrDefault(o => o.Name is "maidata.txt");
-                var trackFile = files.FirstOrDefault(o => o.Name is "track.mp3" or "track.ogg");
+                var maidataFile = files.FirstOrDefault(o => o.Name.ToLower() is "maidata.txt");
+                var trackFile = files.FirstOrDefault(o => o.Name.ToLower() is "track.opus" or "track.mp3" or "track.ogg" or "track.aac");
 
                 if (maidataFile is null || trackFile is null)
                 {
+                    MajDebug.LogDebug($"[MaiChart Scanner][{thisDir.Name}/{songDir.Name}]No maidata or track files found, ignored.");
                     continue;
                 }
 
                 var parsingTask = Task.Run(async () =>
                 {
-                    var chart = await SongDetail.ParseAsync(songDir.FullName);
-                    Interlocked.Increment(ref _parsedChartCount);
-                    return chart;
+                    try
+                    {
+                        MajDebug.LogDebug($"[MaiChart Scanner][{thisDir.Name}/{songDir.Name}]Parsing");
+                        var chart = await SongDetail.ParseAsync(songDir.FullName);
+                        Interlocked.Increment(ref _parsedChartCount);
+                        MajDebug.LogDebug($"[MaiChart Scanner][{thisDir.Name}/{songDir.Name}]Successfully parsed");
+                        return chart;
+                    }
+                    catch (Exception e)
+                    {
+                        MajDebug.LogError($"[MaiChart Scanner][{thisDir.Name}/{songDir.Name}]Failed to parse: {e}");
+                        return null;
+                    }
+                    finally
+                    {
+                        MajDebug.LogDebug($"[MaiChart Scanner][{thisDir.Name}/{songDir.Name}]Exit");
+                    }
                 });
                 Interlocked.Increment(ref _totalChartCount);
                 tasks.Add(parsingTask);
             }
             await Task.WhenAll(tasks);
-
+            var loadedChartCount = 0;
             foreach (var task in tasks)
             {
-                if (task.IsFaulted)
+                var result = task.Result;
+                if (result is null)
                 {
-                    MajDebug.LogException(task.Exception);
                     Interlocked.Decrement(ref _totalChartCount);
                     continue;
                 }
-                charts.Add(task.Result);
+                loadedChartCount++;
+                charts.Add(result);
             }
+            MajDebug.LogDebug($"[MaiChart Scanner][{thisDir.Name}]Chart count loaded: {loadedChartCount}");
+            MajDebug.LogDebug($"[MaiChart Scanner][{thisDir.Name}]Exit");
             return new SongCollection(rootPath, thisDir.Name, charts.ToArray());
         }
         static async Task<SongCollection> GetOnlineCollection(ApiEndpoint api, IProgress<string>? progressReporter)
@@ -441,76 +554,37 @@ namespace MajdataPlay
             var collection = SongCollection.Empty(cachePath, name);
             var apiroot = api.Url;
 
-            if (string.IsNullOrEmpty(apiroot))
+            if (apiroot is null)
             {
                 return collection;
             }
+            MajDebug.LogInfo("Loading online charts from:" + api.Url);
 
-            var listurl = apiroot + "/maichart/list";
-            MajDebug.LogInfo("Loading Online Charts from:" + listurl);
             try
             {
                 var client = MajEnv.SharedHttpClient;
                 var rspText = string.Empty;
-                for (var i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
+                var chartList = await Online.GetChartListAsync(api);
+                if (chartList is null)
                 {
-                    try
-                    {
-                        if (i != 0)
-                        {
-                            progressReporter?.Report(
-                                ZString.Format("MAJTEXT_SCANNING_CHARTS_FROM_{0}".i18n(), api.Name) +
-                                $" ({i}/{MajEnv.HTTP_REQUEST_MAX_RETRY})");
-                        }
-#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
-                        await UniTask.SwitchToMainThread();
-                        var getReq = UnityWebRequest.Get(listurl);
-                        getReq.timeout = MajEnv.HTTP_TIMEOUT_MS / 1000;
-                        getReq.SetRequestHeader("User-Agent", MajEnv.HTTP_USER_AGENT);
-                        var asyncOperation = getReq.SendWebRequest();
-                        while (!asyncOperation.isDone)
-                        {
-                            await UniTask.Yield();
-                        }
-
-                        getReq.EnsureSuccessStatusCode();
-                        rspText = getReq.downloadHandler.text;
-#else
-                        rspText = await client.GetStringAsync(listurl);
-#endif
-                        break;
-                    }
-                    catch (Exception e)
-                    {
-                        if (i == MajEnv.HTTP_REQUEST_MAX_RETRY)
-                        {
-                            progressReporter?.Report(ZString.Format("Failed to fetch list from {0}".i18n(), api.Name));
-                            MajDebug.LogException(e);
-                            await Task.Delay(2000);
-                            throw new OperationCanceledException();
-                        }
-                    }
-                    finally
-                    {
-                        await UniTask.SwitchToThreadPool();
-                    }
+                    progressReporter?.Report(ZString.Format("Failed to fetch list from {0}".i18n(), api.Name));
+                    throw new OperationCanceledException();
                 }
-                var list = await Serializer.Json.DeserializeAsync<MajnetSongDetail[]>(rspText);
-                if (list is null || list.IsEmpty())
+                if(chartList.Length == 0)
                 {
                     return collection;
                 }
 
-                var gameList = new ISongDetail[list.Length];
-                Parallel.For(0, list.Length, i =>
+                var gameList = new ISongDetail[chartList.Length];
+                Parallel.For(0, chartList.Length, i =>
                 {
-                    var song = list[i];
+                    var song = chartList[i];
                     var songDetail = new OnlineSongDetail(api, song);
                     gameList[i] = songDetail;
                 });
 
-                MajDebug.LogInfo("Loaded Online Charts List:" + gameList.Length);
-                Interlocked.Add(ref _totalChartCount, list.Length);
+                MajDebug.LogInfo("Loaded online charts list:" + gameList.Length);
+                Interlocked.Add(ref _totalChartCount, chartList.Length);
                 var cacheFolder = Path.Combine(MajEnv.CachePath, $"Net/{name}");
                 if (!Directory.Exists(cacheFolder))
                 {
@@ -528,7 +602,7 @@ namespace MajdataPlay
                     return collection;
                 }
                 var c = await GetCollection(cachePath);
-                MajDebug.LogInfo("Loaded Cached Online Charts List:" + c.Count);
+                MajDebug.LogInfo("Loaded cached online charts list:" + c.Count);
                 return c;
             }
             catch (Exception e)

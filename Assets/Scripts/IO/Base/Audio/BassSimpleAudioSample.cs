@@ -1,11 +1,12 @@
-﻿using MajdataPlay.Extensions;
-using System;
+using MajdataPlay.Extensions;
+using MajdataPlay.Numerics;
+using MajdataPlay.Utils;
 using ManagedBass;
 using ManagedBass.Fx;
+using System;
 using System.IO;
-using System.Threading.Tasks;
-using MajdataPlay.Numerics;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay.IO
 {
@@ -194,19 +195,18 @@ namespace MajdataPlay.IO
         static BassSimpleAudioSample Create(byte[] data, bool normalize, bool speedChange)
         {
             var handle = (GCHandle?)null;
+            var decode = 0;
 #if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
             handle = GCHandle.Alloc(data, GCHandleType.Pinned);
-            var decode = Bass.CreateStream(((GCHandle)handle).AddrOfPinnedObject(), 0, data.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
-#else
-            var decode = Bass.CreateStream(data, 0, data.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
+            var addr = ((GCHandle)handle).AddrOfPinnedObject();
 #endif
             try
             {
-                if (decode == 0)
-                {
-                    throw new NotSupportedException();
-                }
-                Bass.LastError.EnsureSuccessStatusCode();
+#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
+                decode = BassHelper.CreateStream(addr, 0, data.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
+#else
+                decode = BassHelper.CreateStream(data, 0, data.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
+#endif
                 var stream = 0;
                 stream = BassFx.TempoCreate(decode, BassFlags.Default);
                 Bass.LastError.EnsureSuccessStatusCode();

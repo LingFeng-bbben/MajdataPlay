@@ -159,12 +159,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
         protected SensorArea _sensorPos;
 
-        readonly protected ObjectCounter _objectCounter = Majdata<ObjectCounter>.Instance!;
-        readonly protected NoteManager _noteManager = Majdata<NoteManager>.Instance!;
-        readonly protected NoteEffectManager _effectManager = Majdata<NoteEffectManager>.Instance!;
-        readonly protected NoteAudioManager _audioEffMana = Majdata<NoteAudioManager>.Instance!;
-        readonly protected GameSetting _settings = MajInstances.Settings;
-        protected static readonly Random _randomizer = new();
+        protected ObjectCounter _objectCounter = Majdata<ObjectCounter>.Instance!;
+        protected NoteManager _noteManager = Majdata<NoteManager>.Instance!;
+        protected NoteEffectManager _effectManager = Majdata<NoteEffectManager>.Instance!;
+        protected NoteAudioManager _audioEffMana = Majdata<NoteAudioManager>.Instance!;
+        protected readonly GameSetting _settings = MajInstances.Settings;
+        protected readonly Random _randomizer = new();
 
         protected readonly float USERSETTING_JUDGE_OFFSET_SEC = ((MajInstances.Settings?.Judge.JudgeOffset ?? 0) + (MajInstances.Settings?.Debug.DisplayOffset ?? 0)) * ((MajInstances.Settings?.Debug.OffsetUnit ?? OffsetUnitOption.Second) == OffsetUnitOption.Second ? 1 : FRAME_LENGTH_SEC);
         protected readonly float USERSETTING_TOUCHPANEL_OFFSET_SEC = (MajInstances.Settings?.Judge.TouchPanelOffset ?? 0) * ((MajInstances.Settings?.Debug.OffsetUnit ?? OffsetUnitOption.Second) == OffsetUnitOption.Second ? 1 : FRAME_LENGTH_SEC);
@@ -223,6 +223,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         {
             base.Awake();
 
+            _objectCounter = Majdata<ObjectCounter>.Instance!;
+            _noteManager = Majdata<NoteManager>.Instance!;
+            _effectManager = Majdata<NoteEffectManager>.Instance!;
+            _audioEffMana = Majdata<NoteAudioManager>.Instance!;
+
             _noteController = Majdata<INoteController>.Instance!;
             ModInfo = _noteController.ModInfo;
             _breakMaterial = _noteController.BreakMaterial;
@@ -231,7 +236,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             _isAutoplay = _noteController.IsAutoplay;
             _autoplayMode = ModInfo.AutoPlay;
             _autoplayGrade = _noteController.AutoplayGrade;
-#if UNITY_ANDROID
+#if UNITY_ANDROID || UNITY_IOS
             IsUseButtonRingForTouch = false;
 #else
             IsUseButtonRingForTouch = ModInfo.ButtonRingForTouch;

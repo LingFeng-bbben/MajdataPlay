@@ -1,11 +1,12 @@
 ﻿namespace MajdataPlay
 {
-    public enum SortType
+    public enum SortType: uint
     {
-        Default = 4,
-        ByTime = 0,
-        ByDiff = 1,
-        ByDes = 2,
-        ByTitle = 3
+        Default,
+        ByTime,
+        ByDiff,
+        ByDes,
+        ByTitle,
+        ByRank
     }
 }

@@ -256,6 +256,7 @@ namespace MajdataPlay.Scenes.Setting
         private void OnDestroy()
         {
             _isExited = true;
+            MajEnv.RequestSave();
             GC.Collect();
         }
     }

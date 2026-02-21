@@ -7,6 +7,7 @@ using NeoSmart.AsyncLock;
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -48,12 +49,13 @@ namespace MajdataPlay
         bool _isPreloaded = false;
         bool _isDisposed = false;
 
-        AudioSampleWrap? _audioTrack = null;
-        AudioSampleWrap? _previewAudioTrack = null;
-        Sprite? _cover = null;
+        WeakReference<AudioSampleWrap> _audioTrackRef = new(null!);
+        WeakReference<AudioSampleWrap> _previewAudioTrackRef = new(null!);
+        WeakReference<Sprite> _coverRef = new(null!);
         SimaiFile? _maidata = null;
         SimaiMetadata _simaiMetadata;
 
+        readonly bool _isEmptyCover = false;
         readonly AsyncLock _previewAudioTrackLock = new();
         readonly AsyncLock _audioTrackLock = new();
         readonly AsyncLock _coverLock = new();
@@ -62,21 +64,21 @@ namespace MajdataPlay
 
         ~SongDetail()
         {
-            Dispose();
+            Dispose(false);
         }
         public SongDetail(string chartFolder, SimaiMetadata metadata)
         {
             var files = new DirectoryInfo(chartFolder).GetFiles();
 
             _maidataPath = Path.Combine(chartFolder, "maidata.txt");
-            _trackPath = files.FirstOrDefault(o => o.Name is "track.mp3" or "track.ogg").FullName;
-            _videoPath = files.FirstOrDefault(o => o.Name is "bg.mp4" or "pv.mp4" or "mv.mp4")?.FullName ?? string.Empty;
-            _coverPath = files.FirstOrDefault(o => o.Name is "bg.png" or "bg.jpg")?.FullName ?? string.Empty;
+            _trackPath = files.FirstOrDefault(o => o.Name.ToLower() is "track.opus" or "track.mp3" or "track.ogg" or "track.aac").FullName;
+            _videoPath = files.FirstOrDefault(o => o.Name.ToLower() is "bg.mp4" or "pv.mp4" or "mv.mp4")?.FullName ?? string.Empty;
+            _coverPath = files.FirstOrDefault(o => o.Name.ToLower() is "bg.png" or "bg.jpg")?.FullName ?? string.Empty;
             _maidata = null;
 
             if (string.IsNullOrEmpty(_coverPath))
             {
-                _cover = MajEnv.EmptySongCover;
+                _isEmptyCover = true;
             }
             _simaiMetadata = metadata;
             Title = metadata.Title;
@@ -113,61 +115,75 @@ namespace MajdataPlay
         public async ValueTask<Sprite> GetCoverAsync(bool isCompressed, INetProgress? progress = null, CancellationToken token = default)
         {
             ThrowIfDisposed();
-            if (_cover is not null)
+            if(_isEmptyCover)
             {
-                return _cover;
+                return MajEnv.EmptySongCover;
             }
-            await UniTask.SwitchToThreadPool();
-            using (await _coverLock.LockAsync(token))
+            if (_coverRef.TryGetTarget(out var cover) && await cover.IsNativeAliveAsync())
             {
-                token.ThrowIfCancellationRequested();
-                if (_cover is not null)
+                return cover;
+            }
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
+            {
+                await UniTask.SwitchToThreadPool();
+                using (await _coverLock.LockAsync(token))
                 {
-                    return _cover;
+                    token.ThrowIfCancellationRequested();
+                    if (_coverRef.TryGetTarget(out cover) && await cover.IsNativeAliveAsync())
+                    {
+                        return cover;
+                    }
+                    progress?.Report(1);
+                    cover = await SpriteLoader.LoadAsync(_coverPath, token);
+                    _coverRef.SetTarget(cover);
+                    return cover;
                 }
-                progress?.Report(1);
-                _cover = await SpriteLoader.LoadAsync(_coverPath, token);
-                return _cover;
             }
         }
         public async ValueTask<AudioSampleWrap> GetAudioTrackAsync(INetProgress? progress = null, CancellationToken token = default)
         {
             ThrowIfDisposed();
-            if (_audioTrack is not null)
+            if (_audioTrackRef.TryGetTarget(out var audioTrack))
             {
-                return _audioTrack;
+                return audioTrack;
             }
-            await UniTask.SwitchToThreadPool();
-            using (await _audioTrackLock.LockAsync(token))
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
-                token.ThrowIfCancellationRequested();
-                if (_audioTrack is not null)
+                await UniTask.SwitchToThreadPool();
+                using (await _audioTrackLock.LockAsync(token))
                 {
-                    return _audioTrack;
+                    token.ThrowIfCancellationRequested();
+                    if (_audioTrackRef.TryGetTarget(out audioTrack))
+                    {
+                        return audioTrack;
+                    }
+                    progress?.Report(1);
+                    audioTrack = await MajInstances.AudioManager.LoadMusicAsync(_trackPath, true, true);
+                    _audioTrackRef.SetTarget(audioTrack);
+                    return audioTrack;
                 }
-                progress?.Report(1);
-                _audioTrack = await MajInstances.AudioManager.LoadMusicAsync(_trackPath, true, true);
-                return _audioTrack;
             }
+                
         }
         public async ValueTask<AudioSampleWrap> GetPreviewAudioTrackAsync(INetProgress? progress = null, CancellationToken token = default)
         {
             ThrowIfDisposed();
-            if (_previewAudioTrack is not null)
+            if (_previewAudioTrackRef.TryGetTarget(out var audioTrack))
             {
-                return _previewAudioTrack;
+                return audioTrack;
             }
             await UniTask.SwitchToThreadPool();
             using (await _previewAudioTrackLock.LockAsync(token))
             {
                 token.ThrowIfCancellationRequested();
-                if (_previewAudioTrack is not null)
+                if (_previewAudioTrackRef.TryGetTarget(out audioTrack))
                 {
-                    return _previewAudioTrack;
+                    return audioTrack;
                 }
                 progress?.Report(1);
-                _previewAudioTrack = await MajInstances.AudioManager.LoadMusicAsync(_trackPath, true, false);
-                return _previewAudioTrack;
+                audioTrack = await MajInstances.AudioManager.LoadMusicAsync(_trackPath, true, false);
+                _previewAudioTrackRef.SetTarget(audioTrack);
+                return audioTrack;
             }
         }
         public async ValueTask<SimaiFile> GetMaidataAsync(bool ignoreCache = false, INetProgress? progress = null, CancellationToken token = default)
@@ -203,49 +219,75 @@ namespace MajdataPlay
         }
         public void Dispose()
         {
-            if (_isDisposed)
-            {
-                return;
-            }
-            _isDisposed = true;
-            _audioTrack?.Dispose();
-            _previewAudioTrack?.Dispose();
-            UniTask.Post(() =>
-            {
-                var tex = _cover?.texture;
-                GameObject.DestroyImmediate(_cover, true);
-                GameObject.DestroyImmediate(tex, true);
-            });
-            _audioTrack = null;
-            _previewAudioTrack = null;
-            _cover = null;
-            _maidata = null;
+            Dispose(true);
         }
-        public async ValueTask DisposeAsync()
+        void Dispose(bool disposing)
         {
             if (_isDisposed)
             {
                 return;
             }
             _isDisposed = true;
-            if(_audioTrack is not null)
+            if (_audioTrackRef.TryGetTarget(out var audioTrack))
             {
-                await _audioTrack.DisposeAsync();
+                audioTrack.Dispose();
             }
-            if(_previewAudioTrack is not null)
+            if (_previewAudioTrackRef.TryGetTarget(out audioTrack))
             {
-                await _previewAudioTrack.DisposeAsync();
+                audioTrack.Dispose();
+            }
+            UniTask.Post(() =>
+            {
+                if (_coverRef.TryGetTarget(out var cover) && cover.IsNativeAlive())
+                {
+                    var tex = cover.texture;
+                    GameObject.DestroyImmediate(cover, true);
+                    GameObject.DestroyImmediate(tex, true);
+                }
+            });
+            if(disposing)
+            {
+                _audioTrackRef.SetTarget(null!);
+                _previewAudioTrackRef.SetTarget(null!);
+                _coverRef.SetTarget(null!);
+            }
+            _maidata = null;
+        }
+        public ValueTask DisposeAsync()
+        {
+            return DisposeAsync(true);
+        }
+        async ValueTask DisposeAsync(bool disposing)
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+            _isDisposed = true;
+            if (_audioTrackRef.TryGetTarget(out var audioTrack))
+            {
+                await audioTrack.DisposeAsync();
+            }
+            if (_previewAudioTrackRef.TryGetTarget(out audioTrack))
+            {
+                await audioTrack.DisposeAsync();
             }
             await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
                 await UniTask.SwitchToMainThread();
-                var tex = _cover?.texture;
-                GameObject.DestroyImmediate(_cover, true);
-                GameObject.DestroyImmediate(tex, true);
+                if (_coverRef.TryGetTarget(out var cover) && cover.IsNativeAlive())
+                {
+                    var tex = cover.texture;
+                    GameObject.DestroyImmediate(cover, true);
+                    GameObject.DestroyImmediate(tex, true);
+                }
             }
-            _audioTrack = null;
-            _previewAudioTrack = null;
-            _cover = null;
+            if(disposing)
+            {
+                _audioTrackRef.SetTarget(null!);
+                _previewAudioTrackRef.SetTarget(null!);
+                _coverRef.SetTarget(null!);
+            }
             _maidata = null;
         }
         void ThrowIfDisposed()

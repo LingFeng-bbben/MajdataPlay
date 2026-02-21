@@ -61,7 +61,7 @@ namespace MajdataPlay
             MajDebug.LogInfo(s);
             MajDebug.LogInfo($"PID: {MajEnv.GameProcess.Id}");
             MajDebug.LogInfo($"Version: {MajInstances.GameVersion}");
-#if UNITY_ANDROID
+#if UNITY_ANDROID // Android Only (Sdk Version Log)
             MajDebug.LogInfo($"AndroidSdkVersion: {MajEnv.AndroidSdkVersion}");
 #endif
             MajEnv.Init();
@@ -129,9 +129,7 @@ namespace MajdataPlay
             envType.GetField("<HoldShineMaterial>k__BackingField", BindingFlags.Static | BindingFlags.NonPublic)
                    .SetValue(null, _holdShineMaterial);
             QualitySettings.SetQualityLevel((int)Setting.Display.RenderQuality, true);
-#if UNITY_ANDROID
-            QualitySettings.vSyncCount = 0;
-#else
+#if !(UNITY_ANDROID || UNITY_IOS)
             QualitySettings.vSyncCount = Setting.Display.VSync ? 1 : 0;
 #endif
             QualitySettings.maxQueuedFrames = Setting.Debug.MaxQueuedFrames;
@@ -270,7 +268,7 @@ namespace MajdataPlay
             Screen.sleepTimeout = SleepTimeout.SystemSetting;
             MajEnv.OnApplicationQuitRequested();
         }
-#if UNITY_ANDROID
+#if UNITY_ANDROID || UNITY_IOS
         void OnApplicationFocus(bool focus)
         {
             if (!focus)
@@ -289,7 +287,7 @@ namespace MajdataPlay
 
         public void EnableGC()
         {
-#if UNITY_ANDROID && !UNITY_EDITOR //&& false
+#if UNITY_ANDROID && !UNITY_EDITOR //Android Only (GC Enable)
             GarbageCollector.GCMode = GarbageCollector.Mode.Enabled;
             MajDebug.LogWarning("GC has been enabled");
 #else
@@ -298,7 +296,7 @@ namespace MajdataPlay
         }
         public void DisableGC() 
         {
-#if UNITY_ANDROID && !UNITY_EDITOR //&& false
+#if UNITY_ANDROID && !UNITY_EDITOR //Android Only (GC Disable)
             GarbageCollector.GCMode = GarbageCollector.Mode.Disabled;
             MajDebug.LogWarning("GC has been disabled");
 #else

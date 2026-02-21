@@ -447,35 +447,35 @@
       "Content": "Downloading Video"
     },
     {
-      "Origin": "Search",
+      "Origin": "MAJTEXT_SORTFIND_Search",
       "Content": "Search"
     },
     {
-      "Origin": "UseKeyboardHint",
+      "Origin": "MAJTEXT_SORTFIND_UseKeyboardHint",
       "Content": "Use the keyboard..."
     },
     {
-      "Origin": "Sort",
+      "Origin": "MAJTEXT_SORTFIND_Sort",
       "Content": "Sort by"
     },
     {
-      "Origin": "SortbyTime",
+      "Origin": "MAJTEXT_SORTFIND_SortbyTime",
       "Content": "Length"
     },
     {
-      "Origin": "SortbyDiff",
+      "Origin": "MAJTEXT_SORTFIND_SortbyDiff",
       "Content": "Difficulty"
     },
     {
-      "Origin": "SortbyDes",
+      "Origin": "MAJTEXT_SORTFIND_SortbyDes",
       "Content": "Description"
     },
     {
-      "Origin": "SortbyTitle",
+      "Origin": "MAJTEXT_SORTFIND_SortbyTitle",
       "Content": "Title"
     },
     {
-      "Origin": "SortbyDefault",
+      "Origin": "MAJTEXT_SORTFIND_SortbyDefault",
       "Content": "Default Sort"
     },
     {
@@ -571,32 +571,40 @@
       "Content": "This level is empty"
     },
     {
-      "Origin": "THUMBUP_INFO",
+      "Origin": "MAJTEXT_THUMBUP_INFO",
       "Content": "<Give me a thumb up if it was fun!"
     },
     {
-      "Origin": "THUMBUP_SENDING",
+      "Origin": "MAJTEXT_THUMBUP_SENDING",
       "Content": "..."
     },
     {
-      "Origin": "THUMBUP_SENDED",
+      "Origin": "MAJTEXT_THUMBUP_SENDED",
       "Content": "Thumb up sended"
     },
     {
-      "Origin": "THUMBUP_ALREADY",
+      "Origin": "MAJTEXT_THUMBUP_ALREADY",
       "Content": "Thumb up already given"
     },
     {
-      "Origin": "THUMBUP_FAILED",
+      "Origin": "MAJTEXT_THUMBUP_FAILED",
       "Content": "Failed to send thumb up"
     },
     {
-      "Origin": "SCORE_SENDING",
+      "Origin": "MAJTEXT_SCORE_SENDING",
       "Content": "..."
     },
     {
-      "Origin": "SCORE_SENDED",
+      "Origin": "MAJTEXT_SCORE_SENDED",
       "Content": "Score Uploaded"
+    },
+    {
+      "Origin": "MAJTEXT_SCORE_FAILED",
+      "Content": "Failed to send score"
+    },
+    {
+      "Origin": "MAJTEXT_LOGIN_SESSION_EXPIRED",
+      "Content": "Login session expired"
     },
     {
       "Origin": "MAJSETTING_PROPERTY_Random",
@@ -660,7 +668,7 @@
     },
     {
       "Origin": "Input_Hint",
-      "Content": "Press Select P1 (or touch secondary screen) to search and sort songs. Touch the song cover for random selection. \nLong press the 4 key to start practice mode. Press Alt+Enter to toggle full-screen mode. Press Alt+F4 to exit the game."
+      "Content": "Press Select P1 (or touch secondary screen) to search and sort songs, long press to refresh the song list. Touch the song cover for random selection. \nLong press key 4 to start practice mode. Long press key 5 to logout. Press Alt+Enter to toggle full-screen mode. Press Alt+F4 to exit the game."
     }
   ]
 }

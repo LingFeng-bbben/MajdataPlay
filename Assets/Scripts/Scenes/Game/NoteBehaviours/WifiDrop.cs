@@ -1,4 +1,4 @@
-﻿using MajdataPlay.Buffers;
+using MajdataPlay.Buffers;
 using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
 using MajdataPlay.IO;
@@ -612,12 +612,6 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 renderer.sortingLayerName = "Slides";
 
                 renderer.sprite = barSprites[i];
-                if (breakMaterial is not null)
-                {
-                    renderer.sharedMaterial = breakMaterial;
-                    //var controller = bar.AddComponent<BreakShineController>();
-                    //controller.Parent = this;
-                }
             }
             foreach (var (i, star) in _stars.Span.WithIndex())
             {

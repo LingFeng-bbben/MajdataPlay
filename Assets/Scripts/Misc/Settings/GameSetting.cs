@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Threading;
 using UnityEngine.Scripting;
 using Newtonsoft.Json;
+using MajdataPlay.Net;
 #nullable enable
 namespace MajdataPlay.Settings
 {
@@ -133,7 +134,7 @@ namespace MajdataPlay.Settings
         public bool Topmost { get; set; } = false;
         [Preserve]
         public int FPSLimit { get; set; } = 120;
-#if !UNITY_ANDROID
+#if !(UNITY_ANDROID || UNITY_IOS)
         [Preserve]
         public bool VSync { get; set; } = true;
 #endif
@@ -141,11 +142,16 @@ namespace MajdataPlay.Settings
     [Preserve]
     public class SoundOptions
     {
+#if UNITY_IOS || UNITY_ANDROID
+        readonly static SoundBackendOption DEFAULT_SOUND_BACKEND = SoundBackendOption.BassSimple;
+#else
+        readonly static SoundBackendOption DEFAULT_SOUND_BACKEND = SoundBackendOption.Wasapi;
+#endif
         [Preserve]
         public bool ForceMono { get; set; } = false;
         [Preserve]
         public SFXVolume Volume { get; set; } = new();
-#if !UNITY_ANDROID
+#if !(UNITY_ANDROID || UNITY_IOS)
         [Preserve]
         public WasapiOptions Wasapi { get; set; } = new();
         [Preserve]
@@ -153,10 +159,10 @@ namespace MajdataPlay.Settings
         [Preserve]
         public ChannelOptions Channel { get; set; } = new();
 #else
-        public AndroidAudioOptions Android { get; set; } = new();
+        public MobileAudioOptions Mobile { get; set; } = new();
 #endif
         [Preserve]
-        public SoundBackendOption Backend { get; set; } = SoundBackendOption.Wasapi;
+        public SoundBackendOption Backend { get; set; } = DEFAULT_SOUND_BACKEND;
     }
     [Preserve]
     public class SFXVolume
@@ -201,7 +207,7 @@ namespace MajdataPlay.Settings
         public bool SlideNoHead { get; set; } = false;
         [Preserve]
         public bool SlideNoTrack { get; set; } = false;
-#if !UNITY_ANDROID
+#if !(UNITY_ANDROID || UNITY_IOS)
         [Preserve]
         public bool ButtonRingForTouch { get; set; } = false;
 #endif
@@ -219,36 +225,26 @@ namespace MajdataPlay.Settings
     public class OnlineOptions
     {
         [Preserve]
+        #if UNITY_IOS && !UNITY_EDITOR
+        public bool Enable { get; } = IosSettings.GetBool("enabled_online", false);
+        #else
         public bool Enable { get; set; } = false;
+        #endif
 #if UNITY_STANDALONE && ENABLE_MONO
         public bool UseProxy { get; init; } = true;
         public string Proxy { get; init; } = string.Empty;
 #endif
         [Preserve]
-        public List<ApiEndpoint> ApiEndpoints { get; set; } = new List<ApiEndpoint>
+        public ApiEndpoint[] ApiEndpoints { get; set; } = new ApiEndpoint[]
         {
+            new ApiEndpoint()
             {
-                new ApiEndpoint()
-                {
-                    Name = "Majnet",
-                    Url = "https://majdata.net/api3/api" ,
-                    Username = "YourUsername",
-                    Password = "YourPassword"
-                }
+                Name = "Majnet",
+                Url = new("https://majdata.net/api3/api/"),
+                Username = "YourUsername",
+                Password = "YourPassword"
             }
         };
-    }
-    [Preserve]
-    public class ApiEndpoint
-    {
-        [Preserve]
-        public string Name { get; set; } = string.Empty;
-        [Preserve]
-        public string Url { get; set; } = string.Empty;
-        [Preserve]
-        public string? Username { get; set; }
-        [Preserve]
-        public string? Password { get; set; }
     }
     [Preserve]
     public class DebugOptions
@@ -394,7 +390,11 @@ namespace MajdataPlay.Settings
     public class SerialPortOptions
     {
         [Preserve]
+#if UNITY_STANDALONE_WIN
         public int? Port { get; set; } = null;
+#else
+        public string? Port { get; set; } = null;
+#endif
         [Preserve]
         public int? BaudRate { get; set; } = null;
     }
@@ -433,9 +433,11 @@ namespace MajdataPlay.Settings
         public float BufferSize { get; set; } = 0.02f;
         public float Period { get; set; } = 0.005f;
     }
-    public class AndroidAudioOptions
+    public class MobileAudioOptions
     {
+#if UNITY_ANDROID // Android Only (AAudio)
         public bool EnableAAudio { get; set; } = true;
+#endif
         public int BufferLengthMs { get; set; } = 64;
         public int UpdatePeriodMs { get; set; } = 16;
         public int DeviceBufferLengthMs { get; set; } = 8;

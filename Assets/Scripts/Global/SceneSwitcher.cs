@@ -21,6 +21,7 @@ namespace MajdataPlay
             private set; 
         }
         public static MajScenes CurrentScene { get; private set; } = MajScenes.Init;
+        public static MajScenes LastScene { get; private set; } = MajScenes.Init;
 
         Canvas _canvas;
         Animator animator;
@@ -63,10 +64,12 @@ namespace MajdataPlay
             MainCamera = Camera.main;
             //var currentScene = SceneManager.GetActiveScene();
             var index = Array.FindIndex(SCENE_NAMES, x => x == next.name);
+            var lastScene = CurrentScene;
             if (index != -1)
             {
                 CurrentScene = Enum.Parse<MajScenes>(SCENE_NAMES[index]);
             }
+            LastScene = lastScene;
             _canvas.worldCamera = MainCamera;
         }
 

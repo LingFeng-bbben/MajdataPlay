@@ -207,8 +207,8 @@ namespace MajdataPlay.Scenes.Game
             { SensorArea.C, new SensorArea[]{ SensorArea.B1, SensorArea.B2, SensorArea.B3, SensorArea.B4, SensorArea.B5, SensorArea.B6, SensorArea.B7, SensorArea.B8} },
         };
 
-        readonly IReadOnlyDictionary<int, int> _buttonRingMappingTable;
-        readonly IReadOnlyDictionary<SensorArea, SensorArea> _touchPanelMappingTable;
+        IReadOnlyDictionary<int, int> _buttonRingMappingTable;
+        IReadOnlyDictionary<SensorArea, SensorArea> _touchPanelMappingTable;
         NoteLoader()
         {
             (_buttonRingMappingTable, _touchPanelMappingTable) = NoteCreateHelper.GenerateMappingTable();
@@ -282,13 +282,22 @@ namespace MajdataPlay.Scenes.Game
             {
 
                 var lastNoteTime = maiChart.NoteTimings[^1].Timing;
-
+                var randomMappingTableLifeTime = new Range<double>(double.MinValue,double.MinValue, ContainsType.Closed);
+                var isSRandomEnabled = MajEnv.Settings.Game.Random == RandomModeOption.S_RANDOM;
                 for (var i = 0; i < maiChart.NoteTimings.Length; i++)
                 {
                     var timing = maiChart.NoteTimings[i];
                     RentedList<NotePoolingInfo?> eachNotes = new();
                     RentedList<ITouchGroupInfoProvider> members = new();
                     var foldedNotes = NoteCreateHelper.NoteFolding(timing.Notes);
+                    if (isSRandomEnabled)
+                    {
+                        if (!randomMappingTableLifeTime.InRange(timing.Timing))
+                        {
+                            (_buttonRingMappingTable, _touchPanelMappingTable) = NoteCreateHelper.GenerateMappingTable();
+                            randomMappingTableLifeTime = new Range<double>(timing.Timing, timing.Timing, ContainsType.RightOpen);
+                        }
+                    }
                     foreach (var note in foldedNotes)
                     {
                         token.ThrowIfCancellationRequested();
@@ -308,10 +317,27 @@ namespace MajdataPlay.Scenes.Game
                                         var obj = CreateHold(note, timing);
                                         _poolManager.AddHold(obj);
                                         eachNotes.Add(obj);
+
+                                        if (isSRandomEnabled)
+                                        {
+                                            var endTiming = timing.Timing + note.HoldTime;
+                                            if(!randomMappingTableLifeTime.InRange(endTiming))
+                                            {
+                                                randomMappingTableLifeTime = new Range<double>(randomMappingTableLifeTime.Start, endTiming, ContainsType.RightOpen);
+                                            }
+                                        }
                                     }
                                     break;
                                 case SimaiNoteType.TouchHold:
                                     _poolManager.AddTouchHold(CreateTouchHold(note, timing, members));
+                                    if (isSRandomEnabled)
+                                    {
+                                        var endTiming = timing.Timing + note.HoldTime;
+                                        if (!randomMappingTableLifeTime.InRange(endTiming))
+                                        {
+                                            randomMappingTableLifeTime = new Range<double>(randomMappingTableLifeTime.Start, endTiming, ContainsType.RightOpen);
+                                        }
+                                    }
                                     break;
                                 case SimaiNoteType.Touch:
                                     _poolManager.AddTouch(CreateTouch(note, timing, members));
@@ -409,7 +435,9 @@ namespace MajdataPlay.Scenes.Game
                 var endPos = noteB.StartPos;
                 endPos = endPos - startPos;
                 if (endPos == 0)
+                {
                     return null;
+                }
                 var time = (float)timing.Timing;
                 var speed = NoteSpeed * timing.HSpeed;
                 var scaleRate = MajInstances.Settings.Debug.NoteAppearRate;
@@ -463,18 +491,22 @@ namespace MajdataPlay.Scenes.Game
                 var sortOrder = _noteSortOrder;
                 var isEach = timing.Notes.Length > 1;
                 if (appearTiming < -5f && _gpManager is not null)
+                {
                     _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
+                }
                 if (isEach)
                 {
                     var noteCount = timing.Notes.Length;
                     var noHeadSlideCount = timing.Notes.FindAll(x => x.Type == SimaiNoteType.Slide && x.IsSlideNoHead).Length;
                     if (noteCount - noHeadSlideCount == 1)
+                    {
                         isEach = false;
+                    }
                 }
-                _isHasTap[startPos - 1] = true;
                 _noteSortOrder -= NOTE_LAYER_COUNT[note.Type];
                 startPos = NoteCreateHelper.Rotation(startPos, ChartRotation);
                 NoteCreateHelper.SetNewPositionIfRequested(ref startPos, _buttonRingMappingTable);
+                _isHasTap[startPos - 1] = true;
                 return new()
                 {
                     StartPos = startPos,
@@ -518,19 +550,23 @@ namespace MajdataPlay.Scenes.Game
                 var sortOrder = _noteSortOrder;
                 var isEach = timing.Notes.Length > 1;
                 if (appearTiming < -5f && _gpManager is not null)
+                {
                     _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
+                }
                 if (isEach)
                 {
                     var noteCount = timing.Notes.Length;
                     var noHeadSlideCount = timing.Notes.FindAll(x => x.Type == SimaiNoteType.Slide && x.IsSlideNoHead).Length;
                     if (noteCount - noHeadSlideCount == 1)
+                    {
                         isEach = false;
+                    }
                 }
-                _isHasHold[startPos - 1] = true;
-                _isHasTap[startPos - 1] = true;
                 _noteSortOrder -= NOTE_LAYER_COUNT[note.Type];
                 startPos = NoteCreateHelper.Rotation(startPos, ChartRotation);
                 NoteCreateHelper.SetNewPositionIfRequested(ref startPos, _buttonRingMappingTable);
+                _isHasHold[startPos - 1] = true;
+                _isHasTap[startPos - 1] = true;
                 return new()
                 {
                     StartPos = startPos,
@@ -578,7 +614,9 @@ namespace MajdataPlay.Scenes.Game
                 appearTiming = Math.Min(appearTiming, slideFadeInTiming);
 
                 if (appearTiming < -5f && _gpManager is not null)
+                {
                     _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
+                }
                 _noteSortOrder -= NOTE_LAYER_COUNT[note.Type];
                 _isHasTap[startPos - 1] = true;
                 if (isEach)
@@ -665,7 +703,9 @@ namespace MajdataPlay.Scenes.Game
                 var moveDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
                 var appearTiming = Math.Min(noteTiming - moveDuration, noteTiming - 0.15f);
                 if (appearTiming < -5f && _gpManager is not null)
+                {
                     _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
+                }
                 _isHasTouch[(int)sensorPos] = true;
                 _touchSortOrder -= NOTE_LAYER_COUNT[note.Type];
                 if (isEach)
@@ -733,7 +773,9 @@ namespace MajdataPlay.Scenes.Game
                 var appearTiming = Math.Min(noteTiming - moveDuration, noteTiming - 0.15f);
                 var noteSortOrder = _touchSortOrder;
                 if (appearTiming < -5f && _gpManager is not null)
+                {
                     _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
+                }
 
                 _isHasTouchHold[(int)sensorPos] = true;
                 _touchSortOrder -= NOTE_LAYER_COUNT[note.Type];
@@ -1835,10 +1877,8 @@ namespace MajdataPlay.Scenes.Game
                     case RandomModeOption.Disabled:
                         return;
                     case RandomModeOption.RANDOM:
-                        originPos = RandomTap(originPos, mappingTable);
-                        break;
                     case RandomModeOption.S_RANDOM:
-                        originPos = RandomTap();
+                        originPos = RandomTap(originPos, mappingTable);
                         break;
                 }
             }
@@ -1850,10 +1890,8 @@ namespace MajdataPlay.Scenes.Game
                     case RandomModeOption.Disabled:
                         return;
                     case RandomModeOption.RANDOM:
-                        originPos = RandomTouch(originPos, mappingTable);
-                        break;
                     case RandomModeOption.S_RANDOM:
-                        originPos = RandomTouch();
+                        originPos = RandomTouch(originPos, mappingTable);
                         break;
                 }
             }
@@ -1866,10 +1904,8 @@ namespace MajdataPlay.Scenes.Game
                     case RandomModeOption.Disabled:
                         return;
                     case RandomModeOption.RANDOM:
-                        (originStartPos, originEndPos) = RandomSlide(originStartPos, originEndPos, mappingTable);
-                        break;
                     case RandomModeOption.S_RANDOM:
-                        (originStartPos, originEndPos) = RandomSlide(originStartPos, originEndPos);
+                        (originStartPos, originEndPos) = RandomSlide(originStartPos, originEndPos, mappingTable);
                         break;
                 }
             }

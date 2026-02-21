@@ -1,4 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using MajdataPlay.Drawing;
 using SkiaSharp;
 using SkiaSharp.Unity;
@@ -79,13 +79,13 @@ namespace MajdataPlay.Utils
                 await UniTask.SwitchToThreadPool();
             }
         }
-        public static async Task<Sprite> LoadAsync(byte[] bytes, CancellationToken ct = default)
+        public static async Task<Sprite> LoadAsync(ReadOnlyMemory<byte> buffer, CancellationToken ct = default)
         {
             try
             {
                 await UniTask.SwitchToThreadPool();
                 ct.ThrowIfCancellationRequested();
-                var texture = await ImageDecodeAsync(bytes);
+                var texture = await ImageDecodeAsync(buffer);
                 await UniTask.SwitchToMainThread();
                 return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
             }
@@ -153,11 +153,11 @@ namespace MajdataPlay.Utils
             return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), 100, 1,
                 SpriteMeshType.FullRect, border);
         }
-        async static UniTask<Texture2D> ImageDecodeAsync(byte[] data)
+        async static UniTask<Texture2D> ImageDecodeAsync(ReadOnlyMemory<byte> data)
         {
             using var bitmap = await Task.Run(() =>
             {
-                return SKBitmap.Decode(data);
+                return SKBitmap.Decode(data.Span);
             });
             return await bitmap.ToTexture2DAsync();
         }

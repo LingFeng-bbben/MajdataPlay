@@ -431,35 +431,35 @@
       "Content": "動画をダウンロード中"
     },
     {
-      "Origin": "Search",
+      "Origin": "MAJTEXT_SORTFIND_Search",
       "Content": "検索"
     },
     {
-      "Origin": "UseKeyboardHint",
+      "Origin": "MAJTEXT_SORTFIND_UseKeyboardHint",
       "Content": "鍵盤を使ってください..."
     },
     {
-      "Origin": "Sort",
+      "Origin": "MAJTEXT_SORTFIND_Sort",
       "Content": "順番"
     },
     {
-      "Origin": "SortbyTime",
+      "Origin": "MAJTEXT_SORTFIND_SortbyTime",
       "Content": "時間"
     },
     {
-      "Origin": "SortbyDiff",
+      "Origin": "MAJTEXT_SORTFIND_SortbyDiff",
       "Content": "難易\n度順"
     },
     {
-      "Origin": "SortbyDes",
+      "Origin": "MAJTEXT_SORTFIND_SortbyDes",
       "Content": "譜面\n作者"
     },
     {
-      "Origin": "SortbyTitle",
+      "Origin": "MAJTEXT_SORTFIND_SortbyTitle",
       "Content": "タイ\nトル"
     },
     {
-      "Origin": "SortbyDefault",
+      "Origin": "MAJTEXT_SORTFIND_SortbyDefault",
       "Content": "デフォルト"
     },
     {
@@ -523,32 +523,40 @@
       "Content": "この難易度は存在しません"
     },
     {
-      "Origin": "THUMBUP_INFO",
+      "Origin": "MAJTEXT_THUMBUP_INFO",
       "Content": "<面白かったらいいねしよ"
     },
     {
-      "Origin": "THUMBUP_SENDING",
+      "Origin": "MAJTEXT_THUMBUP_SENDING",
       "Content": "..."
     },
     {
-      "Origin": "THUMBUP_SENDED",
+      "Origin": "MAJTEXT_THUMBUP_SENDED",
       "Content": "いいねしました"
     },
     {
-      "Origin": "THUMBUP_ALREADY",
+      "Origin": "MAJTEXT_THUMBUP_ALREADY",
       "Content": "すでにいいねしました"
     },
     {
-      "Origin": "THUMBUP_FAILED",
+      "Origin": "MAJTEXT_THUMBUP_FAILED",
       "Content": "いいね失敗した"
     },
     {
-      "Origin": "SCORE_SENDING",
+      "Origin": "MAJTEXT_SCORE_SENDING",
       "Content": "..."
     },
     {
-      "Origin": "SCORE_SENDED",
+      "Origin": "MAJTEXT_SCORE_SENDED",
       "Content": "スコアアップしました"
+    },
+    {
+      "Origin": "MAJTEXT_SCORE_FAILED",
+      "Content": "スコアの送信に失敗しました"
+    },
+    {
+      "Origin": "MAJTEXT_LOGIN_SESSION_EXPIRED",
+      "Content": "ログインセッションの有効期限が切れました"
     },
     {
       "Origin": "MAJSETTING_PROPERTY_Random",
@@ -612,7 +620,7 @@
     },
     {
       "Origin": "Input_Hint",
-      "Content": "SelectP1/セカンドスクリーンをタッチで曲を検索・並べ替え。 曲のジャケットをタッチしてランダム選曲。 \n4番キーを長押しして練習モードを開始。 Alt+Enterでフルスクリーンモードに切り替え。 Alt+F4でゲームを終了。"
+      "Content": "SelectP1/セカンドスクリーンをタッチで曲を検索・並べ替え、長押しするとリフレッシュ。 曲のジャケットをタッチしてランダム選曲。 \n4番キーを長押しして練習モードを開始、5番キーでログアウト。 Alt+Enterでフルスクリーンモードに切り替え。 Alt+F4でゲームを終了。"
     }
   ]
 }

@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ManagedBass.Opus</name>
+    </assembly>
+    <members>
+        <member name="T:ManagedBass.Opus.BassOpus">
+            <summary>
+            BassOpus is a BASS addon enabling the playing of Opus (Opus Interactive Audio Codec) encoded files.
+            </summary> 
+            <remarks>
+            Supports .opus
+            </remarks>
+        </member>
+        <member name="M:ManagedBass.Opus.BassOpus.CreateStream(System.String,System.Int64,System.Int64,ManagedBass.BassFlags)">
+            <summary>Create a stream from file.</summary>
+        </member>
+        <member name="M:ManagedBass.Opus.BassOpus.CreateStream(System.IntPtr,System.Int64,System.Int64,ManagedBass.BassFlags)">
+            <summary>Create a stream from Memory (IntPtr).</summary>
+        </member>
+        <member name="M:ManagedBass.Opus.BassOpus.CreateStream(System.Byte[],System.Int64,System.Int64,ManagedBass.BassFlags)">
+            <summary>Create a stream from Memory (byte[]).</summary>
+        </member>
+        <member name="M:ManagedBass.Opus.BassOpus.CreateStream(ManagedBass.StreamSystem,ManagedBass.BassFlags,ManagedBass.FileProcedures,System.IntPtr)">
+            <summary>Create a stream using User File Procedures.</summary>
+        </member>
+        <member name="M:ManagedBass.Opus.BassOpus.CreateStream(System.String,System.Int32,ManagedBass.BassFlags,ManagedBass.DownloadProcedure,System.IntPtr)">
+            <summary>Create a stream from Url.</summary>
+        </member>
+    </members>
+</doc>

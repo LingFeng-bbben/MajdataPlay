@@ -43,13 +43,14 @@ namespace MajdataPlay.Scenes.Game
         RawImage _rawImage;
         static Texture2D? _emptyTexture;
 
-#if UNITY_ANDROID
+#if UNITY_ANDROID || UNITY_IOS
         const int MAX_CACHE_COUNT = 16;
 #else
         const int MAX_CACHE_COUNT = 32;
 #endif
-
-        readonly RentedList<KeyValuePair<SimaiChart, MaidataAnalyzeResult>> _cachedTextures = new(MAX_CACHE_COUNT);
+        readonly AsyncLock _lock = new();
+        readonly Dictionary<SimaiChart, WeakReference<MaidataAnalyzeResult>> _cachedTextures = new(MAX_CACHE_COUNT);
+        readonly RentedList<SimaiChart> _cachedMaiCharts = new(MAX_CACHE_COUNT);
 
         private void Awake()
         {
@@ -78,93 +79,117 @@ namespace MajdataPlay.Scenes.Game
         void OnDestroy()
         {
             Majdata<ChartAnalyzer>.Free();
-            for (var i = 0; i < _cachedTextures.Count; i++)
+            foreach(var (k, v) in _cachedTextures)
             {
-                var tex = _cachedTextures[i].Value.LineGraph;
-                UnityEngine.Object.DestroyImmediate(tex, true);
-            } 
+                if(v.TryGetTarget(out var result))
+                {
+                    UnityEngine.Object.DestroyImmediate(result.LineGraph, true);
+                    v.SetTarget(null!);
+                }
+            }
+            _cachedMaiCharts.Clear();
             _cachedTextures.Clear();
         }
         public async UniTask AnalyzeAndDrawGraphAsync(ISongDetail songDetail, ChartLevel level, float length = -1, bool noCache = false, CancellationToken token = default)
         {
-            try
+            await using (UniTask.ReturnToCurrentSynchronizationContext(cancellationToken: token))
             {
-                await UniTask.SwitchToMainThread();
-                SetLoading();
                 await UniTask.SwitchToThreadPool();
-                var simaiFile = await songDetail.GetMaidataAsync();
-                var maiChart = simaiFile.Charts[(int)level];
-                if (maiChart.IsEmpty)
+                using (await _lock.LockAsync(token))
                 {
-                    await UniTask.SwitchToMainThread();
-                    SetHelp();
-                    return;
-                }
-                double lastnoteTiming;
-                using (var noteTimings = new RentedList<SimaiTimingPoint>())
-                {
-                    noteTimings.AddRange(maiChart.NoteTimings);
-                    lastnoteTiming = length == -1 ? noteTimings.LastOrDefault()?.Timing ?? length : length;
-                }
-                var result = await AnalyzeMaidataAsync(maiChart, (float)lastnoteTiming, noCache);
-                await UniTask.SwitchToMainThread();
-                token.ThrowIfCancellationRequested();
-                if(_cachedTextures.Count == MAX_CACHE_COUNT)
-                {
-                    var tex = _cachedTextures[0].Value.LineGraph;
-                    _cachedTextures.RemoveAt(0);
-                    UnityEngine.Object.DestroyImmediate(tex, true);
-                }
-                _cachedTextures.Add(new(maiChart, result));
-                SetTexture(result.LineGraph);
-                if (anaText is not null)
-                {
-                    var max = result.PeakDensity;
-                    var esti = result.Esti;
-                    var minBPM = result.MinBPM;
-                    var maxBPM = result.MaxBPM;
-                    var time = result.Length;
-                    using var sb = ZString.CreateStringBuilder();
-                    sb.Append("Peak Density = "); sb.Append(max);
-                    sb.AppendLine();
-                    sb.Append("Esti = Lv."); sb.Append(esti);
-                    sb.AppendLine();
-                    sb.Append("Length = "); sb.AppendFormat("{0}:{1:00}.{2:000}", time.Minutes, time.Seconds, time.Milliseconds);
-                    sb.AppendLine();
+                    try
+                    {
+                        await UniTask.SwitchToMainThread(token);
+                        SetLoading();
+                        await UniTask.SwitchToThreadPool();
+                        var simaiFile = await songDetail.GetMaidataAsync(token: token);
+                        var maiChart = simaiFile.Charts[(int)level];
+                        if (maiChart.IsEmpty)
+                        {
+                            await UniTask.SwitchToMainThread(token);
+                            SetHelp();
+                            return;
+                        }
+                        double lastnoteTiming;
+                        using (var noteTimings = new RentedList<SimaiTimingPoint>())
+                        {
+                            noteTimings.AddRange(maiChart.NoteTimings);
+                            lastnoteTiming = length == -1 ? noteTimings.LastOrDefault()?.Timing ?? length : length;
+                        }
+                        var result = await AnalyzeMaidataAsync(maiChart, (float)lastnoteTiming, noCache);
+                        await UniTask.SwitchToMainThread(token);
+                        token.ThrowIfCancellationRequested();
+                        if (_cachedTextures.Count == MAX_CACHE_COUNT)
+                        {
+                            var c = _cachedMaiCharts[0];
+                            var @ref = _cachedTextures[c];
+                            _cachedTextures.Remove(c);
+                            _cachedMaiCharts.RemoveAt(0);
+                            if(@ref.TryGetTarget(out var r))
+                            {
+                                var tex = r.LineGraph;
+                                if(tex.IsNativeAlive())
+                                {
+                                    UnityEngine.Object.DestroyImmediate(tex, true);
+                                }
+                            }
+                        }
+                        if(!_cachedTextures.ContainsKey(maiChart))
+                        {
+                            _cachedTextures.Add(maiChart, new(result));
+                            _cachedMaiCharts.Add(maiChart);
+                        }
+                        SetTexture(result.LineGraph);
+                        if (anaText is not null)
+                        {
+                            var max = result.PeakDensity;
+                            var esti = result.Esti;
+                            var minBPM = result.MinBPM;
+                            var maxBPM = result.MaxBPM;
+                            var time = result.Length;
+                            using var sb = ZString.CreateStringBuilder();
+                            sb.Append("Peak Density = "); sb.Append(max);
+                            sb.AppendLine();
+                            sb.Append("Esti = Lv."); sb.Append(esti);
+                            sb.AppendLine();
+                            sb.Append("Length = "); sb.AppendFormat("{0}:{1:00}.{2:000}", time.Minutes, time.Seconds, time.Milliseconds);
+                            sb.AppendLine();
 
-                    if (minBPM == maxBPM)
-                    {
-                        sb.Append("BPM = "); sb.Append(minBPM);
+                            if (minBPM == maxBPM)
+                            {
+                                sb.Append("BPM = "); sb.Append(minBPM);
+                            }
+                            else
+                            {
+                                sb.Append("BPM = "); sb.Append(minBPM); sb.Append(" - "); sb.Append(maxBPM);
+                            }
+                            //anaText.text = "Peak Density = " + max + "\n";
+                            //anaText.text += "Esti = Lv." + (esti) + "\n";
+                            //anaText.text += "Length = " + ZString.Format("{0}:{1:00}.{2:000}", time.Minutes, time.Seconds, time.Milliseconds) + "\n";
+                            //anaText.text += "BPM = " + minBPM + " - " + maxBPM;
+                            anaText.text = sb.ToString();
+                        }
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        sb.Append("BPM = "); sb.Append(minBPM); sb.Append(" - "); sb.Append(maxBPM);
+                        if (ex is not OperationCanceledException)
+                        {
+                            MajDebug.LogException(ex);
+                        }
+                        await UniTask.SwitchToMainThread(token);
+                        SetError();
+                        //_rawImage.texture = new Texture2D(0, 0);
+                        if (anaText is not null)
+                        {
+                            anaText.text = string.Empty;
+                        }
                     }
-                    //anaText.text = "Peak Density = " + max + "\n";
-                    //anaText.text += "Esti = Lv." + (esti) + "\n";
-                    //anaText.text += "Length = " + ZString.Format("{0}:{1:00}.{2:000}", time.Minutes, time.Seconds, time.Milliseconds) + "\n";
-                    //anaText.text += "BPM = " + minBPM + " - " + maxBPM;
-                    anaText.text = sb.ToString();
+                    finally
+                    {
+                        await UniTask.SwitchToMainThread();
+                    }
                 }
             }
-            catch (Exception ex)
-            {
-                if (ex is not OperationCanceledException)
-                {
-                    MajDebug.LogException(ex);
-                }
-                await UniTask.SwitchToMainThread();
-                SetError();
-                //_rawImage.texture = new Texture2D(0, 0);
-                if (anaText is not null)
-                {
-                    anaText.text = string.Empty;
-                }
-            }
-            finally
-            {
-                await UniTask.SwitchToMainThread();
-            }            
         }
         public async UniTask AnalyzeAndDrawGraphAsync(SimaiChart data, float totalLength, CancellationToken token = default)
         {
@@ -259,13 +284,9 @@ namespace MajdataPlay.Scenes.Game
             await UniTask.SwitchToThreadPool();
             if (!noCache)
             {
-                for (var i = 0; i < _cachedTextures.Count; i++)
+                if(_cachedTextures.TryGetValue(data, out var @ref) && @ref.TryGetTarget(out var r))
                 {
-                    var kv = _cachedTextures[i];
-                    if(kv.Key == data)
-                    {
-                        return kv.Value;
-                    }
+                    return r;
                 }
             }
 

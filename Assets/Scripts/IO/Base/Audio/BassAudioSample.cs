@@ -1,8 +1,11 @@
-﻿using MajdataPlay.Extensions;
+using MajdataPlay.Extensions;
 using MajdataPlay.Numerics;
+using MajdataPlay.Utils;
 using ManagedBass;
+using ManagedBass.Aac;
 using ManagedBass.Fx;
 using ManagedBass.Mix;
+using ManagedBass.Opus;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -227,19 +230,18 @@ namespace MajdataPlay.IO
         static BassAudioSample Create(byte[] data, int globalMixer, bool normalize, bool speedChange)
         {
             var handle = (GCHandle?)null;
+            var decode = 0;
 #if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
             handle = GCHandle.Alloc(data, GCHandleType.Pinned);
-            var decode = Bass.CreateStream(((GCHandle)handle).AddrOfPinnedObject(), 0, data.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
-#else
-            var decode = Bass.CreateStream(data, 0, data.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
+            var addr = ((GCHandle)handle).AddrOfPinnedObject();
 #endif
             try
             {
-                if (decode == 0)
-                {
-                    throw new NotSupportedException();
-                }
-                Bass.LastError.EnsureSuccessStatusCode();
+#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
+                decode = BassHelper.CreateStream(addr, 0, data.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
+#else
+                decode = BassHelper.CreateStream(data, 0, data.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
+#endif
                 if (speedChange)
                 {
                     //this will cause the music sometimes no sound, if press play after immedantly enter the songlist.
@@ -267,8 +269,9 @@ namespace MajdataPlay.IO
 
                 return sample;
             }
-            catch
+            catch (Exception e)
             {
+                MajDebug.LogException(e);
                 if (handle is not null)
                 {
                     ((GCHandle)handle).Free();

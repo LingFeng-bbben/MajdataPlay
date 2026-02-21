@@ -12,18 +12,19 @@ jobs:
       fail-fast: false
       matrix:
         configuration: [Release]
+        platfrom: [StandaloneWindows64,StandaloneLinux64,Android]
     env:
       COMMIT_HASH_FULL: ${{ github.sha }}
       OUTPUT_NAME: MajdataPlay-${{ matrix.configuration }}
       CONFIGURATION: ${{ matrix.configuration }}
-      TARGET_PLATFORM: "StandaloneWindows64"
+      TARGET_PLATFORM: ${{ matrix.platfrom }}
       
     steps:
       - name: Get commit hash
         run: echo "COMMIT_HASH=$(echo ${{ env.COMMIT_HASH_FULL }} | cut -c1-7)" >> $GITHUB_ENV
         
       - name: Setup output filename
-        run: echo "OUTPUT_NAME=MajdataPlay-${{ env.COMMIT_HASH }}-${{ matrix.configuration }}" >> $GITHUB_ENV
+        run: echo "OUTPUT_NAME=MajdataPlay-${{ env.COMMIT_HASH }}-${{ env.TARGET_PLATFORM }}-${{ env.CONFIGURATION }}" >> $GITHUB_ENV
         
       - name: Checkout the repository
         uses: actions/checkout@v4
@@ -35,8 +36,84 @@ jobs:
         uses: actions/cache@v3
         with:
           path: Library
-          key: Library-${{ env.TARGET_PLATFORM }}
-          restore-keys: Library-${{ env.TARGET_PLATFORM }}
+          key: Library-${{ env.TARGET_PLATFORM }}-${{ env.CONFIGURATION }}
+          restore-keys: Library-${{ env.TARGET_PLATFORM }}-${{ env.CONFIGURATION }}
+          
+      - name: Debug build
+        if: env.CONFIGURATION == 'Debug'
+        uses: game-ci/unity-builder@v4.3.0
+        with:
+          targetPlatform: ${{ env.TARGET_PLATFORM }}
+          versioning: Semantic
+          buildName: MajdataPlay
+          buildsPath: ${{ env.CONFIGURATION }}
+          buildMethod: MajdataPlay.Misc.Editor.CustomBuild.BuildDebug
+
+      - name: Release build
+        if: env.CONFIGURATION == 'Release'
+        uses: game-ci/unity-builder@v4.3.0
+        with:
+          targetPlatform: ${{ env.TARGET_PLATFORM }}
+          versioning: Semantic
+          buildName: MajdataPlay
+          buildsPath: ${{ env.CONFIGURATION }}
+
+      - name: List files in build directory
+        run: ls -R ${{ env.CONFIGURATION }}
+
+      - name: Upload build
+        if: ${{ env.TARGET_PLATFORM != 'Android' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.OUTPUT_NAME }}
+          path: ${{ env.CONFIGURATION }}
+
+      - name: Upload Android ARMv7 build
+        if: ${{ env.TARGET_PLATFORM == 'Android' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: "${{ env.OUTPUT_NAME }}.armeabi-v7a"
+          path: "${{ env.CONFIGURATION }}/Android/MajdataPlay.apk/MajdataPlay.armeabi-v7a.apk"
+
+      - name: Upload Android ARM64 build
+        if: ${{ env.TARGET_PLATFORM == 'Android' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: "${{ env.OUTPUT_NAME }}.arm64-v8a"
+          path: "${{ env.CONFIGURATION }}/Android/MajdataPlay.apk/MajdataPlay.arm64-v8a.apk"
+          
+  build-apple:
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration: [Release]
+        platfrom: [StandaloneOSX,iOS]
+    env:
+      COMMIT_HASH_FULL: ${{ github.sha }}
+      OUTPUT_NAME: MajdataPlay-${{ matrix.configuration }}
+      CONFIGURATION: ${{ matrix.configuration }}
+      TARGET_PLATFORM: ${{ matrix.platfrom }}
+
+    steps:
+      - name: Get commit hash
+        run: echo "COMMIT_HASH=$(echo ${{ env.COMMIT_HASH_FULL }} | cut -c1-7)" >> $GITHUB_ENV
+        
+      - name: Setup output filename
+        run: echo "OUTPUT_NAME=MajdataPlay-${{ env.COMMIT_HASH }}-${{ env.TARGET_PLATFORM }}-${{ env.CONFIGURATION }}" >> $GITHUB_ENV
+        
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Cache libraries
+        uses: actions/cache@v3
+        with:
+          path: Library
+          key: Library-${{ env.TARGET_PLATFORM }}-${{ env.CONFIGURATION }}
+          restore-keys: Library-${{ env.TARGET_PLATFORM }}-${{ env.CONFIGURATION }}
           
       - if: env.CONFIGURATION == 'Debug'
         name: Debug build
@@ -57,10 +134,35 @@ jobs:
           buildName: MajdataPlay
           buildsPath: ${{ env.CONFIGURATION }}
 
+      - name: Build iOS Xcode Project
+        if: ${{ env.TARGET_PLATFORM == 'iOS' }}
+        run: |
+          xcodebuild -project ${{ env.CONFIGURATION }}/iOS/MajdataPlay/Unity-iPhone.xcodeproj \
+            -scheme Unity-iPhone \
+            -configuration ${{ env.CONFIGURATION }} \
+            -sdk iphoneos \
+            -archivePath ${{ env.CONFIGURATION }}/iOS/MajdataPlay/Unity-iPhone.xcarchive archive
+
+      - name: Export IPA
+        if: ${{ env.TARGET_PLATFORM == 'iOS' }}
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath ${{ env.CONFIGURATION }}/iOS/MajdataPlay/Unity-iPhone.xcarchive \
+            -exportPath ${{ env.CONFIGURATION }}/iOS/MajdataPlay/MajdataPlay.ipa \
+            -exportOptionsPlist ./ExportOptions.plist
+
       - name: List files in build directory
         run: ls -R ${{ env.CONFIGURATION }}
 
       - name: Upload build
+        if: ${{ env.TARGET_PLATFORM == 'iOS' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.OUTPUT_NAME }}
+          path: ${{ env.CONFIGURATION }}/iOS/MajdataPlay/MajdataPlay.ipa
+
+      - name: Upload build
+        if: ${{ env.TARGET_PLATFORM != 'iOS' }}
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.OUTPUT_NAME }}

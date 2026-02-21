@@ -1,4 +1,4 @@
-﻿using MajdataPlay.IO;
+using MajdataPlay.IO;
 using MajdataPlay.Utils;
 using System;
 using UnityEngine;
@@ -74,7 +74,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         // -1 => Head judged
         // 0  => Released
         // 1  => Pressed
-        int _lastHoldState = -2;
+        int _lastHoldState = HOLD_STATE_HEAD_MISS_OR_NOT_JUDGED;
         float _releaseTime = 0;
         ButtonZone? _buttonPos;
         Range<float> _bodyCheckRange;
@@ -141,9 +141,13 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                     {
                         var autoplayGrade = AutoplayGrade;
                         if (((int)autoplayGrade).InRange(0, 14))
+                        {
                             _judgeResult = autoplayGrade;
+                        }
                         else
+                        {
                             _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
+                        }
                         ConvertJudgeGrade(ref _judgeResult);
                         _isJudged = true;
                         _judgeDiff = _judgeResult switch
@@ -153,9 +157,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                             _ => 0
                         };
                         PlaySFX();
-                        _effectManager.PlayHoldEffect(StartPos, _judgeResult);
-                        _effectManager.ResetEffect(StartPos);
-                        _lastHoldState = -1;
+                        _lastHoldState = HOLD_STATE_HEAD_JUDGED_AND_NOT_FEEDBACK;
                     }
                     break;
                 case AutoplayModeOption.DJAuto_TouchPanel_First:
@@ -231,13 +233,14 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             _sensorPos = (SensorArea)(StartPos - 1);
             _buttonPos = _sensorPos.ToButtonZone();
             _playerReleaseTimeSec = 0;
+            _judgeResult = JudgeGrade.Miss;
             _judgableRange = new(JudgeTiming - 0.15f, JudgeTiming + 0.15f, ContainsType.Closed);
-            _lastHoldState = -2;
+            _lastHoldState = HOLD_STATE_HEAD_MISS_OR_NOT_JUDGED;
             _releaseTime = 0;
 
             if(IsClassic)
             {
-                _bodyCheckRange = CLASSIC_HOLD_BODY_CHECK_RANGE;
+                _bodyCheckRange = new Range<float>(JudgeTiming - TAP_JUDGE_GOOD_AREA_MSEC / 1000, float.MaxValue, ContainsType.Closed);
             }
             else if (Length <= HOLD_HEAD_IGNORE_LENGTH_SEC + HOLD_TAIL_IGNORE_LENGTH_SEC)
             {
@@ -298,7 +301,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 IsEX = false,
                 Diff = _judgeDiff
             });
-            _lastHoldState = -2;
+            _lastHoldState = HOLD_STATE_HEAD_MISS_OR_NOT_JUDGED;
             _thisRenderer.sharedMaterial = DefaultMaterial;
             SetActive(false);
             RendererState = RendererStatus.Off;
@@ -311,8 +314,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         {
             base.Judge(currentSec);
             if (!_isJudged)
+            {
                 return;
-            _lastHoldState = -1;
+            }
+            _lastHoldState = HOLD_STATE_HEAD_JUDGED_AND_NOT_FEEDBACK;
         }
         protected override void PlaySFX()
         {
@@ -430,20 +435,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 case NoteStatus.Arrived:
                     var endTiming = timing - Length;
                     var endDistance = endTiming * Speed + 4.8f;
+                    var ratio = endDistance / 4.8f;
+                    var scale = Mathf.Abs(ratio);
                     _tapLineTransform.localScale = new Vector3(1f, 1f, 1f);
-
-                    if (IsClassic)
-                    {
-                        Distance = endDistance;
-                        var ratio = endDistance / 4.8f;
-                        var scale = Mathf.Abs(ratio);
-                        Transform.position = _outerPos * ratio;
-                        _tapLineTransform.localScale = new Vector3(scale, scale, 1f);
-                    }
-                    else
-                    {
-                        Transform.position = _outerPos;
-                    }
+                    Distance = endDistance;
+                    Transform.position = _outerPos * ratio;
+                    _tapLineTransform.localScale = new Vector3(scale, scale, 1f);
                     break;
                 default:
                     return;
@@ -468,7 +465,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 _judgeResult = JudgeGrade.Miss;
                 _isJudged = true;
                 _judgeDiff = 150;
-                _lastHoldState = -2;
+                _lastHoldState = HOLD_STATE_HEAD_MISS_OR_NOT_JUDGED;
                 _noteManager.NextNote(QueueInfo);
                 _releaseTime = 114514;
                 if (USERSETTING_DISPLAY_HOLD_HEAD_JUDGE_RESULT)
@@ -493,7 +490,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 return;
             }
-#if UNITY_ANDROID
+#if UNITY_ANDROID || UNITY_IOS
             if (_noteManager.IsSensorClickedInThisFrame(_sensorPos) && _noteManager.TryUseSensorClickEvent(_sensorPos))
             {
                 Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
@@ -536,14 +533,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         void BodyCheck()
         {
-            if (!_isJudged || IsEnded)
+            if (!IsInitialized || IsEnded)
             {
                 return;
             }
 
-            var remainingTime = GetRemainingTime();
-
-            if (_lastHoldState is -1 or 1)
+            if (_lastHoldState is HOLD_STATE_HEAD_JUDGED or HOLD_STATE_PRESSED)
             {
                 _effectManager.ResetEffect(StartPos);
             }
@@ -551,6 +546,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             
             if (!_bodyCheckRange.InRange(ThisFrameSec) || !NoteController.IsStart)
             {
+                if(_lastHoldState == HOLD_STATE_HEAD_JUDGED_AND_NOT_FEEDBACK && GetRemainingTime() < Length)
+                {
+                    _effectManager.PlayHoldEffect(StartPos, _judgeResult);
+                    _effectManager.ResetEffect(StartPos);
+                    _lastHoldState = HOLD_STATE_HEAD_JUDGED;
+                }
                 return;
             }
             var isButtonPressed = _noteManager.CheckButtonStatusInThisFrame(_buttonPos, SwitchStatus.On);
@@ -559,21 +560,18 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             if (isPressed || AutoplayMode == AutoplayModeOption.Enable)
             {
-                if (remainingTime == 0)
-                {
-                    _effectManager.ResetHoldEffect(StartPos);
-                }
-                else
-                {
-                    PlayHoldEffect();
-                }
+                PlayHoldEffect();
                 _releaseTime = 0;
-                _lastHoldState = 1;
+                _lastHoldState = HOLD_STATE_PRESSED;
             }
             else
             {
                 if (IsClassic)
                 {
+                    if(!_isJudged)
+                    {
+                        return;
+                    }
                     var isButtonReleased = _noteManager.CheckSensorStatusInPreviousFrame(_sensorPos, SwitchStatus.On) && 
                                            !isButtonPressed;
                     var offset = isButtonReleased ? 0 : USERSETTING_TOUCHPANEL_OFFSET_SEC;
@@ -587,13 +585,15 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 }
                 _playerReleaseTimeSec += MajTimeline.DeltaTime;
                 StopHoldEffect();
-                _lastHoldState = 0;
+                _lastHoldState = HOLD_STATE_RELEASED;
             }
         }
         void ForceEndCheck()
         {
             if (!_isJudged || IsEnded)
+            {
                 return;
+            }
 
             var timing = GetTimeSpanToJudgeTiming();
             var endTiming = timing - Length;
@@ -617,7 +617,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         void PlayHoldEffect()
         {
-            if (_lastHoldState != 1)
+            if (_lastHoldState != HOLD_STATE_PRESSED)
             {
                 _effectManager.PlayHoldEffect(StartPos, _judgeResult);
                 _thisRenderer.sprite = _holdOnSprite;
@@ -626,7 +626,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         void StopHoldEffect()
         {
-            if (_lastHoldState != 0)
+            if (_lastHoldState != HOLD_STATE_RELEASED)
             {
                 _effectManager.ResetHoldEffect(StartPos);
                 _thisRenderer.sprite = _holdOffSprite;

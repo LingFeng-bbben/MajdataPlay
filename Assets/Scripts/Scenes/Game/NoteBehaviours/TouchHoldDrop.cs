@@ -1,4 +1,4 @@
-﻿using MajdataPlay.Buffers;
+using MajdataPlay.Buffers;
 using MajdataPlay.Extensions;
 using MajdataPlay.Scenes.Game.Buffers;
 using MajdataPlay.Scenes.Game.Notes.Controllers;
@@ -77,7 +77,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         // -1 => Head judged
         // 0  => Released
         // 1  => Pressed
-        int _lastHoldState = -2;
+        int _lastHoldState = HOLD_STATE_HEAD_MISS_OR_NOT_JUDGED;
         float _releaseTime = 0;
         Range<float> _bodyCheckRange;
         //readonly float _touchPanelOffset = MajEnv.UserSetting?.Judge.TouchPanelOffset ?? 0;
@@ -176,8 +176,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                             IsEX = IsEX,
                             Diff = _judgeDiff
                         });
-                        _effectManager.PlayHoldEffect(_sensorPos, _judgeResult);
-                        _lastHoldState = -1;
+                        _lastHoldState = HOLD_STATE_HEAD_JUDGED_AND_NOT_FEEDBACK;
                     }
                     break;
                 case AutoplayModeOption.DJAuto_TouchPanel_First:
@@ -227,10 +226,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             QueueInfo = poolingInfo.QueueInfo;
             GroupInfo = poolingInfo.GroupInfo;
             _isJudged = false;
-            _lastHoldState = -2;
+            _lastHoldState = HOLD_STATE_HEAD_MISS_OR_NOT_JUDGED;
             Length = poolingInfo.LastFor;
             isFirework = poolingInfo.IsFirework;
             _sensorPos = poolingInfo.SensorPos;
+            _judgeResult = JudgeGrade.Miss;
             if (_sensorPos < SensorArea.B1 && _sensorPos >= SensorArea.A1)
             {
                 _buttonPos = _sensorPos.ToButtonZone();
@@ -320,7 +320,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 IsEX = false,
                 Diff = _judgeDiff
             });
-            _lastHoldState = -2;
+            _lastHoldState = HOLD_STATE_HEAD_MISS_OR_NOT_JUDGED;
             _audioEffMana.StopTouchHoldSound();
             _effectManager.PlayTouchHoldEffect(_sensorPos, result);
             _effectManager.ResetHoldEffect(_sensorPos);
@@ -393,7 +393,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             ConvertJudgeGrade(ref result);
             _judgeResult = result;
             _isJudged = true;
-            _lastHoldState = -1;
+            _lastHoldState = HOLD_STATE_HEAD_JUDGED_AND_NOT_FEEDBACK;
         }
         [OnPreUpdate]
         void OnPreUpdate()
@@ -494,6 +494,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                         _isJudged = true;
                         _judgeResult = (JudgeGrade)GroupInfo.JudgeResult;
                         _judgeDiff = GroupInfo.JudgeDiff;
+                        _lastHoldState = HOLD_STATE_HEAD_JUDGED_AND_NOT_FEEDBACK;
                         _noteManager.NextTouch(QueueInfo);
                     }
                 }
@@ -503,7 +504,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 _judgeResult = JudgeGrade.Miss;
                 _isJudged = true;
                 _judgeDiff = TOUCH_JUDGE_GOOD_AREA_MSEC;
-                _lastHoldState = -2;
+                _lastHoldState = HOLD_STATE_HEAD_MISS_OR_NOT_JUDGED;
                 _releaseTime = 114514;
                 _noteManager.NextTouch(QueueInfo);
             }
@@ -519,7 +520,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 return;
             }
 
-#if UNITY_ANDROID
+#if UNITY_ANDROID || UNITY_IOS
             if (_noteManager.IsSensorClickedInThisFrame(_sensorPos) && _noteManager.TryUseSensorClickEvent(_sensorPos))
             {
                 Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
@@ -553,18 +554,22 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         void BodyCheck()
         {
-            if (!_isJudged || IsEnded)
+            if (!IsInitialized || IsEnded)
             {
                 return;
             }
-
-            if (_lastHoldState is -1 or 1)
+            if (_lastHoldState is HOLD_STATE_HEAD_JUDGED or HOLD_STATE_PRESSED)
             {
                 _audioEffMana.PlayTouchHoldSound();
             }
 
             if (!_bodyCheckRange.InRange(ThisFrameSec) || !NoteController.IsStart)
             {
+                if (_lastHoldState == HOLD_STATE_HEAD_JUDGED_AND_NOT_FEEDBACK && GetRemainingTime() < Length)
+                {
+                    _effectManager.PlayHoldEffect(_sensorPos, _judgeResult);
+                    _lastHoldState = HOLD_STATE_HEAD_JUDGED;
+                }
                 return;
             }
             var on = _noteManager.CheckSensorStatusInThisFrame(_sensorPos, SwitchStatus.On);
@@ -572,7 +577,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 PlayHoldEffect();
                 _releaseTime = 0;
-                _lastHoldState = 1;
+                _lastHoldState = HOLD_STATE_PRESSED;
             }
             else
             {
@@ -583,7 +588,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 }
                 _playerReleaseTimeSec += MajTimeline.DeltaTime;
                 StopHoldEffect();
-                _lastHoldState = 0;
+                _lastHoldState = HOLD_STATE_RELEASED;
             }
         }
         void ForceEndCheck()
@@ -667,11 +672,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         {
             //var r = MajInstances.AudioManager.GetSFX("touch_Hold_riser.wav");
             //MajDebug.Log($"IsPlaying:{r.IsPlaying}\nCurrent second: {r.CurrentSec}s");
-            if (_lastHoldState != 1)
+            if (_lastHoldState != HOLD_STATE_PRESSED)
             {
                 _effectManager.PlayHoldEffect(_sensorPos, _judgeResult);
                 _borderRenderer.sprite = board_On;
-                if (_lastHoldState < 0)
+                if (_lastHoldState < HOLD_STATE_RELEASED)
                 {
                     SetFansMaterial(DefaultMaterial);
                 }
@@ -679,11 +684,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         void StopHoldEffect()
         {
-            if (_lastHoldState != 0)
+            if (_lastHoldState != HOLD_STATE_RELEASED)
             {
                 _effectManager.ResetHoldEffect(_sensorPos);
                 _borderRenderer.sprite = board_Off;
-                if (_lastHoldState < 0)
+                if (_lastHoldState < HOLD_STATE_RELEASED)
                 {
                     SetFansMaterial(DefaultMaterial);
                 }

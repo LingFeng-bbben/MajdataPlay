@@ -242,6 +242,7 @@ namespace MajdataPlay.Scenes.Practice
             {
                 btnA5Statistic.IsClickEventUsed = true;
                 _isExited = true;
+                MajEnv.Settings.Mod.PlaybackSpeed = 1;
                 MajInstances.SceneSwitcher.SwitchScene("List", false);
                 throw new OperationCanceledException();
             }
@@ -345,6 +346,7 @@ namespace MajdataPlay.Scenes.Practice
             _playbackSpeed = Mathf.Max(_playbackSpeed , 0.01f);
             if(needUpdatePBSValue)
             {
+                _playbackSpeed = MathF.Round(_playbackSpeed, 2);
                 _playbackSpeedValue.text = ZString.Format("{0:F2}", _playbackSpeed);
             }
             var pressTime = Mathf.Max(Mathf.Max(Mathf.Max(e6Statistic.PressTime, b5Statistic.PressTime), b4Statistic.PressTime), e4Statistic.PressTime);

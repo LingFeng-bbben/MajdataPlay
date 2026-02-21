@@ -1,6 +1,3 @@
-[submodule "Assets/Plugins/MychIO"]
-	path = Assets/Plugins/MychIO
-	url = https://github.com/istareatscreens/MychIO
 [submodule "Assets/Plugins/HidSharp"]
 	path = Assets/Plugins/HidSharp
 	url = https://github.com/LeZi9916/HidSharp

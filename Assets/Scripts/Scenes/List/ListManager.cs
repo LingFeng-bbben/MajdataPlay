@@ -1,23 +1,32 @@
 using Cysharp.Threading.Tasks;
-using MajdataPlay.Scenes.Game;
+using MajdataPlay.Buffers;
 using MajdataPlay.IO;
 using MajdataPlay.Recording;
+using MajdataPlay.Scenes.Game;
+using MajdataPlay.Scenes.Setting;
+using MajdataPlay.Settings;
+using MajdataPlay.Settings.Runtime;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
-using UnityEngine;
-using MajdataPlay.Scenes.Setting;
 using System.Threading.Tasks;
-using MajdataPlay.Buffers;
-using MajdataPlay.Settings.Runtime;
-
+using UnityEngine;
+#nullable enable
 namespace MajdataPlay.Scenes.List
 {
-    public class ListManager : MonoBehaviour
+    public class ListManager : MonoBehaviour, ISceneManager
     {
-        public CancellationToken CancellationToken => _cts.Token;
+        const int MAX_ALLOWED_INACTIVE_TIME_MIN = 5;
+        public CancellationToken CancellationToken
+        {
+            get
+            {
+                return _cts.Token;
+            }
+        }
         public static List<Task> AllBackgroundTasks { get; } = new(8192);
 
         int _delta = 0;
@@ -32,8 +41,11 @@ namespace MajdataPlay.Scenes.List
 
         float _autoSlideTimer = 0f;
         float _enterPracticeTimer = 0f;
+        float _inactiveTimeSec = 0f;
 
         CoverListDisplayer _coverListDisplayer;
+        [SerializeField]
+        UserInfoDisplayer _userInfoDisplayer;
 
         const float AUTO_SLIDE_INTERVAL_SEC = 0.15f;
         const float AUTO_SLIDE_TRIGGER_TIME_SEC = 0.4f;
@@ -85,6 +97,7 @@ namespace MajdataPlay.Scenes.List
                     }
                 }
             }
+            InputManager.BindAnyArea(OnAnyInput);
         }
         void Start()
         {
@@ -97,7 +110,23 @@ namespace MajdataPlay.Scenes.List
                 var list = new string[] { "select_song.wav", "select_song_2.wav", "select_song_3.wav", "select_song_4.wav" };
                 MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
             }
+            DisplayUserInfo();
         }
+
+        void DisplayUserInfo()
+        {
+            //TODO: display multiple endpoints
+            var apiendpoint = MajEnv.Settings.Online.ApiEndpoints.FirstOrDefault();
+            if (apiendpoint is not null)
+            {
+                _userInfoDisplayer.DisplayUserInfo(apiendpoint);
+            }
+            else
+            {
+                _userInfoDisplayer.gameObject.SetActive(false);
+            }
+        }
+
         async UniTaskVoid InitializeCoverListAsync()
         {
             try
@@ -112,7 +141,7 @@ namespace MajdataPlay.Scenes.List
                 MajInstances.SceneSwitcher.FadeOut();
                 _coverListDisplayer.SlideToDifficulty((int)_listConfig.SelectedDiff);
                 _isInited = true;
-                LedRing.SetButtonLight(Color.green, 3);
+                LedRing.SetSineFunc(3, Color.green, 1000);
                 LedRing.SetButtonLight(Color.red, 4);
                 LedRing.SetButtonLight(Color.blue, 2);
                 LedRing.SetButtonLight(Color.blue, 5);
@@ -123,15 +152,30 @@ namespace MajdataPlay.Scenes.List
         void OnDestroy()
         {
             _isExited = true;
+            _cts.Cancel();
+            InputManager.UnbindAnyArea(OnAnyInput);
             Majdata<ListManager>.Free();
             MajEnv.SharedHttpClient.CancelPendingRequests();
-            _cts.Cancel();
         }
         void Update()
         {
+            if (_isExited || !_isInited)
+            {
+                return;
+            }
             ButtonStatisticsUpdate();
             SensorCheck();
             ButtonCheck();
+            _inactiveTimeSec += MajTimeline.UnscaledDeltaTime;
+            if (TimeSpan.FromSeconds(_inactiveTimeSec) > TimeSpan.FromMinutes(MAX_ALLOWED_INACTIVE_TIME_MIN))
+            {
+                EnterLogin();
+                return;
+            }
+        }
+        void OnAnyInput(object? sender, InputEventArgs args)
+        {
+            _inactiveTimeSec = 0;
         }
         void SensorCheck()
         {
@@ -386,6 +430,11 @@ namespace MajdataPlay.Scenes.List
                     SongStorage.WorkingCollection.Index = 0;
                     return;
                 }
+                if (_coverListDisplayer.IsDirList)
+                {
+                    EnterLogin();
+                    return;
+                }
             }
             else
             {
@@ -552,6 +601,38 @@ namespace MajdataPlay.Scenes.List
             _coverListDisplayer.SelectedCollection.Index = 0;
             _isExited = true;
             MajInstances.SceneSwitcher.SwitchScene("Game", false);
+        }
+        void EnterLogin()
+        {
+            _cts.Cancel();
+            _pressTime = 0;
+            _isExited = true;
+            MajInstances.AudioManager.StopSFX("bgm_select.mp3");
+            EnterLoginBackgroundAsync();
+        }
+        async void EnterLoginBackgroundAsync()
+        {
+            var sceneSwitcher = MajInstances.SceneSwitcher;
+            await sceneSwitcher.FadeInAsync();
+            sceneSwitcher.SwitchScene("Empty", false);
+            await UniTask.Delay(400);
+            sceneSwitcher.SetLoadingText("Waiting for all background tasks to suspend".i18n());
+            await UniTask.Delay(100);
+            var bTasks = WaitForBackgroundTaskSuspendAsync();
+            while (!bTasks.IsCompleted)
+            {
+                await UniTask.Yield();
+            }
+            await UniTask.Delay(100);
+            sceneSwitcher.SetLoadingText("MAJTEXT_LOGGING_OUT".i18n() + "...");
+            var task = Online.LogoutAllAsync();
+            while (!task.IsCompleted)
+            {
+                await UniTask.Yield();
+            }
+            sceneSwitcher.SetLoadingText(string.Empty);
+            await UniTask.Delay(1000);
+            sceneSwitcher.SwitchScene("Login");
         }
         public static Task WaitForBackgroundTaskSuspendAsync()
         {

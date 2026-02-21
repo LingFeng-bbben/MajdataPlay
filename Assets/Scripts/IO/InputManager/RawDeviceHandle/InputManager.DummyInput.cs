@@ -25,11 +25,7 @@ namespace MajdataPlay.IO
         // 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
         // Version bit (16bit)
         // uint16
-#if UNITY_ANDROID
         readonly static ulong?[][] _cachedPositions = new ulong?[4096][];
-#else
-        readonly static ulong?[][] _cachedPositions = new ulong?[4096][];
-#endif
         readonly static Dictionary<int, ulong> _touchRecorder = new(32);
 
         static ushort _version = 0;
@@ -69,7 +65,7 @@ namespace MajdataPlay.IO
                     Timestamp = now
                 });
             }
-#if UNITY_ANDROID
+#if UNITY_ANDROID || UNITY_IOS
             for (var i = 0; i < sensorClickedCount.Length; i++) 
             {
                 var clickedCount = sensorClickedCount[i];
@@ -118,7 +114,7 @@ namespace MajdataPlay.IO
                 {
                     extraButton[button] = true;
                 }
-#if UNITY_ANDROID
+#if UNITY_ANDROID || UNITY_IOS
                 _touchRecorder.TryGetValue(touch.touchId, out var lastTouchPosData);
 
                 for (var i = 0; i < 34; i++)

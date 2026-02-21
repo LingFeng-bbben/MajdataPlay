@@ -100,6 +100,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         void OnDestroy()
         {
             Majdata<NoteAudioManager>.Free();
+            foreach (var sfx in _noteSFXs)
+            {
+                sfx.Stop();
+            }
             Array.Clear(_noteSFXPlaybackRequests, 0, _noteSFXPlaybackRequests.Length);
             Array.Clear(_noteSFXs, 0, _noteSFXs.Length);
             Pool<AnswerSoundPoint>.ReturnArray(_rentedArrayForAnswerSoundPoints, true);

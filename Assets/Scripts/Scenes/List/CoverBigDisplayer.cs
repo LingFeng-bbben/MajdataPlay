@@ -47,7 +47,8 @@ namespace MajdataPlay.Scenes.List
 
         CancellationTokenSource? _cts = null;
         ChartAnalyzer _chartAnalyzer;
-        CoverListDisplayer? _listDisplayer;
+        CoverListDisplayer _listDisplayer;
+        ListManager _listManager;
         private void Awake()
         {
             /* Level = transform.Find("Level").GetComponent<TMP_Text>();
@@ -60,7 +61,8 @@ namespace MajdataPlay.Scenes.List
         }
         void Start()
         {
-            _listDisplayer = Majdata<CoverListDisplayer>.Instance;
+            _listDisplayer = Majdata<CoverListDisplayer>.Instance!;
+            _listManager = Majdata<ListManager>.Instance!;
         }
         public void SetDifficulty(int i)
         {
@@ -91,12 +93,13 @@ namespace MajdataPlay.Scenes.List
                 _cts.Cancel();
             }
             _cts = new();
-            ListManager.AllBackgroundTasks.Add(SetCoverAsync(detail, _cts.Token));
-            _chartAnalyzer.AnalyzeAndDrawGraphAsync(detail, (ChartLevel)diff, token: _cts.Token).Forget();
+            var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_listManager.CancellationToken, _cts.Token);
+            ListManager.AllBackgroundTasks.Add(SetCoverAsync(detail, linkedCts.Token));
+            _chartAnalyzer.AnalyzeAndDrawGraphAsync(detail, (ChartLevel)diff, token: linkedCts.Token).Forget();
         }
         public void SetNoCover()
         {
-            _cover.sprite = null;
+            _cover.sprite = null!;
         }
         void OnDestroy()
         {

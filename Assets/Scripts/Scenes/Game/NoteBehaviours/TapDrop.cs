@@ -310,7 +310,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 return;
             }
 
-#if UNITY_ANDROID
+#if UNITY_ANDROID || UNITY_IOS
             if (_noteManager.IsSensorClickedInThisFrame(_sensorPos) && _noteManager.TryUseSensorClickEvent(_sensorPos))
             {
                 Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);

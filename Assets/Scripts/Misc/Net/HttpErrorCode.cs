@@ -7,9 +7,12 @@ using System.Threading.Tasks;
 namespace MajdataPlay.Net;
 internal enum HttpErrorCode
 {
+    NoError,
     Unreachable,
     InvalidRequest,
+    NotSupported,
     Unsuccessful,
     Timeout,
-    Canceled
+    Canceled,
+    IntegrityCheckFailed
 }

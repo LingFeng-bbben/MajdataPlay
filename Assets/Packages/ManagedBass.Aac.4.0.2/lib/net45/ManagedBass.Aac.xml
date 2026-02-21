@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ManagedBass.Aac</name>
+    </assembly>
+    <members>
+        <member name="T:ManagedBass.Aac.BassAac">
+            <summary>
+            BassAac is a BASS addon enabling playback of AAC and MP4 streams.
+            </summary> 
+            <remarks>
+            Supports .aac, .adts, .mp4, .m4a, .m4b
+            </remarks>
+        </member>
+        <member name="P:ManagedBass.Aac.BassAac.PlayAudioFromMp4">
+            <summary>
+            Play audio from Mp4... default = true.
+            </summary>
+        </member>
+        <member name="P:ManagedBass.Aac.BassAac.AacSupportMp4">
+            <summary>
+            Support Mp4 in Aac functions.
+            </summary>
+        </member>
+        <member name="M:ManagedBass.Aac.BassAac.CreateStream(System.String,System.Int64,System.Int64,ManagedBass.BassFlags)">
+            <summary>Create a stream from file.</summary>
+        </member>
+        <member name="M:ManagedBass.Aac.BassAac.CreateStream(System.IntPtr,System.Int64,System.Int64,ManagedBass.BassFlags)">
+            <summary>Create a stream from Memory (IntPtr).</summary>
+        </member>
+        <member name="M:ManagedBass.Aac.BassAac.CreateStream(System.Byte[],System.Int64,System.Int64,ManagedBass.BassFlags)">
+            <summary>Create a stream from Memory (byte[]).</summary>
+        </member>
+        <member name="M:ManagedBass.Aac.BassAac.CreateStream(ManagedBass.StreamSystem,ManagedBass.BassFlags,ManagedBass.FileProcedures,System.IntPtr)">
+            <summary>Create a stream using User File Procedures.</summary>
+        </member>
+        <member name="M:ManagedBass.Aac.BassAac.CreateStream(System.String,System.Int32,ManagedBass.BassFlags,ManagedBass.DownloadProcedure,System.IntPtr)">
+            <summary>Create a stream from Url.</summary>
+        </member>
+        <member name="M:ManagedBass.Aac.BassAac.CreateMp4Stream(System.String,System.Int64,System.Int64,ManagedBass.BassFlags)">
+            <summary>Create a stream from file.</summary>
+        </member>
+        <member name="M:ManagedBass.Aac.BassAac.CreateMp4Stream(System.IntPtr,System.Int64,System.Int64,ManagedBass.BassFlags)">
+            <summary>Create a stream from Memory (IntPtr).</summary>
+        </member>
+        <member name="M:ManagedBass.Aac.BassAac.CreateMp4Stream(System.Byte[],System.Int64,System.Int64,ManagedBass.BassFlags)">
+            <summary>Create a stream from Memory (byte[]).</summary>
+        </member>
+        <member name="M:ManagedBass.Aac.BassAac.CreateMp4Stream(ManagedBass.StreamSystem,ManagedBass.BassFlags,ManagedBass.FileProcedures,System.IntPtr)">
+            <summary>Create a stream using User File Procedures.</summary>
+        </member>
+        <member name="M:ManagedBass.Aac.BassAac.CreateMp4Stream(System.String,System.Int32,ManagedBass.BassFlags,ManagedBass.DownloadProcedure,System.IntPtr)">
+            <summary>Create a stream from Url.</summary>
+        </member>
+    </members>
+</doc>

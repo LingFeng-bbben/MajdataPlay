@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 using MajdataPlay.Editor;
 using MajdataPlay.Extensions;
@@ -9,6 +9,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
     internal abstract class NoteLongDrop : NoteDrop
     {
+        protected const int HOLD_STATE_HEAD_MISS_OR_NOT_JUDGED = -3;
+        protected const int HOLD_STATE_HEAD_JUDGED_AND_NOT_FEEDBACK = -2;
+        protected const int HOLD_STATE_HEAD_JUDGED = -1;
+        protected const int HOLD_STATE_RELEASED = 0;
+        protected const int HOLD_STATE_PRESSED = 1;
         public float Length
         {
             get => _length;
