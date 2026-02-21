@@ -264,7 +264,7 @@ namespace MajdataPlay.Settings
         [Preserve]
         public float NoteAppearRate { get; set; } = 0.265f;
         [Preserve]
-        public OffsetUnitOption OffsetUnit { get; set; } = OffsetUnitOption.Second;
+        public OffsetUnitOption OffsetUnit { get; set; } = OffsetUnitOption.Frame;
         [SettingVisualizationIgnore]
         public bool HideCursorInGame { get; set; } = true;
         [SettingVisualizationIgnore]
