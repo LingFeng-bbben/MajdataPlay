@@ -475,12 +475,11 @@ namespace MajdataPlay.IO
                             var usbReadResult = usbReader.Read(bufferArray, 100, out int bytesRead);
                             if (usbReadResult != ErrorCode.None)
                             {
+                                MajDebug.LogError($"TouchPanel: Usb read error: {usbReadResult}");
                                 if (usbReadResult == ErrorCode.IoTimedOut)
                                 {
                                     continue;
                                 }
-
-                                MajDebug.LogError($"TouchPanel: Usb read error: {usbReadResult}");
                                 break;
                             }
                             NovHIDTouchPanel.Parse(buffer.Slice(0, bytesRead), _sensorRealTimeStates);
