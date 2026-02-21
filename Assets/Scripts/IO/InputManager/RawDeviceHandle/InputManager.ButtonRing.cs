@@ -61,6 +61,10 @@ namespace MajdataPlay.IO
                 {
                     _buttonRingUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
                 }
+                else if (manufacturer is DeviceManufacturerOption.Nov)
+                {
+                    _buttonRingUpdateLoop = Task.Factory.StartNew(KeyboardUpdateLoop, TaskCreationOptions.LongRunning);
+                }
                 else
                 {
                     MajDebug.LogWarning($"ButtonRing: Not supported button ring manufacturer: {manufacturer}");

@@ -461,8 +461,8 @@ namespace MajdataPlay.IO
 
                 try
                 {
-                    var bufferPtr = stackalloc byte[usbOptions.PacketSize];
-                    Span<byte> buffer = new Span<byte>(bufferPtr, usbOptions.PacketSize);
+                    var bufferArray = new byte[usbOptions.PacketSize];
+                    Span<byte> buffer = bufferArray.AsSpan();
                     MajDebug.LogInfo($"TouchPanel connected\nDevice: {usbDevice.Info} (VID {vid}, PID {pid})");
                     using var usbReader = usbDevice.OpenEndpointReader(ReadEndpointID.Ep02);
                     stopwatch.Start();
@@ -472,8 +472,18 @@ namespace MajdataPlay.IO
                         try
                         {
                             var now = MajTimeline.UnscaledTime;
-                            var usbReadResult = usbReader.Read((IntPtr)bufferPtr, 100, out int bytesRead); ;
-                            NovHIDTouchPanel.Parse(buffer, _sensorRealTimeStates);
+                            var usbReadResult = usbReader.Read(bufferArray, 100, out int bytesRead);
+                            if (usbReadResult != ErrorCode.None)
+                            {
+                                if (usbReadResult == ErrorCode.IoTimedOut)
+                                {
+                                    continue;
+                                }
+
+                                MajDebug.LogError($"TouchPanel: Usb read error: {usbReadResult}");
+                                break;
+                            }
+                            NovHIDTouchPanel.Parse(buffer.Slice(0, bytesRead), _sensorRealTimeStates);
                             IsConnected = true;
                             var isLocked = false;
                             try
@@ -1047,6 +1057,10 @@ namespace MajdataPlay.IO
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 public static void Parse(ReadOnlySpan<byte> reportData, Span<bool> buffer)
                 {
+                    if(reportData.Length <= ((MAX_TOUCH_POINTS - 1) * TOUCH_POINT_SIZE + 5))
+                    {
+                        return;
+                    }
                     if (reportData[0] != REPORT_ID)
                     {
                         return;
