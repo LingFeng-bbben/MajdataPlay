@@ -3,7 +3,7 @@ run-name: MajdataPlay build
 
 on:
   push:
-    branches: [ "beta1.0", "xcode_build" ]
+    branches: [ "beta1.0", "main" ]
   pull_request:
     branches: [ "main" ]
 
