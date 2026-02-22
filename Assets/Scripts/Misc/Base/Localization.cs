@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using UnityEngine;
 
 #nullable enable
 namespace MajdataPlay
@@ -56,18 +57,24 @@ namespace MajdataPlay
 
             try
             {
-                var path = MajEnv.LangPath;
-                if (!Directory.Exists(path))
+                var files = new List<string>
                 {
-                    return;
-                }
-                var files = new DirectoryInfo(path).GetFiles()
-                                                   .Where(x => x.Extension == ".json");
+                    "Langs/en-US",
+                    "Langs/ja-JP",
+                    "Langs/zh-CN",
+                    "Langs/zh-TW",
+                };
                 List<Language> loadedLangs = new();
-                foreach (var fileInfo in files)
+                foreach (var file in files)
                 {
-                    var filePath = fileInfo.FullName;
-                    var json = File.ReadAllText(filePath);
+                    var ta = Resources.Load<TextAsset>(file);
+                    if (ta == null)
+                    {
+                        MajDebug.LogError($"Lang file not found: {file}");
+                        continue;
+                    }
+                    MajDebug.LogDebug("Lang file loaded: " + file);
+                    var json = ta.text;
                     Language? lang = null;
                     if (Serializer.Json.TryDeserialize(json, out lang, jsonReaderSettings) && lang is not null)
                     {
