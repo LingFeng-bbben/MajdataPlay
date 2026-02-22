@@ -353,6 +353,10 @@ namespace MajdataPlay.Settings
         public int DebounceThresholdMs { get; set; } = 0;
         [Preserve]
         public SerialPortOptions SerialPortOptions { get; set; } = new();
+        [Preserve]
+        public UsbOptions UsbOptions { get; set; } = new();
+        [Preserve]
+        public CapacitiveTouchPanelOptions CapacitivePanelOptions { get; set; } = new();
     }
     [Preserve]
     public class HidOptions
@@ -367,6 +371,24 @@ namespace MajdataPlay.Settings
         public bool Exclusice { get; set; } = false;
         [Preserve]
         public OpenPriority OpenPriority { get; set; } = OpenPriority.VeryHigh;
+    }
+    [Preserve]
+    public class UsbOptions
+    {
+        [Preserve]
+        public string? DeviceName { get; set; } = null;
+        [Preserve]
+        public int? ProductId { get; set; } = null;
+        [Preserve]
+        public int? VendorId { get; set; } = null;
+        [Preserve]
+        public bool Exclusice { get; set; } = false;
+    }
+    [Preserve]
+    public class CapacitiveTouchPanelOptions
+    {
+        [Preserve]
+        public int TouchRadius { get; set; } = 30;
     }
     [Preserve]
     public class SerialPortOptions

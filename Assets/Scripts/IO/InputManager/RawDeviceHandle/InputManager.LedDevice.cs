@@ -63,6 +63,7 @@ namespace MajdataPlay.IO
                     {
                         case DeviceManufacturerOption.General:
                         case DeviceManufacturerOption.Yuan:
+                        case DeviceManufacturerOption.Nov:
                             _ledDeviceUpdateLoop = Task.Factory.StartNew(SerialPortUpdateLoop, TaskCreationOptions.LongRunning);
                             break;
                         case DeviceManufacturerOption.Dao:

@@ -1,5 +1,6 @@
-﻿using HidSharp;
+using HidSharp;
 using HidSharp.Platform.Windows;
+using LibUsbDotNet;
 using MajdataPlay.Collections;
 using MajdataPlay.Numerics;
 using MajdataPlay.Settings;
@@ -282,6 +283,7 @@ namespace MajdataPlay.IO
         static SerialPortConnInfo _ledDeviceSerialConnInfo = default;
         static HidConnInfo _ledDeviceHidConnInfo = default;
         static HidConnInfo _buttonRingHidConnInfo = default;
+        static UsbConnInfo _touchPanelUsbConnInfo = default;
 
         static int _playerIndex = 1;
         static DeviceManufacturerOption _deviceManufacturer = DeviceManufacturerOption.General;
@@ -413,12 +415,15 @@ namespace MajdataPlay.IO
             const int YUAN_HID_2P_VID = 11852;
             const int DAO_HID_PID = 4644;
             const int DAO_HID_VID = 3727;
+            const int NOV_USB_PID = 0x3003;
+            const int NOV_USB_VID = 0x3356;
             const int GENERAL_HID_1P_PID = 33;
             const int GENERAL_HID_1P_VID = 3235;
             const int GENERAL_HID_2P_PID = 33;
             const int GENERAL_HID_2P_VID = 3235;
 
             var hidDevices = HidManager.Devices;
+            var usbDevices = UsbDevice.AllDevices;
 #if ENABLE_IL2CPP
             var serialPorts = "NotSupported";
 #else
@@ -436,6 +441,7 @@ namespace MajdataPlay.IO
             var manufacturer = DeviceManufacturerOption.General;
             var buttonRingType = userButtonRingType ?? ButtonRingDeviceOption.Keyboard;
 
+            MajDebug.LogInfo($"All available USB devices:\n{string.Join('\n', usbDevices.Select(x => $"{x.FullName} (VID {x.Vid}, PID {x.Pid})"))}");
             MajDebug.LogInfo($"All available HID devices:\n{string.Join('\n', hidDevices)}");
             MajDebug.LogInfo($"All available serial ports:\n{string.Join('\n', serialPorts)}");
 
@@ -455,7 +461,7 @@ namespace MajdataPlay.IO
                         PortName = touchPanelSettings.SerialPortOptions.Port ?? WinSerialPortToLinuxPortName((playerIndex == 1 ? 3 : 4)),
 #endif
                         BaudRate = touchPanelSettings.SerialPortOptions.BaudRate ?? 9600,
-                    };
+                    }; 
                     _ledDeviceSerialConnInfo = new()
                     {
 #if UNITY_STANDALONE_WIN
@@ -467,8 +473,7 @@ namespace MajdataPlay.IO
                     };
                     return;
                 }
-
-                if (userManufacturer is not null)
+                else if (userManufacturer is not null)
                 {
                     MajDebug.LogInfo("User has set the IO manufacturer and button ring type, use the user-set values");
                     manufacturer = (DeviceManufacturerOption)userManufacturer;
@@ -551,6 +556,27 @@ namespace MajdataPlay.IO
                                 OpenPriority = ledDeviceSettings.HidOptions.OpenPriority
                             };
                             break;
+                        case DeviceManufacturerOption.Nov:
+                            buttonRingType = ButtonRingDeviceOption.Keyboard;
+                            _touchPanelUsbConnInfo = new()
+                            {
+                                DeviceName = touchPanelSettings.UsbOptions.DeviceName ?? string.Empty,
+                                ProductId = touchPanelSettings.UsbOptions.ProductId ?? NOV_USB_PID,
+                                VendorId = touchPanelSettings.UsbOptions.VendorId ?? NOV_USB_VID,
+                                Configuration = 1,
+                                Interface = 1,
+                                PacketSize = 64
+                            };
+                            _ledDeviceSerialConnInfo = new()
+                            {
+#if UNITY_STANDALONE_WIN
+                                PortName = "COM" + (ledDeviceSettings.SerialPortOptions.Port ?? (playerIndex == 1 ? 3 : 4)),
+#else
+                                PortName = ledDeviceSettings.SerialPortOptions.Port ?? WinSerialPortToLinuxPortName((playerIndex == 1 ? 21 : 22)),
+#endif
+                                BaudRate = ledDeviceSettings.SerialPortOptions.BaudRate ?? 115200,
+                            };
+                            break;
                     }
                 }
                 else
@@ -559,6 +585,8 @@ namespace MajdataPlay.IO
                     var yuanDefaultHidVID = YUAN_HID_1P_VID;
                     var daoDefaultHidPID = DAO_HID_PID;
                     var daoDefaultHidVID = DAO_HID_VID;
+                    var novDefaultUsbPID = NOV_USB_PID;
+                    var novDefaultUsbVID = NOV_USB_VID;
                     var generalDefaultHidPID = GENERAL_HID_1P_PID;
                     var generalDefaultHidVID = GENERAL_HID_1P_VID;
 
@@ -582,11 +610,19 @@ namespace MajdataPlay.IO
                         var isYuan = x.ProductID == yuanDefaultHidPID && x.VendorID == yuanDefaultHidVID;
                         var isDao = x.ProductID == daoDefaultHidPID && x.VendorID == daoDefaultHidVID;
                         var isGeneral = x.ProductID == generalDefaultHidPID && x.VendorID == generalDefaultHidVID;
+                        var isNov = x.ProductID == novDefaultUsbPID && x.VendorID == novDefaultUsbVID;
                         var result = isYuan || isDao || isGeneral;
 
                         return result;
                     });
-                    if (filteredHidDevices.Count() != 0)
+                    var filteredUsbDevices = usbDevices.Where(x =>
+                    {
+                        var isNov = x.Pid == novDefaultUsbPID && x.Vid == novDefaultUsbVID;
+                        var result = isNov;
+
+                        return result;
+                    });
+                    if (filteredHidDevices.Count() != 0 || filteredUsbDevices.Count() != 0)
                     {
                         if (hidDevices.Any(x => x.ProductID == yuanDefaultHidPID && x.VendorID == yuanDefaultHidVID))
                         {
@@ -642,6 +678,30 @@ namespace MajdataPlay.IO
                                 OpenPriority = OpenPriority.VeryHigh
                             };
                         }
+                        else if (usbDevices.Any(x => x.Pid == novDefaultUsbPID && x.Vid == novDefaultUsbVID))
+                        {
+                            MajDebug.LogInfo("Manufacturer detect result: Nov");
+                            manufacturer = DeviceManufacturerOption.Nov;
+                            buttonRingType = ButtonRingDeviceOption.Keyboard;
+                            _touchPanelUsbConnInfo = new()
+                            {
+                                DeviceName = string.Empty,
+                                ProductId = novDefaultUsbPID,
+                                VendorId = novDefaultUsbVID,
+                                Configuration = 1,
+                                Interface = 1,
+                                PacketSize = 64
+                            };
+                            _ledDeviceSerialConnInfo = new()
+                            {
+#if UNITY_STANDALONE_WIN
+                                PortName = "COM" + ledDeviceDefaultSerialPort,
+#else
+                                PortName = WinSerialPortToLinuxPortName(ledDeviceDefaultSerialPort),
+#endif
+                                BaudRate = 115200,
+                            };
+                        }
                         else if (hidDevices.Any(x => x.ProductID == generalDefaultHidPID && x.VendorID == generalDefaultHidVID))
                         {
                             MajDebug.LogInfo("Manufacturer detect result: General");
@@ -681,7 +741,7 @@ namespace MajdataPlay.IO
                     }
                     else
                     {
-                        MajDebug.LogWarning("No HID device detected, fallback to keyboard");
+                        MajDebug.LogWarning("No HID or USB device detected, fallback to keyboard");
                         manufacturer = DeviceManufacturerOption.General;
                         buttonRingType = ButtonRingDeviceOption.Keyboard;
                         _touchPanelSerialConnInfo = new()
@@ -1189,6 +1249,15 @@ namespace MajdataPlay.IO
             public int VendorId { get; init; }
             public bool Exclusice { get; init; }
             public OpenPriority OpenPriority { get; init; }
+        }
+        readonly struct UsbConnInfo
+        {
+            public string DeviceName { get; init; }
+            public int ProductId { get; init; }
+            public int VendorId { get; init; }
+            public byte Configuration { get; init; }
+            public int Interface { get; init; }
+            public int PacketSize { get; init; }
         }
         readonly struct SerialPortConnInfo
         {

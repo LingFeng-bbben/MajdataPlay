@@ -12,6 +12,7 @@ namespace MajdataPlay.Settings
     {
         General,
         Yuan,
-        Dao
+        Dao,
+        Nov
     }
 }
