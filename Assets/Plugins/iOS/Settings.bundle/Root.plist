@@ -10,16 +10,6 @@
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
-			<string>Online</string>
-			<key>Key</key>
-			<string>enabled_online</string>
-			<key>DefaultValue</key>
-			<false/>
-		</dict>
-		<dict>
-			<key>Type</key>
-			<string>PSToggleSwitchSpecifier</string>
-			<key>Title</key>
 			<string>No Cache</string>
 			<key>Key</key>
 			<string>no_cache</string>

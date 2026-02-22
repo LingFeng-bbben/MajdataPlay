@@ -225,11 +225,7 @@ namespace MajdataPlay.Settings
     public class OnlineOptions
     {
         [Preserve]
-        #if UNITY_IOS && !UNITY_EDITOR
-        public bool Enable { get; } = IosSettings.GetBool("enabled_online", false);
-        #else
-        public bool Enable { get; set; } = false;
-        #endif
+        public bool Enable { get; set; } = true;
 #if UNITY_STANDALONE && ENABLE_MONO
         public bool UseProxy { get; init; } = true;
         public string Proxy { get; init; } = string.Empty;
