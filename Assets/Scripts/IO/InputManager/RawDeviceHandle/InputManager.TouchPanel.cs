@@ -428,6 +428,8 @@ namespace MajdataPlay.IO
             }
             static void UsbUpdateLoop()
             {
+                const int READ_TIMEOUT_MS = 100;
+
                 ref var @lock = ref _syncLock;
                 var touchPanelOptions = MajEnv.Settings.IO.InputDevice.TouchPanel;
                 var usbOptions = _touchPanelUsbConnInfo;
@@ -465,11 +467,6 @@ namespace MajdataPlay.IO
                     Span<byte> buffer = bufferArray.AsSpan();
                     MajDebug.LogInfo($"TouchPanel connected\nDevice: {usbDevice.Info} (VID {vid}, PID {pid})");
                     using var usbReader = usbDevice.OpenEndpointReader(ReadEndpointID.Ep02);
-                    var timeoutMS = (int)pollingRate.TotalMilliseconds;
-                    if(timeoutMS == 0)
-                    {
-                        timeoutMS = 1;
-                    }
                     stopwatch.Start();
                     while (true)
                     {
@@ -477,7 +474,7 @@ namespace MajdataPlay.IO
                         try
                         {
                             var now = MajTimeline.UnscaledTime;
-                            var usbReadResult = usbReader.Read(bufferArray, timeoutMS, out int bytesRead);
+                            var usbReadResult = usbReader.Read(bufferArray, READ_TIMEOUT_MS, out int bytesRead);
                             if (usbReadResult != ErrorCode.None)
                             {
                                 if (usbReadResult != ErrorCode.IoTimedOut)
@@ -1052,6 +1049,8 @@ namespace MajdataPlay.IO
                 const float MAX_Y = 32767f;
                 const bool FLIP = true;
 
+                const int TOUCH_TIMEOUT_MS = 20;
+
                 readonly static TouchSensorMapper _mapper;
                 readonly static FingerPoint[] _fingerPoints = new FingerPoint[256];
 
@@ -1067,9 +1066,11 @@ namespace MajdataPlay.IO
                     const int FINGER_ID_INDEX_OFFSET = 1;
                     const int X_POINT_INDEX_OFFSET = 2;
                     const int Y_POINT_INDEX_OFFSET = 4;
+
+                    var now = MajTimeline.UnscaledTime;
                     if(reportData.IsEmpty)
                     {
-                        buffer.Clear();
+                        ReadFingerPoints(buffer, now);
                         return;
                     }
                     else if (reportData[0] != REPORT_ID)
@@ -1077,7 +1078,6 @@ namespace MajdataPlay.IO
                         return;
                     }
                     reportData = reportData.Slice(1); //skip report id
-                    var touchMask = 0UL;
                     // 解析触摸点
                     for (var i = 0; i < MAX_TOUCH_POINTS; i++)
                     {
@@ -1092,21 +1092,11 @@ namespace MajdataPlay.IO
                         var x = BitConverter.ToUInt16(reportData.Slice(index + X_POINT_INDEX_OFFSET));
                         var y = BitConverter.ToUInt16(reportData.Slice(index + Y_POINT_INDEX_OFFSET));
 
-                        HandleFinger(x, y, fingerId, isPressed, ref touchMask);
+                        HandleFinger(x, y, fingerId, isPressed, now);
                     }
-                    for (int i = 0; i < _fingerPoints.Length; i++)
-                    {
-                        if (_fingerPoints[i].IsActive)
-                        {
-                            touchMask |= _fingerPoints[i].Mask;
-                        }
-                    }
-                    for (int i = 0; i < 34; i++)
-                    {
-                        buffer[i] = (touchMask & (1UL << i)) != 0;
-                    }
+                    ReadFingerPoints(buffer, now);
                 }
-                static void HandleFinger(ushort x, ushort y, byte fingerId, bool isPressed, ref ulong touchMask)
+                static void HandleFinger(ushort x, ushort y, byte fingerId, bool isPressed, TimeSpan now)
                 {
                     ref var point = ref _fingerPoints[fingerId];
 
@@ -1115,21 +1105,44 @@ namespace MajdataPlay.IO
                         ulong fingerTouchMask = _mapper.ParseTouchPoint(x, y);
                         point.IsActive = true;
                         point.Mask = fingerTouchMask;
-                        touchMask |= fingerTouchMask;
+                        point.LastActive = now;
                     }
                     else
                     {
+                        point.IsActive = false;
+                        point.Mask = 0;
+                    }
+                }
+                static void ReadFingerPoints(Span<bool> buffer, TimeSpan now)
+                {
+                    var touchMask = 0UL;
+                    for (int i = 0; i < _fingerPoints.Length; i++)
+                    {
+                        ref var point = ref _fingerPoints[i];
                         if (point.IsActive)
                         {
-                            point.IsActive = false;
-                            point.Mask = 0;
+                            var interval = (int)((now - point.LastActive).TotalMilliseconds);
+                            if (interval > TOUCH_TIMEOUT_MS)
+                            {
+                                point.IsActive = false;
+                                point.Mask = 0;
+                            }
+                            else
+                            {
+                                touchMask |= point.Mask;
+                            }
                         }
+                    }
+                    for (int i = 0; i < 34; i++)
+                    {
+                        buffer[i] = (touchMask & (1UL << i)) != 0;
                     }
                 }
                 struct FingerPoint
                 {
                     public bool IsActive;
                     public ulong Mask;
+                    public TimeSpan LastActive;
                 }
                 class TouchSensorMapper
                 {
