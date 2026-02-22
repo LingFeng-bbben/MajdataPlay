@@ -61,7 +61,7 @@ namespace MajdataPlay
             MajDebug.LogInfo(s);
             MajDebug.LogInfo($"PID: {MajEnv.GameProcess.Id}");
             MajDebug.LogInfo($"Version: {MajInstances.GameVersion}");
-#if UNITY_ANDROID // Android Only (Sdk Version Log)
+#if UNITY_ANDROID && !UNITY_EDITOR // Android Only (Sdk Version Log)
             MajDebug.LogInfo($"AndroidSdkVersion: {MajEnv.AndroidSdkVersion}");
 #endif
             MajEnv.Init();
