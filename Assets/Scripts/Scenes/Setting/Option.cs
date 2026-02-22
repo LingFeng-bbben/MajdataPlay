@@ -159,7 +159,7 @@ namespace MajdataPlay.Scenes.Setting
                         break;
                     case "PlaybackSpeed":
                         _minValue = 0;
-                        _step = 0.01m;
+                        _step = 0.05m;
                         break;
                     case "FPSLimit":
                         _minValue = -1;
