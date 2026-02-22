@@ -1065,6 +1065,9 @@ namespace MajdataPlay.IO
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 public static void Parse(ReadOnlySpan<byte> reportData, Span<bool> buffer)
                 {
+                    const int FINGER_ID_INDEX_OFFSET = 1;
+                    const int X_POINT_INDEX_OFFSET = 2;
+                    const int Y_POINT_INDEX_OFFSET = 4;
                     if (reportData[0] != REPORT_ID)
                     {
                         return;
@@ -1072,18 +1075,18 @@ namespace MajdataPlay.IO
                     reportData = reportData.Slice(1); //skip report id
                     var touchMask = 0UL;
                     // 解析触摸点
-                    for (int i = 0; i < MAX_TOUCH_POINTS; i++)
+                    for (var i = 0; i < MAX_TOUCH_POINTS; i++)
                     {
-                        var index = i * TOUCH_POINT_SIZE + 1;
+                        var index = i * TOUCH_POINT_SIZE;
                         if (reportData[index] == 0)
                         {
                             continue;
                         }
 
                         var isPressed = (reportData[index] & 0x01) == 1;
-                        var fingerId = reportData[index + 1];
-                        var x = BitConverter.ToUInt16(reportData.Slice(index + 2));
-                        var y = BitConverter.ToUInt16(reportData.Slice(index + 4));
+                        var fingerId = reportData[index + FINGER_ID_INDEX_OFFSET];
+                        var x = BitConverter.ToUInt16(reportData.Slice(index + X_POINT_INDEX_OFFSET));
+                        var y = BitConverter.ToUInt16(reportData.Slice(index + Y_POINT_INDEX_OFFSET));
 
                         HandleFinger(x, y, fingerId, isPressed, ref touchMask);
                     }
@@ -1099,14 +1102,8 @@ namespace MajdataPlay.IO
                         buffer[i] = (touchMask & (1UL << i)) != 0;
                     }
                 }
-                static void HandleFinger(ushort x, ushort y, int fingerId, bool isPressed, ref ulong touchMask)
+                static void HandleFinger(ushort x, ushort y, byte fingerId, bool isPressed, ref ulong touchMask)
                 {
-                    // 安全检查
-                    if (fingerId < 0 || fingerId >= 256)
-                    {
-                        return;
-                    }
-
                     ref var point = ref _fingerPoints[fingerId];
 
                     if (isPressed)
