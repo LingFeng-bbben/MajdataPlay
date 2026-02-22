@@ -480,12 +480,11 @@ namespace MajdataPlay.IO
                             var usbReadResult = usbReader.Read(bufferArray, timeoutMS, out int bytesRead);
                             if (usbReadResult != ErrorCode.None)
                             {
-                                if (usbReadResult == ErrorCode.IoTimedOut)
+                                if (usbReadResult != ErrorCode.IoTimedOut)
                                 {
-                                    continue;
+                                    MajDebug.LogError($"TouchPanel: Usb read error: {usbReadResult}");
+                                    break;
                                 }
-                                MajDebug.LogError($"TouchPanel: Usb read error: {usbReadResult}");
-                                break;
                             }
                             else if(bytesRead != usbOptions.PacketSize)
                             {
@@ -1068,7 +1067,12 @@ namespace MajdataPlay.IO
                     const int FINGER_ID_INDEX_OFFSET = 1;
                     const int X_POINT_INDEX_OFFSET = 2;
                     const int Y_POINT_INDEX_OFFSET = 4;
-                    if (reportData[0] != REPORT_ID)
+                    if(reportData.IsEmpty)
+                    {
+                        buffer.Clear();
+                        return;
+                    }
+                    else if (reportData[0] != REPORT_ID)
                     {
                         return;
                     }
