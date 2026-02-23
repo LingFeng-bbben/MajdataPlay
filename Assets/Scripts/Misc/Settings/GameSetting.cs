@@ -225,7 +225,7 @@ namespace MajdataPlay.Settings
     public class OnlineOptions
     {
         [Preserve]
-        public bool Enable { get; set; } = true;
+        public bool Enable { get; set; } = false;
 #if UNITY_STANDALONE && ENABLE_MONO
         public bool UseProxy { get; init; } = true;
         public string Proxy { get; init; } = string.Empty;
