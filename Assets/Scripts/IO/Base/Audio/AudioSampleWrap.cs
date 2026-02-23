@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MajdataPlay.IO
@@ -18,7 +19,16 @@ namespace MajdataPlay.IO
         public abstract TimeSpan Length { get; }
         public abstract bool IsLoop { get; set; }
 
+        protected LockDisposable Lock
+        {
+            get
+            {
+                return new LockDisposable(this);
+            }
+        }
+
         protected bool _isDisposed = false;
+        protected SpinLock _syncLock = new SpinLock();
 
         public abstract void Play();
         public abstract void Pause();
@@ -36,7 +46,24 @@ namespace MajdataPlay.IO
                 throw new ObjectDisposedException(GetType().Name);
             }
         }
-
+        protected ref struct LockDisposable
+        {
+            bool _isLocked;
+            readonly AudioSampleWrap _wrap;
+            public LockDisposable(AudioSampleWrap wrap)
+            {
+                _wrap = wrap;
+                wrap._syncLock.Enter(ref _isLocked);
+            }
+            public void Dispose()
+            {
+                if (_isLocked)
+                {
+                    _wrap._syncLock.Exit();
+                    _isLocked = false;
+                }
+            }
+        }
         sealed class EmptyAudioSample : AudioSampleWrap
         {
             public override bool IsEmpty => true;
