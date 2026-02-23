@@ -626,6 +626,12 @@ namespace MajdataPlay.IO
             var isForceMono = MajInstances.Settings.Audio.ForceMono;
             switch (chCount)
             {
+                case 1:// Mono
+                    matrix = new float[1,2]
+                    {
+                        { 0.5f, 0.5f }
+                    };
+                    break;
                 case 2: // 2.0
                     matrix = new float[2,2]
                     {
@@ -677,128 +683,131 @@ namespace MajdataPlay.IO
                     throw new ArgumentOutOfRangeException(nameof(chCount));
             }
 
-            switch(main)
+            if(chCount > 1)
             {
-                case "Rear":
-                    if(chCount < 4)
-                    {
-                        goto default;
-                    }
-                    if(chCount == 4)
-                    {
-                        if(isForceMono)
+                switch (main)
+                {
+                    case "Rear":
+                        if (chCount < 4)
                         {
-                            matrix[2, 0] = .5f;
-                            matrix[2, 1] = .5f;
-                            matrix[3, 0] = .5f;
-                            matrix[3, 1] = .5f;
+                            goto default;
+                        }
+                        if (chCount == 4)
+                        {
+                            if (isForceMono)
+                            {
+                                matrix[2, 0] = .5f;
+                                matrix[2, 1] = .5f;
+                                matrix[3, 0] = .5f;
+                                matrix[3, 1] = .5f;
+                            }
+                            else
+                            {
+                                matrix[2, 0] = 1f;
+                                matrix[3, 1] = 1f;
+                            }
+                        }
+                        else if (chCount == 6)
+                        {
+                            if (isForceMono)
+                            {
+                                matrix[4, 0] = .5f;
+                                matrix[4, 1] = .5f;
+                                matrix[5, 0] = .5f;
+                                matrix[5, 1] = .5f;
+                            }
+                            else
+                            {
+                                matrix[4, 0] = 1f;
+                                matrix[5, 1] = 1f;
+                            }
+                        }
+                        else if (chCount == 8)
+                        {
+                            if (isForceMono)
+                            {
+                                matrix[4, 0] = .5f;
+                                matrix[4, 1] = .5f;
+                                matrix[5, 0] = .5f;
+                                matrix[5, 1] = .5f;
+                            }
+                            else
+                            {
+                                matrix[4, 0] = 1f;
+                                matrix[5, 1] = 1f;
+                            }
                         }
                         else
                         {
-                            matrix[2, 0] = 1f;
-                            matrix[3, 1] = 1f;
-                        } 
-                    }
-                    else if(chCount == 6)
-                    {
+                            MajDebug.LogWarning($"Not support channel count \"{chCount}\", fallback to \"Front\"");
+                            goto default;
+                        }
+                        break;
+                    case "Side":
+                        if (chCount < 8)
+                        {
+                            goto default;
+                        }
                         if (isForceMono)
                         {
-                            matrix[4, 0] = .5f;
-                            matrix[4, 1] = .5f;
-                            matrix[5, 0] = .5f;
-                            matrix[5, 1] = .5f;
+                            matrix[6, 0] = .5f;
+                            matrix[6, 1] = .5f;
+                            matrix[7, 0] = .5f;
+                            matrix[7, 1] = .5f;
                         }
                         else
                         {
-                            matrix[4, 0] = 1f;
-                            matrix[5, 1] = 1f;
+                            matrix[6, 0] = 1f;
+                            matrix[7, 1] = 1f;
                         }
-                    }
-                    else if(chCount == 8)
-                    {
+                        break;
+                    case "CenterAndLFE":
+                        if (chCount is not (3 or 6 or 8))
+                        {
+                            goto default;
+                        }
+                        if (chCount == 3)
+                        {
+                            matrix[2, 0] = 0.5f;
+                            matrix[2, 1] = 0.5f;
+                        }
+                        else if (chCount is (6 or 8))
+                        {
+                            if (isForceMono)
+                            {
+                                matrix[3, 0] = .5f;
+                                matrix[3, 1] = .5f;
+                                matrix[2, 0] = .5f;
+                                matrix[2, 1] = .5f;
+                            }
+                            else
+                            {
+                                matrix[3, 0] = 1f;
+                                matrix[2, 1] = 1f;
+                            }
+                        }
+                        else
+                        {
+                            MajDebug.LogWarning($"Not support channel count \"{chCount}\", fallback to \"Front\"");
+                            goto default;
+                        }
+                        break;
+                    case "Front":
+                    default:
                         if (isForceMono)
                         {
-                            matrix[4, 0] = .5f;
-                            matrix[4, 1] = .5f;
-                            matrix[5, 0] = .5f;
-                            matrix[5, 1] = .5f;
+                            matrix[0, 0] = .5f;
+                            matrix[0, 1] = .5f;
+                            matrix[1, 0] = .5f;
+                            matrix[1, 1] = .5f;
                         }
                         else
                         {
-                            matrix[4, 0] = 1f;
-                            matrix[5, 1] = 1f;
+                            matrix[0, 0] = 1f;
+                            matrix[1, 1] = 1f;
                         }
-                    }
-                    else
-                    {
-                        MajDebug.LogWarning($"Not support channel count \"{chCount}\", fallback to \"Front\"");
-                        goto default;
-                    }
-                    break;
-                case "Side":
-                    if (chCount < 8)
-                    {
-                        goto default;
-                    }
-                    if (isForceMono)
-                    {
-                        matrix[6, 0] = .5f;
-                        matrix[6, 1] = .5f;
-                        matrix[7, 0] = .5f;
-                        matrix[7, 1] = .5f;
-                    }
-                    else
-                    {
-                        matrix[6, 0] = 1f;
-                        matrix[7, 1] = 1f;
-                    }
-                    break;
-                case "CenterAndLFE":
-                    if (chCount is not (3 or 6 or 8))
-                    {
-                        goto default;
-                    }
-                    if (chCount == 3)
-                    {
-                        matrix[2, 0] = 0.5f;
-                        matrix[2, 1] = 0.5f;
-                    }
-                    else if (chCount is (6 or 8))
-                    {
-                        if (isForceMono)
-                        {
-                            matrix[3, 0] = .5f;
-                            matrix[3, 1] = .5f;
-                            matrix[2, 0] = .5f;
-                            matrix[2, 1] = .5f;
-                        }
-                        else
-                        {
-                            matrix[3, 0] = 1f;
-                            matrix[2, 1] = 1f;
-                        }
-                    }
-                    else
-                    {
-                        MajDebug.LogWarning($"Not support channel count \"{chCount}\", fallback to \"Front\"");
-                        goto default;
-                    }
-                    break;
-                case "Front":
-                default:
-                    if (isForceMono)
-                    {
-                        matrix[0, 0] = .5f;
-                        matrix[0, 1] = .5f;
-                        matrix[1, 0] = .5f;
-                        matrix[1, 1] = .5f;
-                    }
-                    else
-                    {
-                        matrix[0, 0] = 1f;
-                        matrix[1, 1] = 1f;
-                    }
-                    break;
+                        break;
+                }
             }
 
             MixingMatrix = matrix;
