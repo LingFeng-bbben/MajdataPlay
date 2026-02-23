@@ -216,12 +216,12 @@ namespace MajdataPlay.Collections
         }
         public ISongDetail[] ToArray()
         {
-            if(_origin.Length == 0)
+            if(_sorted.Length == 0)
             {
                 return Array.Empty<ISongDetail>();
             }
-            var array = new ISongDetail[_origin.Length];
-            Array.Copy(_origin, array, _origin.Length);
+            var array = new ISongDetail[_sorted.Length];
+            Array.Copy(_sorted, array, _sorted.Length);
 
             return array;
         }

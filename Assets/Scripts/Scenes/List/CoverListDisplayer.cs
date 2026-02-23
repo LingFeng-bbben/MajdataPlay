@@ -199,13 +199,21 @@ namespace MajdataPlay.Scenes.List
                                                        .Select(x => x.x)
                                                        .ToArray();
                     }
-                    _easySortedCollections[i] = new SongCollection($"{originCollection.Name}_Easy", sortedEasy);
-                    _basicSortedCollections[i] = new SongCollection($"{originCollection.Name}_Basic", sortedBasic);
-                    _advanceSortedCollections[i] = new SongCollection($"{originCollection.Name}_Advance", sortedAdvance);
-                    _expertSortedCollections[i] = new SongCollection($"{originCollection.Name}_Expert", sortedExpert);
-                    _masterSortedCollections[i] = new SongCollection($"{originCollection.Name}_Master", sortedMaster);
-                    _reMasterSortedCollections[i] = new SongCollection($"{originCollection.Name}_ReMaster", sortedReMaster);
-                    _utageSortedCollections[i] = new SongCollection($"{originCollection.Name}_UTAGE", sortedUTAGE);
+                    _easySortedCollections[i] = new SongCollection(originCollection.Name, sortedEasy);
+                    _basicSortedCollections[i] = new SongCollection(originCollection.Name, sortedBasic);
+                    _advanceSortedCollections[i] = new SongCollection(originCollection.Name, sortedAdvance);
+                    _expertSortedCollections[i] = new SongCollection(originCollection.Name, sortedExpert);
+                    _masterSortedCollections[i] = new SongCollection(originCollection.Name, sortedMaster);
+                    _reMasterSortedCollections[i] = new SongCollection(originCollection.Name, sortedReMaster);
+                    _utageSortedCollections[i] = new SongCollection(originCollection.Name, sortedUTAGE);
+
+                    //_easySortedCollections[i].SortAndFilter(SongStorage.OrderBy);
+                    //_basicSortedCollections[i].SortAndFilter(SongStorage.OrderBy);
+                    //_advanceSortedCollections[i].SortAndFilter(SongStorage.OrderBy);
+                    //_expertSortedCollections[i].SortAndFilter(SongStorage.OrderBy);
+                    //_masterSortedCollections[i].SortAndFilter(SongStorage.OrderBy);
+                    //_reMasterSortedCollections[i].SortAndFilter(SongStorage.OrderBy);
+                    //_utageSortedCollections[i].SortAndFilter(SongStorage.OrderBy);
                 });
             }
             else
