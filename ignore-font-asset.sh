@@ -14,9 +14,9 @@ FILES=(
 for file in "${FILES[@]}"; do
     if [ -f "$file" ]; then
         git update-index --assume-unchanged "$file"
-        echo "✔ Ignored: $file"
+        echo "Ignored: $file"
     else
-        echo "⚠ Not found: $file"
+        echo "Not found: $file"
     fi
 done
 

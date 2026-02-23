@@ -3,6 +3,7 @@
 ![license GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue)
 ![GitHub Release](https://img.shields.io/github/v/release/LingFeng-bbben/MajdataPlay?include_prereleases)
 ![Discord](https://badgen.net/discord/online-members/AcWgZN7j6K)
+![Unity](https://img.shields.io/badge/Unity-2022.3.62f3-7e7e7e)
 
 A Simai Player.
 
@@ -13,6 +14,10 @@ Simai is a maimai chart discription language developed by [Celeca](https://twitt
 ## See Our Wiki Page for guide
 
 [WIKI](https://github.com/LingFeng-bbben/MajdataPlay/wiki)
+
+## Releases
+
+[Stable](https://github.com/TeamMajdata/MajdataPlay_Build) | [Nightly](https://github.com/LingFeng-bbben/MajdataPlay/releases/tag/nightly)
 
 ## Reporting Problems
 
