@@ -254,7 +254,7 @@ PlayerSettings:
   appleEnableAutomaticSigning: 1
   iOSRequireARKit: 0
   iOSAutomaticallyDetectAndAddCapabilities: 1
-  appleEnableProMotion: 0
+  appleEnableProMotion: 1
   shaderPrecisionModel: 0
   clonedFromGUID: 10ad67313f4034357812315f3c407484
   templatePackageId: com.unity.template.2d@7.0.3
