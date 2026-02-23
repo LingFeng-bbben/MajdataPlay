@@ -14,6 +14,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Policy;
 using System.Threading;
+using LibUsbDotNet.Main;
 using UnityEngine;
 using UnityEngine.InputSystem.EnhancedTouch;
 //using Microsoft.Win32;
@@ -423,7 +424,11 @@ namespace MajdataPlay.IO
             const int GENERAL_HID_2P_VID = 3235;
 
             var hidDevices = HidManager.Devices;
+            #if UNITY_STANDALONE_WIN
             var usbDevices = UsbDevice.AllDevices;
+#else
+            var usbDevices = Array.Empty<UsbRegistry>();
+#endif
 #if ENABLE_IL2CPP
             var serialPorts = "NotSupported";
 #else
