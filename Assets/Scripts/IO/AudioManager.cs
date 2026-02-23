@@ -1,27 +1,27 @@
-using UnityEngine;
 using System.IO;
 using System.Collections.Generic;
-using MajdataPlay.Extensions;
-using Cysharp.Threading.Tasks;
 using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
-using MajdataPlay.Utils;
-
 using ManagedBass;
-using ManagedBass.Wasapi;
 using ManagedBass.Mix;
+#if UNITY_STANDALONE_WIN
+using ManagedBass.Wasapi;
 using ManagedBass.Asio;
+#endif
+using UnityEngine;
 using UnityEngine.Profiling;
-using UnityEditor;
 using System;
 using System.Linq;
-using MajdataPlay.Collections;
 using System.Text;
-using MajdataPlay.Settings;
 using System.Runtime.InteropServices;
 using System.Threading;
 using AOT;
+using MajdataPlay.Extensions;
+using MajdataPlay.Utils;
+using MajdataPlay.Collections;
+using MajdataPlay.Settings;
 using MajdataPlay.Numerics;
+using Cysharp.Threading.Tasks;
 
 
 #nullable enable
@@ -37,8 +37,10 @@ namespace MajdataPlay.IO
         string[] VoiceFileNames = new string [0];
         private List<AudioSampleWrap> SFXSamples = new();
 
+#if UNITY_STANDALONE_WIN
         readonly static WasapiProcedure _wasapiProcedure;
         readonly static AsioProcedure _asioProcedure;
+#endif
         private static int BassGlobalMixer = -114514;
 
         public bool PlayDebug;
@@ -48,6 +50,7 @@ namespace MajdataPlay.IO
 
         unsafe static AudioManager()
         {
+#if UNITY_STANDALONE_WIN
 #if ENABLE_IL2CPP
             _wasapiProcedure = WasapiProcedure;
             _asioProcedure = AsioProcedure;
@@ -59,6 +62,7 @@ namespace MajdataPlay.IO
 
             _wasapiProcedure = Marshal.GetDelegateForFunctionPointer<WasapiProcedure>((IntPtr)ptr1);
             _asioProcedure = Marshal.GetDelegateForFunctionPointer<AsioProcedure>((IntPtr)ptr2);
+#endif
 #endif
         }
         void Awake()
@@ -301,6 +305,7 @@ namespace MajdataPlay.IO
                 MajDebug.LogException(e);
             }
         }
+#if UNITY_STANDALONE_WIN
         [MonoPInvokeCallback(typeof(WasapiProcedure))]
         static int WasapiProcedure(IntPtr buffer, int length, IntPtr user)
         {
@@ -332,6 +337,7 @@ namespace MajdataPlay.IO
 
             return bytesRead;
         }
+#endif
         void InitSFXSample(string[] fileNameList,string rootPath)
         {
             foreach (var filePath in fileNameList)
@@ -594,10 +600,12 @@ namespace MajdataPlay.IO
         }
         public void OpenAsioPannel()
         {
+#if UNITY_STANDALONE_WIN
             if(MajInstances.Settings.Audio.Backend == SoundBackendOption.Asio)
             {
                 BassAsio.ControlPanel();
             }
+#endif
         }
         static void GenerateMixingMatrix(int chCount, string main)
         {
