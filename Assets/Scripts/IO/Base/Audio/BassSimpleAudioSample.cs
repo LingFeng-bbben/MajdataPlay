@@ -109,8 +109,8 @@ namespace MajdataPlay.IO
                 return Bass.ChannelIsActive(_stream) == PlaybackState.Playing;
             }
         }
-        readonly GCHandle? _dataHandle = null;
-        BassSimpleAudioSample(int stream, double gain, bool speedChange = false, GCHandle? dataHandle = null)
+        readonly GCHandle _dataHandle;
+        BassSimpleAudioSample(int stream, double gain, GCHandle dataHandle, bool speedChange = false)
         {
             if (stream is 0)
             {
@@ -127,7 +127,7 @@ namespace MajdataPlay.IO
             MajDebug.LogInfo(Bass.LastError);
             _dataHandle = dataHandle;
         }
-        public BassSimpleAudioSample(int stream, double gain, bool speedChange = false): this(stream, gain, speedChange, null)
+        public BassSimpleAudioSample(int stream, double gain, bool speedChange = false): this(stream, gain, default, speedChange)
         {
 
         }
@@ -180,10 +180,9 @@ namespace MajdataPlay.IO
             {
                 Bass.StreamFree(_decode);
             }
-            if(_dataHandle is not null)
+            if(_dataHandle.IsAllocated)
             {
-                var handle = (GCHandle)_dataHandle;
-                handle.Free();
+                _dataHandle.Free();
             }
         }
         public override ValueTask DisposeAsync()
@@ -194,19 +193,11 @@ namespace MajdataPlay.IO
         }
         static BassSimpleAudioSample Create(byte[] data, bool normalize, bool speedChange)
         {
-            var handle = (GCHandle?)null;
-            var decode = 0;
-#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
-            handle = GCHandle.Alloc(data, GCHandleType.Pinned);
-            var addr = ((GCHandle)handle).AddrOfPinnedObject();
-#endif
+            var handle = GCHandle.Alloc(data, GCHandleType.Pinned);
+            var addr = handle.AddrOfPinnedObject();
             try
             {
-#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
-                decode = BassHelper.CreateStream(addr, 0, data.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
-#else
-                decode = BassHelper.CreateStream(data, 0, data.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
-#endif
+                var decode = BassHelper.CreateStream(addr, 0, data.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
                 var stream = 0;
                 stream = BassFx.TempoCreate(decode, BassFlags.Default);
                 Bass.LastError.EnsureSuccessStatusCode();
@@ -220,21 +211,25 @@ namespace MajdataPlay.IO
                     while (Bass.ChannelGetPosition(decode, PositionFlags.Decode | PositionFlags.Bytes) < bytelength)
                     {
                         var level = (double)BitHelper.LoWord(Bass.ChannelGetLevel(decode)) / 32768;
-                        if (level > channelmax) channelmax = level;
+                        if (level > channelmax)
+                        {
+                            channelmax = level;
+                        }
                     }
                     gain = 1 / channelmax;
                 }
 
-                var sample = new BassSimpleAudioSample(stream, gain, speedChange, handle);
+                var sample = new BassSimpleAudioSample(stream, gain, handle, speedChange);
                 sample.Volume = 1;
                 sample._decode = decode;
                 return sample;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                if (handle is not null)
+                MajDebug.LogException(e);
+                if (handle.IsAllocated)
                 {
-                    ((GCHandle)handle).Free();
+                    handle.Free();
                 }
                 throw;
             }

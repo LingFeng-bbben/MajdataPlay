@@ -129,9 +129,9 @@ namespace MajdataPlay.IO
                 return state == PlaybackState.Playing && !BassMix.ChannelHasFlag(_decode, BassFlags.MixerChanPause);
             }
         }
-        readonly GCHandle? _dataHandle = null;
+        readonly GCHandle _dataHandle;
 
-        BassAudioSample(int decode, int globalMixer,double gain, bool speedChange = false, GCHandle? dataHandle = null)
+        BassAudioSample(int decode, int globalMixer, double gain, GCHandle dataHandle, bool speedChange = false)
         {
             if(decode is 0 || globalMixer is 0)
             {
@@ -142,6 +142,7 @@ namespace MajdataPlay.IO
             _decode = decode;
             _gain = gain;
             _isSpeedChangeSupported = speedChange;
+            _dataHandle = dataHandle;
             _length = Bass.ChannelBytes2Seconds(_decode, Bass.ChannelGetLength(_decode));
 
             Bass.ChannelSetPosition(_decode, 0, PositionFlags.Decode | PositionFlags.Bytes);
@@ -155,7 +156,7 @@ namespace MajdataPlay.IO
             MajDebug.LogInfo($"Add Channel to Mixer: {BassMix.MixerAddChannel(globalMixer, _resampler, BassFlags.MixerChanMatrix)}");
             BassMix.ChannelSetMatrix(_resampler, AudioManager.MixingMatrix);
         }
-        public BassAudioSample(int decode, int globalMixer, double gain, bool speedChange = false) : this(decode, globalMixer, gain, speedChange, null)
+        public BassAudioSample(int decode, int globalMixer, double gain, bool speedChange = false) : this(decode, globalMixer, gain, default, speedChange)
         {
 
         }
@@ -215,10 +216,9 @@ namespace MajdataPlay.IO
             {
                 Bass.StreamFree(_decode);
             }
-            if (_dataHandle is not null)
+            if (_dataHandle.IsAllocated)
             {
-                var handle = (GCHandle)_dataHandle;
-                handle.Free();
+                _dataHandle.Free();
             }
         }
         public override ValueTask DisposeAsync()
@@ -229,19 +229,11 @@ namespace MajdataPlay.IO
         }
         static BassAudioSample Create(byte[] data, int globalMixer, bool normalize, bool speedChange)
         {
-            var handle = (GCHandle?)null;
-            var decode = 0;
-#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
-            handle = GCHandle.Alloc(data, GCHandleType.Pinned);
-            var addr = ((GCHandle)handle).AddrOfPinnedObject();
-#endif
+            var handle = GCHandle.Alloc(data, GCHandleType.Pinned);
+            var addr = handle.AddrOfPinnedObject();
             try
             {
-#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
-                decode = BassHelper.CreateStream(addr, 0, data.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
-#else
-                decode = BassHelper.CreateStream(data, 0, data.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
-#endif
+                var decode = BassHelper.CreateStream(addr, 0, data.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
                 if (speedChange)
                 {
                     //this will cause the music sometimes no sound, if press play after immedantly enter the songlist.
@@ -259,7 +251,10 @@ namespace MajdataPlay.IO
                     while (Bass.ChannelGetPosition(decode, PositionFlags.Decode | PositionFlags.Bytes) < bytelength)
                     {
                         var level = (double)BitHelper.LoWord(Bass.ChannelGetLevel(decode)) / 32768;
-                        if (level > channelmax) channelmax = level;
+                        if (level > channelmax)
+                        {
+                            channelmax = level;
+                        }
                     }
                     gain = 1 / channelmax;
                 }
@@ -272,9 +267,9 @@ namespace MajdataPlay.IO
             catch (Exception e)
             {
                 MajDebug.LogException(e);
-                if (handle is not null)
+                if (handle.IsAllocated)
                 {
-                    ((GCHandle)handle).Free();
+                    handle.Free();
                 }
                 throw;
             }
