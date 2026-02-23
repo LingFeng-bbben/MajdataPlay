@@ -411,6 +411,54 @@
       "Content": "开启后，被触发的传感器会被渲染"
     },
     {
+      "Origin": "MAJSETTING_PROPERTY_TouchSimulationRadius",
+      "Content": "模拟触摸半径"
+    },
+    {
+      "Origin": "MAJSETTING_PROPERTY_TouchSimulationRadius_DESC",
+      "Content": "对触摸屏有效\n值越大手越大"
+    },
+    {
+      "Origin": "MAJSETTING_PROPERTY_TouchAAreaExtraRadius",
+      "Content": "模拟触摸A区半径"
+    },
+    {
+      "Origin": "MAJSETTING_PROPERTY_TouchAAreaExtraRadius_DESC",
+      "Content": "对A区的额外半径\n值越大越容易触发A组传感器"
+    },
+    {
+      "Origin": "MAJSETTING_PROPERTY_TouchBAreaExtraRadius",
+      "Content": "模拟触摸B区半径"
+    },
+    {
+      "Origin": "MAJSETTING_PROPERTY_TouchBAreaExtraRadius_DESC",
+      "Content": "对B区的额外半径\n值越大越容易触发B组传感器"
+    },
+    {
+      "Origin": "MAJSETTING_PROPERTY_TouchCAreaExtraRadius",
+      "Content": "模拟触摸C区半径"
+    },
+    {
+      "Origin": "MAJSETTING_PROPERTY_TouchCAreaExtraRadius_DESC",
+      "Content": "对C区的额外半径\n值越大越容易触发C组传感器"
+    },
+    {
+      "Origin": "MAJSETTING_PROPERTY_TouchDAreaExtraRadius",
+      "Content": "模拟触摸D区半径"
+    },
+    {
+      "Origin": "MAJSETTING_PROPERTY_TouchDAreaExtraRadius_DESC",
+      "Content": "对D区的额外半径\n值越大越容易触发D组传感器"
+    },
+    {
+      "Origin": "MAJSETTING_PROPERTY_TouchEAreaExtraRadius",
+      "Content": "模拟触摸E区半径"
+    },
+    {
+      "Origin": "MAJSETTING_PROPERTY_TouchEAreaExtraRadius_DESC",
+      "Content": "对E区的额外半径\n值越大越容易触发E组传感器"
+    },
+    {
       "Origin": "MAJSETTING_PROPERTY_DisplayFPS",
       "Content": "显示帧率"
     },
@@ -548,7 +596,7 @@
     },
     {
       "Origin": "MAJTEXT_SORTFIND_SortbyRank",
-      "Content":  "历史\n成绩"
+      "Content": "历史\n成绩"
     },
     {
       "Origin": "Inner",

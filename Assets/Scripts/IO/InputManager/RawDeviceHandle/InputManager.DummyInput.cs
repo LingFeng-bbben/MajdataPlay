@@ -32,6 +32,11 @@ namespace MajdataPlay.IO
         static int _lastScreenWidth = -1;
         static int _lastScreenHeight = -1;
         static float _lastFingerRadius = 0.5f;
+        static float _lastAAreaExtraRadius = 1f;
+        static float _lastBAreaExtraRadius = 1f;
+        static float _lastCAreaExtraRadius = 1f;
+        static float _lastDAreaExtraRadius = 1f;
+        static float _lastEAreaExtraRadius = 1f;
         //readonly static Dictionary<SensorArea, HashSet<int>> _touchRecords = new(8);
         public static bool UseOuterTouchAsSensor { get; set; }
         static void UpdateMousePosition()
@@ -256,20 +261,20 @@ namespace MajdataPlay.IO
                         break;
                 }
             }
-            var userRad = FingerRadius;
+            var userRad = _lastFingerRadius;
+            var a_extraRad = _lastAAreaExtraRadius;
+            var b_extraRad = _lastBAreaExtraRadius;
+            var c_extraRad = _lastCAreaExtraRadius;
+            var d_extraRad = _lastDAreaExtraRadius;
+            var e_extraRad = _lastEAreaExtraRadius;
             //var lastCircular = cubeRay + new Vector3(0, userRad);
             const int SMAPLE_COUNT = 128;
             const int HORIZONTAL_SMAPLE_COUNT = 16;
             const float DEG_STEP = 360f / SMAPLE_COUNT;
             var radStep = userRad / HORIZONTAL_SMAPLE_COUNT;
 
-            for (var rad = userRad; ; rad -= radStep) 
+            for (var rad = userRad; rad > 0; rad -= radStep)
             {
-                if(rad <= 0)
-                {
-                    RaycastNow(cubeRay, newStates, ref newP);
-                    break;
-                }
                 for (int i = 0; i < SMAPLE_COUNT; i++)
                 {
                     var circular = new Vector3(rad * Mathf.Sin(DEG_STEP * i), rad * Mathf.Cos(DEG_STEP * i));
@@ -280,7 +285,8 @@ namespace MajdataPlay.IO
                     RaycastNow(pos, newStates, ref newP);
                 }
             }
-            if(extraButton != -1)
+            RaycastNow(cubeRay, newStates, ref newP);
+            if (extraButton != -1)
             {
                 newP |= 1UL << extraButton;
             }

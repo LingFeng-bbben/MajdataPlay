@@ -796,14 +796,34 @@ namespace MajdataPlay.IO
 #elif UNITY_ANDROID || UNITY_IOS
                 Array.Fill(_sensorClickedCountInThisFrame, 0);
 #endif
+                var debugOptions = MajEnv.Settings.Debug;
                 var height = Screen.height;
                 var width = Screen.width;
                 var fingerRad = FingerRadius;
-                if (height != _lastScreenHeight || width != _lastScreenWidth || fingerRad != _lastFingerRadius)
+                var aExtraRad = debugOptions.TouchAAreaExtraRadius;
+                var bExtraRad = debugOptions.TouchBAreaExtraRadius;
+                var cExtraRad = debugOptions.TouchCAreaExtraRadius;
+                var dExtraRad = debugOptions.TouchDAreaExtraRadius;
+                var eExtraRad = debugOptions.TouchEAreaExtraRadius;
+
+                var isModified = height != _lastScreenHeight ||
+                                 width != _lastScreenWidth ||
+                                 fingerRad != _lastFingerRadius ||
+                                 aExtraRad != _lastAAreaExtraRadius ||
+                                 bExtraRad != _lastBAreaExtraRadius ||
+                                 cExtraRad != _lastCAreaExtraRadius ||
+                                 dExtraRad != _lastDAreaExtraRadius ||
+                                 eExtraRad != _lastEAreaExtraRadius;
+                if (isModified)
                 {
                     _lastScreenWidth = width;
                     _lastScreenHeight = height;
                     _lastFingerRadius = fingerRad;
+                    _lastAAreaExtraRadius = aExtraRad;
+                    _lastBAreaExtraRadius = bExtraRad;
+                    _lastCAreaExtraRadius = cExtraRad;
+                    _lastDAreaExtraRadius = dExtraRad;
+                    _lastEAreaExtraRadius = eExtraRad;
                     _version++;
                 }
 
