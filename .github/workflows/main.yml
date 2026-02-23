@@ -3,7 +3,7 @@ run-name: MajdataPlay build
 
 on:
   push:
-    branches: [ "dev", "main", "xcode_build" ]
+    branches: [ "dev", "main", "xcode_build", "test_workflow"]
   pull_request:
     branches: [ "main" ]
 
@@ -21,211 +21,243 @@ env:
   UNITY_VERSION: 2022.3.62f3
 
 jobs:
-  prepare-nightly:
-    name: Prepare nightly tag & release
+  build:
+    name: Build (Windows/Linux/Android)
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration: [Release]
+        platform: [StandaloneWindows64, StandaloneLinux64, Android]
+
+    env:
+      CONFIGURATION: ${{ matrix.configuration }}
+      TARGET_PLATFORM: ${{ matrix.platform }}
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Cache Unity Library
+        uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-${{ runner.os }}-${{ env.TARGET_PLATFORM }}-${{ hashFiles('ProjectSettings/ProjectVersion.txt', 'ProjectSettings/**', 'Packages/manifest.json', 'Packages/packages-lock.json') }}
+          restore-keys: |
+            Library-${{ runner.os }}-${{ env.TARGET_PLATFORM }}-
+
+      - name: Build (Release)
+        uses: game-ci/unity-builder@v4
+        with:
+          unityVersion: ${{ env.UNITY_VERSION }}
+          targetPlatform: ${{ env.TARGET_PLATFORM }}
+          versioning: Semantic
+          buildName: MajdataPlay
+          buildsPath: ${{ env.CONFIGURATION }}
+
+      - name: List files in build directory
+        run: ls -R ${{ env.CONFIGURATION }} || true
+
+      - name: Package output (non-Android) as zip
+        if: ${{ env.TARGET_PLATFORM != 'Android' }}
+        run: |
+          set -euo pipefail
+          mkdir -p out
+          ZIP_NAME="MajdataPlay-${{ env.TARGET_PLATFORM }}-nightly.zip"
+          (cd "${{ env.CONFIGURATION }}" && zip -qry "../out/${ZIP_NAME}" .)
+          ls -la out
+
+      - name: Collect Android APKs
+        if: ${{ env.TARGET_PLATFORM == 'Android' }}
+        run: |
+          set -euo pipefail
+          mkdir -p out
+          cp "${{ env.CONFIGURATION }}/Android/MajdataPlay.apk/MajdataPlay.armeabi-v7a.apk" "out/MajdataPlay-Android-nightly.armeabi-v7a.apk"
+          cp "${{ env.CONFIGURATION }}/Android/MajdataPlay.apk/MajdataPlay.arm64-v8a.apk" "out/MajdataPlay-Android-nightly.arm64-v8a.apk"
+          ls -la out
+
+      - name: Upload build outputs as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: out-${{ env.TARGET_PLATFORM }}
+          path: out/*
+          if-no-files-found: error
+          retention-days: 7
+
+  build-apple:
+    name: Build (macOS/iOS)
+    runs-on: macos-latest
+    if: ${{ github.event_name == 'push' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration: [Release]
+        platform: [StandaloneOSX, iOS]
+
+    env:
+      CONFIGURATION: ${{ matrix.configuration }}
+      TARGET_PLATFORM: ${{ matrix.platform }}
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Cache Unity Library
+        uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-${{ runner.os }}-${{ env.TARGET_PLATFORM }}-${{ hashFiles('ProjectSettings/ProjectVersion.txt', 'ProjectSettings/**', 'Packages/manifest.json', 'Packages/packages-lock.json') }}
+          restore-keys: |
+            Library-${{ runner.os }}-${{ env.TARGET_PLATFORM }}-
+
+      - name: Build (Release)
+        uses: game-ci/unity-builder@v4
+        with:
+          unityVersion: ${{ env.UNITY_VERSION }}
+          targetPlatform: ${{ env.TARGET_PLATFORM }}
+          versioning: Semantic
+          buildName: MajdataPlay
+          buildsPath: ${{ env.CONFIGURATION }}
+
+      - name: List files in build directory
+        run: ls -R ${{ env.CONFIGURATION }} || true
+
+      - name: Archive iOS (xcarchive)
+        if: ${{ env.TARGET_PLATFORM == 'iOS' }}
+        run: |
+          set -e
+          PROJECT_PATH="${{ env.CONFIGURATION }}/iOS/MajdataPlay/Unity-iPhone.xcodeproj"
+          ARCHIVE_PATH="${{ env.CONFIGURATION }}/iOS/MajdataPlay/Unity-iPhone.xcarchive"
+
+          xcodebuild \
+            -project "$PROJECT_PATH" \
+            -scheme "Unity-iPhone" \
+            -configuration "${{ env.CONFIGURATION }}" \
+            -sdk iphoneos \
+            -destination "generic/platform=iOS" \
+            -archivePath "$ARCHIVE_PATH" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            archive
+
+      - name: Package IPA from xcarchive
+        if: ${{ env.TARGET_PLATFORM == 'iOS' }}
+        run: |
+          set -euo pipefail
+          ARCHIVE_PATH="${{ env.CONFIGURATION }}/iOS/MajdataPlay/Unity-iPhone.xcarchive"
+          EXPORT_DIR="${{ env.CONFIGURATION }}/iOS/MajdataPlay/export-ipa"
+          mkdir -p "$EXPORT_DIR"
+
+          APP_PATH="$(find "$ARCHIVE_PATH/Products/Applications" -maxdepth 1 -name "*.app" -print -quit)"
+          if [ -z "$APP_PATH" ]; then
+            echo "No .app found in $ARCHIVE_PATH/Products/Applications"
+            ls -la "$ARCHIVE_PATH/Products/Applications" || true
+            exit 1
+          fi
+
+          rm -rf "$EXPORT_DIR/Payload"
+          mkdir -p "$EXPORT_DIR/Payload"
+          cp -R "$APP_PATH" "$EXPORT_DIR/Payload/"
+
+          IPA_PATH="$EXPORT_DIR/MajdataPlay-iOS-nightly.ipa"
+          (cd "$EXPORT_DIR" && /usr/bin/zip -qry "$(basename "$IPA_PATH")" Payload)
+          ls -la "$EXPORT_DIR"
+
+      - name: Package macOS output as zip
+        if: ${{ env.TARGET_PLATFORM == 'StandaloneOSX' }}
+        run: |
+          set -euo pipefail
+          mkdir -p out
+          ZIP_NAME="MajdataPlay-StandaloneOSX-nightly.zip"
+          (cd "${{ env.CONFIGURATION }}" && zip -qry "../out/${ZIP_NAME}" .)
+          ls -la out
+
+      - name: Collect iOS IPA to out
+        if: ${{ env.TARGET_PLATFORM == 'iOS' }}
+        run: |
+          set -euo pipefail
+          mkdir -p out
+          cp "${{ env.CONFIGURATION }}/iOS/MajdataPlay/export-ipa/MajdataPlay-iOS-nightly.ipa" out/
+          ls -la out
+
+      - name: Upload build outputs as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: out-${{ env.TARGET_PLATFORM }}
+          path: out/*
+          if-no-files-found: error
+          retention-days: 7
+
+  publish-nightly:
+    name: Publish nightly release (replace only after all builds succeed)
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' }}
+    needs: [build, build-apple]
+
     steps:
       - name: Checkout (for tagging)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Move nightly tag to this commit
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: collected
+
+      - name: Show collected files
         run: |
           set -euo pipefail
+          ls -R collected || true
+
+      - name: Move nightly tag to this commit (only after builds succeed)
+        run: |
+          set -e
           git tag -f nightly "${GITHUB_SHA}"
           git push origin -f nightly
 
-      - name: Recreate nightly release (refresh publish date)
+      - name: Delete old nightly release (if exists)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh release view nightly >/dev/null 2>&1; then
+            gh release delete nightly -y
+          else
+            echo "No existing nightly release."
+          fi
+
+      - name: Create new nightly release with notes (UTC+8)
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
 
-          NOW_UTC="$(date -u '+%Y-%m-%d %H:%M:%S UTC')"
-          NOTES="$(printf 'Automated nightly build\n\nCommit: %s\nBuilt at: %s\n' "${GITHUB_SHA}" "${NOW_UTC}")"
+          BUILD_AT="$(TZ=Asia/Shanghai date '+%Y-%m-%d %H:%M:%S')"
+          NOTES_FILE="$(mktemp)"
 
-          if gh release view nightly >/dev/null 2>&1; then
-            gh release delete nightly -y
-          fi
+          printf "Automated nightly build.\nCommit: %s\nBuild at: %s (UTC+8)\n" \
+            "${GITHUB_SHA}" \
+            "${BUILD_AT}" \
+            > "${NOTES_FILE}"
 
           gh release create nightly \
             --title "Nightly" \
-            --notes "${NOTES}" \
+            --notes-file "${NOTES_FILE}" \
             --latest
 
-build:
-  name: Build & Upload (Windows/Linux/Android)
-  runs-on: ubuntu-latest
-  needs: [prepare-nightly]
-  if: ${{ github.event_name == 'push' }}
-  strategy:
-    fail-fast: false
-    matrix:
-      configuration: [Release]
-      platform: [StandaloneWindows64, StandaloneLinux64, Android]
-  
-  env:
-    CONFIGURATION: ${{ matrix.configuration }}
-    TARGET_PLATFORM: ${{ matrix.platform }}
-  
-  steps:
-    - name: Checkout the repository
-      uses: actions/checkout@v4
-      with:
-        submodules: true
-        fetch-depth: 0
-
-    - name: Cache Unity Library
-      uses: actions/cache@v4
-      with:
-        path: Library
-        key: Library-${{ runner.os }}-${{ env.TARGET_PLATFORM }}-${{ hashFiles('ProjectSettings/ProjectVersion.txt', 'ProjectSettings/**', 'Packages/manifest.json', 'Packages/packages-lock.json') }}
-        restore-keys: |
-          Library-${{ runner.os }}-${{ env.TARGET_PLATFORM }}-
-
-    - name: Build (Release)
-      uses: game-ci/unity-builder@v4
-      with:
-        unityVersion: ${{ env.UNITY_VERSION }}
-        targetPlatform: ${{ env.TARGET_PLATFORM }}
-        versioning: Semantic
-        buildName: MajdataPlay
-        buildsPath: ${{ env.CONFIGURATION }}
-
-    - name: List files in build directory
-      run: ls -R ${{ env.CONFIGURATION }} || true
-
-    - name: Package output (non-Android) as zip
-      if: ${{ env.TARGET_PLATFORM != 'Android' }}
-      run: |
-        set -euo pipefail
-        mkdir -p out
-        ZIP_NAME="MajdataPlay-${{ env.TARGET_PLATFORM }}-nightly.zip"
-        (cd "${{ env.CONFIGURATION }}" && zip -qry "../out/${ZIP_NAME}" .)
-        ls -la out
-
-    - name: Collect Android APKs
-      if: ${{ env.TARGET_PLATFORM == 'Android' }}
-      run: |
-        set -euo pipefail
-        mkdir -p out
-        cp "${{ env.CONFIGURATION }}/Android/MajdataPlay.apk/MajdataPlay.armeabi-v7a.apk" "out/MajdataPlay-Android-nightly.armeabi-v7a.apk"
-        cp "${{ env.CONFIGURATION }}/Android/MajdataPlay.apk/MajdataPlay.arm64-v8a.apk" "out/MajdataPlay-Android-nightly.arm64-v8a.apk"
-        ls -la out
-
-    - name: Upload to nightly release (overwrite)
-      env:
-        GH_TOKEN: ${{ github.token }}
-      run: |
-        set -euo pipefail
-        gh release upload nightly out/* --clobber
-
-build-apple:
-  name: Build & Upload (macOS/iOS)
-  runs-on: macos-latest
-  needs: [prepare-nightly]
-  if: ${{ github.event_name == 'push' }}
-  strategy:
-    fail-fast: false
-    matrix:
-      configuration: [Release]
-      platform: [StandaloneOSX, iOS]
-  
-  env:
-    CONFIGURATION: ${{ matrix.configuration }}
-    TARGET_PLATFORM: ${{ matrix.platform }}
-  
-  steps:
-    - name: Checkout the repository
-      uses: actions/checkout@v4
-      with:
-        submodules: true
-        fetch-depth: 0
-
-    - name: Cache Unity Library
-      uses: actions/cache@v4
-      with:
-        path: Library
-        key: Library-${{ runner.os }}-${{ env.TARGET_PLATFORM }}-${{ hashFiles('ProjectSettings/ProjectVersion.txt', 'ProjectSettings/**', 'Packages/manifest.json', 'Packages/packages-lock.json') }}
-        restore-keys: |
-          Library-${{ runner.os }}-${{ env.TARGET_PLATFORM }}-
-
-    - name: Build (Release)
-      uses: game-ci/unity-builder@v4
-      with:
-        unityVersion: ${{ env.UNITY_VERSION }}
-        targetPlatform: ${{ env.TARGET_PLATFORM }}
-        versioning: Semantic
-        buildName: MajdataPlay
-        buildsPath: ${{ env.CONFIGURATION }}
-
-    - name: List files in build directory
-      run: ls -R ${{ env.CONFIGURATION }} || true
-
-    - name: Archive iOS (xcarchive)
-      if: ${{ env.TARGET_PLATFORM == 'iOS' }}
-      run: |
-        set -euo pipefail
-        PROJECT_PATH="${{ env.CONFIGURATION }}/iOS/MajdataPlay/Unity-iPhone.xcodeproj"
-        ARCHIVE_PATH="${{ env.CONFIGURATION }}/iOS/MajdataPlay/Unity-iPhone.xcarchive"
-        
-        xcodebuild \
-          -project "$PROJECT_PATH" \
-          -scheme "Unity-iPhone" \
-          -configuration "${{ env.CONFIGURATION }}" \
-          -sdk iphoneos \
-          -destination "generic/platform=iOS" \
-          -archivePath "$ARCHIVE_PATH" \
-          CODE_SIGNING_ALLOWED=NO \
-          CODE_SIGNING_REQUIRED=NO \
-          CODE_SIGN_IDENTITY="" \
-          archive
-
-    - name: Package IPA from xcarchive
-      if: ${{ env.TARGET_PLATFORM == 'iOS' }}
-      run: |
-        set -euo pipefail
-        ARCHIVE_PATH="${{ env.CONFIGURATION }}/iOS/MajdataPlay/Unity-iPhone.xcarchive"
-        EXPORT_DIR="${{ env.CONFIGURATION }}/iOS/MajdataPlay/export-ipa"
-        mkdir -p "$EXPORT_DIR"
-        
-        APP_PATH="$(find "$ARCHIVE_PATH/Products/Applications" -maxdepth 1 -name "*.app" -print -quit)"
-        if [ -z "$APP_PATH" ]; then
-          echo "No .app found in $ARCHIVE_PATH/Products/Applications"
-          ls -la "$ARCHIVE_PATH/Products/Applications" || true
-          exit 1
-        fi
-        
-        rm -rf "$EXPORT_DIR/Payload"
-        mkdir -p "$EXPORT_DIR/Payload"
-        cp -R "$APP_PATH" "$EXPORT_DIR/Payload/"
-        
-        IPA_PATH="$EXPORT_DIR/MajdataPlay-iOS-nightly.ipa"
-        (cd "$EXPORT_DIR" && /usr/bin/zip -qry "$(basename "$IPA_PATH")" Payload)
-        ls -la "$EXPORT_DIR"
-
-    - name: Package macOS output as zip
-      if: ${{ env.TARGET_PLATFORM == 'StandaloneOSX' }}
-      run: |
-        set -euo pipefail
-        mkdir -p out
-        ZIP_NAME="MajdataPlay-StandaloneOSX-nightly.zip"
-        (cd "${{ env.CONFIGURATION }}" && zip -qry "../out/${ZIP_NAME}" .)
-        ls -la out
-
-    - name: Collect iOS IPA to out
-      if: ${{ env.TARGET_PLATFORM == 'iOS' }}
-      run: |
-        set -euo pipefail
-        mkdir -p out
-        cp "${{ env.CONFIGURATION }}/iOS/MajdataPlay/export-ipa/MajdataPlay-iOS-nightly.ipa" out/
-        ls -la out
-
-    - name: Upload to nightly release (overwrite)
-      env:
-        GH_TOKEN: ${{ github.token }}
-      run: |
-        set -euo pipefail
-        gh release upload nightly out/* --clobber
+      - name: Upload all artifacts to the new nightly release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # collected/<artifact-name>/<files...>
+          gh release upload nightly collected/**/* --clobber
