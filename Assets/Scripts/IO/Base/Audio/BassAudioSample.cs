@@ -205,11 +205,7 @@ namespace MajdataPlay.IO
         }
         public override void SetVolume(float volume)
         {
-            using (Lock)
-            {
-                ThrowIfDisposed();
-                Volume = volume;
-            }
+            Volume = volume;
         }
         public override void Play()
         {
