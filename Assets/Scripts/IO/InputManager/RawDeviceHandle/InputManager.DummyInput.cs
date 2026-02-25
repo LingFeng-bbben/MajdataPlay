@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Utilities;
+using UnityEngine.UI;
 using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 using TouchPhase = UnityEngine.InputSystem.TouchPhase;
 
@@ -17,6 +18,7 @@ namespace MajdataPlay.IO
 {
     internal static partial class InputManager
     {
+        const float FINGER_RADIUS_SEGMENT_LENGTH = 0.5f / 4;
         // Button bit (12bit)
         // 1 2 3 4 5 6 7 8 9 10 11 12
         // 0 0 0 0 0 0 0 0 0 0  0  0
@@ -32,11 +34,13 @@ namespace MajdataPlay.IO
         static int _lastScreenWidth = -1;
         static int _lastScreenHeight = -1;
         static float _lastFingerRadius = 0.5f;
+        static float _lastTouchRadiusAdjust = 1f;
         static float _lastAAreaExtraRadius = 1f;
         static float _lastBAreaExtraRadius = 1f;
         static float _lastCAreaExtraRadius = 1f;
         static float _lastDAreaExtraRadius = 1f;
         static float _lastEAreaExtraRadius = 1f;
+        static float _maxTouchRadius = -1f;
         //readonly static Dictionary<SensorArea, HashSet<int>> _touchRecords = new(8);
         public static bool UseOuterTouchAsSensor { get; set; }
         static void UpdateMousePosition()
@@ -107,6 +111,11 @@ namespace MajdataPlay.IO
                                    Span<bool> sensorStates, 
                                    Span<bool> extraButton, Camera mainCamera)
         {
+#if UNITY_IOS
+            const float PLATFORM_TOUCH_RADIUS_ADJUST = 78f * 2f;
+#else
+            const float PLATFORM_TOUCH_RADIUS_ADJUST = 1f;
+#endif
             for (var j = 0; j < touches.Count; j++)
             {
                 var touch = touches[j];
@@ -115,7 +124,17 @@ namespace MajdataPlay.IO
                     continue;
                 }
                 var touchPosData = 0UL;
-                var button = PositionToSensorState(sensorStates, mainCamera, touch.screenPosition, touch.radius.magnitude, ref touchPosData);
+                var touchRadius = touch.radius.magnitude;
+                var button = PositionToSensorState(sensorStates, 
+                    mainCamera, 
+                    touch.screenPosition, 
+                    touchRadius / PLATFORM_TOUCH_RADIUS_ADJUST, 
+                    ref touchPosData);
+                if (touchRadius > _maxTouchRadius)
+                {
+                    MajDebug.LogInfo($"Touch radius: {touchRadius}");
+                    _maxTouchRadius = touchRadius;
+                }
                 if (button != -1)
                 {
                     extraButton[button] = true;
@@ -195,46 +214,46 @@ namespace MajdataPlay.IO
             {
                 return -1;
             }
-            ref var cachedPosition = ref _cachedPositions[x][y];
+            //ref var cachedPosition = ref _cachedPositions[x][y];
+            //if (cachedPosition is not null)
+            //{
+            //    var p = (ulong)cachedPosition;
+            //    var version = p >> (12 + 34);
+            //    if (version == _version)
+            //    {
+            //        //MajDebug.LogDebug("Cached position");
+            //        rawPositionData = p;
+            //        var eB = -1;
+            //        for (var i = 0; i < 12; i++)
+            //        {
+            //            if ((p & (1UL << i)) != 0)
+            //            {
+            //                if (UseOuterTouchAsSensor)
+            //                {
+            //                    if (i < 8)
+            //                    {
+            //                        newStates[i] = true;
+            //                    }
+            //                    else
+            //                    {
+            //                        eB = i;
+            //                        break;
+            //                    }
+            //                }
+            //                else
+            //                {
+            //                    return i;
+            //                }
+            //            }
+            //        }
+            //        for (var i = 0; i < 34; i++)
+            //        {
+            //            newStates[i] |= (p & (1UL << (i + 12))) != 0;
+            //        }
+            //        return eB;
+            //    }
+            //}
             var cubeRay = mainCamera.ScreenToWorldPoint(position);
-            if (cachedPosition is not null)
-            {
-                var p = (ulong)cachedPosition;
-                var version = p >> (12 + 34);
-                if (version == _version)
-                {
-                    //MajDebug.LogDebug("Cached position");
-                    rawPositionData = p;
-                    var eB = -1;
-                    for (var i = 0; i < 12; i++)
-                    {
-                        if ((p & (1UL << i)) != 0)
-                        {
-                            if (UseOuterTouchAsSensor)
-                            {
-                                if (i < 8)
-                                {
-                                    newStates[i] = true;
-                                }
-                                else
-                                {
-                                    eB = i;
-                                    break;
-                                }
-                            }
-                            else
-                            {
-                                return i;
-                            }
-                        }
-                    }
-                    for (var i = 0; i < 34; i++)
-                    {
-                        newStates[i] |= (p & (1UL << (i + 12))) != 0;
-                    }
-                    return eB;
-                }
-            }
             var newP = ((ulong)_version) << (12 + 34);
             var rayToCenter = cubeRay - new Vector3(0, 0, -10);
             var radToCenter = (rayToCenter).magnitude;
@@ -261,23 +280,34 @@ namespace MajdataPlay.IO
                         break;
                 }
             }
-            var userRad = _lastFingerRadius * (1 + touchRadius);
+            var userRad = _lastFingerRadius * (1 + touchRadius * _lastTouchRadiusAdjust);
             var a_extraRad = _lastAAreaExtraRadius;
             var b_extraRad = _lastBAreaExtraRadius;
             var c_extraRad = _lastCAreaExtraRadius;
             var d_extraRad = _lastDAreaExtraRadius;
             var e_extraRad = _lastEAreaExtraRadius;
             //var lastCircular = cubeRay + new Vector3(0, userRad);
-            const int SMAPLE_COUNT = 128;
+            const int SMAPLE_COUNT = 96;
             const int HORIZONTAL_SMAPLE_COUNT = 16;
             const float DEG_STEP = 360f / SMAPLE_COUNT;
-            var radStep = userRad / HORIZONTAL_SMAPLE_COUNT;
+            const ulong A_AREA_MASK = 0b00000000_00000000_00000000_00000000_00000000_00001111_11110000_00000000;
+            const ulong B_AREA_MASK = 0b00000000_00000000_00000000_00000000_00001111_11110000_00000000_00000000;
+            const ulong C_AREA_MASK = 0b00000000_00000000_00000000_00000000_00110000_00000000_00000000_00000000;
+            const ulong D_AREA_MASK = 0b00000000_00000000_00000000_00111111_11000000_00000000_00000000_00000000;
+            const ulong E_AREA_MASK = 0b00000000_00000000_00111111_11000000_00000000_00000000_00000000_00000000;
+            var radStepCount = (int)(userRad / FINGER_RADIUS_SEGMENT_LENGTH);
+            var aAreaRad = Mathf.Max(userRad, userRad + a_extraRad);
+            var bAreaRad = Mathf.Max(userRad, userRad + b_extraRad);
+            var cAreaRad = Mathf.Max(userRad, userRad + c_extraRad);
+            var dAreaRad = Mathf.Max(userRad, userRad + d_extraRad);
+            var eAreaRad = Mathf.Max(userRad, userRad + e_extraRad);
 
-            for (var rad = userRad; rad > 0; rad -= radStep)
+            for (var i = 0; i < radStepCount; i++)
             {
-                for (int i = 0; i < SMAPLE_COUNT; i++)
+                var rad = FINGER_RADIUS_SEGMENT_LENGTH * (i + 1);
+                for (int j = 0; j < SMAPLE_COUNT; j++)
                 {
-                    var circular = new Vector3(rad * Mathf.Sin(DEG_STEP * i), rad * Mathf.Cos(DEG_STEP * i));
+                    var circular = new Vector3(rad * Mathf.Sin(DEG_STEP * j), rad * Mathf.Cos(DEG_STEP * j));
                     var pos = cubeRay + circular;
                     //Debug.DrawLine(lastCircular, pos, Color.red, MajEnv.FRAME_LENGTH_SEC);
                     //lastCircular = pos;
@@ -286,11 +316,41 @@ namespace MajdataPlay.IO
                 }
             }
             RaycastNow(cubeRay, newStates, ref newP);
+            ReadOnlySpan<(ulong Mask, float Radius)> areaData = stackalloc (ulong, float)[]
+            {
+                (A_AREA_MASK, aAreaRad),
+                (B_AREA_MASK, bAreaRad),
+                (C_AREA_MASK, cAreaRad),
+                (D_AREA_MASK, dAreaRad),
+                (E_AREA_MASK, eAreaRad)
+            };
+            for (var a = 0; a < areaData.Length; a++)
+            {
+                ref readonly var data = ref areaData[a];
+                var mask = data.Mask;
+                var radius = data.Radius;
+                var subP = 0UL;
+                var segLength = radius / FINGER_RADIUS_SEGMENT_LENGTH;
+                for (var i = 0; i < segLength; i++)
+                {
+                    var rad = FINGER_RADIUS_SEGMENT_LENGTH * (i + 1);
+                    for (int j = 0; j < SMAPLE_COUNT; j++)
+                    {
+                        var circular = new Vector3(rad * Mathf.Sin(DEG_STEP * j), rad * Mathf.Cos(DEG_STEP * j));
+                        var pos = cubeRay + circular;
+
+                        RaycastNow(pos, newStates, ref subP);
+                    }
+                }
+                subP &= mask;
+                newP |= subP;
+            }
+
             if (extraButton != -1)
             {
                 newP |= 1UL << extraButton;
             }
-            cachedPosition = newP;
+            //cachedPosition = newP;
             rawPositionData = newP;
             if (UseOuterTouchAsSensor)
             {

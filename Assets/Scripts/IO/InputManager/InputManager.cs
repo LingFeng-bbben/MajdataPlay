@@ -805,6 +805,7 @@ namespace MajdataPlay.IO
                 var height = Screen.height;
                 var width = Screen.width;
                 var fingerRad = FingerRadius;
+                var touchRadiusAdjust = debugOptions.TouchRadiusAdjust;
                 var aExtraRad = debugOptions.TouchAAreaExtraRadius;
                 var bExtraRad = debugOptions.TouchBAreaExtraRadius;
                 var cExtraRad = debugOptions.TouchCAreaExtraRadius;
@@ -818,7 +819,8 @@ namespace MajdataPlay.IO
                                  bExtraRad != _lastBAreaExtraRadius ||
                                  cExtraRad != _lastCAreaExtraRadius ||
                                  dExtraRad != _lastDAreaExtraRadius ||
-                                 eExtraRad != _lastEAreaExtraRadius;
+                                 eExtraRad != _lastEAreaExtraRadius ||
+                                 touchRadiusAdjust != _lastTouchRadiusAdjust;
                 if (isModified)
                 {
                     _lastScreenWidth = width;
@@ -829,9 +831,9 @@ namespace MajdataPlay.IO
                     _lastCAreaExtraRadius = cExtraRad;
                     _lastDAreaExtraRadius = dExtraRad;
                     _lastEAreaExtraRadius = eExtraRad;
-                    _version++;
+                    _lastTouchRadiusAdjust = touchRadiusAdjust;
                 }
-
+                _version++;
                 UpdateMousePosition();
                 UpdateSensorState();
                 UpdateButtonState();
