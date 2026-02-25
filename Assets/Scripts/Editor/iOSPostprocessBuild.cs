@@ -101,28 +101,28 @@ namespace MajdataPlay.Editor
             var plist = new PlistDocument();
             plist.ReadFromString(File.ReadAllText(plistPath));
             var root = plist.root;
-            
+
             root.SetBoolean("UIFileSharingEnabled", true);
             root.SetBoolean("LSSupportsOpeningDocumentsInPlace", true);
             root.SetBoolean("UISupportsDocumentBrowser", true);
 
-            
             string bundleId = PlayerSettings.applicationIdentifier;
             string adxUti = $"{bundleId}.adx";
-
+            
             EnsureDocumentType(root,
                 typeName: "Zip Archive",
                 role: "Viewer",
+                handlerRank: "Alternate",
                 contentTypes: new[] { "public.zip-archive" }
             );
-
+            
             EnsureDocumentType(root,
                 typeName: "ADX Package",
                 role: "Viewer",
+                handlerRank: "Alternate",
                 contentTypes: new[] { adxUti }
             );
 
-            
             EnsureExportedTypeDeclaration(root,
                 identifier: adxUti,
                 description: "ADX Level Package",
@@ -133,12 +133,16 @@ namespace MajdataPlay.Editor
             File.WriteAllText(plistPath, plist.WriteToString());
         }
 
-        private static void EnsureDocumentType(PlistElementDict root, string typeName, string role, string[] contentTypes)
+        private static void EnsureDocumentType(
+            PlistElementDict root,
+            string typeName,
+            string role,
+            string handlerRank,
+            string[] contentTypes)
         {
             var arr = root.values.ContainsKey("CFBundleDocumentTypes")
                 ? root["CFBundleDocumentTypes"].AsArray()
                 : root.CreateArray("CFBundleDocumentTypes");
-
             
             foreach (var el in arr.values)
             {
@@ -153,7 +157,7 @@ namespace MajdataPlay.Editor
                 foreach (var v in ctArr.values)
                 {
                     var s = v.AsString();
-                    if (s != null) existing.Add(s);
+                    if (!string.IsNullOrEmpty(s)) existing.Add(s);
                 }
 
                 bool match = false;
@@ -162,13 +166,24 @@ namespace MajdataPlay.Editor
                     if (existing.Contains(ct)) { match = true; break; }
                 }
 
-                if (match) return; 
+                if (!match) continue;
+                
+                if (!d.values.ContainsKey("CFBundleTypeName"))
+                    d.SetString("CFBundleTypeName", typeName);
+                
+                if (!d.values.ContainsKey("CFBundleTypeRole"))
+                    d.SetString("CFBundleTypeRole", role);
+                
+                if (!d.values.ContainsKey("LSHandlerRank"))
+                    d.SetString("LSHandlerRank", handlerRank);
+                
+                return;
             }
-
             
             var entry = arr.AddDict();
             entry.SetString("CFBundleTypeName", typeName);
             entry.SetString("CFBundleTypeRole", role);
+            entry.SetString("LSHandlerRank", handlerRank);
 
             var ctNew = entry.CreateArray("LSItemContentTypes");
             foreach (var ct in contentTypes) ctNew.AddString(ct);
@@ -184,7 +199,7 @@ namespace MajdataPlay.Editor
             var arr = root.values.ContainsKey("UTExportedTypeDeclarations")
                 ? root["UTExportedTypeDeclarations"].AsArray()
                 : root.CreateArray("UTExportedTypeDeclarations");
-            
+
             foreach (var el in arr.values)
             {
                 var d = el.AsDict();
