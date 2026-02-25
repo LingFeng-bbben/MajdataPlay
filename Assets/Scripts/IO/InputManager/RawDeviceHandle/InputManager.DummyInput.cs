@@ -115,7 +115,7 @@ namespace MajdataPlay.IO
                     continue;
                 }
                 var touchPosData = 0UL;
-                var button = PositionToSensorState(sensorStates, mainCamera, touch.screenPosition, ref touchPosData);
+                var button = PositionToSensorState(sensorStates, mainCamera, touch.screenPosition, touch.radius.magnitude, ref touchPosData);
                 if (button != -1)
                 {
                     extraButton[button] = true;
@@ -177,7 +177,7 @@ namespace MajdataPlay.IO
         static int PositionToSensorState(Span<bool> newStates, Camera mainCamera, Vector3 position)
         {
             var _ = 0UL;
-            return PositionToSensorState(newStates, mainCamera, position,ref _);
+            return PositionToSensorState(newStates, mainCamera, position, 0, ref _);
         }
         /// <summary>
         /// return extra button pos 0-7, if none return -1
@@ -187,7 +187,7 @@ namespace MajdataPlay.IO
         /// <param name="position"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static int PositionToSensorState(Span<bool> newStates, Camera mainCamera, Vector3 position, ref ulong rawPositionData)
+        static int PositionToSensorState(Span<bool> newStates, Camera mainCamera, Vector3 position, float touchRadius, ref ulong rawPositionData)
         {
             var x = (int)position.x;
             var y = (int)position.y;
@@ -261,7 +261,7 @@ namespace MajdataPlay.IO
                         break;
                 }
             }
-            var userRad = _lastFingerRadius;
+            var userRad = _lastFingerRadius * (1 + touchRadius);
             var a_extraRad = _lastAAreaExtraRadius;
             var b_extraRad = _lastBAreaExtraRadius;
             var c_extraRad = _lastCAreaExtraRadius;
