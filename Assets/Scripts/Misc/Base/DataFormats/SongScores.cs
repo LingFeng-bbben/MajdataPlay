@@ -30,36 +30,43 @@ internal readonly struct SongScores
             Easy = new MaiScore()
             {
                 Hash = hash,
+                ChartLevel = ChartLevel.Easy,
                 PlayCount = 0
             },
             Basic = new MaiScore()
             {
                 Hash = hash,
+                ChartLevel = ChartLevel.Basic,
                 PlayCount = 0
             },
             Advance = new MaiScore()
             {
                 Hash = hash,
+                ChartLevel = ChartLevel.Advance,
                 PlayCount = 0
             },
             Expert = new MaiScore()
             {
                 Hash = hash,
+                ChartLevel = ChartLevel.Expert,
                 PlayCount = 0
             },
             Master = new MaiScore()
             {
                 Hash = hash,
+                ChartLevel = ChartLevel.Master,
                 PlayCount = 0
             },
             ReMaster = new MaiScore()
             {
                 Hash = hash,
+                ChartLevel = ChartLevel.ReMaster,
                 PlayCount = 0
             },
             UTAGE = new MaiScore()
             {
                 Hash = hash,
+                ChartLevel = ChartLevel.UTAGE,
                 PlayCount = 0
             }
         };
