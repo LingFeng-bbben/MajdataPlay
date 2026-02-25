@@ -339,13 +339,17 @@ namespace MajdataPlay.IO
                         var circular = new Vector3(rad * Mathf.Sin(DEG_STEP * j), rad * Mathf.Cos(DEG_STEP * j));
                         var pos = cubeRay + circular;
 
-                        RaycastNow(pos, newStates, ref subP);
+                        RaycastNow(pos, ref subP);
                     }
                 }
                 subP &= mask;
                 newP |= subP;
             }
 
+            for (var i = 0; i < 34; i++)
+            {
+                newStates[i] |= (newP & (1UL << (i + 12))) != 0;
+            }
             if (extraButton != -1)
             {
                 newP |= 1UL << extraButton;
@@ -354,11 +358,15 @@ namespace MajdataPlay.IO
             rawPositionData = newP;
             if (UseOuterTouchAsSensor)
             {
-                if(extraButton < 8 && extraButton != -1)
+                if (extraButton < 8 && extraButton != -1)
                 {
                     newStates[extraButton] = true;
-                }    
-                return -1;
+                    return -1;
+                }
+                else
+                {
+                    return extraButton;
+                }
             }
             else
             {
@@ -385,6 +393,20 @@ namespace MajdataPlay.IO
                 {
                     newP |= 1UL << (index + 12);
                     newStates[index] = true;
+                }
+            }
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static void RaycastNow(in Vector3 pos, ref ulong newP)
+        {
+            var ray = new Ray(pos, Vector3.forward);
+            var ishit = Physics.Raycast(ray, out var hitInfom);
+            if (ishit)
+            {
+                var id = hitInfom.colliderInstanceID;
+                if (_instanceID2SensorIndexMappingTable.TryGetValue(id, out var index))
+                {
+                    newP |= 1UL << (index + 12);
                 }
             }
         }
