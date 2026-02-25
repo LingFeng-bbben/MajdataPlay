@@ -311,6 +311,16 @@ namespace MajdataPlay.IO
             {
                 _cachedPositions[i] = new ulong?[len];
             }
+            var samples = new Vector3[TOUCH_ANGLE_SMAPLE_COUNT];
+            var step = 2f * Mathf.PI / TOUCH_ANGLE_SMAPLE_COUNT;
+
+            for (int i = 0; i < TOUCH_ANGLE_SMAPLE_COUNT; i++)
+            {
+                var angle = step * i;
+                samples[i] = new Vector3(Mathf.Sin(angle), Mathf.Cos(angle));
+            }
+
+            _unitCircle = samples;
             //for (var i = 0; i < 8; i++)
             //{
             //    _touchRecords.Add((SensorArea)i, new(10));

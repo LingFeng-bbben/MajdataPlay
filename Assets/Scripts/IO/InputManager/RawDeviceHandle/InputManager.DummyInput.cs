@@ -18,7 +18,9 @@ namespace MajdataPlay.IO
 {
     internal static partial class InputManager
     {
+        const int TOUCH_ANGLE_SMAPLE_COUNT = 96;
         const float FINGER_RADIUS_SEGMENT_LENGTH = 0.5f / 4;
+        
         // Button bit (12bit)
         // 1 2 3 4 5 6 7 8 9 10 11 12
         // 0 0 0 0 0 0 0 0 0 0  0  0
@@ -29,6 +31,7 @@ namespace MajdataPlay.IO
         // uint16
         readonly static ulong?[][] _cachedPositions = new ulong?[4096][];
         readonly static Dictionary<int, ulong> _touchRecorder = new(32);
+        readonly static ReadOnlyMemory<Vector3> _unitCircle = ReadOnlyMemory<Vector3>.Empty;
 
         static ushort _version = 0;
         static int _lastScreenWidth = -1;
@@ -256,7 +259,7 @@ namespace MajdataPlay.IO
             var cubeRay = mainCamera.ScreenToWorldPoint(position);
             var newP = ((ulong)_version) << (12 + 34);
             var rayToCenter = cubeRay - new Vector3(0, 0, -10);
-            var radToCenter = (rayToCenter).magnitude;
+            var radToCenter = rayToCenter.magnitude;
             var extraButton = -1;
             if(radToCenter > 9.28)
             {
@@ -280,6 +283,7 @@ namespace MajdataPlay.IO
                         break;
                 }
             }
+            var circleSamples = _unitCircle.Span;
             var userRad = _lastFingerRadius * (1 + touchRadius * _lastTouchRadiusAdjust);
             var a_extraRad = _lastAAreaExtraRadius;
             var b_extraRad = _lastBAreaExtraRadius;
@@ -287,9 +291,6 @@ namespace MajdataPlay.IO
             var d_extraRad = _lastDAreaExtraRadius;
             var e_extraRad = _lastEAreaExtraRadius;
             //var lastCircular = cubeRay + new Vector3(0, userRad);
-            const int SMAPLE_COUNT = 96;
-            const int HORIZONTAL_SMAPLE_COUNT = 16;
-            const float DEG_STEP = 360f / SMAPLE_COUNT;
             const ulong A_AREA_MASK = 0b00000000_00000000_00000000_00000000_00000000_00001111_11110000_00000000;
             const ulong B_AREA_MASK = 0b00000000_00000000_00000000_00000000_00001111_11110000_00000000_00000000;
             const ulong C_AREA_MASK = 0b00000000_00000000_00000000_00000000_00110000_00000000_00000000_00000000;
@@ -305,9 +306,9 @@ namespace MajdataPlay.IO
             for (var i = 0; i < radStepCount; i++)
             {
                 var rad = FINGER_RADIUS_SEGMENT_LENGTH * (i + 1);
-                for (int j = 0; j < SMAPLE_COUNT; j++)
+                for (int j = 0; j < TOUCH_ANGLE_SMAPLE_COUNT; j++)
                 {
-                    var circular = new Vector3(rad * Mathf.Sin(DEG_STEP * j), rad * Mathf.Cos(DEG_STEP * j));
+                    var circular = circleSamples[j] * rad;
                     var pos = cubeRay + circular;
                     //Debug.DrawLine(lastCircular, pos, Color.red, MajEnv.FRAME_LENGTH_SEC);
                     //lastCircular = pos;
@@ -334,9 +335,9 @@ namespace MajdataPlay.IO
                 for (var i = 0; i < segLength; i++)
                 {
                     var rad = FINGER_RADIUS_SEGMENT_LENGTH * (i + 1);
-                    for (int j = 0; j < SMAPLE_COUNT; j++)
+                    for (int j = 0; j < TOUCH_ANGLE_SMAPLE_COUNT; j++)
                     {
-                        var circular = new Vector3(rad * Mathf.Sin(DEG_STEP * j), rad * Mathf.Cos(DEG_STEP * j));
+                        var circular = circleSamples[j] * rad;
                         var pos = cubeRay + circular;
 
                         RaycastNow(pos, ref subP);
