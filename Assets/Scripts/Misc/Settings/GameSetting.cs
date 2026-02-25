@@ -250,15 +250,15 @@ namespace MajdataPlay.Settings
         [Preserve]
         public float TouchSimulationRadius { get; set; } = 0.5f;
         [Preserve]
-        public float TouchAAreaExtraRadius { get; set; } = 1f;
+        public float TouchAAreaExtraRadius { get; set; } = 0f;
         [Preserve]
-        public float TouchBAreaExtraRadius { get; set; } = 1f;
+        public float TouchBAreaExtraRadius { get; set; } = 0f;
         [Preserve]
-        public float TouchCAreaExtraRadius { get; set; } = 1f;
+        public float TouchCAreaExtraRadius { get; set; } = 0f;
         [Preserve]
-        public float TouchDAreaExtraRadius { get; set; } = 1f;
+        public float TouchDAreaExtraRadius { get; set; } = 0f;
         [Preserve]
-        public float TouchEAreaExtraRadius { get; set; } = 1f;
+        public float TouchEAreaExtraRadius { get; set; } = 0f;
         [Preserve]
         public float TouchRadiusAdjust { get; set; } = 1f;
         [Preserve]
