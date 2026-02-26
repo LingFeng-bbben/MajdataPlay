@@ -28,13 +28,16 @@ internal readonly struct EndpointResponse
     }
     public required string Message { get; init; }
 
-    
     readonly ReadOnlyMemory<byte> _data;
     readonly JsonSerializer _serializer;
     readonly JsonSerializerSettings _serializerSettings;
     readonly IReadOnlyDictionary<string, IEnumerable<string>> _headers = EMPTY_HEADERS;
     public readonly static IReadOnlyDictionary<string, IEnumerable<string>> EMPTY_HEADERS = new Dictionary<string, IEnumerable<string>>();
 
+    public EndpointResponse()
+    {
+        _headers = EMPTY_HEADERS;
+    }
     public EndpointResponse(ReadOnlyMemory<byte> data, JsonSerializer serializer, JsonSerializerSettings serializerSettings)
     {
         if (serializer is null)
