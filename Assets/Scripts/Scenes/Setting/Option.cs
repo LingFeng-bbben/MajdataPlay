@@ -178,6 +178,17 @@ namespace MajdataPlay.Scenes.Setting
                         _minValue = 0;
                         _step = 0.01m;
                         break;
+                    case "TouchSimulationRadius":
+                    case "TouchAAreaExtraRadius":
+                    case "TouchBAreaExtraRadius":
+                    case "TouchCAreaExtraRadius":
+                    case "TouchDAreaExtraRadius":
+                    case "TouchEAreaExtraRadius":
+                    case "TouchRadiusAdjust":
+                        _maxValue = 5;
+                        _minValue = -5;
+                        _step = 0.05m;
+                        break;
                     case "AudioOffset":
                     case "JudgeOffset":
                     case "AnswerOffset":
