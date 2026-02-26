@@ -247,6 +247,22 @@ namespace MajdataPlay.Settings
     {
         [Preserve]
         public bool DisplaySensor { get; set; } = false;
+#if UNITY_ANDROID
+        [Preserve]
+        public float TouchSimulationRadius { get; set; } = 0.5f;
+        [Preserve]
+        public float TouchAAreaExtraRadius { get; set; } = 0f;
+        [Preserve]
+        public float TouchBAreaExtraRadius { get; set; } = 0f;
+        [Preserve]
+        public float TouchCAreaExtraRadius { get; set; } = 0.23f;
+        [Preserve]
+        public float TouchDAreaExtraRadius { get; set; } = 0.2f;
+        [Preserve]
+        public float TouchEAreaExtraRadius { get; set; } = 1.2f;
+        [Preserve]
+        public float TouchRadiusAdjust { get; set; } = 2.17f;
+#else
         [Preserve]
         public float TouchSimulationRadius { get; set; } = 0.5f;
         [Preserve]
@@ -261,6 +277,7 @@ namespace MajdataPlay.Settings
         public float TouchEAreaExtraRadius { get; set; } = 0f;
         [Preserve]
         public float TouchRadiusAdjust { get; set; } = 1f;
+#endif
         [Preserve]
         public bool DisplayFPS { get; set; } = true;
         [SettingVisualizationIgnore]
