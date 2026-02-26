@@ -341,15 +341,15 @@ namespace MajdataPlay.Scenes.Login
                                     case HttpErrorCode.Unreachable:
                                         errMsg = "MAJTEXT_LOGIN_CONNECT_UNREACHABLE";
                                         break;
-                                    default:
+                                    case HttpErrorCode.Unsuccessful:
                                         if (rsp.StatusCode is HttpStatusCode.Unauthorized)
-                                        {
                                             errMsg = "MAJTEXT_ONLINE_USERNAME_OR_PASSWORD_INCORRECT";
-                                        }
-                                        else
-                                        {
-                                            errMsg = "MAJTEXT_LOGIN_UNKNOWN_ERROR";
-                                        }
+                                        else if (rsp.StatusCode is HttpStatusCode.MethodNotAllowed)
+                                            errMsg = "MAJTEXT_ONLINE_METHOD_NOT_ALLOWED";
+                                        else errMsg = "MAJTEXT_LOGIN_UNKNOWN_ERROR";
+                                        break;
+                                    default:
+                                        errMsg = "MAJTEXT_LOGIN_UNKNOWN_ERROR";
                                         break;
                                 }
                                 _errText.text = $"{"MAJTEXT_LOGIN_LOGIN_FAILED".i18n()}:\n{errMsg.i18n()}";
