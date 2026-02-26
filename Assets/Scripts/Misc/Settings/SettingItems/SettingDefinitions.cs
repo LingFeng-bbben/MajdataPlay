@@ -526,43 +526,57 @@ namespace MajdataPlay.Settings.SettingItems
                     "TouchSimulationRadius",
                     () => Settings.Debug.TouchSimulationRadius,
                     v => Settings.Debug.TouchSimulationRadius = v,
-                    step: 0.001m
+                    step: 0.05m,
+                    minValue: -5,
+                    maxValue: 5
                 ),
                 new NumericSettingItem<float>(
                     "TouchAAreaExtraRadius",
                     () => Settings.Debug.TouchAAreaExtraRadius,
                     v => Settings.Debug.TouchAAreaExtraRadius = v,
-                    step: 0.001m
+                    step: 0.05m,
+                    minValue: -5,
+                    maxValue: 5
                 ),
                 new NumericSettingItem<float>(
                     "TouchBAreaExtraRadius",
                     () => Settings.Debug.TouchBAreaExtraRadius,
                     v => Settings.Debug.TouchBAreaExtraRadius = v,
-                    step: 0.001m
+                    step: 0.05m,
+                    minValue: -5,
+                    maxValue: 5
                 ),
                 new NumericSettingItem<float>(
                     "TouchCAreaExtraRadius",
                     () => Settings.Debug.TouchCAreaExtraRadius,
                     v => Settings.Debug.TouchCAreaExtraRadius = v,
-                    step: 0.001m
+                    step: 0.05m,
+                    minValue: -5,
+                    maxValue: 5
                 ),
                 new NumericSettingItem<float>(
                     "TouchDAreaExtraRadius",
                     () => Settings.Debug.TouchDAreaExtraRadius,
                     v => Settings.Debug.TouchDAreaExtraRadius = v,
-                    step: 0.001m
+                    step: 0.05m,
+                    minValue: -5,
+                    maxValue: 5
                 ),
                 new NumericSettingItem<float>(
                     "TouchEAreaExtraRadius",
                     () => Settings.Debug.TouchEAreaExtraRadius,
                     v => Settings.Debug.TouchEAreaExtraRadius = v,
-                    step: 0.001m
+                    step: 0.05m,
+                    minValue: -5,
+                    maxValue: 5
                 ),
                 new NumericSettingItem<float>(
                     "TouchRadiusAdjust",
                     () => Settings.Debug.TouchRadiusAdjust,
                     v => Settings.Debug.TouchRadiusAdjust = v,
-                    step: 0.001m
+                    step: 0.05m,
+                    minValue: -5,
+                    maxValue: 5
                 ),
                 new BoolSettingItem(
                     "DisplayFPS",
