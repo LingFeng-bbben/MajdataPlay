@@ -338,6 +338,9 @@ namespace MajdataPlay.Scenes.Login
                                     case HttpErrorCode.InvalidRequest:
                                         errMsg = rsp.Message;
                                         break;
+                                    case HttpErrorCode.Unreachable:
+                                        errMsg = "MAJTEXT_LOGIN_CONNECT_UNREACHABLE";
+                                        break;
                                     default:
                                         if (rsp.StatusCode is HttpStatusCode.Unauthorized)
                                         {
