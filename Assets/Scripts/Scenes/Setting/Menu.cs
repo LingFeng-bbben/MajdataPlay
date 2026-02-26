@@ -4,9 +4,9 @@ using MajdataPlay.IO;
 using MajdataPlay.Numerics;
 using MajdataPlay.Settings.Runtime;
 using MajdataPlay.Utils;
+using MajdataPlay.Settings.SettingItems;
 using System;
-using System.Linq;
-using System.Reflection;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 #nullable enable
@@ -17,9 +17,9 @@ namespace MajdataPlay.Scenes.Setting
         public string Name { get; set; } = string.Empty;
         public int SelectedIndex => _selectedIndex;
         /// <summary>
-        /// Option对象<para>e.g. GameSetting.Game</para>
+        /// 设置项列表
         /// </summary>
-        public object SubOptionObject { get; set; }
+        public IReadOnlyList<ISettingItem> SettingItems { get; set; } = Array.Empty<ISettingItem>();
         public GameObject optionPrefab;
 
         float _lastWaitTime = 0;
@@ -30,18 +30,13 @@ namespace MajdataPlay.Scenes.Setting
         readonly SettingConfig _settingConfig = MajEnv.RuntimeConfig?.Setting ?? new();
         public void Init()
         {
-            var type = SubOptionObject.GetType();
-            var properties = type.GetProperties()
-                                 .Where(x => x.GetCustomAttributes<SettingVisualizationIgnoreAttribute>().Count() == 0)
-                                 .ToArray();
-            _options = new Option[properties.Length];
-            foreach(var (i,property) in properties.WithIndex())
+            _options = new Option[SettingItems.Count];
+            foreach(var (i, settingItem) in SettingItems.WithIndex())
             {
                 var optionObj = Instantiate(optionPrefab, transform);
                 var option = optionObj.GetComponent<Option>();
                 _options[i] = option;
-                option.PropertyInfo = property;
-                option.OptionObject = SubOptionObject;
+                option.SettingItem = settingItem;
                 option.Parent = this;
                 option.Index = i;
                 option.Init();
