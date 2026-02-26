@@ -15,12 +15,24 @@ internal readonly struct EndpointResponse
     public required bool IsDeserializable { get; init; }
     public HttpStatusCode? StatusCode { get; init; }
     public required HttpErrorCode ErrorCode { get; init; }
-    public IReadOnlyDictionary<string, IEnumerable<string>> Headers { get; init; } = EMPTY_HEADERS;
+    public IReadOnlyDictionary<string, IEnumerable<string>> Headers 
+    { 
+        get
+        {
+            return _headers;
+        }
+        init
+        {
+            _headers = value ?? EMPTY_HEADERS;
+        }
+    }
     public required string Message { get; init; }
+
     
     readonly ReadOnlyMemory<byte> _data;
     readonly JsonSerializer _serializer;
     readonly JsonSerializerSettings _serializerSettings;
+    readonly IReadOnlyDictionary<string, IEnumerable<string>> _headers = EMPTY_HEADERS;
     public readonly static IReadOnlyDictionary<string, IEnumerable<string>> EMPTY_HEADERS = new Dictionary<string, IEnumerable<string>>();
 
     public EndpointResponse(ReadOnlyMemory<byte> data, JsonSerializer serializer, JsonSerializerSettings serializerSettings)
