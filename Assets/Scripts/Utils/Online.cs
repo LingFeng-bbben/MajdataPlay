@@ -362,33 +362,16 @@ namespace MajdataPlay.Utils
                         Message = string.Empty
                     };
                 }
-                if(apiEndpoint.RuntimeConfig.AuthMethod != NetAuthMethodOption.Plain)
+                if(username == "YourUsername" || password == "YourUsername" ||
+                        string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
                 {
-                    var returnValue = new EndpointResponse()
-                    {
-                        ErrorCode = HttpErrorCode.NotSupported,
-                        IsSuccessfully = false,
-                        IsDeserializable = false,
-                        Message = "MAJTEXT_ONLINE_UNSUPPORTED_AUTH_METHOD"
-                    };
-                }
-                else
-                {
-                    var returnValue = new EndpointResponse()
+                    return new EndpointResponse()
                     {
                         ErrorCode = HttpErrorCode.InvalidRequest,
                         IsSuccessfully = false,
                         IsDeserializable = false,
                         Message = "MAJTEXT_ONLINE_USERNAME_OR_PASSWORD_UNSET"
                     };
-                    if (username == "YourUsername" || password == "YourUsername")
-                    {
-                        return returnValue;
-                    }
-                    if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
-                    {
-                        return returnValue;
-                    }
                 }
 
                var pwdHashStr = HashHelper.ToHexString(await HashHelper.ComputeHashAsync(Encoding.UTF8.GetBytes(password)));
