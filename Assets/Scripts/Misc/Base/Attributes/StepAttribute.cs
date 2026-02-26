@@ -8,9 +8,11 @@ namespace MajdataPlay;
 [AttributeUsage(AttributeTargets.Property| AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
 public sealed class StepAttribute : Attribute
 {
-    public decimal Step { get; }
-    public StepAttribute(decimal step)
+    public decimal Step
     {
-        Step = step;
+        get => _step;
+        init => _step = value;
     }
+
+    readonly decimal _step;
 }

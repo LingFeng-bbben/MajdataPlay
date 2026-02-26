@@ -9,27 +9,29 @@ namespace MajdataPlay;
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
 public sealed class RangeAttribute : Attribute
 {
-    public decimal Min { get; }
-    public decimal Max { get; }
+    public decimal Min
+    {
+        get => _min;
+        init => _min = value;
+    }
+    public decimal Max
+    {
+        get => _max;
+        init => _max = value;
+    }
     public bool IsStartInclusive
     {
-        get => Range.IsStartInclusive;
+        get => _isStartInclusive;
+        set => _isStartInclusive = value;
     }
     public bool IsEndInclusive
     {
-        get => Range.IsEndInclusive;
+        get => _isEndInclusive;
+        set => _isEndInclusive = value;
     }
-    public Range<decimal> Range { get; }
-    public RangeAttribute(decimal min, decimal max, ContainsType containsType = ContainsType.Closed)
-    {
-        Min = min;
-        Max = max;
-        Range = new Range<decimal>(min, max, containsType);
-    }
-    public RangeAttribute(Range<decimal> range)
-    {
-        Min = range.Start;
-        Max = range.End;
-        Range = range;
-    }
+
+    decimal _min;
+    decimal _max;
+    bool _isStartInclusive;
+    bool _isEndInclusive;
 }

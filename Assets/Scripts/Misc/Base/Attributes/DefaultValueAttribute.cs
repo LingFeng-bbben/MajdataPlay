@@ -9,9 +9,10 @@ namespace MajdataPlay;
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
 public sealed class DefaultValueAttribute : Attribute
 {
-    public object? Value { get; }
-    public DefaultValueAttribute(object? value)
+    public object? Value
     {
-        Value = value;
+        get => _value;
+        init => _value = value;
     }
+    object? _value;
 }
