@@ -11,7 +11,9 @@ namespace MajdataPlay.Numerics
     {
         public T Start => _left;
         public T End => _right;
-        public ContainsType Type { get; init; }
+        public bool IsStartInclusive { get;  }
+        public bool IsEndInclusive { get; }
+        public ContainsType Type { get; }
 
         readonly T _left;
         readonly T _right;
@@ -19,10 +21,33 @@ namespace MajdataPlay.Numerics
         public Range(T left, T right, ContainsType type)
         {
             if (left.CompareTo(right) > 0)
+            {
                 throw new ArgumentException("The lower bound of the interval must be greater than or equal to the upper bound");
+            }
             _left = left;
             _right = right;
             Type = type;
+            switch(type)
+            {
+                case ContainsType.Closed:
+                    IsStartInclusive = true;
+                    IsEndInclusive = true;
+                    break;
+                case ContainsType.LeftOpen:
+                    IsStartInclusive = false;
+                    IsEndInclusive = true;
+                    break;
+                case ContainsType.RightOpen:
+                    IsStartInclusive = true;
+                    IsEndInclusive = false;
+                    break;
+                case ContainsType.Open:
+                    IsStartInclusive = false;
+                    IsEndInclusive = false;
+                    break;
+                default:
+                    throw new ArgumentException("Invalid ContainsType value", nameof(type));
+            }
         }
         public Range(T left, T right) : this(left, right, ContainsType.Closed) { }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
