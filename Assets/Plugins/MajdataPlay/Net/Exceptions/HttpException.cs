@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay.Net
 {
-    internal class HttpException : HttpRequestException
+    public class HttpException : HttpRequestException
     {
         public HttpErrorCode ErrorCode { get; }
         public HttpStatusCode? StatusCode { get; }

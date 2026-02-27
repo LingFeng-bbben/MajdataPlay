@@ -8,7 +8,7 @@ using UnityEngine.Scripting;
 namespace MajdataPlay.Settings
 {
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
-    internal sealed class SettingVisualizationIgnoreAttribute : PreserveAttribute
+    public sealed class SettingVisualizationIgnoreAttribute : PreserveAttribute
     {
     }
 }

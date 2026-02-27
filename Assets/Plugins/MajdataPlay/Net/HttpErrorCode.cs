@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MajdataPlay.Net;
-internal enum HttpErrorCode
+public enum HttpErrorCode
 {
     NoError,
     Unreachable,

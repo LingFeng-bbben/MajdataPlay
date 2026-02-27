@@ -2,7 +2,6 @@ using Cysharp.Text;
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Buffers;
 using MajdataPlay.Net;
-using MajdataPlay.Settings;
 using MajdataPlay.UnsafeKit;
 using MajdataPlay.Drawing;
 using Newtonsoft.Json;
@@ -464,8 +463,9 @@ namespace MajdataPlay.Utils
 
                 for (var i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
                 {
+                    var e = default(Exception?);
                     rsp = await GetAsync(interactUrl, token);
-                    if (rsp.IsSuccessfully && rsp.IsDeserializable && rsp.TryDeserialize<MajNetSongInteract?>(out var intlist) && intlist is not null)
+                    if (rsp.IsSuccessfully && rsp.IsDeserializable && rsp.TryDeserialize<MajNetSongInteract?>(out var intlist, out e) && intlist is not null)
                     {
                         MajDebug.LogDebug(rsp);
                         return intlist;
@@ -473,6 +473,7 @@ namespace MajdataPlay.Utils
                     else
                     {
                         MajDebug.LogError(rsp);
+                        MajDebug.LogError($"Failed to get chart interact: {e?.Message ?? "Unknown error"}");
                     }
                     if (rsp.ErrorCode == HttpErrorCode.Canceled)
                     {
@@ -604,7 +605,8 @@ namespace MajdataPlay.Utils
                 for (var i = 0; i < MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
                 {
                     rsp = await GetAsync(url, token);
-                    if(rsp.IsSuccessfully && rsp.TryDeserialize<MajnetSongDetail[]>(out var chartList) && chartList is not null)
+                    var e = default(Exception?);
+                    if (rsp.IsSuccessfully && rsp.TryDeserialize<MajnetSongDetail[]>(out var chartList, out e) && chartList is not null)
                     {
                         MajDebug.LogDebug(rsp);
                         return chartList;
@@ -612,6 +614,7 @@ namespace MajdataPlay.Utils
                     else
                     {
                         MajDebug.LogError(rsp);
+                        MajDebug.LogError($"Failed to get chart list: {e?.Message ?? "Unknown error"}");
                     }
                     if (rsp.ErrorCode == HttpErrorCode.Canceled)
                     {

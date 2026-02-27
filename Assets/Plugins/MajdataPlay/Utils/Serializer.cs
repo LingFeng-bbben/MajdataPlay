@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -77,17 +78,18 @@ namespace MajdataPlay.Utils
                 return JsonConvert.DeserializeObject<T>(json, settings);
             }
 
-            public static bool TryDeserialize<T>(in string json, out T? result, JsonSerializerSettings? settings = null)
+            public static bool TryDeserialize<T>(in string json, out T? result, [NotNullWhen(false)]out Exception? exception, JsonSerializerSettings? settings = null)
             {
                 try
                 {
                     result = JsonConvert.DeserializeObject<T>(json, settings);
+                    exception = null;
                     return true;
                 }
                 catch (Exception e)
                 {
-                    MajDebug.LogException(e);
                     result = default;
+                    exception = e;
                     return false;
                 }
             }
@@ -113,30 +115,28 @@ namespace MajdataPlay.Utils
                 });
             }
 
-            public static async Task<(bool, T?)> TryDeserializeAsync<T>(Stream jsonStream, JsonSerializerSettings? settings)
+            public static async Task<(bool, T?, Exception?)> TryDeserializeAsync<T>(Stream jsonStream, JsonSerializerSettings? settings)
             {
                 try
                 {
                     var result = await DeserializeAsync<T>(jsonStream, settings);
-                    return (true, result);
+                    return (true, result, default);
                 }
                 catch (Exception e)
                 {
-                    MajDebug.LogError($"{nameof(T)}: {e}");
-                    return (false, default);
+                    return (false, default, e);
                 }
             }
-            public static async Task<(bool, T?)> TryDeserializeAsync<T>(Stream jsonStream, JsonSerializer? serializer = null)
+            public static async Task<(bool, T?, Exception?)> TryDeserializeAsync<T>(Stream jsonStream, JsonSerializer? serializer = null)
             {
                 try
                 {
                     var result = await DeserializeAsync<T>(jsonStream, serializer);
-                    return (true, result);
+                    return (true, result, default);
                 }
                 catch (Exception e)
                 {
-                    MajDebug.LogError($"{nameof(T)}: {e}");
-                    return (false, default);
+                    return (false, default, e);
                 }
             }
             public static Task<T?> DeserializeAsync<T>(string json, JsonSerializerSettings? settings = null)
@@ -144,17 +144,16 @@ namespace MajdataPlay.Utils
                 return Task.Run(() => JsonConvert.DeserializeObject<T>(json, settings));
             }
 
-            public static async Task<(bool, T?)> TryDeserializeAsync<T>(string json, JsonSerializerSettings? settings = null)
+            public static async Task<(bool, T?, Exception?)> TryDeserializeAsync<T>(string json, JsonSerializerSettings? settings = null)
             {
                 try
                 {
                     var result = await DeserializeAsync<T>(json, settings);
-                    return (true, result);
+                    return (true, result, default);
                 }
                 catch (Exception e)
                 {
-                    MajDebug.LogError($"{nameof(T)}: {e}");
-                    return (false, default);
+                    return (false, default, e);
                 }
             }
         }

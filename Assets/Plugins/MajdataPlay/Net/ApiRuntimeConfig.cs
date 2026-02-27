@@ -1,4 +1,3 @@
-using MajdataPlay.Settings;
 using System;
 using UnityEngine;
 #nullable enable

@@ -1,4 +1,3 @@
-using MajdataPlay.Settings;
 using Newtonsoft.Json;
 using System;
 using UnityEngine.Scripting;

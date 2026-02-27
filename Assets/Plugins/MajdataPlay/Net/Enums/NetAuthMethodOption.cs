@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine.Scripting;
 
-namespace MajdataPlay.Settings;
+namespace MajdataPlay.Net;
 [Preserve]
 public enum NetAuthMethodOption
 {

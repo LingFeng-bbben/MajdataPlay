@@ -8,7 +8,7 @@ using UnityEngine.Scripting;
 
 namespace MajdataPlay.Settings.Runtime;
 [Preserve]
-internal class SettingConfig
+public class SettingConfig
 {
     [JsonIgnore, Preserve]
     public int SelectedPage { get; set; } = 0;

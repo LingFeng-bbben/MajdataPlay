@@ -1,12 +1,11 @@
-﻿using MajdataPlay.Buffers;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace MajdataPlay.Net;
-internal static class UriExtensions
+public static class UriExtensions
 {
     public static Uri Combine(this Uri baseUri, string relativeUri)
     {

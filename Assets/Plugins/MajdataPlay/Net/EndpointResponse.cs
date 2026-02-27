@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay.Net;
-internal readonly struct EndpointResponse
+public readonly struct EndpointResponse
 {
     public long Length { get; }
     public required bool IsSuccessfully { get; init; }
@@ -70,11 +70,11 @@ internal readonly struct EndpointResponse
 
         return Serializer.Json.Deserialize<T>(encoder.GetString(_data.Span), _serializerSettings);
     }
-    public bool TryDeserialize<T>(out T? result)
+    public bool TryDeserialize<T>(out T? result, out Exception? exception)
     {
-        return TryDeserialize(Encoding.UTF8, out result);
+        return TryDeserialize(Encoding.UTF8, out result, out exception);
     }
-    public bool TryDeserialize<T>(Encoding encoder, out T? result)
+    public bool TryDeserialize<T>(Encoding encoder, out T? result, out Exception? exception)
     {
         if (encoder is null)
         {
@@ -83,9 +83,10 @@ internal readonly struct EndpointResponse
         if (!IsDeserializable)
         {
             result = default;
+            exception = new InvalidOperationException();
             return false;
         }
-        return Serializer.Json.TryDeserialize<T>(encoder.GetString(_data.Span), out result, _serializerSettings);
+        return Serializer.Json.TryDeserialize<T>(encoder.GetString(_data.Span), out result, out exception, _serializerSettings);
     }
     public ValueTask<T?> DeserializeAsync<T>()
     {

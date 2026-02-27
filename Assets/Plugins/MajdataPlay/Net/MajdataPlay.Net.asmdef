@@ -1,10 +1,8 @@
 {
-    "name": "MajdataPlay.Settings",
-    "rootNamespace": "MajdataPlay.Settings",
+    "name": "MajdataPlay.Net",
+    "rootNamespace": "MajdataPlay.Net",
     "references": [
-        "GUID:110c740f6b9f82442a64bc733d684860",
-        "GUID:a6a245cf6edfcd3468788187a7007174",
-        "GUID:f94ca49b7f2952d4c8d57517343c1361"
+        "GUID:b1a06a9da460afa45af2cb9774ca3548"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

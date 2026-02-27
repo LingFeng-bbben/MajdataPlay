@@ -17,6 +17,7 @@ using MajdataPlay.Scenes.Game.Notes;
 using MajdataPlay.Settings;
 using System.Threading.Tasks;
 using MajdataPlay.Recording;
+using MajdataPlay.Net;
 
 #nullable enable
 namespace MajdataPlay.Scenes.Result

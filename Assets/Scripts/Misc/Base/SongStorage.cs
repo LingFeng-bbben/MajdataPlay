@@ -93,7 +93,8 @@ namespace MajdataPlay
                     if (File.Exists(MY_FAVORITE_EXPORT_PATH))
                     {
                         bool result;
-                        (result, _userFavorites) = await Serializer.Json.TryDeserializeAsync<DanInfo>(File.OpenRead(MY_FAVORITE_EXPORT_PATH));
+                        Exception? exception;
+                        (result, _userFavorites, exception) = await Serializer.Json.TryDeserializeAsync<DanInfo>(File.OpenRead(MY_FAVORITE_EXPORT_PATH));
                         if (!result)
                         {
                             var bakPath = $"{MY_FAVORITE_EXPORT_PATH}.bak";
@@ -102,13 +103,13 @@ namespace MajdataPlay
                                 bakPath = $"{bakPath}.bak";
                             }
                             File.Copy(MY_FAVORITE_EXPORT_PATH, bakPath);
-                            MajDebug.LogError($"Failed to load favorites\nPath: {MY_FAVORITE_EXPORT_PATH}");
+                            MajDebug.LogError($"Failed to load favorites\nPath: {MY_FAVORITE_EXPORT_PATH}\nException: {exception}");
                         }
                     }
                     if (File.Exists(MY_FAVORITE_STORAGE_PATH))
                     {
 
-                        var (result, storageFav) = await Serializer.Json.TryDeserializeAsync<HashSet<string>>(File.OpenRead(MY_FAVORITE_STORAGE_PATH));
+                        var (result, storageFav, exception) = await Serializer.Json.TryDeserializeAsync<HashSet<string>>(File.OpenRead(MY_FAVORITE_STORAGE_PATH));
                         if (!result)
                         {
                             var bakPath = $"{MY_FAVORITE_STORAGE_PATH}.bak";
@@ -117,7 +118,7 @@ namespace MajdataPlay
                                 bakPath = $"{bakPath}.bak";
                             }
                             File.Copy(MY_FAVORITE_STORAGE_PATH, bakPath);
-                            MajDebug.LogError($"Failed to load favorites\nPath: {MY_FAVORITE_STORAGE_PATH}");
+                            MajDebug.LogError($"Failed to load favorites\nPath: {MY_FAVORITE_STORAGE_PATH}\nException: {exception}");
                         }
                         else if(storageFav is not null)
                         {
@@ -436,10 +437,14 @@ namespace MajdataPlay
                     continue;
                 }
                 var jsonStream = File.OpenRead(file.FullName);
-                var (result, dan) = await Serializer.Json.TryDeserializeAsync<DanInfo>(jsonStream);
+                var (result, dan, e) = await Serializer.Json.TryDeserializeAsync<DanInfo>(jsonStream);
                 if (result && dan is not null)
                 {
                     loadDanTasks[i] = GetDanCollection(_allCharts, dan);
+                }
+                if (e is not null)
+                {
+                    MajDebug.LogError($"Failed to load dan from {file.FullName}\nException: {e}");
                 }
             }
             if (loadDanTasks.Length != 0)

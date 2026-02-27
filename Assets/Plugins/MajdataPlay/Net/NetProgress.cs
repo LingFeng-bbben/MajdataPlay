@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay.Net
 {
-    internal class NetProgress: INetProgress
+    public class NetProgress: INetProgress
     {
         public float Percent { get; private set; }
         long INetProgress.TotalBytes { get; set; }

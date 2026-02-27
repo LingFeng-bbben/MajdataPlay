@@ -1,7 +1,6 @@
 using Cysharp.Threading.Tasks;
 using MajdataPlay.IO;
 using MajdataPlay.Net;
-using MajdataPlay.Settings;
 using MajdataPlay.Utils;
 using NeoSmart.AsyncLock;
 using System;

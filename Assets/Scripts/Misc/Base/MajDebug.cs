@@ -265,13 +265,5 @@ namespace MajdataPlay
             public string? StackTrace { get; set; }
             public LogLevel Level { get; init; }
         }
-        internal enum LogLevel
-        {
-            Debug,
-            Info,
-            Warning,
-            Error,
-            Fatal
-        }
     }
 }

@@ -8,7 +8,7 @@ using UnityEngine.Scripting;
 namespace MajdataPlay.Settings
 {
     [Preserve]
-    internal class ChartSetting
+    public class ChartSetting
     {
         [SettingVisualizationIgnore, Preserve]
         public string Hash { get; init; }

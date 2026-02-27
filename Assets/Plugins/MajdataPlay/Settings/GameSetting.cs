@@ -1,14 +1,10 @@
-using HidSharp;
-using MajdataPlay.Scenes.Game;
-using MajdataPlay.Scenes.Game.Notes;
-using MajdataPlay.IO;
-using MajdataPlay.Recording;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using UnityEngine.Scripting;
 using Newtonsoft.Json;
 using MajdataPlay.Net;
+using HidSharp;
 #nullable enable
 namespace MajdataPlay.Settings
 {
@@ -311,7 +307,7 @@ namespace MajdataPlay.Settings
         [Preserve]
         [SettingVisualizationIgnore]
         [JsonProperty]
-        internal MajDebug.LogLevel DebugLevel { get; set; } = MajDebug.LogLevel.Info;
+        public LogLevel DebugLevel { get; set; } = LogLevel.Info;
     }
     [Preserve]
     public class IOOptions

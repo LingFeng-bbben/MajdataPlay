@@ -129,9 +129,10 @@ namespace MajdataPlay.Scenes.View
                 {
                     return;
                 }
-                if(!Serializer.Json.TryDeserialize<MajWsRequestBase?>(json,out var r, JSON_READER_OPTIONS) || 
+                if(!Serializer.Json.TryDeserialize<MajWsRequestBase?>(json, out var r,out var ee, JSON_READER_OPTIONS) || 
                     r is null)
                 {
+                    MajDebug.LogError($"WebSocket request parse error: {ee?.Message ?? "Unknown error"}");
                     Error("Wrong Fromat");
                     return;
                 }
@@ -141,11 +142,12 @@ namespace MajdataPlay.Scenes.View
                 {
                     case MajWsRequestType.Load:
                         {
-                            var isValid = Serializer.Json.TryDeserialize<MajWsRequestLoad?>(payloadjson, out var p) |
-                                          Serializer.Json.TryDeserialize<MajWsRequestLoadBinary?>(payloadjson, out var pBinary);
+                            var isValid = Serializer.Json.TryDeserialize<MajWsRequestLoad?>(payloadjson, out var p, out ee) |
+                                          Serializer.Json.TryDeserialize<MajWsRequestLoadBinary?>(payloadjson, out var pBinary, out ee);
                             isValid = isValid && (p is not null || pBinary is not null);
                             if (!isValid) 
                             {
+                                MajDebug.LogError($"WebSocket request parse error: {ee?.Message ?? "Unknown error"}");
                                 Error("Wrong Fromat");
                                 return; 
                             }
@@ -178,8 +180,9 @@ namespace MajdataPlay.Scenes.View
                         break;*/
                     case MajWsRequestType.Play:
                         {
-                            if (!Serializer.Json.TryDeserialize<MajWsRequestPlay?>(payloadjson, out var p) || p is null)
+                            if (!Serializer.Json.TryDeserialize<MajWsRequestPlay?>(payloadjson, out var p, out ee) || p is null)
                             {
+                                MajDebug.LogError($"WebSocket request parse error: {ee?.Message ?? "Unknown error"}");
                                 Error("Wrong Fromat");
                                 return;
                             }

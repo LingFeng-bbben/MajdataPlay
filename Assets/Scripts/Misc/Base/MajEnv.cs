@@ -275,10 +275,10 @@ namespace MajdataPlay
                 var js = File.ReadAllText(SettingsPath);
                 GameSetting? setting;
 
-                if (!Serializer.Json.TryDeserialize(js, out setting, UserJsonReaderOption) || setting is null)
+                if (!Serializer.Json.TryDeserialize(js, out setting, out var e, UserJsonReaderOption) || setting is null)
                 {
                     Settings = new();
-                    MajDebug.LogError("Failed to read setting from file");
+                    MajDebug.LogError($"Failed to read setting from file\nException: {e}");
                     var bakFileName = $"{SettingsPath}.bak";
                     while (File.Exists(bakFileName))
                     {
@@ -343,10 +343,10 @@ namespace MajdataPlay
                 var js = File.ReadAllText(_runtimeConfigPath);
                 RuntimeConfig? setting;
 
-                if (!Serializer.Json.TryDeserialize(js, out setting, UserJsonReaderOption) || setting is null)
+                if (!Serializer.Json.TryDeserialize(js, out setting, out var e, UserJsonReaderOption) || setting is null)
                 {
                     RuntimeConfig = new();
-                    MajDebug.LogError("Failed to read runtime config from file");
+                    MajDebug.LogError($"Failed to read runtime config from file\nException: {e}");
                 }
                 else
                 {

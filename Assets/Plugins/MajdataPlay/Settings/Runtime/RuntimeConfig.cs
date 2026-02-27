@@ -7,7 +7,7 @@ using UnityEngine.Scripting;
 
 namespace MajdataPlay.Settings.Runtime;
 [Preserve]
-internal class RuntimeConfig
+public class RuntimeConfig
 {
     [Preserve]
     public ListConfig List { get; init; } = new();
