@@ -152,15 +152,6 @@ namespace MajdataPlay
             var fieldID = AndroidJNI.GetStaticFieldID(versionClass, "SDK_INT", "I");
             AndroidSdkVersion = AndroidJNI.GetStaticIntField(versionClass, fieldID);
 
-            //if(AndroidSdkVersion >= 30)
-            //{
-            //    RootPath = Application.persistentDataPath;
-            //    AssetsPath = Path.Combine(Application.persistentDataPath, "ExtStreamingAssets/");
-            //}
-            //else
-            //{
-
-            //}
             var androidStoragePermissions = new string[]
             {
                 Permission.ExternalStorageRead,
