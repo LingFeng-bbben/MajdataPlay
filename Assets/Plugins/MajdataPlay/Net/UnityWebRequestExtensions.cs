@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using UnityEngine.Networking;
 
 namespace MajdataPlay.Net;
-internal static class UnityWebRequestExtensions
+public static class UnityWebRequestExtensions
 {
     public static UnityWebRequest EnsureSuccessStatusCode(this UnityWebRequest request)
     {
