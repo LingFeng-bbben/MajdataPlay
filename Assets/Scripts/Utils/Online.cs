@@ -944,28 +944,14 @@ namespace MajdataPlay.Utils
                 var client = MajEnv.SharedHttpClient;
                 var rsp = await (content is null ? client.PostAsync(uri, new StringContent(string.Empty, Encoding.UTF8, "application/json"), token) : client.PostAsync(uri, content, token));
                 var buffer = await rsp.Content.ReadAsByteArrayAsync();
-                if (rsp.StatusCode != HttpStatusCode.OK)
-                {
-                    rsp.Headers.ToDictionary(kv => kv.Key, kv => kv.Value);
-                    return new EndpointResponse(buffer, DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
-                    {
-                        IsSuccessfully = false,
-                        IsDeserializable = false,
-                        ErrorCode = HttpErrorCode.Unsuccessful,
-                        StatusCode = rsp.StatusCode,
-                        Headers = rsp.Headers.ToDictionary(kv => kv.Key, kv => kv.Value),
-                        Message = ""
-                    };
-                }
-                
-                return new EndpointResponse(buffer, DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
-                {
-                    IsSuccessfully = true,
-                    IsDeserializable = true,
-                    ErrorCode = HttpErrorCode.NoError,
+                return new EndpointResponse(buffer, DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS) 
+                { 
+                    IsSuccessfully = rsp.StatusCode == HttpStatusCode.OK, 
+                    IsDeserializable = rsp.StatusCode == HttpStatusCode.OK,
+                    ErrorCode = rsp.StatusCode == HttpStatusCode.OK ? HttpErrorCode.NoError : HttpErrorCode.Unsuccessful,
                     StatusCode = rsp.StatusCode,
                     Headers = rsp.Headers.ToDictionary(kv => kv.Key, kv => kv.Value),
-                    Message = "Ok"
+                    Message = rsp.StatusCode == HttpStatusCode.OK ? "Ok" : ""
                 };
             }
             catch (OperationCanceledException)
