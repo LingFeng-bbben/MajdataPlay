@@ -14,7 +14,6 @@ namespace MajdataPlay.IO
 {
     internal static partial class InputManager
     {
-#if UNITY_STANDALONE
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void UpdateSensorState()
         {
@@ -33,6 +32,7 @@ namespace MajdataPlay.IO
 
                 newStates[index] |= report.State;
             }
+#if UNITY_STANDALONE
             for (var i = 0; i < 34; i++)
             {
                 var state = TouchPanel.IsOn(i) || TouchPanel.IsHadOn(i);
@@ -40,6 +40,7 @@ namespace MajdataPlay.IO
                 newStates[i] |= state ? SwitchStatus.On : SwitchStatus.Off;
                 sensorStates[i] = newStates[i] is SwitchStatus.On;
             }
+#endif
             var C = newStates[16] | newStates[17];
             newStates[16] = C;
             newStates.Slice(18).CopyTo(newStates.Slice(17));
@@ -110,7 +111,6 @@ namespace MajdataPlay.IO
                 PushEvent(msg);
             }
         }
-#endif
         public static void BindSensor(EventHandler<InputEventArgs> checker, SensorArea sType)
         {
             var sensors = _sensors.Span;

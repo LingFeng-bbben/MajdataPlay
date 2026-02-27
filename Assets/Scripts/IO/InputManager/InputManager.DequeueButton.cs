@@ -12,7 +12,6 @@ namespace MajdataPlay.IO
 {
     internal static partial class InputManager
     {
-#if UNITY_STANDALONE
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void UpdateButtonState()
         {
@@ -31,11 +30,13 @@ namespace MajdataPlay.IO
                 newStates[index] |= report.State;
             }
 
+#if UNITY_STANDALONE
             for (var i = 0; i < 12; i++)
             {
                 var state = (ButtonRing.IsOn(i) || ButtonRing.IsHadOn(i)) ? SwitchStatus.On : SwitchStatus.Off;
                 newStates[i] |= state;
             }
+#endif
 
             for (var i = 0; i < 12; i++)
             {
@@ -68,7 +69,6 @@ namespace MajdataPlay.IO
                 PushEvent(msg);
             }
         }
-#endif
         public static void BindButton(EventHandler<InputEventArgs> checker, ButtonZone zone)
         {
             var button = GetButton(zone);

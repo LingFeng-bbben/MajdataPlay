@@ -868,10 +868,8 @@ namespace MajdataPlay.IO
                 }
                 _version++;
                 UpdateMousePosition();
-#if UNITY_STANDALONE
                 UpdateButtonState();
                 UpdateSensorState();
-#endif
             }
             catch (Exception e)
             {
