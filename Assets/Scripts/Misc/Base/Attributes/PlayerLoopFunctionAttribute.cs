@@ -9,7 +9,7 @@ using UnityEngine.Scripting;
 namespace MajdataPlay
 {
     [AttributeUsage(AttributeTargets.Method)]
-    internal class PlayerLoopFunctionAttribute : PreserveAttribute
+    internal class PlayerLoopCallbackAttribute : PreserveAttribute
     {
         public LoopTiming Timing
         {

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace MajdataPlay
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
-    internal sealed class OnPreUpdateAttribute : PlayerLoopFunctionAttribute
+    internal sealed class OnPreUpdateAttribute : PlayerLoopCallbackAttribute
     {
         public OnPreUpdateAttribute() : base()
         {
