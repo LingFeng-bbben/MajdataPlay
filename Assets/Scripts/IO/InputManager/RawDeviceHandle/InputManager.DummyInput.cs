@@ -115,7 +115,7 @@ namespace MajdataPlay.IO
                                    Span<bool> extraButton, Camera mainCamera)
         {
 #if UNITY_IOS
-            const float PLATFORM_TOUCH_RADIUS_ADJUST = 78f * 2f;
+            const float PLATFORM_TOUCH_RADIUS_ADJUST = 78f * 4f;
 #else
             const float PLATFORM_TOUCH_RADIUS_ADJUST = 1f;
 #endif
