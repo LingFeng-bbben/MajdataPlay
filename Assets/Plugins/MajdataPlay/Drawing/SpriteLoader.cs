@@ -13,7 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace MajdataPlay.Utils
+namespace MajdataPlay.Drawing
 {
     public static class SpriteLoader
     {
@@ -29,7 +29,9 @@ namespace MajdataPlay.Utils
         public static Sprite Load(string path)
         {
             if (!File.Exists(path))
+            {
                 return Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
+            }
             var bytes = File.ReadAllBytes(path);
             var texture = new Texture2D(0, 0);
             texture.LoadImage(bytes);
@@ -100,53 +102,55 @@ namespace MajdataPlay.Utils
             }
         }
 
-        public static async Task<Sprite> LoadAsync(Uri uri, CancellationToken ct = default)
-        {
-            try
-            {
-                await UniTask.SwitchToThreadPool();
-                Directory.CreateDirectory(MajEnv.CachePath);
-                var b64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(uri.OriginalString));
-                var cachefile = Path.Combine(MajEnv.CachePath, b64);
-                byte[] bytes = Array.Empty<byte>();
-                if (!File.Exists(cachefile))
-                {
-                    var client = MajEnv.SharedHttpClient;
-                    for (int i = 0; i < MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
-                    {
-                        try
-                        {
-                            bytes = await client.GetByteArrayAsync(uri);
-                            break;
-                        }
-                        catch (Exception e)
-                        {
-                            await Task.Delay(500);
-                        }
-                    }
+        //public static async Task<Sprite> LoadAsync(Uri uri, CancellationToken ct = default)
+        //{
+        //    try
+        //    {
+        //        await UniTask.SwitchToThreadPool();
+        //        Directory.CreateDirectory(MajEnv.CachePath);
+        //        var b64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(uri.OriginalString));
+        //        var cachefile = Path.Combine(MajEnv.CachePath, b64);
+        //        byte[] bytes = Array.Empty<byte>();
+        //        if (!File.Exists(cachefile))
+        //        {
+        //            var client = MajEnv.SharedHttpClient;
+        //            for (int i = 0; i < MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
+        //            {
+        //                try
+        //                {
+        //                    bytes = await client.GetByteArrayAsync(uri);
+        //                    break;
+        //                }
+        //                catch (Exception e)
+        //                {
+        //                    await Task.Delay(500);
+        //                }
+        //            }
 
-                    await File.WriteAllBytesAsync(cachefile, bytes, ct);
-                }
-                else
-                {
-                    MajDebug.LogInfo("Local Cache Hit");
-                    bytes = await File.ReadAllBytesAsync(cachefile, ct);
-                }
-                ct.ThrowIfCancellationRequested();
-                var texture = await ImageDecodeAsync(bytes);
-                await UniTask.SwitchToMainThread();
-                return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
-            }
-            finally
-            {
-                await UniTask.SwitchToThreadPool();
-            }
-        }
+        //            await File.WriteAllBytesAsync(cachefile, bytes, ct);
+        //        }
+        //        else
+        //        {
+        //            MajDebug.LogInfo("Local Cache Hit");
+        //            bytes = await File.ReadAllBytesAsync(cachefile, ct);
+        //        }
+        //        ct.ThrowIfCancellationRequested();
+        //        var texture = await ImageDecodeAsync(bytes);
+        //        await UniTask.SwitchToMainThread();
+        //        return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+        //    }
+        //    finally
+        //    {
+        //        await UniTask.SwitchToThreadPool();
+        //    }
+        //}
 
         public static Sprite Load(string path, Vector4 border)
         {
             if (!File.Exists(path))
+            {
                 return Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
+            }
             var bytes = File.ReadAllBytes(path);
             var texture = new Texture2D(0, 0);
             texture.LoadImage(bytes);

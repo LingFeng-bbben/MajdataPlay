@@ -4,6 +4,7 @@ using MajdataPlay.Buffers;
 using MajdataPlay.Net;
 using MajdataPlay.Settings;
 using MajdataPlay.UnsafeKit;
+using MajdataPlay.Drawing;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;

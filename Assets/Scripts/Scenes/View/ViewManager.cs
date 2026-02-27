@@ -7,6 +7,7 @@ using MajdataPlay.IO;
 using MajdataPlay.Numerics;
 using MajdataPlay.Timer;
 using MajdataPlay.Utils;
+using MajdataPlay.Drawing;
 using MajdataPlay.Scenes.View.Types;
 using MajSimai;
 using SkiaSharp;

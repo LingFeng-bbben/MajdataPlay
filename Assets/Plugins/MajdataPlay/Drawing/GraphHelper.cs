@@ -1,16 +1,12 @@
 ﻿using SkiaSharp;
 using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MajdataPlay.Drawing;
 using UnityEngine;
 
-namespace MajdataPlay.Utils
+namespace MajdataPlay.Drawing
 {
-    internal static class GraphHelper
+    public static class GraphHelper
     {
         public static Texture GraphSnapshot(SKSurface surface)
         {
@@ -20,7 +16,10 @@ namespace MajdataPlay.Utils
                 var bitmap = SKBitmap.FromImage(image);
                 var skcolors = bitmap.Pixels.AsSpan();
                 var writer = new ArrayBufferWriter<SKColor>(bitmap.Width * bitmap.Height);
-                for (var i = bitmap.Height - 1; i >= 0; i--) writer.Write(skcolors.Slice(i * bitmap.Width, bitmap.Width));
+                for (var i = bitmap.Height - 1; i >= 0; i--)
+                {
+                    writer.Write(skcolors.Slice(i * bitmap.Width, bitmap.Width));
+                }
                 var colors = writer.WrittenSpan.ToArray().AsParallel().AsOrdered().Select(s => s.ToUnityColor32()).ToArray();
 
                 var tex0 = new Texture2D(bitmap.Width, bitmap.Height);
