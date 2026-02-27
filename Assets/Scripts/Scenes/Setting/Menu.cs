@@ -2,6 +2,7 @@ using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
 using MajdataPlay.IO;
 using MajdataPlay.Numerics;
+using MajdataPlay.Settings;
 using MajdataPlay.Settings.Runtime;
 using MajdataPlay.Utils;
 using System;

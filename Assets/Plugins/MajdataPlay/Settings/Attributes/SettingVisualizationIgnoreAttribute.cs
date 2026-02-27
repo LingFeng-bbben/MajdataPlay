@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine.Scripting;
 
-namespace MajdataPlay
+namespace MajdataPlay.Settings
 {
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
     internal sealed class SettingVisualizationIgnoreAttribute : PreserveAttribute

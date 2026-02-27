@@ -3,7 +3,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Cysharp.Threading.Tasks;
-using MajdataPlay.Utils;
 using MajdataPlay.Collections;
 using System.Linq;
 using System;
@@ -17,6 +16,7 @@ using MajdataPlay.Numerics;
 using MajdataPlay.Scenes.Game.Notes;
 using MajdataPlay.Settings;
 using System.Threading.Tasks;
+using MajdataPlay.Recording;
 
 #nullable enable
 namespace MajdataPlay.Scenes.Result

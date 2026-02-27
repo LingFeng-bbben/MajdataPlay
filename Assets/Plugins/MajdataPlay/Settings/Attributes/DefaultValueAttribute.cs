@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MajdataPlay;
+namespace MajdataPlay.Settings;
 #nullable enable
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
 public sealed class DefaultValueAttribute : Attribute

@@ -1,5 +1,4 @@
-﻿using MajdataPlay.Recording;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +7,7 @@ using System.Threading.Tasks;
 using MajdataPlay.Settings;
 
 #nullable enable
-namespace MajdataPlay.Utils
+namespace MajdataPlay.Recording
 {
     internal static class RecordHelper
     {
