@@ -1,6 +1,8 @@
+#if UNITY_STABDALONE
 using HidSharp;
 using HidSharp.Platform.Windows;
 using LibUsbDotNet;
+#endif
 using MajdataPlay.Collections;
 using MajdataPlay.Numerics;
 using MajdataPlay.Settings;
@@ -30,14 +32,22 @@ namespace MajdataPlay.IO
         {
             get
             {
+#if UNITY_STANDALONE
                 return TouchPanel.IsConnected;
+#else
+                return false;
+#endif
             }
         }
         public static bool IsButtonRingConnected
         {
             get
             {
+#if UNITY_STANDALONE
                 return ButtonRing.IsConnected;
+#else
+                return false;
+#endif
             }
         }
         public static float FingerRadius
@@ -276,15 +286,17 @@ namespace MajdataPlay.IO
         readonly static bool _isSensorDebounceEnabled = false;
         readonly static bool _isSensorRendererEnabled = false;
 
-        readonly static IOThreadSynchronization _ioThreadSync = new IOThreadSynchronization();
-
         static IReadOnlyDictionary<int, int> _instanceID2SensorIndexMappingTable = new Dictionary<int, int>();
+
+#if UNITY_STANDALONE
+        readonly static IOThreadSynchronization _ioThreadSync = new IOThreadSynchronization();     
 
         static SerialPortConnInfo _touchPanelSerialConnInfo = default;
         static SerialPortConnInfo _ledDeviceSerialConnInfo = default;
         static HidConnInfo _ledDeviceHidConnInfo = default;
         static HidConnInfo _buttonRingHidConnInfo = default;
         static UsbConnInfo _touchPanelUsbConnInfo = default;
+#endif
 
         static int _playerIndex = 1;
         static DeviceManufacturerOption _deviceManufacturer = DeviceManufacturerOption.General;
@@ -292,12 +304,21 @@ namespace MajdataPlay.IO
         static InputManager()
         {
             _isSensorRendererEnabled = MajEnv.Settings.Debug.DisplaySensor;
+#if UNITY_STANDALONE
             _btnDebounceThresholdMs = TimeSpan.FromMilliseconds(MajInstances.Settings.IO.InputDevice.ButtonRing.DebounceThresholdMs);
             _btnPollingRateMs = TimeSpan.FromMilliseconds(MajInstances.Settings.IO.InputDevice.ButtonRing.PollingRateMs);
             _sensorDebounceThresholdMs = TimeSpan.FromMilliseconds(MajInstances.Settings.IO.InputDevice.TouchPanel.DebounceThresholdMs);
             _sensorPollingRateMs = TimeSpan.FromMilliseconds(MajInstances.Settings.IO.InputDevice.TouchPanel.PollingRateMs);
             _isBtnDebounceEnabled = MajInstances.Settings.IO.InputDevice.ButtonRing.Debounce;
             _isSensorDebounceEnabled = MajInstances.Settings.IO.InputDevice.TouchPanel.Debounce;
+#else
+            _btnDebounceThresholdMs = TimeSpan.Zero;
+            _btnPollingRateMs = TimeSpan.Zero;
+            _sensorDebounceThresholdMs = TimeSpan.Zero;
+            _sensorPollingRateMs = TimeSpan.Zero;
+            _isBtnDebounceEnabled = false;
+            _isSensorDebounceEnabled = false;
+#endif
             for (var i = 0; i < 33; i++)
             {
                 if (i.InRange(0, 7))
@@ -418,6 +439,7 @@ namespace MajdataPlay.IO
         //        FingerRadius = FingerRadius
         //    };
         //}
+#if UNITY_STANDALONE
         static void IODeviceDetect()
         {
             const int YUAN_HID_1P_PID = 22352;
@@ -434,7 +456,7 @@ namespace MajdataPlay.IO
             const int GENERAL_HID_2P_VID = 3235;
 
             var hidDevices = HidManager.Devices;
-            #if UNITY_STANDALONE_WIN
+#if UNITY_STANDALONE_WIN
             var usbDevices = UsbDevice.AllDevices;
 #else
             var usbDevices = Array.Empty<UsbRegistry>();
@@ -794,6 +816,7 @@ namespace MajdataPlay.IO
                 _playerIndex = playerIndex;
             }
         }
+#endif
         internal static void OnFixedUpdate()
         {
             //_updateIOListener();
@@ -845,8 +868,10 @@ namespace MajdataPlay.IO
                 }
                 _version++;
                 UpdateMousePosition();
-                UpdateSensorState();
+#if UNITY_STANDALONE
                 UpdateButtonState();
+                UpdateSensorState();
+#endif
             }
             catch (Exception e)
             {
@@ -1245,6 +1270,7 @@ namespace MajdataPlay.IO
         {
             return (int)area;
         }
+#if UNITY_STANDALONE
         static string WinSerialPortToLinuxPortName(int port)
         {
             return $"/dev/ttyUSB{port - 1}";
@@ -1301,5 +1327,6 @@ namespace MajdataPlay.IO
             public string PortName { get; init; }
             public int BaudRate { get; init; }
         }
+#endif
     }
 }

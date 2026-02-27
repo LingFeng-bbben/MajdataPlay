@@ -4,7 +4,9 @@ using System.Threading;
 using UnityEngine.Scripting;
 using Newtonsoft.Json;
 using MajdataPlay.Net;
+#if UNITY_STANDALONE
 using HidSharp;
+#endif
 #nullable enable
 namespace MajdataPlay.Settings
 {
@@ -25,8 +27,10 @@ namespace MajdataPlay.Settings
         public DebugOptions Debug { get; init; } = new();
         [SettingVisualizationIgnore]
         public OnlineOptions Online { get; init; } = new();
+#if UNITY_STANDALONE
         [SettingVisualizationIgnore]
         public IOOptions IO { get; init; } = new();
+#endif
     }
     [Preserve]
     public class GameOptions
@@ -309,6 +313,7 @@ namespace MajdataPlay.Settings
         [JsonProperty]
         public LogLevel DebugLevel { get; set; } = LogLevel.Info;
     }
+#if UNITY_STANDALONE
     [Preserve]
     public class IOOptions
     {
@@ -383,6 +388,7 @@ namespace MajdataPlay.Settings
         [Preserve]
         public CapacitiveTouchPanelOptions CapacitivePanelOptions { get; set; } = new();
     }
+
     [Preserve]
     public class HidOptions
     {
@@ -462,6 +468,7 @@ namespace MajdataPlay.Settings
         public float BufferSize { get; set; } = 0.02f;
         public float Period { get; set; } = 0.005f;
     }
+#endif
     public class MobileAudioOptions
     {
 #if UNITY_ANDROID // Android Only (AAudio)

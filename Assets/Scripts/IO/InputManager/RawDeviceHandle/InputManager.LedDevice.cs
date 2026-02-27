@@ -1,3 +1,4 @@
+#if UNITY_STANDALONE
 using HidSharp;
 using MajdataPlay.Utils;
 using System;
@@ -16,6 +17,7 @@ namespace MajdataPlay.IO
 {
     internal static unsafe partial class InputManager
     {
+
         static class LedDevice
         {
             public static bool IsConnected
@@ -448,3 +450,4 @@ namespace MajdataPlay.IO
         }
     }
 }
+#endif

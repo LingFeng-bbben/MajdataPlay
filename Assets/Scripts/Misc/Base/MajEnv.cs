@@ -1,5 +1,8 @@
 using Cysharp.Threading.Tasks;
+#if UNITY_STANDALONE
 using HidSharp.Platform.Windows;
+using HidSharp.Platform.MacOS;
+#endif
 #if UNITY_STANDALONE_WIN
 using LibVLCSharp;
 #endif
@@ -21,7 +24,6 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
-using HidSharp.Platform.MacOS;
 using UnityEngine;
 using UnityEngine.Android;
 using UnityEngine.Scripting;
@@ -366,6 +368,7 @@ namespace MajdataPlay
                 File.WriteAllText(_runtimeConfigPath, json);
             }
 
+#if UNITY_STANDALONE
             Settings.IO.InputDevice.ButtonRing.PollingRateMs =
                 Math.Max(0, Settings.IO.InputDevice.ButtonRing.PollingRateMs);
             Settings.IO.InputDevice.TouchPanel.PollingRateMs =
@@ -374,6 +377,7 @@ namespace MajdataPlay
                 Math.Max(0, Settings.IO.InputDevice.ButtonRing.DebounceThresholdMs);
             Settings.IO.InputDevice.TouchPanel.DebounceThresholdMs =
                 Math.Max(0, Settings.IO.InputDevice.TouchPanel.DebounceThresholdMs);
+#endif
             Settings.Display.InnerJudgeDistance = Settings.Display.InnerJudgeDistance.Clamp(0, 1);
             Settings.Display.OuterJudgeDistance = Settings.Display.OuterJudgeDistance.Clamp(0, 1);
 

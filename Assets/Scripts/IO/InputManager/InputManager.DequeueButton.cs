@@ -12,6 +12,7 @@ namespace MajdataPlay.IO
 {
     internal static partial class InputManager
     {
+#if UNITY_STANDALONE
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void UpdateButtonState()
         {
@@ -67,6 +68,7 @@ namespace MajdataPlay.IO
                 PushEvent(msg);
             }
         }
+#endif
         public static void BindButton(EventHandler<InputEventArgs> checker, ButtonZone zone)
         {
             var button = GetButton(zone);

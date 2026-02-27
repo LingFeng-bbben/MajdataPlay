@@ -5,6 +5,8 @@ using MajdataPlay.Numerics;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Unity.VisualScripting;
 using UnityEngine;
 #nullable enable
@@ -12,6 +14,8 @@ namespace MajdataPlay.IO
 {
     internal static partial class InputManager
     {
+#if UNITY_STANDALONE
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void UpdateSensorState()
         {
             var sensors = _sensors.Span;
@@ -85,7 +89,9 @@ namespace MajdataPlay.IO
             var sensors = _sensors.Span;
             var sensor = sensors[(int)type];
             if (sensor is null)
+            {
                 throw new Exception($"{type} Sensor not found.");
+            }
             var oState = sensor.State;
             sensor.State = nState;
 
@@ -104,12 +110,15 @@ namespace MajdataPlay.IO
                 PushEvent(msg);
             }
         }
+#endif
         public static void BindSensor(EventHandler<InputEventArgs> checker, SensorArea sType)
         {
             var sensors = _sensors.Span;
             var sensor = sensors.Find(x => x?.Area == sType);
             if (sensor is null)
+            {
                 throw new Exception($"{sType} Sensor not found.");
+            }
             sensor.AddSubscriber(checker);
         }
         public static void UnbindSensor(EventHandler<InputEventArgs> checker, SensorArea sType)
@@ -117,7 +126,9 @@ namespace MajdataPlay.IO
             var sensors = _sensors.Span;
             var sensor = sensors.Find(x => x?.Area == sType);
             if (sensor is null)
+            {
                 throw new Exception($"{sType} Sensor not found.");
+            }
             sensor.RemoveSubscriber(checker);
         }
     }

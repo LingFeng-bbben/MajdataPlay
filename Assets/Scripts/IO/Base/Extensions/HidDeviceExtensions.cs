@@ -1,4 +1,5 @@
-﻿using HidSharp;
+﻿#if UNITY_STANDALONE
+using HidSharp;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -35,3 +36,4 @@ namespace MajdataPlay.IO
 
     }
 }
+#endif

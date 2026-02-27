@@ -4,7 +4,9 @@ using MajdataPlay.IO;
 using MajdataPlay.Scenes.Test;
 using MajdataPlay.Settings;
 using MajdataPlay.Timer;
+#if UNITY_STANDALONE_WIN
 using MajdataPlay.Platform.Win32;
+#endif
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -134,10 +136,12 @@ namespace MajdataPlay
 #endif
             QualitySettings.maxQueuedFrames = Setting.Debug.MaxQueuedFrames;
             DetectHWEncoder();
+#if UNITY_STANDALONE
             if (Setting.Display.Topmost)
             {
                 SetWindowTopmost();
             }
+#endif
 
             InputManager.Init(Majdata<DummyTouchPanelRenderer>.Instance!.InstanceID2SensorIndexMappingTable);
             if (MajEnv.Mode == RunningMode.Test)
@@ -178,17 +182,20 @@ namespace MajdataPlay
             envType.GetField("<HWEncoder>k__BackingField", BindingFlags.Static | BindingFlags.NonPublic)
                    .SetValue(null, encoder);
         }
+#if (!UNITY_EDITOR && UNITY_STANDALONE_WIN)
         void SetWindowTopmost()
         {
-#if (!UNITY_EDITOR && UNITY_STANDALONE_WIN)
+
             Win32API.EnumWindows(EnumWindowsCallback, Process.GetCurrentProcess().Id);
             MajDebug.LogDebug($"Found window count: {_windowHandles.Count}");
             foreach (var handle in _windowHandles)
             {
                 Win32API.SetWindowPos(handle, Win32API.HWND_TOPMOST, 0, 0, 0, 0, Win32API.SWP_NOMOVE | Win32API.SWP_NOSIZE);
             }
-#endif
+
         }
+#endif
+#if UNITY_STANDALONE_WIN
         [MonoPInvokeCallback(typeof(Win32API.EnumWindowsProc))]
         static bool EnumWindowsCallback(IntPtr hWnd, int lParam)
         {
@@ -201,6 +208,7 @@ namespace MajdataPlay
             }
             return true;
         }
+#endif
         void EnterTestMode()
         {
             IOListener.NextScene = "Title";

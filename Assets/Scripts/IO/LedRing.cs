@@ -1,5 +1,6 @@
 using MajdataPlay.Utils;
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
@@ -42,7 +43,11 @@ namespace MajdataPlay.IO
 
         static LedRing()
         {
+#if UNITY_STANDALONE
             _isEnabled = MajInstances.Settings.IO.OutputDevice.Led.Enable;
+#else
+            _isEnabled = false;
+#endif
             var ledDevices = _ledDevices;
             var ledCommFuncs = _ledCommFuncs;
             var ledLinearFuncs = _ledLinearFuncs;
@@ -67,6 +72,7 @@ namespace MajdataPlay.IO
             }
         }
 
+        [Conditional("UNITY_STANDALONE")]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void LedFuncUpdate()
         {
@@ -85,6 +91,7 @@ namespace MajdataPlay.IO
             }
 
         }
+        [Conditional("UNITY_STANDALONE")]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SetAllLight(Color lightColor)
         {
@@ -99,6 +106,7 @@ namespace MajdataPlay.IO
                 _ledDevices[i].UpdateFunction = func;
             }
         }
+        [Conditional("UNITY_STANDALONE")]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SetAllLightLinearTo(Color from, Color to, long durationMs)
         {
@@ -108,6 +116,7 @@ namespace MajdataPlay.IO
             }
             SetAllLightLinearTo(from, to, TimeSpan.FromMilliseconds(durationMs));
         }
+        [Conditional("UNITY_STANDALONE")]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SetAllLightLinearTo(Color from, Color to, TimeSpan duration)
         {
@@ -122,6 +131,7 @@ namespace MajdataPlay.IO
                 _ledDevices[i].UpdateFunction = func;
             }
         }
+        [Conditional("UNITY_STANDALONE")]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SetAllLightSineFunc(Color color, long T_Ms, float phi = 0.5f)
         {
@@ -131,6 +141,7 @@ namespace MajdataPlay.IO
             }
             SetAllLightSineFunc(color, TimeSpan.FromMilliseconds(T_Ms), phi);
         }
+        [Conditional("UNITY_STANDALONE")]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SetAllLightSineFunc(Color color, TimeSpan T, float phi = 0.5f)
         {
@@ -145,6 +156,7 @@ namespace MajdataPlay.IO
                 _ledDevices[i].UpdateFunction = func;
             }
         }
+        [Conditional("UNITY_STANDALONE")]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SetAllLightUpdateFunc(ReadOnlySpan<ILedUpdateFunction> funcs)
         {
@@ -161,7 +173,7 @@ namespace MajdataPlay.IO
                 _ledDevices[i].UpdateFunction = funcs[i];
             }
         }
-
+        [Conditional("UNITY_STANDALONE")]
         public static void SetButtonLight(Color lightColor, int button)
         {
             if (!_isEnabled)
@@ -172,6 +184,7 @@ namespace MajdataPlay.IO
             func.SetColor(lightColor);
             _ledDevices[button].UpdateFunction = func;
         }
+        [Conditional("UNITY_STANDALONE")]
         public static void SetButtonLightWithTimeout(Color lightColor, int button, long durationMs = 500)
         {
             if (!_isEnabled)
@@ -182,6 +195,7 @@ namespace MajdataPlay.IO
             func.SetColor(lightColor, durationMs);
             _ledDevices[button].UpdateFunction = func;
         }
+        [Conditional("UNITY_STANDALONE")]
         public static void SetButtonLightWithTimeout(Color lightColor, int button, TimeSpan duration)
         {
             if (!_isEnabled)
@@ -192,7 +206,7 @@ namespace MajdataPlay.IO
             func.SetColor(lightColor, duration);
             _ledDevices[button].UpdateFunction = func;
         }
-
+        [Conditional("UNITY_STANDALONE")]
         public static void LinearTo(int button, Color from, Color to, long durationMs)
         {
             if (!_isEnabled)
@@ -201,6 +215,7 @@ namespace MajdataPlay.IO
             }
             LinearTo(button, from, to, TimeSpan.FromMilliseconds(durationMs));
         }
+        [Conditional("UNITY_STANDALONE")]
         public static void LinearTo(int button, Color from, Color to, TimeSpan duration)
         {
             if (!_isEnabled)
@@ -211,7 +226,7 @@ namespace MajdataPlay.IO
             func.LinearTo(from, to, duration);
             _ledDevices[button].UpdateFunction = func;
         }
-
+        [Conditional("UNITY_STANDALONE")]
         public static void SetSineFunc(int button, Color color, long T_Ms, float phi = 0.5f)
         {
             if (!_isEnabled)
@@ -220,6 +235,7 @@ namespace MajdataPlay.IO
             }
             SetSineFunc(button, color, TimeSpan.FromMilliseconds(T_Ms), phi);
         }
+        [Conditional("UNITY_STANDALONE")]
         public static void SetSineFunc(int button, Color color, TimeSpan T, float phi = 0.5f)
         {
             if (!_isEnabled)
@@ -230,7 +246,7 @@ namespace MajdataPlay.IO
             func.SetSineFunc(color, T, phi);
             _ledDevices[button].UpdateFunction = func;
         }
-
+        [Conditional("UNITY_STANDALONE")]
         public static void SetUpdateFunc(int button, ILedUpdateFunction func)
         {
             if (!_isEnabled)
