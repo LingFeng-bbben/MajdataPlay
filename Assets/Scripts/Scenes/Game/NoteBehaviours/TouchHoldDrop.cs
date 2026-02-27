@@ -19,8 +19,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
     using Unsafe = System.Runtime.CompilerServices.Unsafe;
     internal sealed class TouchHoldDrop : NoteLongDrop, INoteQueueMember<TouchQueueInfo>, IRendererContainer, IPoolableNote<TouchHoldPoolingInfo, TouchQueueInfo>, IMajComponent
     {
-        public TouchGroup? GroupInfo { get; set; } = null;
-        public TouchQueueInfo QueueInfo { get; set; } = TouchQueueInfo.Default;
+        public TouchGroup? GroupInfo { get; private set; } = null;
+        public TouchHoldGroup? BodyGroupInfo { get; private set; } = null;
+        public TouchQueueInfo QueueInfo { get; private set; } = TouchQueueInfo.Default;
         public RendererStatus RendererState
         {
             get => _rendererState;
@@ -225,6 +226,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             IsEX = poolingInfo.IsEX;
             QueueInfo = poolingInfo.QueueInfo;
             GroupInfo = poolingInfo.GroupInfo;
+            BodyGroupInfo = poolingInfo.TouchHoldGroupInfo;
             _isJudged = false;
             _lastHoldState = HOLD_STATE_HEAD_MISS_OR_NOT_JUDGED;
             Length = poolingInfo.LastFor;
@@ -290,6 +292,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             State = NoteStatus.End;
             _multTouchHandler.Unregister(_sensorPos);
+            BodyGroupInfo?.UnregisterTrigger(InstanceID);
+            BodyGroupInfo?.Exit();
             _judgeResult = HoldEndJudge(_judgeResult, TOUCH_HOLD_HEAD_IGNORE_LENGTH_SEC + TOUCH_HOLD_TAIL_IGNORE_LENGTH_SEC);
             ConvertJudgeGrade(ref _judgeResult);
             var result = new NoteJudgeResult()
@@ -393,6 +397,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             ConvertJudgeGrade(ref result);
             _judgeResult = result;
             _isJudged = true;
+            BodyGroupInfo?.RegisterTrigger(InstanceID);
             _lastHoldState = HOLD_STATE_HEAD_JUDGED_AND_NOT_FEEDBACK;
         }
         [OnPreUpdate]
@@ -496,6 +501,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                         _judgeDiff = GroupInfo.JudgeDiff;
                         _lastHoldState = HOLD_STATE_HEAD_JUDGED_AND_NOT_FEEDBACK;
                         _noteManager.NextTouch(QueueInfo);
+                        BodyGroupInfo?.RegisterTrigger(InstanceID);
                     }
                 }
             }
@@ -573,6 +579,20 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 return;
             }
             var on = _noteManager.CheckSensorStatusInThisFrame(_sensorPos, SwitchStatus.On);
+
+            if(BodyGroupInfo is not null)
+            {
+                if (on)
+                {
+                    BodyGroupInfo.RegisterTrigger(InstanceID);
+                }
+                else
+                {
+                    BodyGroupInfo.UnregisterTrigger(InstanceID);
+                }
+                on |= BodyGroupInfo.Percent > 0.5f;
+            }
+
             if (on || IsAutoplay)
             {
                 PlayHoldEffect();

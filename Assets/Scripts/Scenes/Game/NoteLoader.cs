@@ -288,7 +288,8 @@ namespace MajdataPlay.Scenes.Game
                 {
                     var timing = maiChart.NoteTimings[i];
                     RentedList<NotePoolingInfo?> eachNotes = new();
-                    RentedList<ITouchGroupInfoProvider> members = new();
+                    RentedList<ITouchGroupInfoProvider> touchGroupMembers = new();
+                    RentedList<ITouchHoldGroupInfoProvider> touchHoldGroupMembers = new();
                     var foldedNotes = NoteCreateHelper.NoteFolding(timing.Notes);
                     if (isSRandomEnabled)
                     {
@@ -329,7 +330,7 @@ namespace MajdataPlay.Scenes.Game
                                     }
                                     break;
                                 case SimaiNoteType.TouchHold:
-                                    _poolManager.AddTouchHold(CreateTouchHold(note, timing, members));
+                                    _poolManager.AddTouchHold(CreateTouchHold(note, timing, touchGroupMembers, touchHoldGroupMembers));
                                     if (isSRandomEnabled)
                                     {
                                         var endTiming = timing.Timing + note.HoldTime;
@@ -340,7 +341,7 @@ namespace MajdataPlay.Scenes.Game
                                     }
                                     break;
                                 case SimaiNoteType.Touch:
-                                    _poolManager.AddTouch(CreateTouch(note, timing, members));
+                                    _poolManager.AddTouch(CreateTouch(note, timing, touchGroupMembers));
                                     break;
                                 case SimaiNoteType.Slide:
                                     var foldedSlide = note as FoldedSimaiNote;
@@ -384,9 +385,13 @@ namespace MajdataPlay.Scenes.Game
                         }
                     }
                     token.ThrowIfCancellationRequested();
-                    if (members.Count != 0)
+                    if (touchGroupMembers.Count != 0)
                     {
-                        touchTasks.Add(AllocTouchGroup(members));
+                        touchTasks.Add(AllocTouchGroup(touchGroupMembers));
+                    }
+                    if (touchHoldGroupMembers.Count != 0)
+                    {
+                        touchTasks.Add(AllocTouchHoldGroup(touchHoldGroupMembers));
                     }
                     var eachNoteCount = 0;
                     for (var x = 0; x < eachNotes.Count; x++)
@@ -749,7 +754,8 @@ namespace MajdataPlay.Scenes.Game
         }
         TouchHoldPoolingInfo CreateTouchHold(in SimaiNote note,
                                              in SimaiTimingPoint timing,
-                                             in IList<ITouchGroupInfoProvider> members)
+                                             in IList<ITouchGroupInfoProvider> touchGroupMembers,
+                                             in IList<ITouchHoldGroupInfoProvider> touchHoldGroupMembers)
         {
             try
             {
@@ -798,7 +804,8 @@ namespace MajdataPlay.Scenes.Game
                 };
                 if (isEach)
                 {
-                    members.Add(poolingInfo);
+                    touchGroupMembers.Add(poolingInfo);
+                    touchHoldGroupMembers.Add(poolingInfo);
                 }
                 return poolingInfo;
             }
@@ -871,6 +878,67 @@ namespace MajdataPlay.Scenes.Game
                 {
                     token.ThrowIfCancellationRequested();
                     member.GroupInfo = touchGroups.Find(x => x.Members.Any(y => y == member));
+                }
+            });
+        }
+        Task AllocTouchHoldGroup(IList<ITouchHoldGroupInfoProvider> members, CancellationToken token = default)
+        {
+            return Task.Run(() =>
+            {
+                var sensorTypes = members.GroupBy(x => x.SensorPos)
+                                         .Select(x => x.Key)
+                                         .ToList();
+                using var sensorGroups = new RentedList<RentedList<SensorArea>>();
+
+                while (sensorTypes.Count > 0)
+                {
+                    var sensorType = sensorTypes[0];
+                    var groupMembers = new RentedList<SensorArea>();
+                    groupMembers.Add(sensorType);
+
+                    for (var i = 0; i < groupMembers.Count; i++)
+                    {
+                        token.ThrowIfCancellationRequested();
+                        var currentArea = groupMembers[i];
+                        var nearbyArea = TOUCH_GROUPS[currentArea];
+                        for (var j = 0; j < sensorTypes.Count; j++)
+                        {
+                            token.ThrowIfCancellationRequested();
+                            var area = sensorTypes[j];
+                            if (groupMembers.Contains(area))
+                            {
+                                continue;
+                            }
+                            else if (nearbyArea.Contains(area))
+                            {
+                                groupMembers.Add(area);
+                            }
+                        }
+                    }
+
+                    foreach (var area in groupMembers)
+                    {
+                        token.ThrowIfCancellationRequested();
+                        sensorTypes.Remove(area);
+                    }
+                    token.ThrowIfCancellationRequested();
+                    sensorGroups.Add(groupMembers);
+                }
+                using var touchHoldGroups = new RentedList<TouchHoldGroup>();
+                var memberMapping = members.GroupBy(x => x.SensorPos).ToDictionary(x => x.Key);
+                token.ThrowIfCancellationRequested();
+                foreach (var group in sensorGroups)
+                {
+                    token.ThrowIfCancellationRequested();
+                    touchHoldGroups.Add(new TouchHoldGroup()
+                    {
+                        Members = group.SelectMany(x => memberMapping[x]).ToArray()
+                    });
+                }
+                foreach (var member in members)
+                {
+                    token.ThrowIfCancellationRequested();
+                    member.TouchHoldGroupInfo = touchHoldGroups.Find(x => x.Members.Any(y => y == member));
                 }
             });
         }
