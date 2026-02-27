@@ -1,18 +1,9 @@
-using MajdataPlay.Buffers;
 using System;
-using System.Buffers;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using Unity.Collections;
-using Unity.Collections.LowLevel.Unsafe;
-using Unity.IL2CPP.CompilerServices;
 
-namespace MajdataPlay.Utils
+namespace MajdataPlay.Buffers
 {
-    internal static class BufferHelper
+    public static class BufferHelper
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool CheckBufferLength<T>(in int length, in ReadOnlySpan<T> buffer)
@@ -34,8 +25,5 @@ namespace MajdataPlay.Utils
             }
             return buffer.Length;
         }
-
-        
-        
     }
 }

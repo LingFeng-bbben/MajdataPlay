@@ -5,7 +5,6 @@ using UnityEngine;
 using MajSimai;
 using Cysharp.Threading.Tasks;
 using System.Threading.Tasks;
-using MajdataPlay.Utils;
 using System.Runtime.CompilerServices;
 using MajdataPlay.Scenes.Game.Utils;
 using MajdataPlay.Collections;
