@@ -136,7 +136,7 @@ namespace MajdataPlay
 #endif
             QualitySettings.maxQueuedFrames = Setting.Debug.MaxQueuedFrames;
             DetectHWEncoder();
-#if UNITY_STANDALONE
+#if (!UNITY_EDITOR && UNITY_STANDALONE_WIN)
             if (Setting.Display.Topmost)
             {
                 SetWindowTopmost();

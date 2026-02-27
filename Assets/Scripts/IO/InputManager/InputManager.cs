@@ -1,7 +1,8 @@
-#if UNITY_STABDALONE
+#if UNITY_STANDALONE
 using HidSharp;
 using HidSharp.Platform.Windows;
 using LibUsbDotNet;
+using LibUsbDotNet.Main;
 #endif
 using MajdataPlay.Collections;
 using MajdataPlay.Numerics;
@@ -16,7 +17,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Policy;
 using System.Threading;
-using LibUsbDotNet.Main;
 using UnityEngine;
 using UnityEngine.InputSystem.EnhancedTouch;
 //using Microsoft.Win32;
