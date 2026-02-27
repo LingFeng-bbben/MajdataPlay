@@ -1,0 +1,14 @@
+{
+    "name": "MajdataPlay.Numerics",
+    "rootNamespace": "MajdataPlay.Numerics",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
