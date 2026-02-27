@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace MajdataPlay.Drawing
 {
-    internal static class Color32Extensions
+    public static class Color32Extensions
     {
         public static SKColor ToSkColor(this Color32 color32)
         {

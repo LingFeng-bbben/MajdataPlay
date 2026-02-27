@@ -1,5 +1,5 @@
 using Cysharp.Threading.Tasks;
-using MajdataPlay.Utils;
+using MajdataPlay.Buffers;
 using SkiaSharp;
 using SkiaSharp.Unity;
 using System;
@@ -14,7 +14,7 @@ using UnityEngine;
 
 namespace MajdataPlay.Drawing
 {
-    internal static class SKBitmapExtensions
+    public static class SKBitmapExtensions
     {
         public static async Task<Texture2D> ToTexture2DAsync(this SKBitmap bitmap, int width = 0, int height = 0, SKSamplingOptions? options = null)
         {

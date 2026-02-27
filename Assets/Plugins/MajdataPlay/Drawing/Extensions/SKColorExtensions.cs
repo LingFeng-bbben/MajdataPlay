@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace MajdataPlay.Drawing
 {
-    internal static class SKColorExtensions
+    public static class SKColorExtensions
     {
         public static Color32 ToUnityColor32(this SKColor skColor)
         {

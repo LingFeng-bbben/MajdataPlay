@@ -1,11 +1,12 @@
-﻿using System;
+﻿using MajdataPlay.Buffers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine.Scripting;
 
-namespace MajdataPlay.Buffers
+namespace MajdataPlay
 {
     [AttributeUsage(AttributeTargets.Method)]
     internal class PlayerLoopFunctionAttribute : PreserveAttribute
@@ -17,5 +18,14 @@ namespace MajdataPlay.Buffers
         }
 
         LoopTiming _timing = LoopTiming.Update;
+
+        [Flags]
+        public enum LoopTiming
+        {
+            PreUpdate = 1,
+            Update,
+            LateUpdate,
+            FixedUpdate
+        }
     }
 }

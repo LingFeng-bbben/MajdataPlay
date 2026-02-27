@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
+using static MajdataPlay.PlayerLoopFunctionAttribute;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Buffers
 {

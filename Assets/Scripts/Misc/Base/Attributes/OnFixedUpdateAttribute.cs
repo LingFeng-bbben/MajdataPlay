@@ -1,6 +1,7 @@
-﻿using System;
+﻿using MajdataPlay.Buffers;
+using System;
 
-namespace MajdataPlay.Buffers
+namespace MajdataPlay
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
     internal sealed class OnFixedUpdateAttribute : PlayerLoopFunctionAttribute

@@ -1,4 +1,4 @@
-﻿namespace MajdataPlay.Buffers
+﻿namespace MajdataPlay
 {
     public interface IUpdatableComponent<TState> : IStateful<TState>
     {
