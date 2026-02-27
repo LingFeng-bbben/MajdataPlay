@@ -129,10 +129,6 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
         }
         public CustomSkin(string skinCollectionPath)
         {
-            if (!Directory.Exists(skinCollectionPath))
-            {
-                Directory.CreateDirectory(skinCollectionPath);
-            }
             Name = new DirectoryInfo(skinCollectionPath).Name;
 
             if (File.Exists(skinCollectionPath + "/outline.png"))
