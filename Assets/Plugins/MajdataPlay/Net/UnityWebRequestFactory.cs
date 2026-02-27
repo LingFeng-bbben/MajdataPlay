@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 namespace MajdataPlay.Net;
-internal static class UnityWebRequestFactory
+public static class UnityWebRequestFactory
 {
     public static TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(2);
     public static string UserAgent { get; set; } = "MajdataPlay/0.1.0";

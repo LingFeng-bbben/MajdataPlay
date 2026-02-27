@@ -132,6 +132,11 @@ namespace MajdataPlay
 
         static string _runtimeConfigPath = string.Empty;
         readonly static CancellationTokenSource _globalCTS = new();
+        static MajEnv()
+        {
+            UnityWebRequestFactory.Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS);
+            UnityWebRequestFactory.UserAgent = HTTP_USER_AGENT;
+        }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ChangedSynchronizationContext()
