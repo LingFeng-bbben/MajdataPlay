@@ -4,7 +4,7 @@ using MajdataPlay.IO;
 using MajdataPlay.Scenes.Test;
 using MajdataPlay.Settings;
 using MajdataPlay.Timer;
-using MajdataPlay.Utils;
+using MajdataPlay.Platform.Win32;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

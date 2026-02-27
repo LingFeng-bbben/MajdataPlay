@@ -1,5 +1,5 @@
 ﻿using System;
-using MajdataPlay.Utils;
+using MajdataPlay.Platform.Win32;
 using UnityEngine.InputSystem;
 //using Microsoft.Win32;
 //using System.Windows.Forms;
