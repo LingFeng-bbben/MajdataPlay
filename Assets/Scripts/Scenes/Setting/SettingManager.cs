@@ -6,9 +6,9 @@ using MajdataPlay.IO;
 using MajdataPlay.Utils;
 using System;
 using System.Linq;
-using System.Reflection;
 using UnityEngine;
 using MajdataPlay.Settings.Runtime;
+using MajdataPlay.Settings.SettingItems;
 
 namespace MajdataPlay.Scenes.Setting
 {
@@ -37,48 +37,37 @@ namespace MajdataPlay.Scenes.Setting
         void Start()
         {
             var fromListRequest = _fromListRequest;
-            var type = Setting.GetType();
-            var properties = type.GetProperties()
-                                 .Where(x => x.GetCustomAttributes<SettingVisualizationIgnoreAttribute>().Count() == 0)
-                                 .ToArray();
+            var settingMenus = SettingDefinitions.GetAllMenus();
             var offset = 0;
 
             if((fromListRequest & IGNORE_CHART_SETTING_PAGE) == 0)
             {
-                menus = new Menu[properties.Length + 1];
+                menus = new Menu[settingMenus.Count + 1];
                 offset = 0;
                 var selectedChart = SongStorage.WorkingCollection.Current;
                 var chartSetting = ChartSettingStorage.GetSetting(selectedChart);
-                var chartSettingType = chartSetting.GetType();
                 var menuObj = Instantiate(menuPrefab, transform);
-                menuObj.name = chartSettingType.Name;
+                menuObj.name = "ChartSetting";
                 var menu = menuObj.GetComponent<Menu>();
-                menus[properties.Length] = menu;
-                menu.SubOptionObject = chartSetting;
-                menu.Name = chartSettingType.Name;
+                menus[settingMenus.Count] = menu;
+                menu.SettingItems = SettingDefinitions.GetChartSettingItems(chartSetting);
+                menu.Name = "ChartSetting";
             }
             else
             {
-                menus = new Menu[properties.Length];
+                menus = new Menu[settingMenus.Count];
             }
-            foreach (var (i, property) in properties.WithIndex())
+
+            foreach (var (i, settingMenu) in settingMenus.WithIndex())
             {
-                object root = Setting;
-                var _property = property;
-
-                if (property.Name == "Audio")
-                {
-                    root = property.GetValue(Setting);
-                    _property = property.PropertyType.GetProperty("Volume");
-                }
-
                 var menuObj = Instantiate(menuPrefab, transform);
-                menuObj.name = _property.Name;
+                menuObj.name = settingMenu.Name;
                 var menu = menuObj.GetComponent<Menu>();
                 menus[i + offset] = menu;
-                menu.SubOptionObject = _property.GetValue(root);
-                menu.Name = _property.Name;
+                menu.SettingItems = settingMenu.Items;
+                menu.Name = settingMenu.Name;
             }
+
             foreach (var (i, menu) in menus.WithIndex())
             {
                 menu.Init();
