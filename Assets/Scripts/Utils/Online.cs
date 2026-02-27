@@ -3,7 +3,7 @@ using Cysharp.Threading.Tasks;
 using MajdataPlay.Buffers;
 using MajdataPlay.Net;
 using MajdataPlay.Settings;
-using MajdataPlay.Unsafe;
+using MajdataPlay.UnsafeKit;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;

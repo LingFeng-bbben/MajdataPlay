@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 #nullable enable
-namespace MajdataPlay.Unsafe
+namespace MajdataPlay.UnsafeKit
 {
     /// <summary>
     /// Read-only managed references

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Unity.VisualScripting;
 #nullable enable
 #pragma warning disable CS8500
-namespace MajdataPlay.Unsafe
+namespace MajdataPlay.UnsafeKit
 {
     using Unsafe = System.Runtime.CompilerServices.Unsafe;
     /// <summary>
