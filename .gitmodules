@@ -1,6 +1,6 @@
 [submodule "Assets/Plugins/HidSharp"]
 	path = Assets/Plugins/HidSharp
-	url = https://github.com/LeZi9916/HidSharp
+	url = https://github.com/TeamMajdata/HidSharp.git
 [submodule "Assets/Plugins/ManagedBass"]
 	path = Assets/Plugins/ManagedBass
 	url = https://github.com/TeamMajdata/ManagedBass.git
