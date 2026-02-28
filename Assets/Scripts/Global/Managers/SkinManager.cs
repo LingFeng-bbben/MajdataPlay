@@ -107,10 +107,18 @@ namespace MajdataPlay
                 }
                 _loadedSkins.Add(task.Result);
             }
+            if(_loadedSkins.Count == 0)
+            {
+                _loadedSkins.Add(CustomSkin.Empty);
+            }
             var targetSkin = _loadedSkins.Find(x => x.Name == selectedSkinName);
             if (targetSkin is null)
             {
-                targetSkin = new CustomSkin(Path.Combine(path, selectedSkinName));
+                targetSkin = _loadedSkins[0];
+                if(targetSkin.Name != CustomSkin.Empty.Name)
+                {
+                    MajInstances.Settings.Display.Skin = targetSkin.Name;
+                }
             }
             _loadedSkinArray = _loadedSkins.ToArray();
             SelectedSkin = targetSkin;

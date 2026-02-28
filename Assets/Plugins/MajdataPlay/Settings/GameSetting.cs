@@ -79,7 +79,7 @@ namespace MajdataPlay.Settings
         [Preserve]
         public string Language { get; set; } = "zh-CN - Majdata";
         [Preserve]
-        public string Skin { get; set; } = "Light2-星鹿";
+        public string Skin { get; set; } = "default";
         [Preserve]
         public bool DisplayCriticalPerfect { get; set; } = false;
         [Preserve]
