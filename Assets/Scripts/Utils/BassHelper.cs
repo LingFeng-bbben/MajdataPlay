@@ -55,7 +55,9 @@ namespace MajdataPlay.Utils
                 {
                     0 => Bass.CreateStream(buffer, offset, length, flags),
                     1 => BassOpus.CreateStream(buffer, offset, length, flags),
+#if UNITY_ANDROID || UNITY_STANDALONE_WIN || UNITY_STANDALONE_LINUX
                     2 => BassAac.CreateStream(buffer, offset, length, flags),
+#endif
                     _ => throw new ArgumentOutOfRangeException()
                 };
                 if (decode == 0)

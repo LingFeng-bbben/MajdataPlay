@@ -346,7 +346,7 @@ namespace MajdataPlay.IO
                 if (!File.Exists(path))
                 {
                     SFXSamples.Add(AudioSampleWrap.Empty);
-                    MajDebug.LogWarning(path + " dos not exists");
+                    MajDebug.LogWarning(path + " does not exists");
                     continue;
                 }
                 var sample = LoadMusic(path, false, false);
