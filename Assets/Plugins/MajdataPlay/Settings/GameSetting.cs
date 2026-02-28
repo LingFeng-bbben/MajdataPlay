@@ -4,9 +4,6 @@ using System.Threading;
 using UnityEngine.Scripting;
 using Newtonsoft.Json;
 using MajdataPlay.Net;
-#if UNITY_STANDALONE
-using HidSharp;
-#endif
 #nullable enable
 namespace MajdataPlay.Settings
 {
@@ -401,7 +398,7 @@ namespace MajdataPlay.Settings
         [Preserve]
         public bool Exclusice { get; set; } = false;
         [Preserve]
-        public OpenPriority OpenPriority { get; set; } = OpenPriority.VeryHigh;
+        public HidOpenPriority OpenPriority { get; set; } = HidOpenPriority.VeryHigh;
     }
     [Preserve]
     public class UsbOptions

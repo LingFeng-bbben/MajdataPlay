@@ -672,7 +672,7 @@ namespace MajdataPlay.IO
                                 ProductId = yuanDefaultHidPID,
                                 VendorId = yuanDefaultHidVID,
                                 Exclusice = false,
-                                OpenPriority = OpenPriority.VeryHigh
+                                OpenPriority = HidOpenPriority.VeryHigh
                             };
                             _touchPanelSerialConnInfo = new()
                             {
@@ -704,7 +704,7 @@ namespace MajdataPlay.IO
                                 ProductId = daoDefaultHidPID,
                                 VendorId = daoDefaultHidVID,
                                 Exclusice = false,
-                                OpenPriority = OpenPriority.VeryHigh
+                                OpenPriority = HidOpenPriority.VeryHigh
                             };
                             _ledDeviceHidConnInfo = new()
                             {
@@ -712,7 +712,7 @@ namespace MajdataPlay.IO
                                 ProductId = daoDefaultHidPID,
                                 VendorId = daoDefaultHidVID,
                                 Exclusice = false,
-                                OpenPriority = OpenPriority.VeryHigh
+                                OpenPriority = HidOpenPriority.VeryHigh
                             };
                         }
                         else if (usbDevices.Any(x => x.Pid == novDefaultUsbPID && x.Vid == novDefaultUsbVID))
@@ -759,7 +759,7 @@ namespace MajdataPlay.IO
                                 ProductId = generalDefaultHidPID,
                                 VendorId = generalDefaultHidVID,
                                 Exclusice = false,
-                                OpenPriority = OpenPriority.VeryHigh
+                                OpenPriority = HidOpenPriority.VeryHigh
                             };
                             _ledDeviceSerialConnInfo = new()
                             {
@@ -1309,7 +1309,7 @@ namespace MajdataPlay.IO
             public int ProductId { get; init; }
             public int VendorId { get; init; }
             public bool Exclusice { get; init; }
-            public OpenPriority OpenPriority { get; init; }
+            public HidOpenPriority OpenPriority { get; init; }
         }
         readonly struct UsbConnInfo
         {
