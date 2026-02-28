@@ -123,7 +123,6 @@ namespace MajdataPlay.Settings
         public TouchFeedbackLevel TouchFeedback { get; set; } = TouchFeedbackLevel.Outer_Only;
         [SettingVisualizationIgnore]
         public string Resolution { get; set; } = "1080x1920";
-        [SettingVisualizationIgnore]
         public float MainScreenPosition { get; set; } = 1f;
         [Preserve]
         public RenderQualityOption RenderQuality { get; set; } = RenderQualityOption.Low;
