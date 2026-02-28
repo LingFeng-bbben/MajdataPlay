@@ -61,7 +61,7 @@ namespace MajdataPlay.IO
             {
                 FromTouchPanel(touches, sensorClickedCount, newStates, extraButtonStates, mainCamera);
             }
-#if UNITY_STANDALONE
+#if UNITY_STANDALONE || UNITY_EDITOR
             else if (Mouse.current != null)
             {
                 FromMouse(Mouse.current, newStates, extraButtonStates, mainCamera);

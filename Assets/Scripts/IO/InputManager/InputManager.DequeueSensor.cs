@@ -32,15 +32,16 @@ namespace MajdataPlay.IO
 
                 newStates[index] |= report.State;
             }
-#if UNITY_STANDALONE
+
             for (var i = 0; i < 34; i++)
             {
+#if UNITY_STANDALONE
                 var state = TouchPanel.IsOn(i) || TouchPanel.IsHadOn(i);
-
                 newStates[i] |= state ? SwitchStatus.On : SwitchStatus.Off;
+#endif
                 sensorStates[i] = newStates[i] is SwitchStatus.On;
             }
-#endif
+
             var C = newStates[16] | newStates[17];
             newStates[16] = C;
             newStates.Slice(18).CopyTo(newStates.Slice(17));
