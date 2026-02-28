@@ -1,7 +1,3 @@
-Langs\en-US.json
-Langs\ja-JP.json
-Langs\zh-CN.json
-Langs\zh-TW.json
 Light2-星鹿\outline.png
 Light2-星鹿\SubBackgourd.png
 Light2-星鹿\HoldSkins\hold.png
@@ -162,7 +158,6 @@ Light2-星鹿\WifiSkins\wifi_each_6.png
 Light2-星鹿\WifiSkins\wifi_each_7.png
 Light2-星鹿\WifiSkins\wifi_each_8.png
 Light2-星鹿\WifiSkins\wifi_each_9.png
-Mods\mod.json
 MovieBG\allperfect.mp4
 MovieBG\fullcombo.mp4
 MovieBG\title.mp4
