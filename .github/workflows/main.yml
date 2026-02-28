@@ -40,8 +40,17 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-
       
+      - name: Cache Unity Library
+        uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-${{ runner.os }}-${{ env.TARGET_PLATFORM }}-${{ hashFiles('ProjectSettings/ProjectVersion.txt', 'ProjectSettings/**', 'Packages/manifest.json', 'Packages/packages-lock.json') }}
+          restore-keys: |
+            Library-${{ runner.os }}-${{ env.TARGET_PLATFORM }}-
+
+      - name: List files in project directory
+        run: ls -R ${{ env.CONFIGURATION }} || true
 
       - name: Build (Release)
         uses: game-ci/unity-builder@v4
