@@ -331,6 +331,14 @@
       "Content": "设置触摸反馈的显示级别"
     },
     {
+      "Origin": "MAJSETTING_PROPERTY_MainScreenPosition",
+      "Content": "主屏幕位置"
+    },
+    {
+      "Origin": "MAJSETTING_PROPERTY_MainScreenPosition_DESC",
+      "Content": "调整游玩区域的垂直坐标"
+    },
+    {
       "Origin": "MAJSETTING_PROPERTY_Resolution",
       "Content": "分辨率"
     },
