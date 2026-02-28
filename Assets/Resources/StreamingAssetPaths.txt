@@ -166,6 +166,49 @@ Mods\mod.json
 MovieBG\allperfect.mp4
 MovieBG\fullcombo.mp4
 MovieBG\title.mp4
+Original\DYDY之歌\bg.jpg
+Original\DYDY之歌\maidata.txt
+Original\DYDY之歌\track.opus
+Original\EX-AID\bg.mp4
+Original\EX-AID\bg.png
+Original\EX-AID\maidata.txt
+Original\EX-AID\track.opus
+Original\MAJTITLE\bg.jpg
+Original\MAJTITLE\maidata.txt
+Original\MAJTITLE\track.opus
+Original\Memories in the Dusk\bg.jpg
+Original\Memories in the Dusk\maidata.txt
+Original\Memories in the Dusk\track.opus
+Original\Transcend My Love\bg.jpg
+Original\Transcend My Love\maidata.txt
+Original\Transcend My Love\pv.mp4
+Original\Transcend My Love\track.opus
+Original\Ποσειδών\bg.jpg
+Original\Ποσειδών\maidata.txt
+Original\Ποσειδών\track.opus
+Original\ずんだオーバーダンス\bg.jpg
+Original\ずんだオーバーダンス\bg.mp4
+Original\ずんだオーバーダンス\maidata.txt
+Original\ずんだオーバーダンス\track.opus
+Original\勇气之火\bg.jpg
+Original\勇气之火\maidata.txt
+Original\勇气之火\track.opus
+Original\宇宙夢中\bg.jpg
+Original\宇宙夢中\bg.mp4
+Original\宇宙夢中\maidata.txt
+Original\宇宙夢中\track.opus
+Original\时钟流转之岛\bg.jpg
+Original\时钟流转之岛\maidata.txt
+Original\时钟流转之岛\track.opus
+Original\王道偶像\bg.jpg
+Original\王道偶像\maidata.txt
+Original\王道偶像\track.opus
+Original\老撸采样包与塔菲叫与凤鸣\bg.jpg
+Original\老撸采样包与塔菲叫与凤鸣\maidata.txt
+Original\老撸采样包与塔菲叫与凤鸣\track.opus
+Original\風の種\bg.jpg
+Original\風の種\maidata.txt
+Original\風の種\track.opus
 SFX\answer.wav
 SFX\answer_clock.wav
 SFX\bgm_dan.mp3
