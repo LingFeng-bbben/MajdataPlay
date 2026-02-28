@@ -484,9 +484,9 @@ namespace MajdataPlay.Settings
 #if UNITY_ANDROID // Android Only (AAudio)
         public bool EnableAAudio { get; set; } = true;
 #endif
-        public int BufferLengthMs { get; set; } = 64;
+        public int BufferLengthMs { get; set; } = 128;
         public int UpdatePeriodMs { get; set; } = 16;
-        public int DeviceBufferLengthMs { get; set; } = 8;
+        public int DeviceBufferLengthMs { get; set; } = 32;
         public int DeviceUpdatePeriodMs { get; set; } = 4;
     }
 }
