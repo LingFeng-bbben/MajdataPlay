@@ -48,7 +48,11 @@ jobs:
           key: Library-${{ runner.os }}-${{ env.TARGET_PLATFORM }}-${{ hashFiles('ProjectSettings/ProjectVersion.txt', 'ProjectSettings/**', 'Packages/manifest.json', 'Packages/packages-lock.json') }}
           restore-keys: |
             Library-${{ runner.os }}-${{ env.TARGET_PLATFORM }}-
-
+            
+      - name: Clean Library
+        run: |
+          rm -rf Library
+    
       - name: List files in project directory
         run: ls -laR || true
 
