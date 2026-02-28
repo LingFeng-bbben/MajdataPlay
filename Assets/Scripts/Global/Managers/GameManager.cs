@@ -434,38 +434,72 @@ namespace MajdataPlay
 
         private static void MoveCharts()
         {
-            var src = Path.Combine(MajEnv.RootPath, "ExtStreamingAssets", "Original");
-            var dst = Path.Combine(MajEnv.RootPath, "MaiCharts", "Original");
+            var assetsRootPath = Path.Combine(MajEnv.RootPath, "ExtStreamingAssets", "MaiCharts");
+            var maiChartsPath = Path.Combine(MajEnv.RootPath, "MaiCharts");
+            
 
-            if (!Directory.Exists(src))
+            if (!Directory.Exists(assetsRootPath))
             {
-                MajDebug.LogError($"Move failed: source not found: {src}");
+                MajDebug.LogError($"Move failed: source not found: {assetsRootPath}");
                 return;
             }
-
-            if (Directory.Exists(dst))
-                Directory.Delete(dst, recursive: true);
-
-            Directory.Move(sourceDirName: src, destDirName: dst);
-            MajDebug.LogInfo($"Moved: {src} -> {dst}");
+            if (!Directory.Exists(maiChartsPath))
+            {
+                Directory.CreateDirectory(maiChartsPath);
+            }
+            var assets = new DirectoryInfo(assetsRootPath).GetDirectories();
+            foreach(var dir in assets)
+            {
+                var dirName = dir.Name;
+                var src = dir.FullName;
+                var dst = Path.Combine(maiChartsPath, dirName);
+                for (var i = 0; ; i++)
+                {
+                    if (Directory.Exists(dst))
+                    {
+                        dst = Path.Combine(maiChartsPath, $"{dirName} ({i})");
+                        continue;
+                    }
+                    break;
+                }
+                Directory.Move(sourceDirName: src, destDirName: dst);
+                MajDebug.LogInfo($"Moved: {src} -> {dst}");
+            }
         }
 
         private static void MoveSkins()
         {
-            var src = Path.Combine(MajEnv.RootPath, "ExtStreamingAssets", "Light2-星鹿");
-            var dst = Path.Combine(MajEnv.RootPath, "Skins", "Light2-星鹿");
+            var assetsRootPath = Path.Combine(MajEnv.RootPath, "ExtStreamingAssets", "Skins");
+            var skinsPath = Path.Combine(MajEnv.RootPath, "Skins");
 
-            if (!Directory.Exists(src))
+            if (!Directory.Exists(assetsRootPath))
             {
-                MajDebug.LogError($"Move failed: source not found: {src}");
+                MajDebug.LogError($"Move failed: source not found: {assetsRootPath}");
                 return;
             }
 
-            if (Directory.Exists(dst))
-                Directory.Delete(dst, recursive: true);
-
-            Directory.Move(sourceDirName: src, destDirName: dst);
-            MajDebug.LogInfo($"Moved: {src} -> {dst}");
+            if (!Directory.Exists(skinsPath))
+            {
+                Directory.CreateDirectory(skinsPath);
+            }
+            var assets = new DirectoryInfo(assetsRootPath).GetDirectories();
+            foreach (var dir in assets)
+            {
+                var dirName = dir.Name;
+                var src = dir.FullName;
+                var dst = Path.Combine(skinsPath, dirName);
+                for (var i = 0; ; i++)
+                {
+                    if (Directory.Exists(dst))
+                    {
+                        dst = Path.Combine(skinsPath, $"{dirName} ({i})");
+                        continue;
+                    }
+                    break;
+                }
+                Directory.Move(sourceDirName: src, destDirName: dst);
+                MajDebug.LogInfo($"Moved: {src} -> {dst}");
+            }
         }
     }
 }

@@ -1,209 +1,49 @@
-Light2-星鹿\outline.png
-Light2-星鹿\SubBackgourd.png
-Light2-星鹿\HoldSkins\hold.png
-Light2-星鹿\HoldSkins\hold_break.png
-Light2-星鹿\HoldSkins\hold_break_on.png
-Light2-星鹿\HoldSkins\hold_each.png
-Light2-星鹿\HoldSkins\hold_each_on.png
-Light2-星鹿\HoldSkins\hold_ex.png
-Light2-星鹿\HoldSkins\hold_off.png
-Light2-星鹿\HoldSkins\hold_on.png
-Light2-星鹿\JudgeTextSkins\fast.png
-Light2-星鹿\JudgeTextSkins\judge_text_break_0.png
-Light2-星鹿\JudgeTextSkins\judge_text_break_1000.png
-Light2-星鹿\JudgeTextSkins\judge_text_break_1250.png
-Light2-星鹿\JudgeTextSkins\judge_text_break_1500.png
-Light2-星鹿\JudgeTextSkins\judge_text_break_2000.png
-Light2-星鹿\JudgeTextSkins\judge_text_break_2500.png
-Light2-星鹿\JudgeTextSkins\judge_text_break_2550.png
-Light2-星鹿\JudgeTextSkins\judge_text_break_2600.png
-Light2-星鹿\JudgeTextSkins\judge_text_break_2600_shine.png
-Light2-星鹿\JudgeTextSkins\judge_text_cPerfect.png
-Light2-星鹿\JudgeTextSkins\judge_text_cPerfect_break.png
-Light2-星鹿\JudgeTextSkins\judge_text_good.png
-Light2-星鹿\JudgeTextSkins\judge_text_great.png
-Light2-星鹿\JudgeTextSkins\judge_text_miss.png
-Light2-星鹿\JudgeTextSkins\judge_text_normal.png
-Light2-星鹿\JudgeTextSkins\judge_text_perfect.png
-Light2-星鹿\JudgeTextSkins\judge_text_perfect_break.png
-Light2-星鹿\JudgeTextSkins\late.png
-Light2-星鹿\NoteGuideSkins\Break.png
-Light2-星鹿\NoteGuideSkins\Each.png
-Light2-星鹿\NoteGuideSkins\EachLine1.png
-Light2-星鹿\NoteGuideSkins\EachLine2.png
-Light2-星鹿\NoteGuideSkins\EachLine3.png
-Light2-星鹿\NoteGuideSkins\EachLine4.png
-Light2-星鹿\NoteGuideSkins\Hold_Break_End.png
-Light2-星鹿\NoteGuideSkins\Hold_Each_End.png
-Light2-星鹿\NoteGuideSkins\Hold_End.png
-Light2-星鹿\NoteGuideSkins\Normal.png
-Light2-星鹿\NoteGuideSkins\Slide.png
-Light2-星鹿\SlideOKSkins\just_curv_l.png
-Light2-星鹿\SlideOKSkins\just_curv_l_fast_gd.png
-Light2-星鹿\SlideOKSkins\just_curv_l_fast_gr.png
-Light2-星鹿\SlideOKSkins\just_curv_l_late_gd.png
-Light2-星鹿\SlideOKSkins\just_curv_l_late_gr.png
-Light2-星鹿\SlideOKSkins\just_curv_l_p.png
-Light2-星鹿\SlideOKSkins\just_curv_r.png
-Light2-星鹿\SlideOKSkins\just_curv_r_fast_gd.png
-Light2-星鹿\SlideOKSkins\just_curv_r_fast_gr.png
-Light2-星鹿\SlideOKSkins\just_curv_r_late_gd.png
-Light2-星鹿\SlideOKSkins\just_curv_r_late_gr.png
-Light2-星鹿\SlideOKSkins\just_curv_r_p.png
-Light2-星鹿\SlideOKSkins\just_str_l.png
-Light2-星鹿\SlideOKSkins\just_str_l_fast_gd.png
-Light2-星鹿\SlideOKSkins\just_str_l_fast_gr.png
-Light2-星鹿\SlideOKSkins\just_str_l_late_gd.png
-Light2-星鹿\SlideOKSkins\just_str_l_late_gr.png
-Light2-星鹿\SlideOKSkins\just_str_l_p.png
-Light2-星鹿\SlideOKSkins\just_str_r.png
-Light2-星鹿\SlideOKSkins\just_str_r_fast_gd.png
-Light2-星鹿\SlideOKSkins\just_str_r_fast_gr.png
-Light2-星鹿\SlideOKSkins\just_str_r_late_gd.png
-Light2-星鹿\SlideOKSkins\just_str_r_late_gr.png
-Light2-星鹿\SlideOKSkins\just_str_r_p.png
-Light2-星鹿\SlideOKSkins\just_wifi_d.png
-Light2-星鹿\SlideOKSkins\just_wifi_d_fast_gd.png
-Light2-星鹿\SlideOKSkins\just_wifi_d_fast_gr.png
-Light2-星鹿\SlideOKSkins\just_wifi_d_late_gd.png
-Light2-星鹿\SlideOKSkins\just_wifi_d_late_gr.png
-Light2-星鹿\SlideOKSkins\just_wifi_d_p.png
-Light2-星鹿\SlideOKSkins\just_wifi_u.png
-Light2-星鹿\SlideOKSkins\just_wifi_u_fast_gd.png
-Light2-星鹿\SlideOKSkins\just_wifi_u_fast_gr.png
-Light2-星鹿\SlideOKSkins\just_wifi_u_late_gd.png
-Light2-星鹿\SlideOKSkins\just_wifi_u_late_gr.png
-Light2-星鹿\SlideOKSkins\just_wifi_u_p.png
-Light2-星鹿\SlideOKSkins\miss_curv_l.png
-Light2-星鹿\SlideOKSkins\miss_curv_r.png
-Light2-星鹿\SlideOKSkins\miss_str_l.png
-Light2-星鹿\SlideOKSkins\miss_str_r.png
-Light2-星鹿\SlideOKSkins\miss_wifi_d.png
-Light2-星鹿\SlideOKSkins\miss_wifi_u.png
-Light2-星鹿\SlideOKSkins\toofast_curv_l.png
-Light2-星鹿\SlideOKSkins\toofast_curv_r.png
-Light2-星鹿\SlideOKSkins\toofast_str_l.png
-Light2-星鹿\SlideOKSkins\toofast_str_r.png
-Light2-星鹿\SlideOKSkins\toofast_wifi_d.png
-Light2-星鹿\SlideOKSkins\toofast_wifi_u.png
-Light2-星鹿\SlideSkins\slide.png
-Light2-星鹿\SlideSkins\slide_break.png
-Light2-星鹿\SlideSkins\slide_each.png
-Light2-星鹿\StarSkins\star.png
-Light2-星鹿\StarSkins\star_break.png
-Light2-星鹿\StarSkins\star_break_double.png
-Light2-星鹿\StarSkins\star_double.png
-Light2-星鹿\StarSkins\star_each.png
-Light2-星鹿\StarSkins\star_each_double.png
-Light2-星鹿\StarSkins\star_ex.png
-Light2-星鹿\StarSkins\star_ex_double.png
-Light2-星鹿\TapSkins\tap.png
-Light2-星鹿\TapSkins\tap_break.png
-Light2-星鹿\TapSkins\tap_each.png
-Light2-星鹿\TapSkins\tap_ex.png
-Light2-星鹿\TouchHoldSkins\touchhold_0.png
-Light2-星鹿\TouchHoldSkins\touchhold_1.png
-Light2-星鹿\TouchHoldSkins\touchhold_2.png
-Light2-星鹿\TouchHoldSkins\touchhold_3.png
-Light2-星鹿\TouchHoldSkins\touchhold_border.png
-Light2-星鹿\TouchHoldSkins\touchhold_break_0.png
-Light2-星鹿\TouchHoldSkins\touchhold_break_1.png
-Light2-星鹿\TouchHoldSkins\touchhold_break_2.png
-Light2-星鹿\TouchHoldSkins\touchhold_break_3.png
-Light2-星鹿\TouchHoldSkins\touchhold_break_border.png
-Light2-星鹿\TouchHoldSkins\touchhold_off.png
-Light2-星鹿\TouchSkins\touch.png
-Light2-星鹿\TouchSkins\touch_border_2.png
-Light2-星鹿\TouchSkins\touch_border_2_each.png
-Light2-星鹿\TouchSkins\touch_border_3.png
-Light2-星鹿\TouchSkins\touch_border_3_each.png
-Light2-星鹿\TouchSkins\touch_break.png
-Light2-星鹿\TouchSkins\touch_break_border_2.png
-Light2-星鹿\TouchSkins\touch_break_border_3.png
-Light2-星鹿\TouchSkins\touch_break_point.png
-Light2-星鹿\TouchSkins\touch_each.png
-Light2-星鹿\TouchSkins\touch_just.png
-Light2-星鹿\TouchSkins\touch_point.png
-Light2-星鹿\TouchSkins\touch_point_each.png
-Light2-星鹿\WifiSkins\wifi_0.png
-Light2-星鹿\WifiSkins\wifi_1.png
-Light2-星鹿\WifiSkins\wifi_10.png
-Light2-星鹿\WifiSkins\wifi_2.png
-Light2-星鹿\WifiSkins\wifi_3.png
-Light2-星鹿\WifiSkins\wifi_4.png
-Light2-星鹿\WifiSkins\wifi_5.png
-Light2-星鹿\WifiSkins\wifi_6.png
-Light2-星鹿\WifiSkins\wifi_7.png
-Light2-星鹿\WifiSkins\wifi_8.png
-Light2-星鹿\WifiSkins\wifi_9.png
-Light2-星鹿\WifiSkins\wifi_break_0.png
-Light2-星鹿\WifiSkins\wifi_break_1.png
-Light2-星鹿\WifiSkins\wifi_break_10.png
-Light2-星鹿\WifiSkins\wifi_break_2.png
-Light2-星鹿\WifiSkins\wifi_break_3.png
-Light2-星鹿\WifiSkins\wifi_break_4.png
-Light2-星鹿\WifiSkins\wifi_break_5.png
-Light2-星鹿\WifiSkins\wifi_break_6.png
-Light2-星鹿\WifiSkins\wifi_break_7.png
-Light2-星鹿\WifiSkins\wifi_break_8.png
-Light2-星鹿\WifiSkins\wifi_break_9.png
-Light2-星鹿\WifiSkins\wifi_each_0.png
-Light2-星鹿\WifiSkins\wifi_each_1.png
-Light2-星鹿\WifiSkins\wifi_each_10.png
-Light2-星鹿\WifiSkins\wifi_each_2.png
-Light2-星鹿\WifiSkins\wifi_each_3.png
-Light2-星鹿\WifiSkins\wifi_each_4.png
-Light2-星鹿\WifiSkins\wifi_each_5.png
-Light2-星鹿\WifiSkins\wifi_each_6.png
-Light2-星鹿\WifiSkins\wifi_each_7.png
-Light2-星鹿\WifiSkins\wifi_each_8.png
-Light2-星鹿\WifiSkins\wifi_each_9.png
+MaiCharts\Original\EX-AID\bg.mp4
+MaiCharts\Original\EX-AID\bg.png
+MaiCharts\Original\EX-AID\maidata.txt
+MaiCharts\Original\EX-AID\track.opus
+MaiCharts\Original\Lost in the Cosmic Dream\bg.jpg
+MaiCharts\Original\Lost in the Cosmic Dream\bg.mp4
+MaiCharts\Original\Lost in the Cosmic Dream\maidata.txt
+MaiCharts\Original\Lost in the Cosmic Dream\track.opus
+MaiCharts\Original\MAJTITLE\bg.jpg
+MaiCharts\Original\MAJTITLE\maidata.txt
+MaiCharts\Original\MAJTITLE\track.opus
+MaiCharts\Original\Memories in the Dusk\bg.jpg
+MaiCharts\Original\Memories in the Dusk\maidata.txt
+MaiCharts\Original\Memories in the Dusk\track.opus
+MaiCharts\Original\Old Lu Sample Pack with Taffy and Phoenix\bg.jpg
+MaiCharts\Original\Old Lu Sample Pack with Taffy and Phoenix\maidata.txt
+MaiCharts\Original\Old Lu Sample Pack with Taffy and Phoenix\track.opus
+MaiCharts\Original\Poseidon\bg.jpg
+MaiCharts\Original\Poseidon\maidata.txt
+MaiCharts\Original\Poseidon\track.opus
+MaiCharts\Original\Royal Idol\bg.jpg
+MaiCharts\Original\Royal Idol\maidata.txt
+MaiCharts\Original\Royal Idol\track.opus
+MaiCharts\Original\Seed of the Wind\bg.jpg
+MaiCharts\Original\Seed of the Wind\maidata.txt
+MaiCharts\Original\Seed of the Wind\track.opus
+MaiCharts\Original\Song of DYDY\bg.jpg
+MaiCharts\Original\Song of DYDY\maidata.txt
+MaiCharts\Original\Song of DYDY\track.opus
+MaiCharts\Original\The Fire of Courage\bg.jpg
+MaiCharts\Original\The Fire of Courage\maidata.txt
+MaiCharts\Original\The Fire of Courage\track.opus
+MaiCharts\Original\The Island of Flowing Time\bg.jpg
+MaiCharts\Original\The Island of Flowing Time\maidata.txt
+MaiCharts\Original\The Island of Flowing Time\track.opus
+MaiCharts\Original\Transcend My Love\bg.jpg
+MaiCharts\Original\Transcend My Love\maidata.txt
+MaiCharts\Original\Transcend My Love\pv.mp4
+MaiCharts\Original\Transcend My Love\track.opus
+MaiCharts\Original\Zunda Overdance\bg.jpg
+MaiCharts\Original\Zunda Overdance\bg.mp4
+MaiCharts\Original\Zunda Overdance\maidata.txt
+MaiCharts\Original\Zunda Overdance\track.opus
 MovieBG\allperfect.mp4
 MovieBG\fullcombo.mp4
 MovieBG\title.mp4
-Original\DYDY之歌\bg.jpg
-Original\DYDY之歌\maidata.txt
-Original\DYDY之歌\track.opus
-Original\EX-AID\bg.mp4
-Original\EX-AID\bg.png
-Original\EX-AID\maidata.txt
-Original\EX-AID\track.opus
-Original\MAJTITLE\bg.jpg
-Original\MAJTITLE\maidata.txt
-Original\MAJTITLE\track.opus
-Original\Memories in the Dusk\bg.jpg
-Original\Memories in the Dusk\maidata.txt
-Original\Memories in the Dusk\track.opus
-Original\Transcend My Love\bg.jpg
-Original\Transcend My Love\maidata.txt
-Original\Transcend My Love\pv.mp4
-Original\Transcend My Love\track.opus
-Original\Ποσειδών\bg.jpg
-Original\Ποσειδών\maidata.txt
-Original\Ποσειδών\track.opus
-Original\ずんだオーバーダンス\bg.jpg
-Original\ずんだオーバーダンス\bg.mp4
-Original\ずんだオーバーダンス\maidata.txt
-Original\ずんだオーバーダンス\track.opus
-Original\勇气之火\bg.jpg
-Original\勇气之火\maidata.txt
-Original\勇气之火\track.opus
-Original\宇宙夢中\bg.jpg
-Original\宇宙夢中\bg.mp4
-Original\宇宙夢中\maidata.txt
-Original\宇宙夢中\track.opus
-Original\时钟流转之岛\bg.jpg
-Original\时钟流转之岛\maidata.txt
-Original\时钟流转之岛\track.opus
-Original\王道偶像\bg.jpg
-Original\王道偶像\maidata.txt
-Original\王道偶像\track.opus
-Original\老撸采样包与塔菲叫与凤鸣\bg.jpg
-Original\老撸采样包与塔菲叫与凤鸣\maidata.txt
-Original\老撸采样包与塔菲叫与凤鸣\track.opus
-Original\風の種\bg.jpg
-Original\風の種\maidata.txt
-Original\風の種\track.opus
 SFX\answer.wav
 SFX\answer_clock.wav
 SFX\bgm_dan.mp3
@@ -224,6 +64,166 @@ SFX\tap_perfect.wav
 SFX\touch.wav
 SFX\touch_hanabi.wav
 SFX\touch_Hold_riser.wav
+Skins\Light2\outline.png
+Skins\Light2\SubBackgourd.png
+Skins\Light2\HoldSkins\hold.png
+Skins\Light2\HoldSkins\hold_break.png
+Skins\Light2\HoldSkins\hold_break_on.png
+Skins\Light2\HoldSkins\hold_each.png
+Skins\Light2\HoldSkins\hold_each_on.png
+Skins\Light2\HoldSkins\hold_ex.png
+Skins\Light2\HoldSkins\hold_off.png
+Skins\Light2\HoldSkins\hold_on.png
+Skins\Light2\JudgeTextSkins\fast.png
+Skins\Light2\JudgeTextSkins\judge_text_break_0.png
+Skins\Light2\JudgeTextSkins\judge_text_break_1000.png
+Skins\Light2\JudgeTextSkins\judge_text_break_1250.png
+Skins\Light2\JudgeTextSkins\judge_text_break_1500.png
+Skins\Light2\JudgeTextSkins\judge_text_break_2000.png
+Skins\Light2\JudgeTextSkins\judge_text_break_2500.png
+Skins\Light2\JudgeTextSkins\judge_text_break_2550.png
+Skins\Light2\JudgeTextSkins\judge_text_break_2600.png
+Skins\Light2\JudgeTextSkins\judge_text_break_2600_shine.png
+Skins\Light2\JudgeTextSkins\judge_text_cPerfect.png
+Skins\Light2\JudgeTextSkins\judge_text_cPerfect_break.png
+Skins\Light2\JudgeTextSkins\judge_text_good.png
+Skins\Light2\JudgeTextSkins\judge_text_great.png
+Skins\Light2\JudgeTextSkins\judge_text_miss.png
+Skins\Light2\JudgeTextSkins\judge_text_normal.png
+Skins\Light2\JudgeTextSkins\judge_text_perfect.png
+Skins\Light2\JudgeTextSkins\judge_text_perfect_break.png
+Skins\Light2\JudgeTextSkins\late.png
+Skins\Light2\NoteGuideSkins\Break.png
+Skins\Light2\NoteGuideSkins\Each.png
+Skins\Light2\NoteGuideSkins\EachLine1.png
+Skins\Light2\NoteGuideSkins\EachLine2.png
+Skins\Light2\NoteGuideSkins\EachLine3.png
+Skins\Light2\NoteGuideSkins\EachLine4.png
+Skins\Light2\NoteGuideSkins\Hold_Break_End.png
+Skins\Light2\NoteGuideSkins\Hold_Each_End.png
+Skins\Light2\NoteGuideSkins\Hold_End.png
+Skins\Light2\NoteGuideSkins\Normal.png
+Skins\Light2\NoteGuideSkins\Slide.png
+Skins\Light2\SlideOKSkins\just_curv_l.png
+Skins\Light2\SlideOKSkins\just_curv_l_fast_gd.png
+Skins\Light2\SlideOKSkins\just_curv_l_fast_gr.png
+Skins\Light2\SlideOKSkins\just_curv_l_late_gd.png
+Skins\Light2\SlideOKSkins\just_curv_l_late_gr.png
+Skins\Light2\SlideOKSkins\just_curv_l_p.png
+Skins\Light2\SlideOKSkins\just_curv_r.png
+Skins\Light2\SlideOKSkins\just_curv_r_fast_gd.png
+Skins\Light2\SlideOKSkins\just_curv_r_fast_gr.png
+Skins\Light2\SlideOKSkins\just_curv_r_late_gd.png
+Skins\Light2\SlideOKSkins\just_curv_r_late_gr.png
+Skins\Light2\SlideOKSkins\just_curv_r_p.png
+Skins\Light2\SlideOKSkins\just_str_l.png
+Skins\Light2\SlideOKSkins\just_str_l_fast_gd.png
+Skins\Light2\SlideOKSkins\just_str_l_fast_gr.png
+Skins\Light2\SlideOKSkins\just_str_l_late_gd.png
+Skins\Light2\SlideOKSkins\just_str_l_late_gr.png
+Skins\Light2\SlideOKSkins\just_str_l_p.png
+Skins\Light2\SlideOKSkins\just_str_r.png
+Skins\Light2\SlideOKSkins\just_str_r_fast_gd.png
+Skins\Light2\SlideOKSkins\just_str_r_fast_gr.png
+Skins\Light2\SlideOKSkins\just_str_r_late_gd.png
+Skins\Light2\SlideOKSkins\just_str_r_late_gr.png
+Skins\Light2\SlideOKSkins\just_str_r_p.png
+Skins\Light2\SlideOKSkins\just_wifi_d.png
+Skins\Light2\SlideOKSkins\just_wifi_d_fast_gd.png
+Skins\Light2\SlideOKSkins\just_wifi_d_fast_gr.png
+Skins\Light2\SlideOKSkins\just_wifi_d_late_gd.png
+Skins\Light2\SlideOKSkins\just_wifi_d_late_gr.png
+Skins\Light2\SlideOKSkins\just_wifi_d_p.png
+Skins\Light2\SlideOKSkins\just_wifi_u.png
+Skins\Light2\SlideOKSkins\just_wifi_u_fast_gd.png
+Skins\Light2\SlideOKSkins\just_wifi_u_fast_gr.png
+Skins\Light2\SlideOKSkins\just_wifi_u_late_gd.png
+Skins\Light2\SlideOKSkins\just_wifi_u_late_gr.png
+Skins\Light2\SlideOKSkins\just_wifi_u_p.png
+Skins\Light2\SlideOKSkins\miss_curv_l.png
+Skins\Light2\SlideOKSkins\miss_curv_r.png
+Skins\Light2\SlideOKSkins\miss_str_l.png
+Skins\Light2\SlideOKSkins\miss_str_r.png
+Skins\Light2\SlideOKSkins\miss_wifi_d.png
+Skins\Light2\SlideOKSkins\miss_wifi_u.png
+Skins\Light2\SlideOKSkins\toofast_curv_l.png
+Skins\Light2\SlideOKSkins\toofast_curv_r.png
+Skins\Light2\SlideOKSkins\toofast_str_l.png
+Skins\Light2\SlideOKSkins\toofast_str_r.png
+Skins\Light2\SlideOKSkins\toofast_wifi_d.png
+Skins\Light2\SlideOKSkins\toofast_wifi_u.png
+Skins\Light2\SlideSkins\slide.png
+Skins\Light2\SlideSkins\slide_break.png
+Skins\Light2\SlideSkins\slide_each.png
+Skins\Light2\StarSkins\star.png
+Skins\Light2\StarSkins\star_break.png
+Skins\Light2\StarSkins\star_break_double.png
+Skins\Light2\StarSkins\star_double.png
+Skins\Light2\StarSkins\star_each.png
+Skins\Light2\StarSkins\star_each_double.png
+Skins\Light2\StarSkins\star_ex.png
+Skins\Light2\StarSkins\star_ex_double.png
+Skins\Light2\TapSkins\tap.png
+Skins\Light2\TapSkins\tap_break.png
+Skins\Light2\TapSkins\tap_each.png
+Skins\Light2\TapSkins\tap_ex.png
+Skins\Light2\TouchHoldSkins\touchhold_0.png
+Skins\Light2\TouchHoldSkins\touchhold_1.png
+Skins\Light2\TouchHoldSkins\touchhold_2.png
+Skins\Light2\TouchHoldSkins\touchhold_3.png
+Skins\Light2\TouchHoldSkins\touchhold_border.png
+Skins\Light2\TouchHoldSkins\touchhold_break_0.png
+Skins\Light2\TouchHoldSkins\touchhold_break_1.png
+Skins\Light2\TouchHoldSkins\touchhold_break_2.png
+Skins\Light2\TouchHoldSkins\touchhold_break_3.png
+Skins\Light2\TouchHoldSkins\touchhold_break_border.png
+Skins\Light2\TouchHoldSkins\touchhold_off.png
+Skins\Light2\TouchSkins\touch.png
+Skins\Light2\TouchSkins\touch_border_2.png
+Skins\Light2\TouchSkins\touch_border_2_each.png
+Skins\Light2\TouchSkins\touch_border_3.png
+Skins\Light2\TouchSkins\touch_border_3_each.png
+Skins\Light2\TouchSkins\touch_break.png
+Skins\Light2\TouchSkins\touch_break_border_2.png
+Skins\Light2\TouchSkins\touch_break_border_3.png
+Skins\Light2\TouchSkins\touch_break_point.png
+Skins\Light2\TouchSkins\touch_each.png
+Skins\Light2\TouchSkins\touch_just.png
+Skins\Light2\TouchSkins\touch_point.png
+Skins\Light2\TouchSkins\touch_point_each.png
+Skins\Light2\WifiSkins\wifi_0.png
+Skins\Light2\WifiSkins\wifi_1.png
+Skins\Light2\WifiSkins\wifi_10.png
+Skins\Light2\WifiSkins\wifi_2.png
+Skins\Light2\WifiSkins\wifi_3.png
+Skins\Light2\WifiSkins\wifi_4.png
+Skins\Light2\WifiSkins\wifi_5.png
+Skins\Light2\WifiSkins\wifi_6.png
+Skins\Light2\WifiSkins\wifi_7.png
+Skins\Light2\WifiSkins\wifi_8.png
+Skins\Light2\WifiSkins\wifi_9.png
+Skins\Light2\WifiSkins\wifi_break_0.png
+Skins\Light2\WifiSkins\wifi_break_1.png
+Skins\Light2\WifiSkins\wifi_break_10.png
+Skins\Light2\WifiSkins\wifi_break_2.png
+Skins\Light2\WifiSkins\wifi_break_3.png
+Skins\Light2\WifiSkins\wifi_break_4.png
+Skins\Light2\WifiSkins\wifi_break_5.png
+Skins\Light2\WifiSkins\wifi_break_6.png
+Skins\Light2\WifiSkins\wifi_break_7.png
+Skins\Light2\WifiSkins\wifi_break_8.png
+Skins\Light2\WifiSkins\wifi_break_9.png
+Skins\Light2\WifiSkins\wifi_each_0.png
+Skins\Light2\WifiSkins\wifi_each_1.png
+Skins\Light2\WifiSkins\wifi_each_10.png
+Skins\Light2\WifiSkins\wifi_each_2.png
+Skins\Light2\WifiSkins\wifi_each_3.png
+Skins\Light2\WifiSkins\wifi_each_4.png
+Skins\Light2\WifiSkins\wifi_each_5.png
+Skins\Light2\WifiSkins\wifi_each_6.png
+Skins\Light2\WifiSkins\wifi_each_7.png
+Skins\Light2\WifiSkins\wifi_each_8.png
+Skins\Light2\WifiSkins\wifi_each_9.png
 Voice\advanced.wav
 Voice\all_perfect.wav
 Voice\all_perfect_plus.wav
