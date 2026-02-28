@@ -1,5 +1,5 @@
 ﻿using System;
-#if UNITY_STANDALONE
+#if UNITY_STANDALONE_WIN
 using MajdataPlay.Platform.Win32;
 #endif
 using UnityEngine.InputSystem;
@@ -35,7 +35,7 @@ namespace MajdataPlay.IO
             {
                 return !IsKeyDown(keyCode);
             }
-#if UNITY_STANDALONE
+#if UNITY_STANDALONE_WIN
             static Win32API.RawKey ToWinKeyCode(KeyCode keyCode)
             {
                 return keyCode switch
