@@ -43,20 +43,44 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         {
             Majdata<NotePoolManager>.Instance = this;
         }
-        public void Initialize()
+        public void Init()
         {
+            var noteLoader = Majdata<NoteLoader>.Instance!;
+            var debugOptions = MajEnv.Settings.Debug;
+            var isHadTap = false;
+            var isHadHold = false;
+            var isHadTouch = false;
+            var isHadTouchHold = false;
+            var isHadEachLine = false;
+
+            for (var i = 0; i < noteLoader.IsHasTap.Length; i++) 
+            {
+                isHadTap |= noteLoader.IsHasTap[i];
+                isHadHold |= noteLoader.IsHasHold[i];
+            }
+            for (var i = 0; i < noteLoader.IsHasTouch.Length; i++)
+            {
+                isHadTouch |= noteLoader.IsHasTouch[i];
+                isHadTouchHold |= noteLoader.IsHasTouchHold[i];
+            }
+            isHadEachLine = isHadTap || isHadHold;
+            var tapPoolCapacity = isHadTap ? debugOptions.TapPoolCapacity : 0;
+            var holdPoolCapacity = isHadHold ? debugOptions.HoldPoolCapacity : 0;
+            var touchPoolCapacity = isHadTouch ? debugOptions.TouchPoolCapacity : 0;
+            var touchHoldPoolCapacity = isHadTouchHold ? debugOptions.TouchHoldPoolCapacity : 0;
+            var eachLinePoolCapacity = isHadEachLine ? debugOptions.EachLinePoolCapacity : 0;
 
             var tapParent = transform.GetChild(0);
             var holdParent = transform.GetChild(1);
             var touchParent = transform.GetChild(4);
             var touchHoldParent = transform.GetChild(5);
             var eachLineParent = transform.GetChild(6);
-            var debugOptions = MajEnv.Settings.Debug;
-            tapPool = new(tapPrefab, tapParent, _tapInfos.ToArray(), Math.Max(debugOptions.TapPoolCapacity, 1));
-            holdPool = new(holdPrefab, holdParent, _holdInfos.ToArray(), Math.Max(debugOptions.HoldPoolCapacity, 1));
-            touchPool = new(touchPrefab, touchParent, _touchInfos.ToArray(), Math.Max(debugOptions.TouchPoolCapacity, 1));
-            touchHoldPool = new(touchHoldPrefab, touchHoldParent, _touchHoldInfos.ToArray(), Math.Max(debugOptions.TouchHoldPoolCapacity, 1));
-            eachLinePool = new(eachLinePrefab, eachLineParent, _eachLineInfos.ToArray(), Math.Max(debugOptions.EachLinePoolCapacity, 1));
+            
+            tapPool = new(tapPrefab, tapParent, _tapInfos.ToArray(), Math.Max(tapPoolCapacity, 0));
+            holdPool = new(holdPrefab, holdParent, _holdInfos.ToArray(), Math.Max(holdPoolCapacity, 0));
+            touchPool = new(touchPrefab, touchParent, _touchInfos.ToArray(), Math.Max(touchPoolCapacity, 0));
+            touchHoldPool = new(touchHoldPrefab, touchHoldParent, _touchHoldInfos.ToArray(), Math.Max(touchHoldPoolCapacity, 0));
+            eachLinePool = new(eachLinePrefab, eachLineParent, _eachLineInfos.ToArray(), Math.Max(eachLinePoolCapacity, 0));
             State = ComponentState.Running;
         }
         void Start()

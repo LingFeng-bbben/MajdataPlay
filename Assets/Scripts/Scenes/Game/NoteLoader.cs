@@ -429,7 +429,7 @@ namespace MajdataPlay.Scenes.Game
             }
             token.ThrowIfCancellationRequested();
             _slideUpdater.AddSlideQueueInfos(_slideQueueInfos);
-            _poolManager.Initialize();
+            _poolManager.Init();
         }
         EachLinePoolingInfo? CreateEachLine(SimaiTimingPoint timing, NotePoolingInfo noteA, NotePoolingInfo noteB)
         {
