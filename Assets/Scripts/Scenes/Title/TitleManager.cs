@@ -27,14 +27,6 @@ namespace MajdataPlay.Scenes.Title
         float _pressTime = 0f;
         void Start()
         {
-#if UNITY_ANDROID || UNITY_IOS
-            //we extract the streaming assets files here and let the user to restart the app
-            if (!Directory.Exists(MajEnv.AssetsPath))
-            {
-                StartCoroutine(ExtractStreamingAss());
-                return;
-            }
-#endif
             InitAsync().Forget();
             LedRing.SetAllLight(Color.white);
             if (InputManager.IsTouchPanelConnected)
@@ -134,86 +126,6 @@ namespace MajdataPlay.Scenes.Title
             {
                 _flag = true;
             }
-        }
-        IEnumerator ExtractStreamingAss()
-        {
-#if UNITY_ANDROID // Android Only (Extract Assets)
-            var extractRoot = MajEnv.AssetsPath;
-            echoText.text = $"Extracting Assets...";
-            Directory.CreateDirectory(extractRoot);
-            List<string> filePathsList = new List<string>();
-            TextAsset paths = Resources.Load<TextAsset>("StreamingAssetPaths");
-            string fs = paths.text;
-            MajDebug.LogInfo(fs);
-            string[] fLines = fs.Replace("\\", "/").Split("\n");
-            foreach (string line in fLines)
-            {
-                if (line.Trim().Length <= 1) continue;
-                var path = Path.Combine(Application.streamingAssetsPath, line.Trim());
-                echoText.text = $"Extracting {path}...";
-                MajDebug.LogInfo($"Extracting {path}");
-                yield return new WaitForEndOfFrame();
-                byte[] data = null;
-                int dataLen = 0;
-                UnityWebRequest webRequest = UnityWebRequest.Get(path);
-                yield return webRequest.SendWebRequest();
-
-                if (webRequest.result == UnityWebRequest.Result.Success)
-                {
-                    dataLen = webRequest.downloadHandler.data.Length;
-                    data = webRequest.downloadHandler.data;
-                    var file = Path.Combine(extractRoot, line.Trim());
-                    var dir = Path.GetDirectoryName(file);
-                    Directory.CreateDirectory(dir);
-                    File.WriteAllBytes(file, data);
-                }
-                else
-                {
-                    MajDebug.LogError("Extract failed");
-                }
-            }
-            echoText.text = $"Please Reboot The Game";
-#elif UNITY_IOS // iOS Only (Extract Assets)
-            var extractRoot = MajEnv.AssetsPath;
-            echoText.text = $"Extracting Assets...";
-            Directory.CreateDirectory(extractRoot);
-            List<string> filePathsList = new List<string>();
-            TextAsset paths = Resources.Load<TextAsset>("StreamingAssetPaths");
-            string fs = paths.text;
-            MajDebug.LogInfo(fs);
-            string[] fLines = fs.Replace("\\", "/").Split("\n");
-            foreach (string line in fLines)
-            {
-                var srcPath = Path.Combine(Application.streamingAssetsPath,line);
-                var dstPath = Path.Combine(extractRoot, line);
-                var dstDir = Path.GetDirectoryName(dstPath);
-                if (!string.IsNullOrEmpty(dstDir)) Directory.CreateDirectory(dstDir);
-
-                echoText.text = $"Extracting {line}...";
-                MajDebug.LogInfo($"Extracting(iOS direct): {srcPath} -> {dstPath}");
-
-                try
-                {
-                    byte[] data = File.ReadAllBytes(srcPath);
-                    if (data == null || data.Length == 0)
-                    {
-                        MajDebug.LogError($"Extract failed(iOS): empty data: {line}\nsrc={srcPath}");
-                        continue;
-                    }
-
-                    File.WriteAllBytes(dstPath, data);
-                }
-                catch (Exception e)
-                {
-                    MajDebug.LogError($"Extract failed(iOS): {line}\nsrc={srcPath}\n{e}");
-                }
-
-                yield return null;
-            }
-            echoText.text = "Please Reboot The Game";
-#else
-            yield return new WaitForEndOfFrame();
-#endif
         }
 
         async Task StartScanningChart()
