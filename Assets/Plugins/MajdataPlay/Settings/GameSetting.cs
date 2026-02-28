@@ -295,16 +295,29 @@ namespace MajdataPlay.Settings
         public DJAutoPolicyOption DJAutoPolicy { get; set; } = DJAutoPolicyOption.Strict;
         [SettingVisualizationIgnore]
         public int MaxQueuedFrames { get; set; } = 2;
+#if UNITY_IOS || UNITY_ANDROID
         [SettingVisualizationIgnore]
-        public int TapPoolCapacity { get; set; } = 96;
+        public int TapPoolCapacity { get; set; } = 48;
         [SettingVisualizationIgnore]
         public int HoldPoolCapacity { get; set; } = 48;
         [SettingVisualizationIgnore]
         public int TouchPoolCapacity { get; set; } = 64;
         [SettingVisualizationIgnore]
-        public int TouchHoldPoolCapacity { get; set; } = 16;
+        public int TouchHoldPoolCapacity { get; set; } = 64;
         [SettingVisualizationIgnore]
-        public int EachLinePoolCapacity { get; set; } = 64;
+        public int EachLinePoolCapacity { get; set; } = 24;
+#else
+        [SettingVisualizationIgnore]
+        public int TapPoolCapacity { get; set; } = 96;
+        [SettingVisualizationIgnore]
+        public int HoldPoolCapacity { get; set; } = 96;
+        [SettingVisualizationIgnore]
+        public int TouchPoolCapacity { get; set; } = 64;
+        [SettingVisualizationIgnore]
+        public int TouchHoldPoolCapacity { get; set; } = 64;
+        [SettingVisualizationIgnore]
+        public int EachLinePoolCapacity { get; set; } = 48;
+#endif
         [Preserve]
         [SettingVisualizationIgnore]
         [JsonProperty]
