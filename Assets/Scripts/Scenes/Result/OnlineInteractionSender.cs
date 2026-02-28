@@ -51,6 +51,7 @@ namespace MajdataPlay.Scenes.Result
             var serverInfo = onlineDetail.ServerInfo;
             if (serverInfo is null || serverInfo.RuntimeConfig.AuthMethod == NetAuthMethodOption.None)
             {
+                infotext.text = "";
                 thumb.gameObject.SetActive(false);
                 _isLocalOrGuest = true;
                 return;
