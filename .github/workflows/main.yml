@@ -50,7 +50,7 @@ jobs:
             Library-${{ runner.os }}-${{ env.TARGET_PLATFORM }}-
 
       - name: List files in project directory
-        run: ls -R ${{ env.CONFIGURATION }} || true
+        run: ls -laR || true
 
       - name: Build (Release)
         uses: game-ci/unity-builder@v4
