@@ -273,7 +273,6 @@ namespace MajdataPlay.IO
                     circleSamplesPtr,
                     ref newP);
             }
-            
 
             for (var i = 0; i < 34; i++)
             {
@@ -283,6 +282,7 @@ namespace MajdataPlay.IO
             {
                 newP |= 1UL << extraButton;
             }
+            rawPositionData = newP;
             if (UseOuterTouchAsSensor)
             {
                 if (extraButton < 8 && extraButton != -1)
