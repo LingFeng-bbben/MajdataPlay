@@ -15,7 +15,9 @@ namespace MajdataPlay.Scenes.List
     public class SubInfoDisplayer : MonoBehaviour
     {
         public TMP_Text id_text;
-        public TMP_Text good_text;
+        public TMP_Text LikeCount;
+        public TMP_Text PlayCount;
+        public TMP_Text CommentCount;
         public TMP_Text CommentText;
         public GameObject CommentBox;
 
@@ -44,7 +46,9 @@ namespace MajdataPlay.Scenes.List
 
         public void HideInteraction()
         {
-            good_text.text = "";
+            LikeCount.text = "";
+            PlayCount.text = "";
+            CommentCount.text = "";
             _cts.Cancel();
             CommentBox.SetActive(false);
         }
@@ -87,7 +91,9 @@ namespace MajdataPlay.Scenes.List
 #endif
                     await UniTask.SwitchToMainThread(cancellationToken: token);
                     token.ThrowIfCancellationRequested();
-                    good_text.text = "²¥: " + list.Plays + " ÔÞ: " + (list.Likes.Length - list.DisLikeCount) + " ÆÀ: " + list.Comments.Length;
+                    LikeCount.text = (list.Likes.Length - list.DisLikeCount).ToString();
+                    PlayCount.text = list.Plays.ToString();
+                    CommentCount.text = list.Comments.Length.ToString();
 
                     CommentBox.SetActive(true);
                     foreach (var comment in list.Comments)
