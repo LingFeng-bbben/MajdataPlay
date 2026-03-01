@@ -20,6 +20,7 @@ namespace MajdataPlay.Scenes.List
         public TMP_Text CommentCount;
         public TMP_Text CommentText;
         public GameObject CommentBox;
+        public GameObject[] Icons;
 
         CancellationTokenSource _cts = new();
 
@@ -51,6 +52,10 @@ namespace MajdataPlay.Scenes.List
             CommentCount.text = "";
             _cts.Cancel();
             CommentBox.SetActive(false);
+            foreach( var icon in Icons)
+            {
+                icon.SetActive(false);
+            }
         }
         void OnDestroy()
         {
@@ -94,7 +99,10 @@ namespace MajdataPlay.Scenes.List
                     LikeCount.text = (list.Likes.Length - list.DisLikeCount).ToString();
                     PlayCount.text = list.Plays.ToString();
                     CommentCount.text = list.Comments.Length.ToString();
-
+                    foreach (var icon in Icons)
+                    {
+                        icon.SetActive(true);
+                    }
                     CommentBox.SetActive(true);
                     foreach (var comment in list.Comments)
                     {

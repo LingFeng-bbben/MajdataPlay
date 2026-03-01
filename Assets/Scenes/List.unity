@@ -5004,6 +5004,22 @@ PrefabInstance:
       propertyPath: CommentCount
       value: 
       objectReference: {fileID: 539864844}
+    - target: {fileID: 654444965399099254, guid: d170f1a30405d634e84aeca872a46298, type: 3}
+      propertyPath: Icons.Array.size
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 654444965399099254, guid: d170f1a30405d634e84aeca872a46298, type: 3}
+      propertyPath: Icons.Array.data[0]
+      value: 
+      objectReference: {fileID: 101574692}
+    - target: {fileID: 654444965399099254, guid: d170f1a30405d634e84aeca872a46298, type: 3}
+      propertyPath: Icons.Array.data[1]
+      value: 
+      objectReference: {fileID: 481122251}
+    - target: {fileID: 654444965399099254, guid: d170f1a30405d634e84aeca872a46298, type: 3}
+      propertyPath: Icons.Array.data[2]
+      value: 
+      objectReference: {fileID: 1458785623}
     - target: {fileID: 1353372395962235708, guid: d170f1a30405d634e84aeca872a46298, type: 3}
       propertyPath: m_Name
       value: Main_Display (1)
