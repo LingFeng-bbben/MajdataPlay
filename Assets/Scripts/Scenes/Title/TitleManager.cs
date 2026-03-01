@@ -42,7 +42,7 @@ namespace MajdataPlay.Scenes.Title
 
 
 
-            echoText.text = $"{Localization.GetLocalizedText("MAJTEXT_LOADING_SCORE_STORAGE")}...";
+            echoText.text = $"{"MAJTEXT_LOADING_SCORE_STORAGE".i18n()}...";
             await UniTask.DelayFrame(9);
             var task1 = ScoreManager.InitAsync().AsValueTask();
             while (!task1.IsCompleted)
@@ -57,7 +57,7 @@ namespace MajdataPlay.Scenes.Title
                 await UniTask.Yield();
             }
             await UniTask.Delay(2000);
-            echoText.text = $"{Localization.GetLocalizedText("MAJTEXT_LOADING_SKIN")}...";
+            echoText.text = $"{"MAJTEXT_LOADING_SKIN".i18n()}...";
             var task2 = MajInstances.SkinManager.InitAsync();
             while (!task2.IsCompleted)
             {

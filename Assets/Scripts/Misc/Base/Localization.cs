@@ -125,15 +125,6 @@ namespace MajdataPlay
             Current = result;
         }
 
-        /// <summary>
-        /// Method <c>GetLocalizedText</c> returns the translated text of the parameter or the parameter itself.
-        /// </summary>
-        public static string GetLocalizedText(string origin)
-        {
-            TryGetLocalizedText(origin, out var result);
-
-            return result;
-        }
         public static bool TryGetLocalizedText(string origin,out string strOut)
         {
             var table = Current.MappingTable;
