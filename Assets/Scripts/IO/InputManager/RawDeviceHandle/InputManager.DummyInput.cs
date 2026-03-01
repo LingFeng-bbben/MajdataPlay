@@ -21,7 +21,7 @@ namespace MajdataPlay.IO
 {
     internal static unsafe partial class InputManager
     {
-        const int TOUCH_ANGLE_SMAPLE_COUNT = 96;
+        const int TOUCH_ANGLE_SMAPLE_COUNT = 128;
         const float FINGER_RADIUS_SEGMENT_LENGTH = 0.5f / 4;
         
         // Button bit (12bit)
