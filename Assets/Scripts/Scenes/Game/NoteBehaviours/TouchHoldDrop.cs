@@ -126,6 +126,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             SetBorderActive(false);
             SetPointActive(false);
             Active = false;
+            _borderMask.enabled = false;
+            _borderMask.alphaCutoff = 0;
 
             //if (!IsAutoplay)
             //    _noteManager.OnGameIOUpdate += GameIOListener;
