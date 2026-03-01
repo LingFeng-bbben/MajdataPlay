@@ -75,6 +75,7 @@ namespace MajdataPlay
                 MoveSkins();
 #endif
             }
+
             MajInstances.FPSDisplayer.Init();
             MajInstances.AudioManager.Init();
             Localization.Init();
@@ -433,50 +434,38 @@ namespace MajdataPlay
 
         private static void MoveCharts()
         {
-            var assetsRootPath = Path.Combine(MajEnv.RootPath, "ExtStreamingAssets", "MaiCharts", "Original");
-            var maiChartsPath = Path.Combine(MajEnv.RootPath, "MaiCharts", "Original");
-            var assets = new DirectoryInfo(assetsRootPath).GetDirectories();
-            foreach(var dir in assets)
+            var src = Path.Combine(MajEnv.RootPath, "ExtStreamingAssets", "MaiCharts", "Original");
+            var dst = Path.Combine(MajEnv.RootPath, "MaiCharts", "Original");
+
+            if (!Directory.Exists(src))
             {
-                var dirName = dir.Name;
-                var src = dir.FullName;
-                var dst = Path.Combine(maiChartsPath, dirName);
-                for (var i = 0; ; i++)
-                {
-                    if (Directory.Exists(dst))
-                    {
-                        dst = Path.Combine(maiChartsPath, $"{dirName} ({i})");
-                        continue;
-                    }
-                    break;
-                }
-                Directory.Move(sourceDirName: src, destDirName: dst);
-                MajDebug.LogInfo($"Moved: {src} -> {dst}");
+                MajDebug.LogError($"Move failed: source not found: {src}");
+                return;
             }
+
+            if (Directory.Exists(dst))
+                Directory.Delete(dst, recursive: true);
+
+            Directory.Move(sourceDirName: src, destDirName: dst);
+            MajDebug.LogInfo($"Moved: {src} -> {dst}");
         }
 
         private static void MoveSkins()
         {
-            var assetsRootPath = Path.Combine(MajEnv.RootPath, "ExtStreamingAssets", "Skins", "Light2");
-            var skinsPath = Path.Combine(MajEnv.RootPath, "Skins", "Light2");
-            var assets = new DirectoryInfo(assetsRootPath).GetDirectories();
-            foreach (var dir in assets)
+            var src = Path.Combine(MajEnv.RootPath, "ExtStreamingAssets", "Skins", "Light2");
+            var dst = Path.Combine(MajEnv.RootPath, "Skins", "Light2");
+
+            if (!Directory.Exists(src))
             {
-                var dirName = dir.Name;
-                var src = dir.FullName;
-                var dst = Path.Combine(skinsPath, dirName);
-                for (var i = 0; ; i++)
-                {
-                    if (Directory.Exists(dst))
-                    {
-                        dst = Path.Combine(skinsPath, $"{dirName} ({i})");
-                        continue;
-                    }
-                    break;
-                }
-                Directory.Move(sourceDirName: src, destDirName: dst);
-                MajDebug.LogInfo($"Moved: {src} -> {dst}");
+                MajDebug.LogError($"Move failed: source not found: {src}");
+                return;
             }
+
+            if (Directory.Exists(dst))
+                Directory.Delete(dst, recursive: true);
+
+            Directory.Move(sourceDirName: src, destDirName: dst);
+            MajDebug.LogInfo($"Moved: {src} -> {dst}");
         }
     }
 }
