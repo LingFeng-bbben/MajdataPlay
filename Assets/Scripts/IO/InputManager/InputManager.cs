@@ -1109,6 +1109,16 @@ namespace MajdataPlay.IO
             throw new InvalidOperationException();
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsSensorClickedUpInThisFrame(SensorArea target)
+        {
+            //when a sensor is pressed and released
+            ThrowIfSensorIndexOutOfRange(target);
+            var index = (int)target;
+
+            return _sensorStatusInPreviousFrame[index] == SwitchStatus.On &&
+                   _sensorStatusInThisFrame[index] == SwitchStatus.Off;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsSensorClickedInThisFrame(SensorArea target)
         {
             ThrowIfSensorIndexOutOfRange(target);
