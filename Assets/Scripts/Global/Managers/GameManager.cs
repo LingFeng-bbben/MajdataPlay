@@ -433,19 +433,8 @@ namespace MajdataPlay
 
         private static void MoveCharts()
         {
-            var assetsRootPath = Path.Combine(MajEnv.RootPath, "ExtStreamingAssets", "MaiCharts");
-            var maiChartsPath = Path.Combine(MajEnv.RootPath, "MaiCharts");
-            
-
-            if (!Directory.Exists(assetsRootPath))
-            {
-                MajDebug.LogError($"Move failed: source not found: {assetsRootPath}");
-                return;
-            }
-            if (!Directory.Exists(maiChartsPath))
-            {
-                Directory.CreateDirectory(maiChartsPath);
-            }
+            var assetsRootPath = Path.Combine(MajEnv.RootPath, "ExtStreamingAssets", "MaiCharts", "Original");
+            var maiChartsPath = Path.Combine(MajEnv.RootPath, "MaiCharts", "Original");
             var assets = new DirectoryInfo(assetsRootPath).GetDirectories();
             foreach(var dir in assets)
             {
@@ -468,19 +457,8 @@ namespace MajdataPlay
 
         private static void MoveSkins()
         {
-            var assetsRootPath = Path.Combine(MajEnv.RootPath, "ExtStreamingAssets", "Skins");
-            var skinsPath = Path.Combine(MajEnv.RootPath, "Skins");
-
-            if (!Directory.Exists(assetsRootPath))
-            {
-                MajDebug.LogError($"Move failed: source not found: {assetsRootPath}");
-                return;
-            }
-
-            if (!Directory.Exists(skinsPath))
-            {
-                Directory.CreateDirectory(skinsPath);
-            }
+            var assetsRootPath = Path.Combine(MajEnv.RootPath, "ExtStreamingAssets", "Skins", "Light2");
+            var skinsPath = Path.Combine(MajEnv.RootPath, "Skins", "Light2");
             var assets = new DirectoryInfo(assetsRootPath).GetDirectories();
             foreach (var dir in assets)
             {
