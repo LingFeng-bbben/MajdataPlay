@@ -36,12 +36,12 @@ namespace MajdataPlay.Settings
                     return;
                 }
                 using var fileStream = File.OpenRead(STORAGE_PATH);
-                var (isSuccess, data) = await Serializer.Json.TryDeserializeAsync<ChartSetting[]>(fileStream);
+                var (isSuccess, data, exception) = await Serializer.Json.TryDeserializeAsync<ChartSetting[]>(fileStream);
                 if (!isSuccess)
                 {
                     var path = Path.Combine(STORAGE_PATH, $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.bak");
                     File.Copy(STORAGE_PATH, path);
-                    MajDebug.LogError($"Failed to load chart settings\nPath: {STORAGE_PATH}");
+                    MajDebug.LogError($"Failed to load chart settings\nPath: {STORAGE_PATH}\nException: {exception}");
                 }
                 else
                 {

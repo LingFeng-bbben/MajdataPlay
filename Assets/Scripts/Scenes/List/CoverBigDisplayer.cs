@@ -3,6 +3,7 @@ using MajdataPlay.Scenes.Game;
 using MajdataPlay.Scenes.Game.Notes;
 using MajdataPlay.IO;
 using MajdataPlay.Utils;
+using MajdataPlay.Drawing;
 using System;
 using System.Collections;
 using System.Collections.Generic;

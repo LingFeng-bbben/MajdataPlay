@@ -1,86 +1,287 @@
-Langs\en-US.json
-Langs\ja-JP.json
-Langs\zh-CN.json
-Langs\zh-TW.json
-Mods\mod.json
-MovieBG\allperfect.mp4
-MovieBG\fullcombo.mp4
-MovieBG\title.mp4
-SFX\answer.wav
-SFX\answer_clock.wav
-SFX\bgm_dan.mp3
-SFX\bgm_explosion.mp3
-SFX\bgm_result.mp3
-SFX\bgm_select.mp3
-SFX\bgm_title.mp3
-SFX\break.wav
-SFX\break_slide.wav
-SFX\break_tap.wav
-SFX\slide.wav
-SFX\slide_break_slide.wav
-SFX\slide_break_start.wav
-SFX\tap_ex.wav
-SFX\tap_good.wav
-SFX\tap_great.wav
-SFX\tap_perfect.wav
-SFX\touch.wav
-SFX\touch_hanabi.wav
-SFX\touch_Hold_riser.wav
-Voice\advanced.wav
-Voice\all_perfect.wav
-Voice\all_perfect_plus.wav
-Voice\ap_comment.wav
-Voice\ap_comment_2.wav
-Voice\basic.wav
-Voice\challenge_clear.wav
-Voice\challenge_fail.wav
-Voice\challenge_mode.wav
-Voice\clear.wav
-Voice\clear_comment.wav
-Voice\clear_comment_2.wav
-Voice\clear_comment_3.wav
-Voice\clear_comment_4.wav
-Voice\dianzan_comment.wav
-Voice\dianzan_comment_2.wav
-Voice\dianzan_comment_3.wav
-Voice\dian_zan.wav
-Voice\easy.wav
-Voice\expert.wav
-Voice\fail_comment.wav
-Voice\fail_comment_2.wav
-Voice\fail_comment_3.wav
-Voice\fail_comment_4.wav
-Voice\fail_comment_5.wav
-Voice\fc_comment.wav
-Voice\fc_comment_2.wav
-Voice\full_combo.wav
-Voice\full_combo_plus.wav
-Voice\game_init.wav
-Voice\game_init_2.wav
-Voice\game_init_3.wav
-Voice\MajdataPlay.wav
-Voice\master.wav
-Voice\no_touch.wav
-Voice\no_touch_2.wav
-Voice\no_touch_3.wav
-Voice\no_touch_4.wav
-Voice\no_touch_5.wav
-Voice\no_touch_6.wav
-Voice\no_touch_7.wav
-Voice\online_page.wav
-Voice\original.wav
-Voice\remaster.wav
-Voice\S+.wav
-Voice\S.wav
-Voice\select_song.wav
-Voice\select_song_2.wav
-Voice\select_song_3.wav
-Voice\select_song_4.wav
-Voice\settings.wav
-Voice\SS+.wav
-Voice\SS.wav
-Voice\SSS+.wav
-Voice\SSS.wav
-Voice\track_start.wav
-Voice\track_start_2.wav
-Voice\track_start_3.wav
+MaiCharts/Original/EX-AID/bg.mp4
+MaiCharts/Original/EX-AID/bg.png
+MaiCharts/Original/EX-AID/maidata.txt
+MaiCharts/Original/EX-AID/track.opus
+MaiCharts/Original/Lost in the Cosmic Dream/bg.jpg
+MaiCharts/Original/Lost in the Cosmic Dream/bg.mp4
+MaiCharts/Original/Lost in the Cosmic Dream/maidata.txt
+MaiCharts/Original/Lost in the Cosmic Dream/track.opus
+MaiCharts/Original/MAJTITLE/bg.jpg
+MaiCharts/Original/MAJTITLE/maidata.txt
+MaiCharts/Original/MAJTITLE/track.opus
+MaiCharts/Original/Memories in the Dusk/bg.jpg
+MaiCharts/Original/Memories in the Dusk/maidata.txt
+MaiCharts/Original/Memories in the Dusk/track.opus
+MaiCharts/Original/Moonlit Riotous Blossoms/bg.jpg
+MaiCharts/Original/Moonlit Riotous Blossoms/maidata.txt
+MaiCharts/Original/Moonlit Riotous Blossoms/track.opus
+MaiCharts/Original/Old Lu Sample Pack with Taffy and Phoenix/bg.jpg
+MaiCharts/Original/Old Lu Sample Pack with Taffy and Phoenix/maidata.txt
+MaiCharts/Original/Old Lu Sample Pack with Taffy and Phoenix/track.opus
+MaiCharts/Original/Poseidon/bg.jpg
+MaiCharts/Original/Poseidon/maidata.txt
+MaiCharts/Original/Poseidon/track.opus
+MaiCharts/Original/Royal Idol/bg.jpg
+MaiCharts/Original/Royal Idol/maidata.txt
+MaiCharts/Original/Royal Idol/track.opus
+MaiCharts/Original/Seed of the Wind/bg.jpg
+MaiCharts/Original/Seed of the Wind/maidata.txt
+MaiCharts/Original/Seed of the Wind/track.opus
+MaiCharts/Original/Song of DYDY/bg.jpg
+MaiCharts/Original/Song of DYDY/maidata.txt
+MaiCharts/Original/Song of DYDY/track.opus
+MaiCharts/Original/The Fire of Courage/bg.jpg
+MaiCharts/Original/The Fire of Courage/maidata.txt
+MaiCharts/Original/The Fire of Courage/track.opus
+MaiCharts/Original/The Island of Flowing Time/bg.jpg
+MaiCharts/Original/The Island of Flowing Time/maidata.txt
+MaiCharts/Original/The Island of Flowing Time/track.opus
+MaiCharts/Original/Transcend My Love/bg.jpg
+MaiCharts/Original/Transcend My Love/maidata.txt
+MaiCharts/Original/Transcend My Love/pv.mp4
+MaiCharts/Original/Transcend My Love/track.opus
+MaiCharts/Original/Zunda Overdance/bg.jpg
+MaiCharts/Original/Zunda Overdance/bg.mp4
+MaiCharts/Original/Zunda Overdance/maidata.txt
+MaiCharts/Original/Zunda Overdance/track.opus
+MovieBG/allperfect.mp4
+MovieBG/fullcombo.mp4
+MovieBG/title.mp4
+SFX/answer.wav
+SFX/answer_clock.wav
+SFX/bgm_dan.mp3
+SFX/bgm_explosion.mp3
+SFX/bgm_result.mp3
+SFX/bgm_select.mp3
+SFX/bgm_title.mp3
+SFX/break.wav
+SFX/break_slide.wav
+SFX/break_tap.wav
+SFX/slide.wav
+SFX/slide_break_slide.wav
+SFX/slide_break_start.wav
+SFX/tap_ex.wav
+SFX/tap_good.wav
+SFX/tap_great.wav
+SFX/tap_perfect.wav
+SFX/touch.wav
+SFX/touch_Hold_riser.wav
+SFX/touch_hanabi.wav
+Skins/Light2/SubBackgourd.png
+Skins/Light2/outline.png
+Skins/Light2/HoldSkins/hold.png
+Skins/Light2/HoldSkins/hold_break.png
+Skins/Light2/HoldSkins/hold_break_on.png
+Skins/Light2/HoldSkins/hold_each.png
+Skins/Light2/HoldSkins/hold_each_on.png
+Skins/Light2/HoldSkins/hold_ex.png
+Skins/Light2/HoldSkins/hold_off.png
+Skins/Light2/HoldSkins/hold_on.png
+Skins/Light2/JudgeTextSkins/fast.png
+Skins/Light2/JudgeTextSkins/judge_text_break_0.png
+Skins/Light2/JudgeTextSkins/judge_text_break_1000.png
+Skins/Light2/JudgeTextSkins/judge_text_break_1250.png
+Skins/Light2/JudgeTextSkins/judge_text_break_1500.png
+Skins/Light2/JudgeTextSkins/judge_text_break_2000.png
+Skins/Light2/JudgeTextSkins/judge_text_break_2500.png
+Skins/Light2/JudgeTextSkins/judge_text_break_2550.png
+Skins/Light2/JudgeTextSkins/judge_text_break_2600.png
+Skins/Light2/JudgeTextSkins/judge_text_break_2600_shine.png
+Skins/Light2/JudgeTextSkins/judge_text_cPerfect.png
+Skins/Light2/JudgeTextSkins/judge_text_cPerfect_break.png
+Skins/Light2/JudgeTextSkins/judge_text_good.png
+Skins/Light2/JudgeTextSkins/judge_text_great.png
+Skins/Light2/JudgeTextSkins/judge_text_miss.png
+Skins/Light2/JudgeTextSkins/judge_text_normal.png
+Skins/Light2/JudgeTextSkins/judge_text_perfect.png
+Skins/Light2/JudgeTextSkins/judge_text_perfect_break.png
+Skins/Light2/JudgeTextSkins/late.png
+Skins/Light2/NoteGuideSkins/Break.png
+Skins/Light2/NoteGuideSkins/Each.png
+Skins/Light2/NoteGuideSkins/EachLine1.png
+Skins/Light2/NoteGuideSkins/EachLine2.png
+Skins/Light2/NoteGuideSkins/EachLine3.png
+Skins/Light2/NoteGuideSkins/EachLine4.png
+Skins/Light2/NoteGuideSkins/Hold_Break_End.png
+Skins/Light2/NoteGuideSkins/Hold_Each_End.png
+Skins/Light2/NoteGuideSkins/Hold_End.png
+Skins/Light2/NoteGuideSkins/Normal.png
+Skins/Light2/NoteGuideSkins/Slide.png
+Skins/Light2/SlideOKSkins/just_curv_l.png
+Skins/Light2/SlideOKSkins/just_curv_l_fast_gd.png
+Skins/Light2/SlideOKSkins/just_curv_l_fast_gr.png
+Skins/Light2/SlideOKSkins/just_curv_l_late_gd.png
+Skins/Light2/SlideOKSkins/just_curv_l_late_gr.png
+Skins/Light2/SlideOKSkins/just_curv_l_p.png
+Skins/Light2/SlideOKSkins/just_curv_r.png
+Skins/Light2/SlideOKSkins/just_curv_r_fast_gd.png
+Skins/Light2/SlideOKSkins/just_curv_r_fast_gr.png
+Skins/Light2/SlideOKSkins/just_curv_r_late_gd.png
+Skins/Light2/SlideOKSkins/just_curv_r_late_gr.png
+Skins/Light2/SlideOKSkins/just_curv_r_p.png
+Skins/Light2/SlideOKSkins/just_str_l.png
+Skins/Light2/SlideOKSkins/just_str_l_fast_gd.png
+Skins/Light2/SlideOKSkins/just_str_l_fast_gr.png
+Skins/Light2/SlideOKSkins/just_str_l_late_gd.png
+Skins/Light2/SlideOKSkins/just_str_l_late_gr.png
+Skins/Light2/SlideOKSkins/just_str_l_p.png
+Skins/Light2/SlideOKSkins/just_str_r.png
+Skins/Light2/SlideOKSkins/just_str_r_fast_gd.png
+Skins/Light2/SlideOKSkins/just_str_r_fast_gr.png
+Skins/Light2/SlideOKSkins/just_str_r_late_gd.png
+Skins/Light2/SlideOKSkins/just_str_r_late_gr.png
+Skins/Light2/SlideOKSkins/just_str_r_p.png
+Skins/Light2/SlideOKSkins/just_wifi_d.png
+Skins/Light2/SlideOKSkins/just_wifi_d_fast_gd.png
+Skins/Light2/SlideOKSkins/just_wifi_d_fast_gr.png
+Skins/Light2/SlideOKSkins/just_wifi_d_late_gd.png
+Skins/Light2/SlideOKSkins/just_wifi_d_late_gr.png
+Skins/Light2/SlideOKSkins/just_wifi_d_p.png
+Skins/Light2/SlideOKSkins/just_wifi_u.png
+Skins/Light2/SlideOKSkins/just_wifi_u_fast_gd.png
+Skins/Light2/SlideOKSkins/just_wifi_u_fast_gr.png
+Skins/Light2/SlideOKSkins/just_wifi_u_late_gd.png
+Skins/Light2/SlideOKSkins/just_wifi_u_late_gr.png
+Skins/Light2/SlideOKSkins/just_wifi_u_p.png
+Skins/Light2/SlideOKSkins/miss_curv_l.png
+Skins/Light2/SlideOKSkins/miss_curv_r.png
+Skins/Light2/SlideOKSkins/miss_str_l.png
+Skins/Light2/SlideOKSkins/miss_str_r.png
+Skins/Light2/SlideOKSkins/miss_wifi_d.png
+Skins/Light2/SlideOKSkins/miss_wifi_u.png
+Skins/Light2/SlideOKSkins/toofast_curv_l.png
+Skins/Light2/SlideOKSkins/toofast_curv_r.png
+Skins/Light2/SlideOKSkins/toofast_str_l.png
+Skins/Light2/SlideOKSkins/toofast_str_r.png
+Skins/Light2/SlideOKSkins/toofast_wifi_d.png
+Skins/Light2/SlideOKSkins/toofast_wifi_u.png
+Skins/Light2/SlideSkins/slide.png
+Skins/Light2/SlideSkins/slide_break.png
+Skins/Light2/SlideSkins/slide_each.png
+Skins/Light2/StarSkins/star.png
+Skins/Light2/StarSkins/star_break.png
+Skins/Light2/StarSkins/star_break_double.png
+Skins/Light2/StarSkins/star_double.png
+Skins/Light2/StarSkins/star_each.png
+Skins/Light2/StarSkins/star_each_double.png
+Skins/Light2/StarSkins/star_ex.png
+Skins/Light2/StarSkins/star_ex_double.png
+Skins/Light2/TapSkins/tap.png
+Skins/Light2/TapSkins/tap_break.png
+Skins/Light2/TapSkins/tap_each.png
+Skins/Light2/TapSkins/tap_ex.png
+Skins/Light2/TouchHoldSkins/touchhold_0.png
+Skins/Light2/TouchHoldSkins/touchhold_1.png
+Skins/Light2/TouchHoldSkins/touchhold_2.png
+Skins/Light2/TouchHoldSkins/touchhold_3.png
+Skins/Light2/TouchHoldSkins/touchhold_border.png
+Skins/Light2/TouchHoldSkins/touchhold_break_0.png
+Skins/Light2/TouchHoldSkins/touchhold_break_1.png
+Skins/Light2/TouchHoldSkins/touchhold_break_2.png
+Skins/Light2/TouchHoldSkins/touchhold_break_3.png
+Skins/Light2/TouchHoldSkins/touchhold_break_border.png
+Skins/Light2/TouchHoldSkins/touchhold_off.png
+Skins/Light2/TouchSkins/touch.png
+Skins/Light2/TouchSkins/touch_border_2.png
+Skins/Light2/TouchSkins/touch_border_2_each.png
+Skins/Light2/TouchSkins/touch_border_3.png
+Skins/Light2/TouchSkins/touch_border_3_each.png
+Skins/Light2/TouchSkins/touch_break.png
+Skins/Light2/TouchSkins/touch_break_border_2.png
+Skins/Light2/TouchSkins/touch_break_border_3.png
+Skins/Light2/TouchSkins/touch_break_point.png
+Skins/Light2/TouchSkins/touch_each.png
+Skins/Light2/TouchSkins/touch_just.png
+Skins/Light2/TouchSkins/touch_point.png
+Skins/Light2/TouchSkins/touch_point_each.png
+Skins/Light2/WifiSkins/wifi_0.png
+Skins/Light2/WifiSkins/wifi_1.png
+Skins/Light2/WifiSkins/wifi_10.png
+Skins/Light2/WifiSkins/wifi_2.png
+Skins/Light2/WifiSkins/wifi_3.png
+Skins/Light2/WifiSkins/wifi_4.png
+Skins/Light2/WifiSkins/wifi_5.png
+Skins/Light2/WifiSkins/wifi_6.png
+Skins/Light2/WifiSkins/wifi_7.png
+Skins/Light2/WifiSkins/wifi_8.png
+Skins/Light2/WifiSkins/wifi_9.png
+Skins/Light2/WifiSkins/wifi_break_0.png
+Skins/Light2/WifiSkins/wifi_break_1.png
+Skins/Light2/WifiSkins/wifi_break_10.png
+Skins/Light2/WifiSkins/wifi_break_2.png
+Skins/Light2/WifiSkins/wifi_break_3.png
+Skins/Light2/WifiSkins/wifi_break_4.png
+Skins/Light2/WifiSkins/wifi_break_5.png
+Skins/Light2/WifiSkins/wifi_break_6.png
+Skins/Light2/WifiSkins/wifi_break_7.png
+Skins/Light2/WifiSkins/wifi_break_8.png
+Skins/Light2/WifiSkins/wifi_break_9.png
+Skins/Light2/WifiSkins/wifi_each_0.png
+Skins/Light2/WifiSkins/wifi_each_1.png
+Skins/Light2/WifiSkins/wifi_each_10.png
+Skins/Light2/WifiSkins/wifi_each_2.png
+Skins/Light2/WifiSkins/wifi_each_3.png
+Skins/Light2/WifiSkins/wifi_each_4.png
+Skins/Light2/WifiSkins/wifi_each_5.png
+Skins/Light2/WifiSkins/wifi_each_6.png
+Skins/Light2/WifiSkins/wifi_each_7.png
+Skins/Light2/WifiSkins/wifi_each_8.png
+Skins/Light2/WifiSkins/wifi_each_9.png
+Voice/MajdataPlay.wav
+Voice/S+.wav
+Voice/S.wav
+Voice/SS+.wav
+Voice/SS.wav
+Voice/SSS+.wav
+Voice/SSS.wav
+Voice/advanced.wav
+Voice/all_perfect.wav
+Voice/all_perfect_plus.wav
+Voice/ap_comment.wav
+Voice/ap_comment_2.wav
+Voice/basic.wav
+Voice/challenge_clear.wav
+Voice/challenge_fail.wav
+Voice/challenge_mode.wav
+Voice/clear.wav
+Voice/clear_comment.wav
+Voice/clear_comment_2.wav
+Voice/clear_comment_3.wav
+Voice/clear_comment_4.wav
+Voice/dian_zan.wav
+Voice/dianzan_comment.wav
+Voice/dianzan_comment_2.wav
+Voice/dianzan_comment_3.wav
+Voice/easy.wav
+Voice/expert.wav
+Voice/fail_comment.wav
+Voice/fail_comment_2.wav
+Voice/fail_comment_3.wav
+Voice/fail_comment_4.wav
+Voice/fail_comment_5.wav
+Voice/fc_comment.wav
+Voice/fc_comment_2.wav
+Voice/full_combo.wav
+Voice/full_combo_plus.wav
+Voice/game_init.wav
+Voice/game_init_2.wav
+Voice/game_init_3.wav
+Voice/master.wav
+Voice/no_touch.wav
+Voice/no_touch_2.wav
+Voice/no_touch_3.wav
+Voice/no_touch_4.wav
+Voice/no_touch_5.wav
+Voice/no_touch_6.wav
+Voice/no_touch_7.wav
+Voice/online_page.wav
+Voice/original.wav
+Voice/remaster.wav
+Voice/select_song.wav
+Voice/select_song_2.wav
+Voice/select_song_3.wav
+Voice/select_song_4.wav
+Voice/settings.wav
+Voice/track_start.wav
+Voice/track_start_2.wav
+Voice/track_start_3.wav

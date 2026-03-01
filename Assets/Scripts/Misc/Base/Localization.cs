@@ -76,12 +76,13 @@ namespace MajdataPlay
                     MajDebug.LogDebug("Lang file loaded: " + file);
                     var json = ta.text;
                     Language? lang = null;
-                    if (Serializer.Json.TryDeserialize(json, out lang, jsonReaderSettings) && lang is not null)
+                    if (Serializer.Json.TryDeserialize(json, out lang, out var exception, jsonReaderSettings) && lang is not null)
                     {
                         loadedLangs.Add(lang);
                     }
                     else
                     {
+                        MajDebug.LogException(exception);
                         continue;
                     }
                 }

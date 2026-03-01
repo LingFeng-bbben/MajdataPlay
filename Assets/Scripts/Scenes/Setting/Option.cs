@@ -11,7 +11,7 @@ namespace MajdataPlay.Scenes.Setting
 {
     public class Option : MonoBehaviour
     {
-        public int Index { get; set; } 
+        public int Index { get; set; }
         public Menu Parent { get; set; }
         public ISettingItem SettingItem { get; set; }
 
@@ -26,6 +26,9 @@ namespace MajdataPlay.Scenes.Setting
         bool _isPressed = false;
         bool _isUp = false;
         float _pressTime = 0;
+        decimal? _maxValue = null;
+        decimal? _minValue = null;
+
         float _iterationThrottle = 0;
         int _lastIndex = 0;
 
@@ -37,7 +40,7 @@ namespace MajdataPlay.Scenes.Setting
             UpdateText();
             UpdatePosition();
             UpdateOption();
-            
+
             // 注册值改变回调
             SettingItem.OnValueChanged += OnSettingValueChanged;
         }
@@ -95,7 +98,7 @@ namespace MajdataPlay.Scenes.Setting
         {
             nameText.text = $"MAJSETTING_PROPERTY_{SettingItem.Name}".i18n();
             descriptionText.text = $"MAJSETTING_PROPERTY_{SettingItem.Name}_DESC".i18n();
-            
+
             // 添加偏移单位提示
             switch (SettingItem.Name)
             {

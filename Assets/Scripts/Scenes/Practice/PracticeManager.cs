@@ -5,7 +5,7 @@ using MajdataPlay.Extensions;
 using MajdataPlay.Scenes.Game;
 using MajdataPlay.IO;
 using MajdataPlay.Numerics;
-using MajdataPlay.Unsafe;
+using MajdataPlay.UnsafeKit;
 using MajdataPlay.Utils;
 using MajSimai;
 using System;

@@ -5,6 +5,7 @@ using MajdataPlay.IO;
 using MajdataPlay.Net;
 using MajdataPlay.Numerics;
 using MajdataPlay.Utils;
+using MajdataPlay.Drawing;
 using MajSimai;
 using NeoSmart.AsyncLock;
 using System;

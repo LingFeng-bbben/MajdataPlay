@@ -1,7 +1,6 @@
 using Cysharp.Threading.Tasks;
 using MajdataPlay.IO;
 using MajdataPlay.Net;
-using MajdataPlay.Settings;
 using MajdataPlay.Utils;
 using NeoSmart.AsyncLock;
 using System;
@@ -52,6 +51,7 @@ namespace MajdataPlay.Scenes.Result
             var serverInfo = onlineDetail.ServerInfo;
             if (serverInfo is null || serverInfo.RuntimeConfig.AuthMethod == NetAuthMethodOption.None)
             {
+                infotext.text = "";
                 thumb.gameObject.SetActive(false);
                 _isLocalOrGuest = true;
                 return;

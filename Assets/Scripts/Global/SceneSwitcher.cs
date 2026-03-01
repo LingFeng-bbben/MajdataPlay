@@ -30,9 +30,6 @@ namespace MajdataPlay
         public TMP_Text loadingText;
         public Color LoadingLightColor;
 
-        [SerializeField]
-        ScreenPosCanvasMover _canvasMover;
-
         readonly string[] SCENE_NAMES = Enum.GetNames(typeof(MajScenes));
 
         const int SWITCH_ELAPSED_MS = 400;
@@ -52,10 +49,6 @@ namespace MajdataPlay
             _canvas = GetComponent<Canvas>();
             animator = GetComponent<Animator>();
             loadingText.gameObject.SetActive(false);
-        }
-        internal void RefreshPos()
-        {
-            _canvasMover.Refresh();
         }
         void OnUnitySceneChanged(Scene current, Scene next)
         {

@@ -1,5 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
-using MajdataPlay.Utils;
+using MajdataPlay.Drawing;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -123,16 +123,140 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
         public Sprite HoldEndPoint_Normal { get; private set; }
         public Sprite HoldEndPoint_Each { get; private set; }
         public Sprite HoldEndPoint_Break { get; private set; }
+
+        public static readonly CustomSkin Empty;
+        static readonly Sprite _dummySprite = Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
+        
+        static CustomSkin()
+        {
+            var skin = new CustomSkin
+            {
+                Name = "NotAvailable",
+                IsOutlineAvailable = false,
+
+                SubDisplay = _dummySprite,
+
+                Tap = _dummySprite,
+                Tap_Each = _dummySprite,
+                Tap_Break = _dummySprite,
+                Tap_Ex = _dummySprite,
+
+                Slide = _dummySprite,
+                Slide_Each = _dummySprite,
+                Slide_Break = _dummySprite,
+
+                Star = _dummySprite,
+                Star_Double = _dummySprite,
+                Star_Each = _dummySprite,
+                Star_Each_Double = _dummySprite,
+                Star_Break = _dummySprite,
+                Star_Break_Double = _dummySprite,
+                Star_Ex = _dummySprite,
+                Star_Ex_Double = _dummySprite,
+
+                Hold = _dummySprite,
+                Hold_On = _dummySprite,
+                Hold_Off = _dummySprite,
+                Hold_Each = _dummySprite,
+                Hold_Each_On = _dummySprite,
+                Hold_Ex = _dummySprite,
+                Hold_Break = _dummySprite,
+                Hold_Break_On = _dummySprite,
+
+                CriticalPerfect_Shine = _dummySprite,
+                Perfect_Shine = _dummySprite,
+                Break_2600_Shine = _dummySprite,
+
+                CriticalPerfect = _dummySprite,
+                Perfect = _dummySprite,
+                Great = _dummySprite,
+                Good = _dummySprite,
+                Miss = _dummySprite,
+
+                Break_2600 = _dummySprite,
+                Break_2550 = _dummySprite,
+                Break_2500 = _dummySprite,
+                Break_2000 = _dummySprite,
+                Break_1500 = _dummySprite,
+                Break_1250 = _dummySprite,
+                Break_1000 = _dummySprite,
+                Break_0 = _dummySprite,
+
+                Fast = _dummySprite,
+                Late = _dummySprite,
+
+                CriticalPerfect_Fast = _dummySprite,
+                Perfect_Fast = _dummySprite,
+                Great_Fast = _dummySprite,
+                Good_Fast = _dummySprite,
+
+                Break_2600_Fast = _dummySprite,
+                Break_2550_Fast = _dummySprite,
+                Break_2500_Fast = _dummySprite,
+                Break_2000_Fast = _dummySprite,
+                Break_1500_Fast = _dummySprite,
+                Break_1250_Fast = _dummySprite,
+                Break_1000_Fast = _dummySprite,
+
+                CriticalPerfect_Late = _dummySprite,
+                Perfect_Late = _dummySprite,
+                Great_Late = _dummySprite,
+                Good_Late = _dummySprite,
+
+                Break_2600_Late = _dummySprite,
+                Break_2550_Late = _dummySprite,
+                Break_2500_Late = _dummySprite,
+                Break_2000_Late = _dummySprite,
+                Break_1500_Late = _dummySprite,
+                Break_1250_Late = _dummySprite,
+                Break_1000_Late = _dummySprite,
+
+                Touch = _dummySprite,
+                Touch_Each = _dummySprite,
+                Touch_Break = _dummySprite,
+                TouchPoint = _dummySprite,
+                TouchPoint_Each = _dummySprite,
+                TouchPoint_Break = _dummySprite,
+                TouchJust = _dummySprite,
+
+                TouchHold_Off = _dummySprite,
+
+                LoadingSplash = _dummySprite,
+
+                Outline = _dummySprite,
+
+                TapLine_Normal = _dummySprite,
+                TapLine_Each = _dummySprite,
+                TapLine_Slide = _dummySprite,
+                TapLine_Break = _dummySprite,
+
+                HoldEndPoint_Normal = _dummySprite,
+                HoldEndPoint_Each = _dummySprite,
+                HoldEndPoint_Break = _dummySprite,
+            };
+
+            Array.Fill(skin.Wifi, _dummySprite);
+            Array.Fill(skin.Wifi_Each, _dummySprite);
+            Array.Fill(skin.Wifi_Break, _dummySprite);
+            Array.Fill(skin.Just, _dummySprite);
+
+            Array.Fill(skin.TouchBorder, _dummySprite);
+            Array.Fill(skin.TouchBorder_Each, _dummySprite);
+            Array.Fill(skin.TouchBorder_Break, _dummySprite);
+
+            Array.Fill(skin.TouchHold, _dummySprite);
+            Array.Fill(skin.TouchHold_Break, _dummySprite);
+
+            Array.Fill(skin.EachLines, _dummySprite);
+
+            Empty = skin;
+        }
         CustomSkin()
         {
 
         }
         public CustomSkin(string skinCollectionPath)
         {
-            if (!Directory.Exists(skinCollectionPath))
-            {
-                Directory.CreateDirectory(skinCollectionPath);
-            }
             Name = new DirectoryInfo(skinCollectionPath).Name;
 
             if (File.Exists(skinCollectionPath + "/outline.png"))

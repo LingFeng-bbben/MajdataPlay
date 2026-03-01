@@ -1,8 +1,8 @@
-﻿using MajdataPlay.Extensions;
+﻿using MajdataPlay.Collections;
+using MajdataPlay.Extensions;
 using MajdataPlay.Numerics;
 using MajdataPlay.Scenes.Game.Notes;
 using MajdataPlay.Scenes.Game.Notes.Skins;
-using MajdataPlay.Utils;
 using System;
 using System.Linq;
 using System.Runtime.CompilerServices;

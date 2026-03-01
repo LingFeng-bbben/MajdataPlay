@@ -3,9 +3,9 @@ using System;
 namespace MajdataPlay.Settings.SettingItems
 {
     /// <summary>
-    /// 数值类型的设置项
+    /// 数值类型的设置项（支持 int, float 等）
     /// </summary>
-    public class NumericSettingItem<T> : ISettingItem where T : struct, IComparable<T>, IConvertible
+    public class NumericSettingItem<T> : ISettingItem where T : struct
     {
         public string Name { get; }
         public bool IsNumeric => true;
@@ -15,8 +15,8 @@ namespace MajdataPlay.Settings.SettingItems
 
         readonly Func<T> _getter;
         readonly Action<T> _setter;
+        readonly decimal _step;
         readonly Func<decimal>? _stepProvider;
-        readonly decimal _fixedStep;
         readonly decimal? _minValue;
         readonly decimal? _maxValue;
 
@@ -24,25 +24,23 @@ namespace MajdataPlay.Settings.SettingItems
             string name,
             Func<T> getter,
             Action<T> setter,
-            decimal step,
+            decimal step = 1,
+            Func<decimal>? stepProvider = null,
             decimal? minValue = null,
             decimal? maxValue = null,
-            bool isReadOnly = false,
-            Func<decimal>? stepProvider = null)
+            bool isReadOnly = false)
         {
             Name = name;
             _getter = getter;
             _setter = setter;
-            _fixedStep = step;
+            _step = step;
             _stepProvider = stepProvider;
             _minValue = minValue;
             _maxValue = maxValue;
             IsReadOnly = isReadOnly;
         }
 
-        decimal GetStep() => _stepProvider?.Invoke() ?? _fixedStep;
-
-        public object GetValue() => _getter()!;
+        public object GetValue() => _getter();
 
         public string GetValueString() => _getter().ToString() ?? string.Empty;
 
@@ -59,7 +57,7 @@ namespace MajdataPlay.Settings.SettingItems
             if (IsReadOnly) return;
 
             var currentValue = Convert.ToDecimal(_getter());
-            var step = GetStep();
+            var step = _stepProvider?.Invoke() ?? _step;
             var newValue = Math.Round(currentValue + step * direction, 3);
 
             if (_maxValue.HasValue)

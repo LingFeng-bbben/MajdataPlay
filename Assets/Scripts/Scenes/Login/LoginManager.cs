@@ -2,7 +2,6 @@ using Cysharp.Threading.Tasks;
 using MajdataPlay.Buffers;
 using MajdataPlay.IO;
 using MajdataPlay.Net;
-using MajdataPlay.Settings;
 using MajdataPlay.Utils;
 using QRCoder;
 using System;
@@ -527,10 +526,10 @@ namespace MajdataPlay.Scenes.Login
             {
                 location = headers.FirstOrDefault() ?? string.Empty;
             }
-
-            if (string.IsNullOrEmpty(location) || !rsp.TryDeserialize<AuthRequestResponse?>(out var authRsp) || authRsp is null)
+            var e = default(Exception?);
+            if (string.IsNullOrEmpty(location) || !rsp.TryDeserialize<AuthRequestResponse?>(out var authRsp, out e) || authRsp is null)
             {
-                MajDebug.LogError($"The server returned an invalid response\nEndpoint: {endpoint.Url}\nStatusCode: {rsp.StatusCode}\nErrorCode: {rsp.ErrorCode}\nIsDeserializable: {rsp.IsDeserializable}\nHeaders:\n" + string.Join('\n', rsp.Headers.Select(x => $"{x.Key}: {string.Join(';', x.Value)}")));
+                MajDebug.LogError($"The server returned an invalid response\nEndpoint: {endpoint.Url}\nStatusCode: {rsp.StatusCode}\nErrorCode: {rsp.ErrorCode}\nIsDeserializable: {rsp.IsDeserializable}\nHeaders:\n" + string.Join('\n', rsp.Headers.Select(x => $"{x.Key}: {string.Join(';', x.Value)}")+ $"\nException: {e}"));
                 throw _exception;
             }
             return (location, (AuthRequestResponse)authRsp);

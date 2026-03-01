@@ -1,3 +1,4 @@
+#if UNITY_STANDALONE
 using HidSharp;
 using MajdataPlay.Utils;
 using System;
@@ -16,6 +17,7 @@ namespace MajdataPlay.IO
 {
     internal static unsafe partial class InputManager
     {
+
         static class LedDevice
         {
             public static bool IsConnected
@@ -260,7 +262,7 @@ namespace MajdataPlay.IO
                 };
 
                 hidConfig.SetOption(OpenOption.Exclusive, hidOptions.Exclusice);
-                hidConfig.SetOption(OpenOption.Priority, hidOptions.OpenPriority);
+                hidConfig.SetOption(OpenOption.Priority, (OpenPriority)hidOptions.OpenPriority);
                 currentThread.Name = "IO/L Thread";
                 currentThread.IsBackground = true;
                 currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
@@ -448,3 +450,4 @@ namespace MajdataPlay.IO
         }
     }
 }
+#endif

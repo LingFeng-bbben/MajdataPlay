@@ -77,7 +77,7 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
-/[Aa]ssets/[Ss]treamingAssets/MaiCharts/*
+#/[Aa]ssets/[Ss]treamingAssets/MaiCharts/*
 /[Aa]ssets/[Ss]treamingAssets/settings.json
 /[Aa]ssets/[Ss]prites/[Gg]ame/[Nn]otes/*
 /[Aa]ssets/[Ss]prites/[Gg]ame/[Tt]extSprites/*

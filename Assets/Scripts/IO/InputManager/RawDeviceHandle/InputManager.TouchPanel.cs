@@ -1,5 +1,7 @@
-﻿using HidSharp;
+﻿#if UNITY_STANDALONE
+using HidSharp;
 using HidSharp.Reports;
+#endif
 using LibUsbDotNet;
 using LibUsbDotNet.Main;
 using MajdataPlay.Numerics;
@@ -25,6 +27,7 @@ namespace MajdataPlay.IO
 {
     internal static unsafe partial class InputManager
     {
+#if UNITY_STANDALONE
         static class TouchPanel
         {
             public static bool IsConnected { get; private set; } = false;
@@ -1520,5 +1523,6 @@ namespace MajdataPlay.IO
                 }
             }
         }
+#endif
     }
 }

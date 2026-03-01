@@ -1,12 +1,11 @@
 using System;
-using System.Linq;
 #nullable enable
 namespace MajdataPlay.Settings.SettingItems
 {
     /// <summary>
     /// 枚举类型的设置项
     /// </summary>
-    public class EnumSettingItem<T> : ISettingItem where T : struct, Enum
+    public class EnumSettingItem<T> : ISettingItem where T : Enum
     {
         public string Name { get; }
         public bool IsNumeric => false;
@@ -17,7 +16,6 @@ namespace MajdataPlay.Settings.SettingItems
         readonly Func<T> _getter;
         readonly Action<T> _setter;
         readonly T[] _values;
-        readonly int _maxIndex;
 
         public EnumSettingItem(
             string name,
@@ -29,18 +27,17 @@ namespace MajdataPlay.Settings.SettingItems
             _getter = getter;
             _setter = setter;
             IsReadOnly = isReadOnly;
-            _values = Enum.GetValues(typeof(T)).Cast<T>().ToArray();
-            _maxIndex = _values.Length - 1;
+            _values = (T[])Enum.GetValues(typeof(T));
         }
 
         public object GetValue() => _getter();
 
-        public string GetValueString() => _getter().ToString();
+        public string GetValueString() => _getter().ToString() ?? string.Empty;
 
         public void SetValue(object value)
         {
             if (IsReadOnly) return;
-            var converted = (T)value;
+            var converted = (T)Enum.Parse(typeof(T), value.ToString() ?? string.Empty);
             _setter(converted);
             OnValueChanged?.Invoke(converted);
         }
@@ -49,16 +46,16 @@ namespace MajdataPlay.Settings.SettingItems
         {
             if (IsReadOnly) return;
 
-            var currentValue = _getter();
-            var currentIndex = Array.IndexOf(_values, currentValue);
-            
-            currentIndex += direction;
-            if (currentIndex < 0)
-                currentIndex = _maxIndex;
-            else if (currentIndex > _maxIndex)
-                currentIndex = 0;
+            var current = _getter();
+            var currentIndex = Array.IndexOf(_values, current);
+            var newIndex = currentIndex + direction;
 
-            var newValue = _values[currentIndex];
+            if (newIndex < 0)
+                newIndex = _values.Length - 1;
+            else if (newIndex >= _values.Length)
+                newIndex = 0;
+
+            var newValue = _values[newIndex];
             _setter(newValue);
             OnValueChanged?.Invoke(newValue);
         }

@@ -2,7 +2,6 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using MajdataPlay.Net;
-using MajdataPlay.Settings;
 
 namespace MajdataPlay
 {

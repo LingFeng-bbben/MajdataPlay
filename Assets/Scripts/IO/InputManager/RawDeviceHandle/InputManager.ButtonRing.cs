@@ -4,10 +4,12 @@ using MajdataPlay.Utils;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Diagnostics;
-using HidSharp;
 using System.IO;
 using MajdataPlay.Numerics;
 using MajdataPlay.Settings;
+#if UNITY_STANDALONE
+using HidSharp;
+#endif
 
 //using Microsoft.Win32;
 //using System.Windows.Forms;
@@ -16,9 +18,9 @@ using MajdataPlay.Settings;
 #nullable enable
 namespace MajdataPlay.IO
 {
-    using Unsafe = System.Runtime.CompilerServices.Unsafe;
     internal static unsafe partial class InputManager
     {
+#if UNITY_STANDALONE
         static class ButtonRing
         {
             public static bool IsConnected { get; private set; } = false;
@@ -385,7 +387,7 @@ namespace MajdataPlay.IO
                 };
 
                 hidConfig.SetOption(OpenOption.Exclusive, hidOptions.Exclusice);
-                hidConfig.SetOption(OpenOption.Priority, hidOptions.OpenPriority);
+                hidConfig.SetOption(OpenOption.Priority, (OpenPriority)hidOptions.OpenPriority);
                 currentThread.Name = "IO/B Thread";
                 currentThread.IsBackground = true;
                 currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
@@ -694,5 +696,6 @@ namespace MajdataPlay.IO
                 }
             }
         }
+#endif
     }
 }

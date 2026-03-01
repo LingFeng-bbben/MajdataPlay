@@ -5,7 +5,6 @@ using UnityEngine;
 using MajSimai;
 using Cysharp.Threading.Tasks;
 using System.Threading.Tasks;
-using MajdataPlay.Utils;
 using System.Runtime.CompilerServices;
 using MajdataPlay.Scenes.Game.Utils;
 using MajdataPlay.Collections;
@@ -430,7 +429,7 @@ namespace MajdataPlay.Scenes.Game
             }
             token.ThrowIfCancellationRequested();
             _slideUpdater.AddSlideQueueInfos(_slideQueueInfos);
-            _poolManager.Initialize();
+            _poolManager.Init();
         }
         EachLinePoolingInfo? CreateEachLine(SimaiTimingPoint timing, NotePoolingInfo noteA, NotePoolingInfo noteB)
         {

@@ -1,5 +1,8 @@
 using Cysharp.Threading.Tasks;
+#if UNITY_STANDALONE
 using HidSharp.Platform.Windows;
+using HidSharp.Platform.MacOS;
+#endif
 #if UNITY_STANDALONE_WIN
 using LibVLCSharp;
 #endif
@@ -21,7 +24,6 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
-using HidSharp.Platform.MacOS;
 using UnityEngine;
 using UnityEngine.Android;
 using UnityEngine.Scripting;
@@ -132,6 +134,11 @@ namespace MajdataPlay
 
         static string _runtimeConfigPath = string.Empty;
         readonly static CancellationTokenSource _globalCTS = new();
+        static MajEnv()
+        {
+            UnityWebRequestFactory.Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS);
+            UnityWebRequestFactory.UserAgent = HTTP_USER_AGENT;
+        }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ChangedSynchronizationContext()
@@ -152,15 +159,6 @@ namespace MajdataPlay
             var fieldID = AndroidJNI.GetStaticFieldID(versionClass, "SDK_INT", "I");
             AndroidSdkVersion = AndroidJNI.GetStaticIntField(versionClass, fieldID);
 
-            //if(AndroidSdkVersion >= 30)
-            //{
-            //    RootPath = Application.persistentDataPath;
-            //    AssetsPath = Path.Combine(Application.persistentDataPath, "ExtStreamingAssets/");
-            //}
-            //else
-            //{
-
-            //}
             var androidStoragePermissions = new string[]
             {
                 Permission.ExternalStorageRead,
@@ -275,10 +273,10 @@ namespace MajdataPlay
                 var js = File.ReadAllText(SettingsPath);
                 GameSetting? setting;
 
-                if (!Serializer.Json.TryDeserialize(js, out setting, UserJsonReaderOption) || setting is null)
+                if (!Serializer.Json.TryDeserialize(js, out setting, out var e, UserJsonReaderOption) || setting is null)
                 {
                     Settings = new();
-                    MajDebug.LogError("Failed to read setting from file");
+                    MajDebug.LogError($"Failed to read setting from file\nException: {e}");
                     var bakFileName = $"{SettingsPath}.bak";
                     while (File.Exists(bakFileName))
                     {
@@ -343,10 +341,10 @@ namespace MajdataPlay
                 var js = File.ReadAllText(_runtimeConfigPath);
                 RuntimeConfig? setting;
 
-                if (!Serializer.Json.TryDeserialize(js, out setting, UserJsonReaderOption) || setting is null)
+                if (!Serializer.Json.TryDeserialize(js, out setting, out var e, UserJsonReaderOption) || setting is null)
                 {
                     RuntimeConfig = new();
-                    MajDebug.LogError("Failed to read runtime config from file");
+                    MajDebug.LogError($"Failed to read runtime config from file\nException: {e}");
                 }
                 else
                 {
@@ -361,6 +359,7 @@ namespace MajdataPlay
                 File.WriteAllText(_runtimeConfigPath, json);
             }
 
+#if UNITY_STANDALONE
             Settings.IO.InputDevice.ButtonRing.PollingRateMs =
                 Math.Max(0, Settings.IO.InputDevice.ButtonRing.PollingRateMs);
             Settings.IO.InputDevice.TouchPanel.PollingRateMs =
@@ -369,6 +368,7 @@ namespace MajdataPlay
                 Math.Max(0, Settings.IO.InputDevice.ButtonRing.DebounceThresholdMs);
             Settings.IO.InputDevice.TouchPanel.DebounceThresholdMs =
                 Math.Max(0, Settings.IO.InputDevice.TouchPanel.DebounceThresholdMs);
+#endif
             Settings.Display.InnerJudgeDistance = Settings.Display.InnerJudgeDistance.Clamp(0, 1);
             Settings.Display.OuterJudgeDistance = Settings.Display.OuterJudgeDistance.Clamp(0, 1);
 

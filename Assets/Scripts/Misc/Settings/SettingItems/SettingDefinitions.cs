@@ -1,113 +1,115 @@
+using MajdataPlay.Collections;
+using MajdataPlay.IO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MajdataPlay.Collections;
-using MajdataPlay.Extensions;
-using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Settings.SettingItems
 {
-    public static class SettingDefinitions
+    /// <summary>
+    /// 集中定义所有设置菜单和设置项的静态类
+    /// </summary>
+    internal static class SettingDefinitions
     {
-        static GameSetting Settings => MajEnv.Settings;
-
         /// <summary>
-        /// 获取所有设置菜单（不包括ChartSetting）
+        /// 获取所有设置菜单
         /// </summary>
-        public static IReadOnlyList<SettingMenu> GetAllMenus()
+        internal static IReadOnlyList<SettingMenu> GetAllMenus()
         {
-            return new[]
+            var settings = MajEnv.Settings;
+            return new List<SettingMenu>
             {
-                CreateGameMenu(),
-                CreateJudgeMenu(),
-                CreateDisplayMenu(),
-                CreateAudioVolumeMenu(),
-                CreateModMenu(),
-                CreateDebugMenu()
+                GetGameMenu(),
+                GetJudgeMenu(),
+                GetDisplayMenu(),
+                GetVolumeMenu(),
+                GetModMenu(),
+                GetDebugMenu()
             };
         }
 
         /// <summary>
-        /// 创建 Game 菜单
+        /// 获取 Game 设置菜单
         /// </summary>
-        static SettingMenu CreateGameMenu()
+        static SettingMenu GetGameMenu()
         {
+            var settings = MajEnv.Settings;
             var items = new List<ISettingItem>
             {
                 new NumericSettingItem<float>(
                     "TapSpeed",
-                    () => Settings.Game.TapSpeed,
-                    v => Settings.Game.TapSpeed = v,
+                    () => settings.Game.TapSpeed,
+                    v => settings.Game.TapSpeed = v,
                     step: 0.25m
                 ),
                 new NumericSettingItem<float>(
                     "TouchSpeed",
-                    () => Settings.Game.TouchSpeed,
-                    v => Settings.Game.TouchSpeed = v,
+                    () => settings.Game.TouchSpeed,
+                    v => settings.Game.TouchSpeed = v,
                     step: 0.25m
                 ),
                 new NumericSettingItem<float>(
                     "SlideFadeInOffset",
-                    () => Settings.Game.SlideFadeInOffset,
-                    v => Settings.Game.SlideFadeInOffset = v,
+                    () => settings.Game.SlideFadeInOffset,
+                    v => settings.Game.SlideFadeInOffset = v,
                     step: 0.001m,
-                    stepProvider: () => MajEnv.Settings.Debug.OffsetUnit == OffsetUnitOption.Second ? 0.001m : 0.1m
+                    stepProvider: () => settings.Debug.OffsetUnit == OffsetUnitOption.Second ? 0.001m : 0.1m
                 ),
                 new NumericSettingItem<float>(
                     "BackgroundDim",
-                    () => Settings.Game.BackgroundDim,
-                    v => Settings.Game.BackgroundDim = v,
+                    () => settings.Game.BackgroundDim,
+                    v => settings.Game.BackgroundDim = v,
                     step: 0.05m,
                     minValue: 0,
                     maxValue: 1
                 ),
-                new BoolSettingItem(
+                new BooleanSettingItem(
                     "StarRotation",
-                    () => Settings.Game.StarRotation,
-                    v => Settings.Game.StarRotation = v
+                    () => settings.Game.StarRotation,
+                    v => settings.Game.StarRotation = v
                 ),
                 new EnumSettingItem<BGInfoOption>(
                     "BGInfo",
-                    () => Settings.Game.BGInfo,
-                    v => Settings.Game.BGInfo = v
+                    () => settings.Game.BGInfo,
+                    v => settings.Game.BGInfo = v
                 ),
                 new EnumSettingItem<TopInfoDisplayOption>(
                     "TopInfo",
-                    () => Settings.Game.TopInfo,
-                    v => Settings.Game.TopInfo = v
+                    () => settings.Game.TopInfo,
+                    v => settings.Game.TopInfo = v
                 ),
-                new BoolSettingItem(
+                new BooleanSettingItem(
                     "TrackSkip",
-                    () => Settings.Game.TrackSkip,
-                    v => Settings.Game.TrackSkip = v
+                    () => settings.Game.TrackSkip,
+                    v => settings.Game.TrackSkip = v
                 ),
-                new BoolSettingItem(
+                new BooleanSettingItem(
                     "FastRetry",
-                    () => Settings.Game.FastRetry,
-                    v => Settings.Game.FastRetry = v
+                    () => settings.Game.FastRetry,
+                    v => settings.Game.FastRetry = v
                 ),
                 new EnumSettingItem<MirrorOption>(
                     "Mirror",
-                    () => Settings.Game.Mirror,
-                    v => Settings.Game.Mirror = v
+                    () => settings.Game.Mirror,
+                    v => settings.Game.Mirror = v
                 ),
                 new NumericSettingItem<int>(
                     "Rotation",
-                    () => Settings.Game.Rotation,
-                    v => Settings.Game.Rotation = v,
-                    step: 1m,
+                    () => settings.Game.Rotation,
+                    v => settings.Game.Rotation = v,
+                    step: 1,
                     minValue: -7,
                     maxValue: 7
                 ),
                 new EnumSettingItem<RandomModeOption>(
                     "Random",
-                    () => Settings.Game.Random,
-                    v => Settings.Game.Random = v
+                    () => settings.Game.Random,
+                    v => settings.Game.Random = v
                 ),
                 new EnumSettingItem<RecordModeOption>(
                     "RecordMode",
-                    () => Settings.Game.RecordMode,
-                    v => Settings.Game.RecordMode = v
+                    () => settings.Game.RecordMode,
+                    v => settings.Game.RecordMode = v
                 )
             };
 
@@ -115,44 +117,45 @@ namespace MajdataPlay.Settings.SettingItems
         }
 
         /// <summary>
-        /// 创建 Judge 菜单
+        /// 获取 Judge 设置菜单
         /// </summary>
-        static SettingMenu CreateJudgeMenu()
+        static SettingMenu GetJudgeMenu()
         {
+            var settings = MajEnv.Settings;
             var items = new List<ISettingItem>
             {
                 new NumericSettingItem<float>(
                     "AudioOffset",
-                    () => Settings.Judge.AudioOffset,
-                    v => Settings.Judge.AudioOffset = v,
+                    () => settings.Judge.AudioOffset,
+                    v => settings.Judge.AudioOffset = v,
                     step: 0.001m,
-                    stepProvider: () => MajEnv.Settings.Debug.OffsetUnit == OffsetUnitOption.Second ? 0.001m : 0.1m
+                    stepProvider: () => settings.Debug.OffsetUnit == OffsetUnitOption.Second ? 0.001m : 0.1m
                 ),
                 new NumericSettingItem<float>(
                     "JudgeOffset",
-                    () => Settings.Judge.JudgeOffset,
-                    v => Settings.Judge.JudgeOffset = v,
+                    () => settings.Judge.JudgeOffset,
+                    v => settings.Judge.JudgeOffset = v,
                     step: 0.001m,
-                    stepProvider: () => MajEnv.Settings.Debug.OffsetUnit == OffsetUnitOption.Second ? 0.001m : 0.1m
+                    stepProvider: () => settings.Debug.OffsetUnit == OffsetUnitOption.Second ? 0.001m : 0.1m
                 ),
                 new NumericSettingItem<float>(
                     "AnswerOffset",
-                    () => Settings.Judge.AnswerOffset,
-                    v => Settings.Judge.AnswerOffset = v,
+                    () => settings.Judge.AnswerOffset,
+                    v => settings.Judge.AnswerOffset = v,
                     step: 0.001m,
-                    stepProvider: () => MajEnv.Settings.Debug.OffsetUnit == OffsetUnitOption.Second ? 0.001m : 0.1m
+                    stepProvider: () => settings.Debug.OffsetUnit == OffsetUnitOption.Second ? 0.001m : 0.1m
                 ),
                 new NumericSettingItem<float>(
                     "TouchPanelOffset",
-                    () => Settings.Judge.TouchPanelOffset,
-                    v => Settings.Judge.TouchPanelOffset = v,
+                    () => settings.Judge.TouchPanelOffset,
+                    v => settings.Judge.TouchPanelOffset = v,
                     step: 0.001m,
-                    stepProvider: () => MajEnv.Settings.Debug.OffsetUnit == OffsetUnitOption.Second ? 0.001m : 0.1m
+                    stepProvider: () => settings.Debug.OffsetUnit == OffsetUnitOption.Second ? 0.001m : 0.1m
                 ),
                 new EnumSettingItem<JudgeModeOption>(
                     "Mode",
-                    () => Settings.Judge.Mode,
-                    v => Settings.Judge.Mode = v
+                    () => settings.Judge.Mode,
+                    v => settings.Judge.Mode = v
                 )
             };
 
@@ -160,165 +163,178 @@ namespace MajdataPlay.Settings.SettingItems
         }
 
         /// <summary>
-        /// 创建 Display 菜单
+        /// 获取 Display 设置菜单
         /// </summary>
-        static SettingMenu CreateDisplayMenu()
+        static SettingMenu GetDisplayMenu()
         {
+            var settings = MajEnv.Settings;
             var items = new List<ISettingItem>
             {
                 new StringOptionSettingItem(
                     "Language",
-                    () => Settings.Display.Language,
+                    () => settings.Display.Language,
                     v => {
-                        Settings.Display.Language = v;
+                        settings.Display.Language = v;
                         Localization.SetLang(v);
                     },
                     () => {
                         var availableLangs = Localization.Available;
                         if (availableLangs.IsEmpty())
-                            return new[] { "Unavailable" };
+                            return new string[] { "Unavailable" };
                         return availableLangs.Select(x => x.ToString()).ToArray();
-                    }
+                    },
+                    isReadOnly: Localization.Available.IsEmpty()
                 ),
                 new StringOptionSettingItem(
                     "Skin",
-                    () => Settings.Display.Skin,
+                    () => settings.Display.Skin,
                     v => {
-                        Settings.Display.Skin = v;
+                        settings.Display.Skin = v;
                         var skinManager = MajInstances.SkinManager;
                         var newSkin = skinManager.LoadedSkins.Find(x => x.Name == v);
                         if (newSkin != null)
                             skinManager.SelectedSkin = newSkin;
                     },
-                    () => {
-                        var skinManager = MajInstances.SkinManager;
-                        return skinManager.LoadedSkins.Select(x => x.Name).ToArray();
-                    }
+                    () => MajInstances.SkinManager.LoadedSkins.Select(x => x.Name).ToArray()
                 ),
-                new BoolSettingItem(
+                new BooleanSettingItem(
                     "DisplayCriticalPerfect",
-                    () => Settings.Display.DisplayCriticalPerfect,
-                    v => Settings.Display.DisplayCriticalPerfect = v
+                    () => settings.Display.DisplayCriticalPerfect,
+                    v => settings.Display.DisplayCriticalPerfect = v
                 ),
-                new BoolSettingItem(
+                new BooleanSettingItem(
                     "DisplayBreakScore",
-                    () => Settings.Display.DisplayBreakScore,
-                    v => Settings.Display.DisplayBreakScore = v
+                    () => settings.Display.DisplayBreakScore,
+                    v => settings.Display.DisplayBreakScore = v
                 ),
                 new EnumSettingItem<JudgeDisplayOption>(
                     "FastLateType",
-                    () => Settings.Display.FastLateType,
-                    v => Settings.Display.FastLateType = v
+                    () => settings.Display.FastLateType,
+                    v => settings.Display.FastLateType = v
                 ),
                 new EnumSettingItem<JudgeDisplayOption>(
                     "NoteJudgeType",
-                    () => Settings.Display.NoteJudgeType,
-                    v => Settings.Display.NoteJudgeType = v
+                    () => settings.Display.NoteJudgeType,
+                    v => settings.Display.NoteJudgeType = v
                 ),
                 new EnumSettingItem<JudgeDisplayOption>(
                     "TouchJudgeType",
-                    () => Settings.Display.TouchJudgeType,
-                    v => Settings.Display.TouchJudgeType = v
+                    () => settings.Display.TouchJudgeType,
+                    v => settings.Display.TouchJudgeType = v
                 ),
                 new EnumSettingItem<JudgeDisplayOption>(
                     "SlideJudgeType",
-                    () => Settings.Display.SlideJudgeType,
-                    v => Settings.Display.SlideJudgeType = v
+                    () => settings.Display.SlideJudgeType,
+                    v => settings.Display.SlideJudgeType = v
                 ),
                 new EnumSettingItem<JudgeDisplayOption>(
                     "BreakJudgeType",
-                    () => Settings.Display.BreakJudgeType,
-                    v => Settings.Display.BreakJudgeType = v
+                    () => settings.Display.BreakJudgeType,
+                    v => settings.Display.BreakJudgeType = v
                 ),
                 new EnumSettingItem<JudgeDisplayOption>(
                     "BreakFastLateType",
-                    () => Settings.Display.BreakFastLateType,
-                    v => Settings.Display.BreakFastLateType = v
+                    () => settings.Display.BreakFastLateType,
+                    v => settings.Display.BreakFastLateType = v
                 ),
                 new EnumSettingItem<JudgeModeOption>(
                     "SlideSortOrder",
-                    () => Settings.Display.SlideSortOrder,
-                    v => Settings.Display.SlideSortOrder = v
+                    () => settings.Display.SlideSortOrder,
+                    v => settings.Display.SlideSortOrder = v
                 ),
                 new NumericSettingItem<float>(
                     "OuterJudgeDistance",
-                    () => Settings.Display.OuterJudgeDistance,
-                    v => Settings.Display.OuterJudgeDistance = v,
+                    () => settings.Display.OuterJudgeDistance,
+                    v => settings.Display.OuterJudgeDistance = v,
                     step: 0.05m,
                     minValue: 0,
                     maxValue: 1
                 ),
                 new NumericSettingItem<float>(
                     "InnerJudgeDistance",
-                    () => Settings.Display.InnerJudgeDistance,
-                    v => Settings.Display.InnerJudgeDistance = v,
+                    () => settings.Display.InnerJudgeDistance,
+                    v => settings.Display.InnerJudgeDistance = v,
                     step: 0.05m,
                     minValue: 0,
                     maxValue: 1
                 ),
                 new NumericSettingItem<float>(
                     "TapScale",
-                    () => Settings.Display.TapScale,
-                    v => Settings.Display.TapScale = v,
+                    () => settings.Display.TapScale,
+                    v => settings.Display.TapScale = v,
                     step: 0.01m,
                     minValue: 0,
                     maxValue: 2
                 ),
                 new NumericSettingItem<float>(
                     "HoldScale",
-                    () => Settings.Display.HoldScale,
-                    v => Settings.Display.HoldScale = v,
+                    () => settings.Display.HoldScale,
+                    v => settings.Display.HoldScale = v,
                     step: 0.01m,
                     minValue: 0,
                     maxValue: 2
                 ),
                 new NumericSettingItem<float>(
                     "TouchScale",
-                    () => Settings.Display.TouchScale,
-                    v => Settings.Display.TouchScale = v,
+                    () => settings.Display.TouchScale,
+                    v => settings.Display.TouchScale = v,
                     step: 0.01m,
                     minValue: 0,
                     maxValue: 2
                 ),
                 new NumericSettingItem<float>(
                     "SlideScale",
-                    () => Settings.Display.SlideScale,
-                    v => Settings.Display.SlideScale = v,
+                    () => settings.Display.SlideScale,
+                    v => settings.Display.SlideScale = v,
                     step: 0.01m,
                     minValue: 0,
                     maxValue: 2
                 ),
                 new EnumSettingItem<TouchFeedbackLevel>(
                     "TouchFeedback",
-                    () => Settings.Display.TouchFeedback,
-                    v => Settings.Display.TouchFeedback = v
+                    () => settings.Display.TouchFeedback,
+                    v => settings.Display.TouchFeedback = v
+                ),
+                new StringOptionSettingItem(
+                    "Resolution",
+                    () => settings.Display.Resolution,
+                    v => settings.Display.Resolution = v,
+                    () => new string[] { settings.Display.Resolution },
+                    isReadOnly: true
+                ),
+                new NumericSettingItem<float>(
+                    "MainScreenPosition",
+                    () => settings.Display.MainScreenPosition,
+                    v => settings.Display.MainScreenPosition = v,
+                    step: 0.05m,
+                    minValue: 0,
+                    maxValue: 1
                 ),
                 new EnumSettingItem<RenderQualityOption>(
                     "RenderQuality",
-                    () => Settings.Display.RenderQuality,
+                    () => settings.Display.RenderQuality,
                     v => {
-                        Settings.Display.RenderQuality = v;
-                        QualitySettings.SetQualityLevel((int)v, true);
+                        settings.Display.RenderQuality = v;
+                        UnityEngine.QualitySettings.SetQualityLevel((int)v, true);
                     }
                 ),
                 new NumericSettingItem<int>(
                     "FPSLimit",
-                    () => Settings.Display.FPSLimit,
+                    () => settings.Display.FPSLimit,
                     v => {
-                        Settings.Display.FPSLimit = v;
-                        Application.targetFrameRate = v;
+                        settings.Display.FPSLimit = v;
+                        UnityEngine.Application.targetFrameRate = v;
                     },
-                    step: 1m,
+                    step: 1,
                     minValue: -1
-                )
+                ),
 #if !(UNITY_ANDROID || UNITY_IOS)
-                ,
-                new BoolSettingItem(
+                new BooleanSettingItem(
                     "VSync",
-                    () => Settings.Display.VSync,
+                    () => settings.Display.VSync,
                     v => {
-                        Settings.Display.VSync = v;
-                        QualitySettings.vSyncCount = v ? 1 : 0;
+                        settings.Display.VSync = v;
+                        UnityEngine.QualitySettings.vSyncCount = v ? 1 : 0;
                     }
                 )
 #endif
@@ -328,18 +344,23 @@ namespace MajdataPlay.Settings.SettingItems
         }
 
         /// <summary>
-        /// 创建 Audio Volume 菜单
+        /// 获取 Volume 设置菜单
         /// </summary>
-        static SettingMenu CreateAudioVolumeMenu()
+        static SettingMenu GetVolumeMenu()
         {
+            var settings = MajEnv.Settings;
+            var audioManager = MajInstances.AudioManager;
+            
+            Action<float> volumeChangedCallback = _ => audioManager.ReadVolumeFromSettings();
+
             var items = new List<ISettingItem>
             {
                 new NumericSettingItem<float>(
                     "Global",
-                    () => Settings.Audio.Volume.Global,
+                    () => settings.Audio.Volume.Global,
                     v => {
-                        Settings.Audio.Volume.Global = v;
-                        MajInstances.AudioManager.ReadVolumeFromSettings();
+                        settings.Audio.Volume.Global = v;
+                        volumeChangedCallback(v);
                     },
                     step: 0.05m,
                     minValue: 0,
@@ -347,10 +368,10 @@ namespace MajdataPlay.Settings.SettingItems
                 ),
                 new NumericSettingItem<float>(
                     "Answer",
-                    () => Settings.Audio.Volume.Answer,
+                    () => settings.Audio.Volume.Answer,
                     v => {
-                        Settings.Audio.Volume.Answer = v;
-                        MajInstances.AudioManager.ReadVolumeFromSettings();
+                        settings.Audio.Volume.Answer = v;
+                        volumeChangedCallback(v);
                     },
                     step: 0.05m,
                     minValue: 0,
@@ -358,10 +379,10 @@ namespace MajdataPlay.Settings.SettingItems
                 ),
                 new NumericSettingItem<float>(
                     "BGM",
-                    () => Settings.Audio.Volume.BGM,
+                    () => settings.Audio.Volume.BGM,
                     v => {
-                        Settings.Audio.Volume.BGM = v;
-                        MajInstances.AudioManager.ReadVolumeFromSettings();
+                        settings.Audio.Volume.BGM = v;
+                        volumeChangedCallback(v);
                     },
                     step: 0.05m,
                     minValue: 0,
@@ -369,10 +390,10 @@ namespace MajdataPlay.Settings.SettingItems
                 ),
                 new NumericSettingItem<float>(
                     "Track",
-                    () => Settings.Audio.Volume.Track,
+                    () => settings.Audio.Volume.Track,
                     v => {
-                        Settings.Audio.Volume.Track = v;
-                        MajInstances.AudioManager.ReadVolumeFromSettings();
+                        settings.Audio.Volume.Track = v;
+                        volumeChangedCallback(v);
                     },
                     step: 0.05m,
                     minValue: 0,
@@ -380,10 +401,21 @@ namespace MajdataPlay.Settings.SettingItems
                 ),
                 new NumericSettingItem<float>(
                     "Tap",
-                    () => Settings.Audio.Volume.Tap,
+                    () => settings.Audio.Volume.Tap,
                     v => {
-                        Settings.Audio.Volume.Tap = v;
-                        MajInstances.AudioManager.ReadVolumeFromSettings();
+                        settings.Audio.Volume.Tap = v;
+                        volumeChangedCallback(v);
+                    },
+                    step: 0.05m,
+                    minValue: 0,
+                    maxValue: 2
+                ),
+                new NumericSettingItem<float>(
+                    "Judge",
+                    () => settings.Audio.Volume.Tap,
+                    v => {
+                        settings.Audio.Volume.Tap = v;
+                        volumeChangedCallback(v);
                     },
                     step: 0.05m,
                     minValue: 0,
@@ -391,10 +423,10 @@ namespace MajdataPlay.Settings.SettingItems
                 ),
                 new NumericSettingItem<float>(
                     "Slide",
-                    () => Settings.Audio.Volume.Slide,
+                    () => settings.Audio.Volume.Slide,
                     v => {
-                        Settings.Audio.Volume.Slide = v;
-                        MajInstances.AudioManager.ReadVolumeFromSettings();
+                        settings.Audio.Volume.Slide = v;
+                        volumeChangedCallback(v);
                     },
                     step: 0.05m,
                     minValue: 0,
@@ -402,10 +434,10 @@ namespace MajdataPlay.Settings.SettingItems
                 ),
                 new NumericSettingItem<float>(
                     "Break",
-                    () => Settings.Audio.Volume.Break,
+                    () => settings.Audio.Volume.Break,
                     v => {
-                        Settings.Audio.Volume.Break = v;
-                        MajInstances.AudioManager.ReadVolumeFromSettings();
+                        settings.Audio.Volume.Break = v;
+                        volumeChangedCallback(v);
                     },
                     step: 0.05m,
                     minValue: 0,
@@ -413,10 +445,10 @@ namespace MajdataPlay.Settings.SettingItems
                 ),
                 new NumericSettingItem<float>(
                     "Touch",
-                    () => Settings.Audio.Volume.Touch,
+                    () => settings.Audio.Volume.Touch,
                     v => {
-                        Settings.Audio.Volume.Touch = v;
-                        MajInstances.AudioManager.ReadVolumeFromSettings();
+                        settings.Audio.Volume.Touch = v;
+                        volumeChangedCallback(v);
                     },
                     step: 0.05m,
                     minValue: 0,
@@ -424,10 +456,10 @@ namespace MajdataPlay.Settings.SettingItems
                 ),
                 new NumericSettingItem<float>(
                     "Voice",
-                    () => Settings.Audio.Volume.Voice,
+                    () => settings.Audio.Volume.Voice,
                     v => {
-                        Settings.Audio.Volume.Voice = v;
-                        MajInstances.AudioManager.ReadVolumeFromSettings();
+                        settings.Audio.Volume.Voice = v;
+                        volumeChangedCallback(v);
                     },
                     step: 0.05m,
                     minValue: 0,
@@ -439,71 +471,72 @@ namespace MajdataPlay.Settings.SettingItems
         }
 
         /// <summary>
-        /// 创建 Mod 菜单
+        /// 获取 Mod 设置菜单
         /// </summary>
-        static SettingMenu CreateModMenu()
+        static SettingMenu GetModMenu()
         {
+            var settings = MajEnv.Settings;
             var items = new List<ISettingItem>
             {
                 new NumericSettingItem<float>(
                     "PlaybackSpeed",
-                    () => Settings.Mod.PlaybackSpeed,
-                    v => Settings.Mod.PlaybackSpeed = v,
+                    () => settings.Mod.PlaybackSpeed,
+                    v => settings.Mod.PlaybackSpeed = v,
                     step: 0.05m,
                     minValue: 0
                 ),
                 new EnumSettingItem<AutoplayModeOption>(
                     "AutoPlay",
-                    () => Settings.Mod.AutoPlay,
-                    v => Settings.Mod.AutoPlay = v
+                    () => settings.Mod.AutoPlay,
+                    v => settings.Mod.AutoPlay = v
                 ),
                 new EnumSettingItem<JudgeStyleOption>(
                     "JudgeStyle",
-                    () => Settings.Mod.JudgeStyle,
-                    v => Settings.Mod.JudgeStyle = v
+                    () => settings.Mod.JudgeStyle,
+                    v => settings.Mod.JudgeStyle = v
                 ),
-                new BoolSettingItem(
+                new BooleanSettingItem(
                     "SubdivideSlideJudgeGrade",
-                    () => Settings.Mod.SubdivideSlideJudgeGrade,
-                    v => Settings.Mod.SubdivideSlideJudgeGrade = v
+                    () => settings.Mod.SubdivideSlideJudgeGrade,
+                    v => settings.Mod.SubdivideSlideJudgeGrade = v
                 ),
-                new BoolSettingItem(
+                new BooleanSettingItem(
                     "AllBreak",
-                    () => Settings.Mod.AllBreak,
-                    v => Settings.Mod.AllBreak = v
+                    () => settings.Mod.AllBreak,
+                    v => settings.Mod.AllBreak = v
                 ),
-                new BoolSettingItem(
+                new BooleanSettingItem(
                     "AllEx",
-                    () => Settings.Mod.AllEx,
-                    v => Settings.Mod.AllEx = v
+                    () => settings.Mod.AllEx,
+                    v => settings.Mod.AllEx = v
                 ),
-                new BoolSettingItem(
+                new BooleanSettingItem(
                     "AllTouch",
-                    () => Settings.Mod.AllTouch,
-                    v => Settings.Mod.AllTouch = v
+                    () => settings.Mod.AllTouch,
+                    v => settings.Mod.AllTouch = v
                 ),
-                new BoolSettingItem(
+                new BooleanSettingItem(
                     "SlideNoHead",
-                    () => Settings.Mod.SlideNoHead,
-                    v => Settings.Mod.SlideNoHead = v
+                    () => settings.Mod.SlideNoHead,
+                    v => settings.Mod.SlideNoHead = v
                 ),
-                new BoolSettingItem(
+                new BooleanSettingItem(
                     "SlideNoTrack",
-                    () => Settings.Mod.SlideNoTrack,
-                    v => Settings.Mod.SlideNoTrack = v
+                    () => settings.Mod.SlideNoTrack,
+                    v => settings.Mod.SlideNoTrack = v
                 ),
 #if !(UNITY_ANDROID || UNITY_IOS)
-                new BoolSettingItem(
+                new BooleanSettingItem(
                     "ButtonRingForTouch",
-                    () => Settings.Mod.ButtonRingForTouch,
-                    v => Settings.Mod.ButtonRingForTouch = v
+                    () => settings.Mod.ButtonRingForTouch,
+                    v => settings.Mod.ButtonRingForTouch = v
                 ),
 #endif
                 new StringOptionSettingItem(
                     "NoteMask",
-                    () => Settings.Mod.NoteMask,
-                    v => Settings.Mod.NoteMask = v,
-                    () => new[] { "Disable", "Inner", "Outer" }
+                    () => settings.Mod.NoteMask,
+                    v => settings.Mod.NoteMask = v,
+                    () => new string[] { "Disable", "Inner", "Outer" }
                 )
             };
 
@@ -511,101 +544,88 @@ namespace MajdataPlay.Settings.SettingItems
         }
 
         /// <summary>
-        /// 创建 Debug 菜单
+        /// 获取 Debug 设置菜单
         /// </summary>
-        static SettingMenu CreateDebugMenu()
+        static SettingMenu GetDebugMenu()
         {
+            var settings = MajEnv.Settings;
             var items = new List<ISettingItem>
             {
-                new BoolSettingItem(
+                new BooleanSettingItem(
                     "DisplaySensor",
-                    () => Settings.Debug.DisplaySensor,
-                    v => Settings.Debug.DisplaySensor = v
+                    () => settings.Debug.DisplaySensor,
+                    v => settings.Debug.DisplaySensor = v
                 ),
                 new NumericSettingItem<float>(
                     "TouchSimulationRadius",
-                    () => Settings.Debug.TouchSimulationRadius,
-                    v => Settings.Debug.TouchSimulationRadius = v,
-                    step: 0.05m,
-                    minValue: -5,
-                    maxValue: 5
+                    () => settings.Debug.TouchSimulationRadius,
+                    v => settings.Debug.TouchSimulationRadius = v,
+                    step: 0.05m
                 ),
                 new NumericSettingItem<float>(
                     "TouchAAreaExtraRadius",
-                    () => Settings.Debug.TouchAAreaExtraRadius,
-                    v => Settings.Debug.TouchAAreaExtraRadius = v,
-                    step: 0.05m,
-                    minValue: -5,
-                    maxValue: 5
+                    () => settings.Debug.TouchAAreaExtraRadius,
+                    v => settings.Debug.TouchAAreaExtraRadius = v,
+                    step: 0.05m
                 ),
                 new NumericSettingItem<float>(
                     "TouchBAreaExtraRadius",
-                    () => Settings.Debug.TouchBAreaExtraRadius,
-                    v => Settings.Debug.TouchBAreaExtraRadius = v,
-                    step: 0.05m,
-                    minValue: -5,
-                    maxValue: 5
+                    () => settings.Debug.TouchBAreaExtraRadius,
+                    v => settings.Debug.TouchBAreaExtraRadius = v,
+                    step: 0.05m
                 ),
                 new NumericSettingItem<float>(
                     "TouchCAreaExtraRadius",
-                    () => Settings.Debug.TouchCAreaExtraRadius,
-                    v => Settings.Debug.TouchCAreaExtraRadius = v,
-                    step: 0.05m,
-                    minValue: -5,
-                    maxValue: 5
+                    () => settings.Debug.TouchCAreaExtraRadius,
+                    v => settings.Debug.TouchCAreaExtraRadius = v,
+                    step: 0.05m
                 ),
                 new NumericSettingItem<float>(
                     "TouchDAreaExtraRadius",
-                    () => Settings.Debug.TouchDAreaExtraRadius,
-                    v => Settings.Debug.TouchDAreaExtraRadius = v,
-                    step: 0.05m,
-                    minValue: -5,
-                    maxValue: 5
+                    () => settings.Debug.TouchDAreaExtraRadius,
+                    v => settings.Debug.TouchDAreaExtraRadius = v,
+                    step: 0.05m
                 ),
                 new NumericSettingItem<float>(
                     "TouchEAreaExtraRadius",
-                    () => Settings.Debug.TouchEAreaExtraRadius,
-                    v => Settings.Debug.TouchEAreaExtraRadius = v,
-                    step: 0.05m,
-                    minValue: -5,
-                    maxValue: 5
+                    () => settings.Debug.TouchEAreaExtraRadius,
+                    v => settings.Debug.TouchEAreaExtraRadius = v,
+                    step: 0.05m
                 ),
                 new NumericSettingItem<float>(
                     "TouchRadiusAdjust",
-                    () => Settings.Debug.TouchRadiusAdjust,
-                    v => Settings.Debug.TouchRadiusAdjust = v,
-                    step: 0.05m,
-                    minValue: -5,
-                    maxValue: 5
+                    () => settings.Debug.TouchRadiusAdjust,
+                    v => settings.Debug.TouchRadiusAdjust = v,
+                    step: 0.05m
                 ),
-                new BoolSettingItem(
+                new BooleanSettingItem(
                     "DisplayFPS",
-                    () => Settings.Debug.DisplayFPS,
-                    v => Settings.Debug.DisplayFPS = v
+                    () => settings.Debug.DisplayFPS,
+                    v => settings.Debug.DisplayFPS = v
                 ),
                 new NumericSettingItem<float>(
                     "DisplayOffset",
-                    () => Settings.Debug.DisplayOffset,
-                    v => Settings.Debug.DisplayOffset = v,
+                    () => settings.Debug.DisplayOffset,
+                    v => settings.Debug.DisplayOffset = v,
                     step: 0.001m,
                     minValue: 0,
-                    stepProvider: () => MajEnv.Settings.Debug.OffsetUnit == OffsetUnitOption.Second ? 0.001m : 0.1m
+                    stepProvider: () => settings.Debug.OffsetUnit == OffsetUnitOption.Second ? 0.001m : 0.1m
                 ),
                 new NumericSettingItem<float>(
                     "NoteAppearRate",
-                    () => Settings.Debug.NoteAppearRate,
-                    v => Settings.Debug.NoteAppearRate = v,
+                    () => settings.Debug.NoteAppearRate,
+                    v => settings.Debug.NoteAppearRate = v,
                     step: 0.001m
                 ),
                 new EnumSettingItem<OffsetUnitOption>(
                     "OffsetUnit",
-                    () => Settings.Debug.OffsetUnit,
-                    v => Settings.Debug.OffsetUnit = v
+                    () => settings.Debug.OffsetUnit,
+                    v => settings.Debug.OffsetUnit = v
                 ),
                 new EnumSettingItem<DJAutoPolicyOption>(
                     "DJAutoPolicy",
-                    () => Settings.Debug.DJAutoPolicy,
-                    v => Settings.Debug.DJAutoPolicy = v
+                    () => settings.Debug.DJAutoPolicy,
+                    v => settings.Debug.DJAutoPolicy = v
                 )
             };
 
