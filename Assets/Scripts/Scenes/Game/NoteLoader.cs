@@ -782,9 +782,8 @@ namespace MajdataPlay.Scenes.Game
                     _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
                 }
 
-                _isHasTouchHold[(int)sensorPos] = true;
                 _touchSortOrder -= NOTE_LAYER_COUNT[note.Type];
-                sensorPos = NoteCreateHelper.Rotation(sensorPos, ChartRotation);
+                _isHasTouchHold[(int)sensorPos] = true;
                 var poolingInfo = new TouchHoldPoolingInfo()
                 {
                     SensorPos = sensorPos,
