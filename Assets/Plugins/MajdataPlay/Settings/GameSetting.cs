@@ -133,6 +133,8 @@ namespace MajdataPlay.Settings
 #if !(UNITY_ANDROID || UNITY_IOS)
         [Preserve]
         public bool VSync { get; set; } = true;
+        [Preserve]
+        public bool SkipVideoDownload { get; set; } = false;
 #endif
     }
     [Preserve]
