@@ -64,7 +64,6 @@ namespace MajdataPlay.Scenes.Login
             _apiEndpoints = MajEnv.Settings.Online.ApiEndpoints;
             _qrCodeRawImage = _qrCodeComponent.GetComponent<RawImage>();
             _eventSystem = GetComponent<EventSystem>();
-
             using var rentedApiEndpoints = new RentedList<ApiEndpoint>();
             for (var i = 0; i < _apiEndpoints.Length; i++)
             {
@@ -91,7 +90,9 @@ namespace MajdataPlay.Scenes.Login
             var isUsernameInputClicked = InputManager.IsSensorClickedInThisFrame(SensorArea.B2) ||
                                          InputManager.IsSensorClickedInThisFrame(SensorArea.B1) ||
                                          InputManager.IsSensorClickedInThisFrame(SensorArea.E2);
-            var isPasswordInputClicked = InputManager.IsSensorClickedInThisFrame(SensorArea.B3);
+            var isPasswordInputClicked = InputManager.IsSensorClickedInThisFrame(SensorArea.B3) ||
+                                         InputManager.IsSensorClickedInThisFrame(SensorArea.C) ||
+                                         InputManager.IsSensorClickedInThisFrame(SensorArea.E3);
             var isUsernameClearBtnClicked = InputManager.IsSensorClickedInThisFrame(SensorArea.A2);
             var isPasswordClearBtnClicked = InputManager.IsSensorClickedInThisFrame(SensorArea.A3);
             if(isUsernameInputClicked)
@@ -279,8 +280,7 @@ namespace MajdataPlay.Scenes.Login
                             authSessionTask = RegistryAuthSession(endpoint, cts.Token);
                         }
                         //cancel button
-                        if (InputManager.IsSensorClickedInThisFrame(SensorArea.B5) ||
-                            InputManager.IsSensorClickedInThisFrame(SensorArea.E6))
+                        if (InputManager.IsSensorClickedInThisFrame(SensorArea.A5))
                         {
                             cts.Cancel();
                             if (!string.IsNullOrEmpty(authRequestId))
@@ -294,8 +294,7 @@ namespace MajdataPlay.Scenes.Login
                             break;
                         }
                         //login button
-                        else if (InputManager.IsSensorClickedInThisFrame(SensorArea.B4) ||
-                                 InputManager.IsSensorClickedInThisFrame(SensorArea.E4))
+                        else if (InputManager.IsSensorClickedInThisFrame(SensorArea.A4))
                         {
                             _isReady = false;
                             _errText.text = string.Empty;
