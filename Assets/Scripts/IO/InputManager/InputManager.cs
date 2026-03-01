@@ -21,7 +21,6 @@ using System.Threading;
 using UnityEngine;
 using UnityEngine.InputSystem.EnhancedTouch;
 using UnityEngine.Profiling;
-using static UnityEditor.PlayerSettings;
 //using Microsoft.Win32;
 //using System.Windows.Forms;
 //using Application = UnityEngine.Application;
