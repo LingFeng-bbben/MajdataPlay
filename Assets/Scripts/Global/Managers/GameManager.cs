@@ -84,7 +84,9 @@ namespace MajdataPlay
             _timer = BuiltInTimeProvider.Stopwatch;
 #endif
             MajTimeline.TimeProvider = _builtInTimeProviders.Span[(int)_timer];
+#if UNITY_STANDALONE
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
+#endif
 
             foreach (var arg in Environment.GetCommandLineArgs())
             {
