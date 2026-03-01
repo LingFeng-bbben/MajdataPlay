@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Profiling;
 #nullable enable
 namespace MajdataPlay.IO
 {
@@ -17,6 +18,7 @@ namespace MajdataPlay.IO
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void UpdateSensorState()
         {
+            Profiler.BeginSample("InputManager.OnPreUpdate.UpdateSensorState");
             var sensors = _sensors.Span;
             var now = MajTimeline.UnscaledTime;
             var sensorStates = _sensorStates.Span;
@@ -85,6 +87,7 @@ namespace MajdataPlay.IO
                 sensor.PushEvent(msg);
                 PushEvent(msg);
             }
+            Profiler.EndSample();
         }
         static void SetSensorState(SensorArea type,SwitchStatus nState)
         {

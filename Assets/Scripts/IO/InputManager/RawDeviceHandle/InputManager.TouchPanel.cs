@@ -17,6 +17,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 //using Microsoft.Win32;
 //using System.Windows.Forms;
@@ -73,6 +74,7 @@ namespace MajdataPlay.IO
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static void OnPreUpdate()
             {
+                Profiler.BeginSample("TouchPanel.OnPreUpdate");
                 ref var @lock = ref _syncLock;
                 var isLocked = false;
                 try
@@ -99,6 +101,7 @@ namespace MajdataPlay.IO
                         @lock.Exit();
                     }
                 }
+                Profiler.EndSample();
             }
             /// <summary>
             /// See also <seealso cref="IsHadOn(int)"/>

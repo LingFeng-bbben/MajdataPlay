@@ -1,18 +1,19 @@
+using MajdataPlay.Buffers;
+using MajdataPlay.Editor;
 using MajdataPlay.Extensions;
+using MajdataPlay.IO;
+using MajdataPlay.Numerics;
+using MajdataPlay.Scenes.Game.Notes.Slide;
+using MajdataPlay.Scenes.Game.Notes.Slide.Utils;
 using MajdataPlay.Scenes.Game.Utils;
+using MajdataPlay.Settings;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
-using UnityEngine;
-using MajdataPlay.Editor;
-using MajdataPlay.Scenes.Game.Notes.Slide;
-using MajdataPlay.Scenes.Game.Notes.Slide.Utils;
-using MajdataPlay.IO;
-using MajdataPlay.Numerics;
-using MajdataPlay.Buffers;
-using MajdataPlay.Settings;
 using System.Runtime.CompilerServices;
 using Unity.IL2CPP.CompilerServices;
+using UnityEngine;
+using UnityEngine.Profiling;
 
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Behaviours
@@ -279,12 +280,15 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [OnPreUpdate]
         void OnPreUpdate()
         {
+            Profiler.BeginSample("SlideDrop.OnPreUpdate");
             SlideBarFadeIn();
             SlideCheck();
+            Profiler.EndSample();
         }
         [OnUpdate]
         void OnUpdate()
         {
+            Profiler.BeginSample("SlideDrop.OnUpdate");
 //#if UNITY_EDITOR
 //            {
 //                var indexProcess = (_starPositions.Count - 1) * (1 - _runtimeSlideConst);
@@ -390,6 +394,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 case NoteStatus.Arrived:
                     break;
             }
+            Profiler.EndSample();
         }
         /// <summary>
         /// 判定队列检查

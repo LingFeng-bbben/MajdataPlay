@@ -7,6 +7,8 @@ using System.Diagnostics;
 using System.IO;
 using MajdataPlay.Numerics;
 using MajdataPlay.Settings;
+using UnityEngine.Profiling;
+
 #if UNITY_STANDALONE
 using HidSharp;
 #endif
@@ -78,6 +80,7 @@ namespace MajdataPlay.IO
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public unsafe static void OnPreUpdate()
             {
+                Profiler.BeginSample("ButtonRing.OnPreUpdate");
                 ref var @lock = ref _syncLock;
                 var isLocked = false;
                 try
@@ -104,6 +107,7 @@ namespace MajdataPlay.IO
                         @lock.Exit();
                     }
                 }
+                Profiler.EndSample();
             }
             /// <summary>
             /// Determines whether the button at the given index was ever ON

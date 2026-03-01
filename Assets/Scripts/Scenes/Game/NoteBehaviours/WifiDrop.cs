@@ -13,6 +13,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
+using UnityEngine.Profiling;
 
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Behaviours
@@ -354,12 +355,15 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [OnPreUpdate]
         void OnPreUpdate()
         {
+            Profiler.BeginSample("WifiDrop.OnPreUpdate");
             SlideBarFadeIn();
             SlideCheck();
+            Profiler.EndSample();
         }
         [OnUpdate]
         void OnUpdate()
         {
+            Profiler.BeginSample("WifiDrop.OnUpdate");
             Autoplay();
             SensorCheck();
             var stars = _stars.Span;
@@ -439,6 +443,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 case NoteStatus.Arrived:
                     break;
             }
+            Profiler.EndSample();
         }
         protected override void Autoplay()
         {

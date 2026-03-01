@@ -1,14 +1,15 @@
 ﻿using MajdataPlay.Buffers;
+using MajdataPlay.IO;
+using MajdataPlay.Numerics;
 using MajdataPlay.Scenes.Game.Buffers;
 using MajdataPlay.Scenes.Game.Notes.Controllers;
 using MajdataPlay.Scenes.Game.Utils;
-using MajdataPlay.IO;
-using MajdataPlay.Numerics;
+using MajdataPlay.Settings;
 using MajdataPlay.Utils;
 using System;
 using System.Runtime.CompilerServices;
-using MajdataPlay.Settings;
 using UnityEngine;
+using UnityEngine.Profiling;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
@@ -175,9 +176,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [OnPreUpdate]
         void OnPreUpdate()
         {
+            Profiler.BeginSample("TapDrop.OnPreUpdate");
             TooLateCheck();
             Check();
             Autoplay();
+            Profiler.EndSample();
         }
         protected override void Autoplay()
         {
@@ -226,6 +229,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [OnUpdate]
         void OnUpdate()
         {
+            Profiler.BeginSample("TapDrop.OnUpdate");
             var timing = GetTimeSpanToArriveTiming();
             var distance = timing * Speed + 4.8f;
             var scaleRate = _noteAppearRate;
@@ -279,6 +283,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 if (NoteController.IsStart && _isStarRotation)
                     Transform.Rotate(0f, 0f, RotateSpeed * MajTimeline.DeltaTime);
             }
+            Profiler.EndSample();
         }
         void TooLateCheck()
         {

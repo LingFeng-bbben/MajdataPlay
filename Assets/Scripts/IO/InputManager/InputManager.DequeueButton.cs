@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Profiling;
 #nullable enable
 namespace MajdataPlay.IO
 {
@@ -15,6 +16,7 @@ namespace MajdataPlay.IO
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void UpdateButtonState()
         {
+            Profiler.BeginSample("InputManager.OnPreUpdate.UpdateButtonState");
             var buttons = _buttons.Span;
             var now = MajTimeline.UnscaledTime;
             
@@ -68,6 +70,7 @@ namespace MajdataPlay.IO
                 button.PushEvent(msg);
                 PushEvent(msg);
             }
+            Profiler.EndSample();
         }
         public static void BindButton(EventHandler<InputEventArgs> checker, ButtonZone zone)
         {

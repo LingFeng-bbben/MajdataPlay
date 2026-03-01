@@ -20,6 +20,7 @@ using System.Security.Policy;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.InputSystem.EnhancedTouch;
+using UnityEngine.Profiling;
 using static UnityEditor.PlayerSettings;
 //using Microsoft.Win32;
 //using System.Windows.Forms;
@@ -840,6 +841,7 @@ namespace MajdataPlay.IO
         }
         internal static void OnPreUpdate()
         {
+            Profiler.BeginSample("InputManager.OnPreUpdate");
             var buttons = _buttons.Span;
             var sensors = _sensors.Span;
             
@@ -905,6 +907,7 @@ namespace MajdataPlay.IO
                 _sensorStatusInPreviousFrame[i] = _sensorStatusInThisFrame[i];
                 _sensorStatusInThisFrame[i] = sen.State;
             }
+            Profiler.EndSample();
         }
         public static void BindAnyArea(EventHandler<InputEventArgs> checker) => OnAnyAreaTrigger += checker;
         public static void BindArea(EventHandler<InputEventArgs> checker, ButtonZone sType)

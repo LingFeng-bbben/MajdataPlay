@@ -1,15 +1,16 @@
+using MajdataPlay.Buffers;
 using MajdataPlay.IO;
+using MajdataPlay.Numerics;
+using MajdataPlay.Scenes.Game.Buffers;
+using MajdataPlay.Scenes.Game.Notes.Controllers;
+using MajdataPlay.Scenes.Game.Utils;
+using MajdataPlay.Settings;
 using MajdataPlay.Utils;
 using System;
-using UnityEngine;
-using System.Threading.Tasks;
-using MajdataPlay.Scenes.Game.Buffers;
 using System.Runtime.CompilerServices;
-using MajdataPlay.Scenes.Game.Utils;
-using MajdataPlay.Scenes.Game.Notes.Controllers;
-using MajdataPlay.Numerics;
-using MajdataPlay.Buffers;
-using MajdataPlay.Settings;
+using System.Threading.Tasks;
+using UnityEngine;
+using UnityEngine.Profiling;
 
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Behaviours
@@ -336,15 +337,18 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [OnPreUpdate]
         void OnPreUpdate()
         {
+            Profiler.BeginSample("HoldDrop.OnPreUpdate");
             TooLateCheck();
             Check();
             BodyCheck();
             ForceEndCheck();
             Autoplay();
+            Profiler.EndSample();
         }
         [OnUpdate]
         void OnUpdate()
         {
+            Profiler.BeginSample("HoldDrop.OnUpdate");
             var timing = GetTimeSpanToArriveTiming();
             var distance = timing * Speed + 4.8f;
             var scaleRate = _noteAppearRate;
@@ -448,6 +452,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             //if (IsEX)
             //    _exRenderer.size = _thisRenderer.size;
+            Profiler.EndSample();
         }
         void TooLateCheck()
         {

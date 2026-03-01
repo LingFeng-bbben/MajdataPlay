@@ -13,6 +13,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Utilities;
+using UnityEngine.Profiling;
 using UnityEngine.UI;
 using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 using TouchPhase = UnityEngine.InputSystem.TouchPhase;
@@ -51,6 +52,7 @@ namespace MajdataPlay.IO
         public static bool UseOuterTouchAsSensor { get; set; }
         static void UpdateMousePosition()
         {
+            Profiler.BeginSample("ButtonRing.OnPreUpdate.UpdateMousePosition");
             var sensors = _sensors.Span;
             var mainCamera = Majdata<IMainCameraProvider>.Instance!.MainCamera;
 
@@ -111,6 +113,7 @@ namespace MajdataPlay.IO
                     Timestamp = now
                 });
             }
+            Profiler.EndSample();
         }
         static void FromTouchPanel(in ReadOnlyArray<Touch> touches,
                                    Span<int> sensorClickedCount,

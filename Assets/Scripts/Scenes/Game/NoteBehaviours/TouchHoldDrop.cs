@@ -1,17 +1,18 @@
 using MajdataPlay.Buffers;
 using MajdataPlay.Extensions;
+using MajdataPlay.IO;
+using MajdataPlay.Numerics;
 using MajdataPlay.Scenes.Game.Buffers;
 using MajdataPlay.Scenes.Game.Notes.Controllers;
 using MajdataPlay.Scenes.Game.Notes.Touch;
 using MajdataPlay.Scenes.Game.Utils;
-using MajdataPlay.IO;
-using MajdataPlay.Numerics;
+using MajdataPlay.Settings;
 using MajdataPlay.Utils;
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using MajdataPlay.Settings;
 using UnityEngine;
+using UnityEngine.Profiling;
 using UnityEngine.UI;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Behaviours
@@ -405,15 +406,18 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [OnPreUpdate]
         void OnPreUpdate()
         {
+            Profiler.BeginSample("TouchHoldDrop.OnPreUpdate");
             TooLateCheck();
             Check();
             BodyCheck();
             ForceEndCheck();
             Autoplay();
+            Profiler.EndSample();
         }
         [OnUpdate]
         void OnUpdate()
         {
+            Profiler.BeginSample("TouchHoldDrop.OnUpdate");
             var timing = GetTimeSpanToArriveTiming();
 
             switch (State)
@@ -471,6 +475,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                     }
                     return;
             }
+            Profiler.EndSample();
         }
         void RegisterGrade()
         {

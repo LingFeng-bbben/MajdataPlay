@@ -1,12 +1,13 @@
-using MajdataPlay.Settings;
 using MajdataPlay.Buffers;
 using MajdataPlay.Scenes.Game.Buffers;
 using MajdataPlay.Scenes.Game.Notes.Controllers;
+using MajdataPlay.Settings;
 using MajdataPlay.Utils;
-using UnityEngine;
-using UnityEngine.U2D;
 using System;
 using Unity.IL2CPP.CompilerServices;
+using UnityEngine;
+using UnityEngine.Profiling;
+using UnityEngine.U2D;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
@@ -102,6 +103,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [OnLateUpdate]
         void OnLateUpdate()
         {
+            Profiler.BeginSample("EachLineDrop.OnLateUpdate");
             if (State < NoteStatus.Initialized || IsDestroyed)
                 return;
             var timing = _noteController.ThisFrameSec - this.timing;
@@ -149,6 +151,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                     }
                     break;
             }
+            Profiler.EndSample();
         }
         void OnDestroy()
         {

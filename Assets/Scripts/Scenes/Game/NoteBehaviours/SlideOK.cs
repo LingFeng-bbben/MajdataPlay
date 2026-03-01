@@ -5,6 +5,7 @@ using System;
 using System.Runtime.CompilerServices;
 using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
+using UnityEngine.Profiling;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
@@ -128,6 +129,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void OnUpdate()
         {
+            Profiler.BeginSample("SlideOK.OnUpdate");
             if (_elapsedTime > 0.5f)
             {
                 State = NoteStatus.End;
@@ -138,6 +140,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 _elapsedTime += MajTimeline.DeltaTime;
             }
+            Profiler.EndSample();
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int SetR()
