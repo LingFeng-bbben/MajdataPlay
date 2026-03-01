@@ -16,7 +16,7 @@ using TouchPhase = UnityEngine.InputSystem.TouchPhase;
 
 namespace MajdataPlay.IO
 {
-    internal static partial class InputManager
+    internal static unsafe partial class InputManager
     {
         const int TOUCH_ANGLE_SMAPLE_COUNT = 96;
         const float FINGER_RADIUS_SEGMENT_LENGTH = 0.5f / 4;
@@ -29,7 +29,7 @@ namespace MajdataPlay.IO
         // 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
         // Version bit (16bit)
         // uint16
-        readonly static ulong?[][] _cachedPositions = new ulong?[4096][];
+        readonly static ulong* _posData = null;
         readonly static Dictionary<int, ulong> _touchRecorder = new(32);
         readonly static ReadOnlyMemory<Vector3> _unitCircle = ReadOnlyMemory<Vector3>.Empty;
 
@@ -217,45 +217,6 @@ namespace MajdataPlay.IO
             {
                 return -1;
             }
-            //ref var cachedPosition = ref _cachedPositions[x][y];
-            //if (cachedPosition is not null)
-            //{
-            //    var p = (ulong)cachedPosition;
-            //    var version = p >> (12 + 34);
-            //    if (version == _version)
-            //    {
-            //        //MajDebug.LogDebug("Cached position");
-            //        rawPositionData = p;
-            //        var eB = -1;
-            //        for (var i = 0; i < 12; i++)
-            //        {
-            //            if ((p & (1UL << i)) != 0)
-            //            {
-            //                if (UseOuterTouchAsSensor)
-            //                {
-            //                    if (i < 8)
-            //                    {
-            //                        newStates[i] = true;
-            //                    }
-            //                    else
-            //                    {
-            //                        eB = i;
-            //                        break;
-            //                    }
-            //                }
-            //                else
-            //                {
-            //                    return i;
-            //                }
-            //            }
-            //        }
-            //        for (var i = 0; i < 34; i++)
-            //        {
-            //            newStates[i] |= (p & (1UL << (i + 12))) != 0;
-            //        }
-            //        return eB;
-            //    }
-            //}
             var cubeRay = mainCamera.ScreenToWorldPoint(position);
             var newP = ((ulong)_version) << (12 + 34);
             var rayToCenter = cubeRay - new Vector3(0, 0, -10);
@@ -303,6 +264,7 @@ namespace MajdataPlay.IO
             var dAreaRad = Mathf.Max(userRad, userRad + d_extraRad);
             var eAreaRad = Mathf.Max(userRad, userRad + e_extraRad);
 
+
             for (var i = 0; i < radStepCount; i++)
             {
                 var rad = FINGER_RADIUS_SEGMENT_LENGTH * (i + 1);
@@ -313,10 +275,10 @@ namespace MajdataPlay.IO
                     //Debug.DrawLine(lastCircular, pos, Color.red, MajEnv.FRAME_LENGTH_SEC);
                     //lastCircular = pos;
 
-                    RaycastNow(pos, newStates, ref newP);
+                    ReadPostionData(pos, ref newP);
                 }
             }
-            RaycastNow(cubeRay, newStates, ref newP);
+            ReadPostionData(cubeRay, ref newP);
             ReadOnlySpan<(ulong Mask, float Radius)> areaData = stackalloc (ulong, float)[]
             {
                 (A_AREA_MASK, aAreaRad),
@@ -340,7 +302,7 @@ namespace MajdataPlay.IO
                         var circular = circleSamples[j] * rad;
                         var pos = cubeRay + circular;
 
-                        RaycastNow(pos, ref subP);
+                        ReadPostionData(pos, ref subP);
                     }
                 }
                 subP &= mask;
@@ -355,8 +317,6 @@ namespace MajdataPlay.IO
             {
                 newP |= 1UL << extraButton;
             }
-            //cachedPosition = newP;
-            rawPositionData = newP;
             if (UseOuterTouchAsSensor)
             {
                 if (extraButton < 8 && extraButton != -1)
@@ -381,6 +341,18 @@ namespace MajdataPlay.IO
                     return -1;
                 }
             }
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static void ReadPostionData(in Vector3 pos, ref ulong newP)
+        {
+            var x = (int)(pos.x * 100);
+            var y = (int)(pos.y * 100);
+            if (x < -540 || y < -540 || x > 539 || y > 539)
+            {
+                return;
+            }
+            ref readonly var posData = ref _posData[(x + 540) * 1280 + (y + 540)];
+            newP |= posData;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void RaycastNow(in Vector3 pos, in Span<bool> newStates, ref ulong newP)
