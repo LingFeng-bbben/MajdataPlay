@@ -5,8 +5,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Unity.Burst;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Utilities;
@@ -31,7 +34,7 @@ namespace MajdataPlay.IO
         // uint16
         readonly static ulong* _posData = null;
         readonly static Dictionary<int, ulong> _touchRecorder = new(32);
-        readonly static ReadOnlyMemory<Vector3> _unitCircle = ReadOnlyMemory<Vector3>.Empty;
+        readonly static ReadOnlyMemory<Vector4> _unitCircle = ReadOnlyMemory<Vector4>.Empty;
 
         static ushort _version = 0;
         static int _lastScreenWidth = -1;
@@ -252,62 +255,22 @@ namespace MajdataPlay.IO
             var d_extraRad = _lastDAreaExtraRadius;
             var e_extraRad = _lastEAreaExtraRadius;
             //var lastCircular = cubeRay + new Vector3(0, userRad);
-            const ulong A_AREA_MASK = 0b00000000_00000000_00000000_00000000_00000000_00001111_11110000_00000000;
-            const ulong B_AREA_MASK = 0b00000000_00000000_00000000_00000000_00001111_11110000_00000000_00000000;
-            const ulong C_AREA_MASK = 0b00000000_00000000_00000000_00000000_00110000_00000000_00000000_00000000;
-            const ulong D_AREA_MASK = 0b00000000_00000000_00000000_00111111_11000000_00000000_00000000_00000000;
-            const ulong E_AREA_MASK = 0b00000000_00000000_00111111_11000000_00000000_00000000_00000000_00000000;
-            var radStepCount = (int)(userRad / FINGER_RADIUS_SEGMENT_LENGTH);
-            var aAreaRad = Mathf.Max(userRad, userRad + a_extraRad);
-            var bAreaRad = Mathf.Max(userRad, userRad + b_extraRad);
-            var cAreaRad = Mathf.Max(userRad, userRad + c_extraRad);
-            var dAreaRad = Mathf.Max(userRad, userRad + d_extraRad);
-            var eAreaRad = Mathf.Max(userRad, userRad + e_extraRad);
-
-
-            for (var i = 0; i < radStepCount; i++)
+            fixed(Vector4* circleSamplesPtr = &circleSamples.GetPinnableReference())
             {
-                var rad = FINGER_RADIUS_SEGMENT_LENGTH * (i + 1);
-                for (int j = 0; j < TOUCH_ANGLE_SMAPLE_COUNT; j++)
-                {
-                    var circular = circleSamples[j] * rad;
-                    var pos = cubeRay + circular;
-                    //Debug.DrawLine(lastCircular, pos, Color.red, MajEnv.FRAME_LENGTH_SEC);
-                    //lastCircular = pos;
-
-                    ReadPostionData(pos, ref newP);
-                }
+                MobileTouchPanelHelper.PositionHandle(cubeRay,
+                    userRad,
+                    a_extraRad,
+                    b_extraRad,
+                    c_extraRad,
+                    d_extraRad,
+                    e_extraRad,
+                    FINGER_RADIUS_SEGMENT_LENGTH,
+                    TOUCH_ANGLE_SMAPLE_COUNT,
+                    _posData,
+                    circleSamplesPtr,
+                    ref newP);
             }
-            ReadPostionData(cubeRay, ref newP);
-            ReadOnlySpan<(ulong Mask, float Radius)> areaData = stackalloc (ulong, float)[]
-            {
-                (A_AREA_MASK, aAreaRad),
-                (B_AREA_MASK, bAreaRad),
-                (C_AREA_MASK, cAreaRad),
-                (D_AREA_MASK, dAreaRad),
-                (E_AREA_MASK, eAreaRad)
-            };
-            for (var a = 0; a < areaData.Length; a++)
-            {
-                ref readonly var data = ref areaData[a];
-                var mask = data.Mask;
-                var radius = data.Radius;
-                var subP = 0UL;
-                var segLength = radius / FINGER_RADIUS_SEGMENT_LENGTH;
-                for (var i = 0; i < segLength; i++)
-                {
-                    var rad = FINGER_RADIUS_SEGMENT_LENGTH * (i + 1);
-                    for (int j = 0; j < TOUCH_ANGLE_SMAPLE_COUNT; j++)
-                    {
-                        var circular = circleSamples[j] * rad;
-                        var pos = cubeRay + circular;
-
-                        ReadPostionData(pos, ref subP);
-                    }
-                }
-                subP &= mask;
-                newP |= subP;
-            }
+            
 
             for (var i = 0; i < 34; i++)
             {
@@ -342,18 +305,7 @@ namespace MajdataPlay.IO
                 }
             }
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static void ReadPostionData(in Vector3 pos, ref ulong newP)
-        {
-            var x = (int)(pos.x * 100);
-            var y = (int)(pos.y * 100);
-            if (x < -540 || y < -540 || x > 539 || y > 539)
-            {
-                return;
-            }
-            ref readonly var posData = ref _posData[(x + 540) * 1280 + (y + 540)];
-            newP |= posData;
-        }
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void RaycastNow(in Vector3 pos, in Span<bool> newStates, ref ulong newP)
         {

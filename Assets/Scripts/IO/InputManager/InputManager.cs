@@ -330,7 +330,7 @@ namespace MajdataPlay.IO
                 _sensorLastTriggerTimes[i] = TimeSpan.Zero;
             }
             _posData = UnsafeHelper.Alloc<ulong>(1280 * 1280);
-            var samples = new Vector3[TOUCH_ANGLE_SMAPLE_COUNT];
+            var samples = new Vector4[TOUCH_ANGLE_SMAPLE_COUNT];
             var step = 2f * Mathf.PI / TOUCH_ANGLE_SMAPLE_COUNT;
 
             for (int i = 0; i < TOUCH_ANGLE_SMAPLE_COUNT; i++)
