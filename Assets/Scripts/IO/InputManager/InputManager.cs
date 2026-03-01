@@ -7,6 +7,7 @@ using LibUsbDotNet.Main;
 using MajdataPlay.Collections;
 using MajdataPlay.Numerics;
 using MajdataPlay.Settings;
+using MajdataPlay.UnsafeKit;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Concurrent;
@@ -19,6 +20,7 @@ using System.Security.Policy;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.InputSystem.EnhancedTouch;
+using static UnityEditor.PlayerSettings;
 //using Microsoft.Win32;
 //using System.Windows.Forms;
 //using Application = UnityEngine.Application;
@@ -327,12 +329,8 @@ namespace MajdataPlay.IO
                 }
                 _sensorLastTriggerTimes[i] = TimeSpan.Zero;
             }
-            var len = _cachedPositions.Length;
-            for (var i = 0; i < len; i++)
-            {
-                _cachedPositions[i] = new ulong?[len];
-            }
-            var samples = new Vector3[TOUCH_ANGLE_SMAPLE_COUNT];
+            _posData = UnsafeHelper.Alloc<ulong>(1280 * 1280);
+            var samples = new Vector4[TOUCH_ANGLE_SMAPLE_COUNT];
             var step = 2f * Mathf.PI / TOUCH_ANGLE_SMAPLE_COUNT;
 
             for (int i = 0; i < TOUCH_ANGLE_SMAPLE_COUNT; i++)
@@ -355,6 +353,25 @@ namespace MajdataPlay.IO
             _instanceID2SensorIndexMappingTable = instanceID2SensorIndexMappingTable;
             _lastScreenHeight = Screen.height;
             _lastScreenWidth = Screen.width;
+
+            for (var x = -540; x <= 540; x++)
+            {
+                for (var y = -540; y <= 540; y++)
+                {
+                    var point = new Vector3(x / 100f, y / 100f, -10);
+                    var ray = new Ray(point, Vector3.forward);
+                    var ishit = Physics.Raycast(ray, out var hitInfom);
+                    ref var posData = ref _posData[(x + 540) * 1280 + (y + 540)];
+                    if (ishit)
+                    {
+                        var id = hitInfom.colliderInstanceID;
+                        if (_instanceID2SensorIndexMappingTable.TryGetValue(id, out var index))
+                        {
+                            posData |= 1UL << (index + 12);
+                        }
+                    }
+                }
+            }
 #if UNITY_STANDALONE
             IODeviceDetect();
             ButtonRing.Init();
@@ -1205,6 +1222,10 @@ namespace MajdataPlay.IO
         }
         static void OnApplicationQuit()
         {
+            if (_posData is not null)
+            {
+                UnsafeHelper.Free(_posData);
+            }
             MajEnv.OnApplicationQuit -= OnApplicationQuit;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
