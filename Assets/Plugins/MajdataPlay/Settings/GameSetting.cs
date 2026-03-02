@@ -109,7 +109,7 @@ namespace MajdataPlay.Settings
         /// </summary>
         [Preserve]
         public float InnerJudgeDistance { get; set; } = 1f;
-        [SettingVisualizationIgnore]
+        [Preserve]
         public bool DisplayHoldHeadJudgeResult { get; set; } = false;
         [Preserve]
         public float TapScale { get; set; } = 1f;
