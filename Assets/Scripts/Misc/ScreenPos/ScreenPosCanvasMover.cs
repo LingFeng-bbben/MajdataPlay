@@ -56,17 +56,17 @@ namespace MajdataPlay
         RectTransform? _persistentMainDisplay;
 
         // 副屏遮罩（Sub_Cover）
-        GameObject? _subCover;
-        Transform? _subCoverTransform;
-        RectTransform? _subCoverRectTransform;
+        GameObject _subCover;
+        Transform _subCoverTransform;
+        RectTransform _subCoverRectTransform;
         
-        GameObject? _subCoverBottom;
-        Transform? _subCoverBottomTransform;
-        RectTransform? _subCoverBottomRectTransform;
+        GameObject _subCoverBottom;
+        Transform _subCoverBottomTransform;
+        RectTransform _subCoverBottomRectTransform;
 
         //副屏幕（Sub_Display）
 
-        RectTransform? _subDisplay;
+        RectTransform _subDisplay;
 
         DisplayOptions? _displayOptions;
 
@@ -249,11 +249,6 @@ namespace MajdataPlay
 
         void UpdateSubCover()
         {
-            if (_subCoverRectTransform == null || _subDisplay == null)
-            {
-                return;
-            }
-
             // Sub_Display底边 (pivot 0.5,0.5)
             float subDisplayBottom = _subDisplay.anchoredPosition.y - SUB_DISPLAY_HEIGHT / 2f;
             // Main_Display顶边 (pivot 0.5,0.5)
@@ -268,11 +263,7 @@ namespace MajdataPlay
 
         void ApplyTransform()
         {
-            if (_displayOptions == null)
-            {
-                return;
-            }
-            var initTransform = _displayOptions.MainScreenTransform;
+            var initTransform = _displayOptions!.MainScreenTransform;
             _lastTransformDisplay = initTransform;
             if (initTransform)
             {
@@ -352,7 +343,6 @@ namespace MajdataPlay
                             _lastScale = screenScale;
                             ApplyPosition(screenOffset, screenScale, updateCache: true);
                         }
-
                         UpdateSubCover();
                     }
                     return;
