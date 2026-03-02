@@ -127,11 +127,15 @@ namespace MajdataPlay
 
         public static bool TryGetLocalizedText(string origin,out string strOut)
         {
-            var table = Current.MappingTable;
-            var result = table.Find(x => x.Origin == origin);
-            strOut = result?.Content ?? origin;
-
-            return result is not null;
+            var translations = Current.GetTranslations();
+            if (translations.TryGetValue(origin, out var content))
+            {
+                strOut = content;
+                return true;
+            }
+            
+            strOut = origin;
+            return false;
         }
         static Language _current = Language.Default;
     }
