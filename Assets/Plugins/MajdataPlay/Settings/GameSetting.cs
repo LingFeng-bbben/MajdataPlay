@@ -123,13 +123,22 @@ namespace MajdataPlay.Settings
         public TouchFeedbackLevel TouchFeedback { get; set; } = TouchFeedbackLevel.Outer_Only;
         [SettingVisualizationIgnore]
         public string Resolution { get; set; } = "1080x1920";
+#if UNITY_ANDROID || UNITY_IOS
         [Preserve]
         public bool MainScreenTransform { get; set; } = false;
         [Preserve]
         public float MainScreenScale { get; set; } = 1f;
         [Preserve]
+        public float MainScreenPosition { get; set; } = 0f;
+#else
+        [SettingVisualizationIgnore]
+        public bool MainScreenTransform { get; set; } = false;
+        [SettingVisualizationIgnore]
+        public float MainScreenScale { get; set; } = 1f;
+        [SettingVisualizationIgnore]
         public float MainScreenPosition { get; set; } = 1f;
-        [Preserve]
+#endif
+        [SettingVisualizationIgnore]
         public float MainScreenCachedScreenCenterY { get; set; } = 960f;
         [Preserve]
         public RenderQualityOption RenderQuality { get; set; } = RenderQualityOption.Low;

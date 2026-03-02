@@ -54,16 +54,27 @@ namespace MajdataPlay
         //float _lastMainScreenPos = 1f;
         DisplayOptions? _displayOptions;
 
-        // Start is called before the first frame update
         void Awake()
         {
+            _displayOptions = MajInstances.Settings?.Display;
+        }
+        private void Start()
+        {
+            StartCoroutine(delayedStart());
+        }
+        IEnumerator delayedStart()
+        {
+            _displayOptions = MajInstances.Settings?.Display;
+            while (_displayOptions is null)
+            {
+                yield return new WaitForEndOfFrame();
+                _displayOptions = MajInstances.Settings?.Display;
+            }
+
             rt = GetComponent<RectTransform>();
 
             // 保存预制体的原始Y位置，用于关闭MainScreenTransform时恢复
             _originalPosY = rt.anchoredPosition.y;
-
-            _displayOptions = MajInstances.Settings?.Display;
-
 
             _parentRt = transform.parent as RectTransform;
             // 先查找CanvasScaler，再计算屏幕中心
@@ -222,6 +233,7 @@ namespace MajdataPlay
 
         void Update()
         {
+            if (_displayOptions is null) return;
             var transformDisplay = _displayOptions!.MainScreenTransform;
 
             if (!transformDisplay)

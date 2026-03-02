@@ -28,12 +28,22 @@ namespace MajdataPlay
         
         void Awake()
         {
-            //_transform = transform;
             _displayOptions = MajInstances.Settings?.Display;
         }
         void Start()
         {
+            StartCoroutine(delayedStart());
+        }
+        
+        IEnumerator delayedStart()
+        {
             _displayOptions = MajInstances.Settings?.Display;
+            while (_displayOptions is null)
+            {
+                yield return new WaitForEndOfFrame();
+                _displayOptions = MajInstances.Settings?.Display;
+            }
+
             cam = GetComponent<Camera>();
             _originalCameraY = transform.position.y; // 保存场景原始相机位置
             _baseY = 1.5f;
@@ -41,8 +51,8 @@ namespace MajdataPlay
             _baseOrthographicSize = cam.orthographicSize;
             ApplyTransform();
             //transform.position = new Vector3(0, 1.5f + 2.7f * (MajInstances.Settings?.Display.MainScreenPosition ?? 1f), -10); //Original
-            
-#if UNITY_ANDROID || UNITY_IOS
+
+
             cam = GetComponent<Camera>();
             var aspectratio = (float)Screen.width / (float)Screen.height;
 
@@ -59,9 +69,9 @@ namespace MajdataPlay
             {
                 cam.rect = new Rect(0, 0, 1, 1);
             }
-#endif
+            yield return new WaitForEndOfFrame();
         }
-        
+
         void RestoreOriginal()
         {
             transform.position = new Vector3(0, _originalCameraY, -10);
@@ -96,7 +106,8 @@ namespace MajdataPlay
 
         void Update()
         {
-            var transformDisplay = _displayOptions!.MainScreenTransform;
+            if(_displayOptions is null) return;
+            var transformDisplay = _displayOptions.MainScreenTransform;
 
             //如果没开调整显示位置，就直接return
             if (!transformDisplay)
@@ -114,8 +125,8 @@ namespace MajdataPlay
             //跑到这就是开了，标记开启了调整显示位置
             _lastTransformDisplay = true;
             
-            var screenOffset = _displayOptions!.MainScreenPosition;
-            var screenScale = _displayOptions!.MainScreenScale;
+            var screenOffset = _displayOptions.MainScreenPosition;
+            var screenScale = _displayOptions.MainScreenScale;
 
             if (screenOffset == _lastOffset && screenScale == _lastScale) return;
             _lastOffset = screenOffset;
