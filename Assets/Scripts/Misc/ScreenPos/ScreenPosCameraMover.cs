@@ -23,6 +23,9 @@ namespace MajdataPlay
         float _baseOrthographicSize;
         float _lastOffset = float.NaN;
         float _lastScale = float.NaN;
+
+        float _lastMainScreenOffset;
+        float _lastMainScreenScale;
         bool _lastTransformDisplay;
         
         
@@ -52,12 +55,10 @@ namespace MajdataPlay
 
         void ApplyTransform()
         {
-            var initTransform = _displayOptions!.MainScreenTransform;
-            _lastTransformDisplay = initTransform;
-            if (initTransform)
+            if (_lastTransformDisplay)
             {
-                var offset = _displayOptions!.MainScreenOffset;
-                var scale = _displayOptions!.MainScreenScale;
+                var offset = _lastMainScreenOffset;
+                var scale = _lastMainScreenScale;
                 _lastOffset = offset;
                 _lastScale = scale;
                 ApplyPosition(offset, scale);
@@ -86,6 +87,10 @@ namespace MajdataPlay
                             _baseY = 1.5f;
                             //获取当前正交视图比例
                             _baseOrthographicSize = _cam.orthographicSize;
+
+                            _lastTransformDisplay = _displayOptions.MainScreenTransform;
+                            _lastMainScreenOffset = _displayOptions.MainScreenOffset;
+                            _lastMainScreenScale = _displayOptions.MainScreenScale;
                             ApplyTransform();
                             //transform.position = new Vector3(0, 1.5f + 2.7f * (MajInstances.Settings?.Display.MainScreenPosition ?? 1f), -10); //Original
 
@@ -111,26 +116,25 @@ namespace MajdataPlay
                     return;
                 case FLAG_INITED:
                     {
-                        var transformDisplay = _displayOptions!.MainScreenTransform;
-
+                        var transformDisplay = _lastTransformDisplay;
+                        _lastTransformDisplay = _displayOptions!.MainScreenTransform;
+                        _lastMainScreenOffset = _displayOptions!.MainScreenOffset;
+                        _lastMainScreenScale = _displayOptions!.MainScreenScale;
                         //如果没开调整显示位置，就直接return
-                        if (!transformDisplay)
+                        if (!transformDisplay & _lastTransformDisplay)
                         {
-                            if (_lastTransformDisplay)
-                            {
-                                _lastTransformDisplay = false;
-                                _lastOffset = float.NaN;
-                                _lastScale = float.NaN;
-                                RestoreOriginal();
-                            }
+                            _lastTransformDisplay = false;
+                            _lastOffset = float.NaN;
+                            _lastScale = float.NaN;
+                            RestoreOriginal();
                             return;
                         }
 
                         //跑到这就是开了，标记开启了调整显示位置
-                        _lastTransformDisplay = true;
+                        //_lastTransformDisplay = true;
 
-                        var screenOffset = _displayOptions.MainScreenOffset;
-                        var screenScale = _displayOptions.MainScreenScale;
+                        var screenOffset = _lastMainScreenOffset;
+                        var screenScale = _lastMainScreenScale;
 
                         if (screenOffset == _lastOffset && screenScale == _lastScale)
                         {
