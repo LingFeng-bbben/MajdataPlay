@@ -1,3 +1,4 @@
+using MajdataPlay.Editor;
 using MajdataPlay.Settings;
 using MajdataPlay.Utils;
 using System.Collections;
@@ -17,15 +18,31 @@ namespace MajdataPlay
 
         Transform _transform;
         DisplayOptions? _displayOptions;
-        
+
+        [SerializeField]
+        [ReadOnlyField]
         float _baseY;
+        [SerializeField]
+        [ReadOnlyField]
         float _originalCameraY; // 保存场景的原始相机Y位置
+        [SerializeField]
+        [ReadOnlyField]
         float _baseOrthographicSize;
+        [SerializeField]
+        [ReadOnlyField]
         float _lastOffset = float.NaN;
+        [SerializeField]
+        [ReadOnlyField]
         float _lastScale = float.NaN;
 
+        [SerializeField]
+        [ReadOnlyField]
         float _lastMainScreenOffset;
+        [SerializeField]
+        [ReadOnlyField]
         float _lastMainScreenScale;
+        [SerializeField]
+        [ReadOnlyField]
         bool _lastTransformDisplay;
         
         
@@ -34,6 +51,10 @@ namespace MajdataPlay
             _displayOptions = MajInstances.Settings?.Display;
             _transform = transform;
             _cam = GetComponent<Camera>();
+            _originalCameraY = _transform.position.y; // 保存场景原始相机位置
+            _baseY = 1.5f;
+            //获取当前正交视图比例
+            _baseOrthographicSize = _cam.orthographicSize;
         }
         void RestoreOriginal()
         {
@@ -81,11 +102,7 @@ namespace MajdataPlay
                             return;
                         }
                         _flag = FLAG_INITED;
-                        _originalCameraY = transform.position.y; // 保存场景原始相机位置
-                        _baseY = 1.5f;
-                        //获取当前正交视图比例
-                        _baseOrthographicSize = _cam.orthographicSize;
-
+                        
                         _lastTransformDisplay = _displayOptions.MainScreenTransform;
                         _lastMainScreenOffset = _displayOptions.MainScreenOffset;
                         _lastMainScreenScale = _displayOptions.MainScreenScale;
@@ -117,12 +134,15 @@ namespace MajdataPlay
                         _lastMainScreenOffset = _displayOptions!.MainScreenOffset;
                         _lastMainScreenScale = _displayOptions!.MainScreenScale;
                         //如果没开调整显示位置，就直接return
-                        if (!transformDisplay & _lastTransformDisplay)
+                        if (!_lastTransformDisplay)
                         {
-                            _lastTransformDisplay = false;
-                            _lastOffset = float.NaN;
-                            _lastScale = float.NaN;
-                            RestoreOriginal();
+                            if(transformDisplay)
+                            {
+                                _lastTransformDisplay = false;
+                                _lastOffset = float.NaN;
+                                _lastScale = float.NaN;
+                                RestoreOriginal();
+                            }
                             return;
                         }
 

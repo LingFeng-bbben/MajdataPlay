@@ -58,7 +58,7 @@ namespace MajdataPlay
         // 副屏遮罩（Sub_Cover）
         GameObject _subCover;
         Transform _subCoverTransform;
-        RectTransform _subCoverRectTransform;
+        RectTransform? _subCoverRectTransform;
         
         GameObject _subCoverBottom;
         Transform _subCoverBottomTransform;
@@ -66,7 +66,7 @@ namespace MajdataPlay
 
         //副屏幕（Sub_Display）
 
-        RectTransform _subDisplay;
+        RectTransform? _subDisplay;
 
         DisplayOptions? _displayOptions;
 
@@ -249,6 +249,10 @@ namespace MajdataPlay
 
         void UpdateSubCover()
         {
+            if(_subCoverRectTransform is null || _subDisplay is null)
+            {
+                return;
+            }
             // Sub_Display底边 (pivot 0.5,0.5)
             float subDisplayBottom = _subDisplay.anchoredPosition.y - SUB_DISPLAY_HEIGHT / 2f;
             // Main_Display顶边 (pivot 0.5,0.5)
