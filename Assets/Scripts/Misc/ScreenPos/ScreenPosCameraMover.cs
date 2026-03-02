@@ -75,45 +75,41 @@ namespace MajdataPlay
             {
                 case FLAG_NOT_INIT:
                     {
+                        _displayOptions = MajInstances.Settings?.Display;
                         if (_displayOptions is null)
                         {
-                            _displayOptions = MajInstances.Settings?.Display;
-                            if (_displayOptions is null)
-                            {
-                                return;
-                            }
-                            _flag = FLAG_INITED;
-                            _originalCameraY = transform.position.y; // 保存场景原始相机位置
-                            _baseY = 1.5f;
-                            //获取当前正交视图比例
-                            _baseOrthographicSize = _cam.orthographicSize;
+                            return;
+                        }
+                        _flag = FLAG_INITED;
+                        _originalCameraY = transform.position.y; // 保存场景原始相机位置
+                        _baseY = 1.5f;
+                        //获取当前正交视图比例
+                        _baseOrthographicSize = _cam.orthographicSize;
 
-                            _lastTransformDisplay = _displayOptions.MainScreenTransform;
-                            _lastMainScreenOffset = _displayOptions.MainScreenOffset;
-                            _lastMainScreenScale = _displayOptions.MainScreenScale;
-                            ApplyTransform();
-                            //transform.position = new Vector3(0, 1.5f + 2.7f * (MajInstances.Settings?.Display.MainScreenPosition ?? 1f), -10); //Original
+                        _lastTransformDisplay = _displayOptions.MainScreenTransform;
+                        _lastMainScreenOffset = _displayOptions.MainScreenOffset;
+                        _lastMainScreenScale = _displayOptions.MainScreenScale;
+                        ApplyTransform();
+                        //transform.position = new Vector3(0, 1.5f + 2.7f * (MajInstances.Settings?.Display.MainScreenPosition ?? 1f), -10); //Original
 
 
-                            var aspectratio = (float)Screen.width / (float)Screen.height;
+                        var aspectratio = (float)Screen.width / (float)Screen.height;
 
 
-                            if (aspectratio < (9f / 18f))
-                            {
-                                _cam.rect = new Rect(0, 0.22f, 1, 1);
-                            }
-                            else if (aspectratio < (9f / 16f))
-                            {
-                                _cam.rect = new Rect(0, 0.12f, 1, 1);
-                            }
-                            else
-                            {
-                                _cam.rect = new Rect(0, 0, 1, 1);
-                            }
-                            goto case FLAG_INITED;
+                        if (aspectratio < (9f / 18f))
+                        {
+                            _cam.rect = new Rect(0, 0.22f, 1, 1);
+                        }
+                        else if (aspectratio < (9f / 16f))
+                        {
+                            _cam.rect = new Rect(0, 0.12f, 1, 1);
+                        }
+                        else
+                        {
+                            _cam.rect = new Rect(0, 0, 1, 1);
                         }
                     }
-                    return;
+                    goto case FLAG_INITED;
                 case FLAG_INITED:
                     {
                         var transformDisplay = _lastTransformDisplay;

@@ -127,21 +127,12 @@ namespace MajdataPlay.Settings
         [SettingVisualizationIgnore]
         public string Resolution { get; set; } = "1080x1920";
 #endif
-#if UNITY_ANDROID || UNITY_IOS
         [Preserve]
         public bool MainScreenTransform { get; set; } = false;
         [Preserve]
         public float MainScreenScale { get; set; } = 1f;
         [Preserve]
         public float MainScreenOffset { get; set; } = 1f;
-#else
-        [SettingVisualizationIgnore]
-        public bool MainScreenTransform { get; set; } = false;
-        [SettingVisualizationIgnore]
-        public float MainScreenScale { get; set; } = 1f;
-        [SettingVisualizationIgnore]
-        public float MainScreenOffset { get; set; } = 1f;
-#endif
         [SettingVisualizationIgnore]
         public float MainScreenCachedScreenCenterY { get; set; } = 960f;
         [Preserve]
