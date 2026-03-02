@@ -82,7 +82,7 @@ namespace MajdataPlay
             _lastTransformDisplay = initTransform;
             if (initTransform)
             {
-                var offset = _displayOptions!.MainScreenPosition;
+                var offset = _displayOptions!.MainScreenOffset;
                 var scale = _displayOptions!.MainScreenScale;
                 _lastOffset = offset;
                 _lastScale = scale;
@@ -114,7 +114,7 @@ namespace MajdataPlay
             //跑到这就是开了，标记开启了调整显示位置
             _lastTransformDisplay = true;
             
-            var screenOffset = _displayOptions!.MainScreenPosition;
+            var screenOffset = _displayOptions!.MainScreenOffset;
             var screenScale = _displayOptions!.MainScreenScale;
 
             if (screenOffset == _lastOffset && screenScale == _lastScale) return;

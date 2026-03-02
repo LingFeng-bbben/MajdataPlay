@@ -132,9 +132,11 @@ namespace MajdataPlay.Settings
         [Preserve]
         public float MainScreenScale { get; set; } = 1f;
         [Preserve]
-        public float MainScreenPosition { get; set; } = 1f;
+        public float MainScreenOffset { get; set; } = 1f;
         [Preserve]
         public float MainScreenCachedScreenCenterY { get; set; } = 960f;
+        [Preserve]
+        public float SubDisplayOffset { get; set; } = 0f;
         [Preserve]
         public RenderQualityOption RenderQuality { get; set; } = RenderQualityOption.Low;
 #if UNITY_STANDALONE

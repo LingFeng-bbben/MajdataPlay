@@ -241,6 +241,12 @@ namespace MajdataPlay.Scenes.Setting
                         }
                     } 
                         break;
+                    
+                    case "SubDisplayOffset":
+                        _maxValue = 5m;
+                        _minValue = -5m;
+                        _step = 0.01m;
+                        break;
 
 
                     case "DisplayOffset":

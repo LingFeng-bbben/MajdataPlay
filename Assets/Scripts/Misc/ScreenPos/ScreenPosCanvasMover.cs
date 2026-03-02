@@ -11,47 +11,57 @@ namespace MajdataPlay
     public class ScreenPosCanvasMover : MonoBehaviour
     {
         RectTransform rt;
-
-
+        
+        // 主屏幕 Y 轴的"零偏移基准位置"（Canvas 坐标系），偏移量以此为基础叠加
         float _basePosY;
-        float _originalPosY; // 保存预制体的原始Y位置
+        // 预制体自带的原始 Y 位置，关闭 MainScreenTransform 功能时用于完整还原
+        float _originalPosY;
+        // 父节点的 RectTransform，用于在无 CanvasScaler 时读取父容器高度以计算屏幕中心
         RectTransform? _parentRt;
-        float _lastOffset = float.NaN;
-        float _lastScale = float.NaN;
-        float _cachedScreenCenterY;
-        bool _lastTransformDisplay;
 
+        // 脏检测（避免每帧重复计算）
+        float _lastOffset = float.NaN;       // 上一帧的主屏幕偏移量
+        float _lastScale = float.NaN;        // 上一帧的主屏幕缩放
+        float _lastSubDisplayOffset = float.NaN; // 上一帧的副屏幕偏移量
+        bool _lastTransformDisplay;          // 上一帧 MainScreenTransform 开关的状态
+
+        // 屏幕中心缓存，缩放时需要以屏幕中心为锚点补偿位移
+        float _cachedScreenCenterY;
         CanvasScaler? _canvasScaler;
+        // 跨场景保存真正的原始分辨率
         static Vector2? _originalReferenceResolution;
+        // 当前场景启动时记录的基准分辨率
         Vector2 _baseReferenceResolution;
 
-        // SceneSwitcher的持久化Canvas，过渡动画需要同步缩放和位置
+        // 持久化 Canvas 同步
+        // SceneSwitcher 的 DontDestroyOnLoad Canvas 负责场景切换过渡动画，
+        // 必须与当前场景的 Canvas 保持相同的缩放和位置，否则过渡时画面会跳变
         CanvasScaler? _persistentCanvasScaler;
         RectTransform? _persistentMainDisplay;
-        
-        
+
+        // 副屏遮罩（Sub_Cover）
         GameObject? _subCover;
         Transform? _subCoverTransform;
         RectTransform? _subCoverRectTransform;
-
+        
         GameObject? _subCoverBottom;
         Transform? _subCoverBottomTransform;
         RectTransform? _subCoverBottomRectTransform;
+
+        //副屏幕（Sub_Display）
+
+        RectTransform? _subDisplay;
 
         const float MAIN_DISPLAY_POS_Y = 540;
         const float SUB_COVER_HEIGHT = 390;
         const float SUB_COVER_WIDTH = 1080;
         const float SUB_COVER_POS_Y = 315;
 
-        const float SUB_COVER_BOTTOM_HEIGHT = 0;
-        const float SUB_COVER_BOTTOM_WIDTH = 1080;
+        const float SUB_DISPLAY_ORIGINAL_POS_Y = 735f;
+        const float SUB_DISPLAY_HEIGHT = 450f;
+        const float MAIN_DISPLAY_HEIGHT = 1080f;
         const float SUB_COVER_BOTTOM_POS_Y = -960;
-
-        //const int FLAG_NOT_INIT = 0;
-        //const int FLAG_INITED = 1;
-
-        //int _flag = FLAG_NOT_INIT;
-        //float _lastMainScreenPos = 1f;
+        
         DisplayOptions? _displayOptions;
 
         // Start is called before the first frame update
@@ -61,10 +71,8 @@ namespace MajdataPlay
 
             // 保存预制体的原始Y位置，用于关闭MainScreenTransform时恢复
             _originalPosY = rt.anchoredPosition.y;
-
             _displayOptions = MajInstances.Settings?.Display;
-
-
+            
             _parentRt = transform.parent as RectTransform;
             // 先查找CanvasScaler，再计算屏幕中心
             var rootCanvas = GetComponentInParent<Canvas>()?.rootCanvas;
@@ -81,7 +89,6 @@ namespace MajdataPlay
             }
 
             // 从Screen尺寸直接计算未缩放Canvas中心（Awake中rect可能尚未初始化）
-            // Expand模式: scaleFactor = Min(screenW/refW, screenH/refH)
             if (_canvasScaler != null)
             {
                 float baseScaleFactor = Mathf.Min(
@@ -96,11 +103,12 @@ namespace MajdataPlay
             }
             else
             {
-                _cachedScreenCenterY = _displayOptions!.MainScreenCachedScreenCenterY;
+                _cachedScreenCenterY = _displayOptions?.MainScreenCachedScreenCenterY ?? 960f;
             }
-            _displayOptions!.MainScreenCachedScreenCenterY = _cachedScreenCenterY;
+            if (_displayOptions != null)
+                _displayOptions.MainScreenCachedScreenCenterY = _cachedScreenCenterY;
 
-            // 查找SceneSwitcher的持久化Canvas（DontDestroyOnLoad），用于同步过渡动画
+            // 查找SceneSwitcher的持久化Canvas，用于同步过渡动画
             foreach (var scaler in FindObjectsOfType<CanvasScaler>(true))
             {
                 if (scaler != _canvasScaler && scaler != null)
@@ -120,10 +128,6 @@ namespace MajdataPlay
             _basePosY = 810f;
             rt.anchoredPosition = new Vector2(0, _basePosY);
 
-            
-            ApplyTransform();
-            
-            
             var sub = transform.parent.Find("Sub_Cover");
             if (sub != null)
             {
@@ -138,6 +142,13 @@ namespace MajdataPlay
                 _subCoverBottomTransform = subBottom;
                 _subCoverBottomRectTransform = subBottom.GetComponent<RectTransform>();
             }
+            var subDisplay = transform.parent.Find("Sub_Display");
+            if (subDisplay != null)
+            {
+                _subDisplay = subDisplay.GetComponent<RectTransform>();
+            }
+
+            ApplyTransform();
         }
         
         void RestoreOriginal()
@@ -152,6 +163,15 @@ namespace MajdataPlay
                 _persistentCanvasScaler.referenceResolution = _baseReferenceResolution;
             if (_persistentMainDisplay != null)
                 _persistentMainDisplay.anchoredPosition = new Vector2(0, _originalPosY);
+            // 恢复Sub_Display位置
+            if (_subDisplay != null)
+                _subDisplay.anchoredPosition = new Vector2(_subDisplay.anchoredPosition.x, SUB_DISPLAY_ORIGINAL_POS_Y);
+            // 恢复Sub_Cover位置和大小
+            if (_subCoverRectTransform != null)
+            {
+                _subCoverRectTransform.anchoredPosition = new Vector2(0, SUB_COVER_POS_Y);
+                _subCoverRectTransform.sizeDelta = new Vector2(SUB_COVER_WIDTH, SUB_COVER_HEIGHT);
+            }
         }
 
         void ApplyPosition(float offset, float scale, bool updateCache = false)
@@ -160,7 +180,6 @@ namespace MajdataPlay
             {
                 // localScale路径：parent rect高度不受我们代码影响，可以安全读取
                 // CanvasScaler路径：屏幕中心已在Awake中从Screen尺寸计算，运行时不更新
-                // （因为referenceResolution的修改时机与rect.height读取不同步，会算出错误值）
                 float parentHeight = _parentRt != null ? _parentRt.rect.height : 0f;
                 if (parentHeight > 0)
                 {
@@ -201,17 +220,47 @@ namespace MajdataPlay
             }
         }
 
+        void ApplySubDisplayOffset(float offset)
+        {
+            if (_subDisplay == null) return;
+            float newY = SUB_DISPLAY_ORIGINAL_POS_Y + offset;
+            _subDisplay.anchoredPosition = new Vector2(_subDisplay.anchoredPosition.x, newY);
+        }
+
+        void UpdateSubCover()
+        {
+            if (_subCoverRectTransform == null || _subDisplay == null) return;
+
+            // Sub_Display底边 (pivot 0.5,0.5)
+            float subDisplayBottom = _subDisplay.anchoredPosition.y - SUB_DISPLAY_HEIGHT / 2f;
+            // Main_Display顶边 (pivot 0.5,0.5)
+            float mainDisplayTop = rt.anchoredPosition.y + MAIN_DISPLAY_HEIGHT / 2f;
+
+            float coverHeight = Mathf.Max(0f, subDisplayBottom - mainDisplayTop);
+            float coverCenterY = (subDisplayBottom + mainDisplayTop) / 2f;
+
+            _subCoverRectTransform.anchoredPosition = new Vector2(0, coverCenterY);
+            _subCoverRectTransform.sizeDelta = new Vector2(SUB_COVER_WIDTH, coverHeight);
+        }
+
         void ApplyTransform()
         {
-            var initTransform = _displayOptions!.MainScreenTransform;
+            if (_displayOptions == null) return;
+            var initTransform = _displayOptions.MainScreenTransform;
             _lastTransformDisplay = initTransform;
             if (initTransform)
             {
-                var offset = _displayOptions!.MainScreenPosition;
+                var offset = _displayOptions!.MainScreenOffset;
                 var scale = _displayOptions!.MainScreenScale;
                 _lastOffset = offset;
                 _lastScale = scale;
                 ApplyPosition(offset, scale);
+
+                var subOffset = _displayOptions.SubDisplayOffset;
+                _lastSubDisplayOffset = subOffset;
+                ApplySubDisplayOffset(subOffset * 100f);
+
+                UpdateSubCover();
             }
             else
             {
@@ -222,7 +271,14 @@ namespace MajdataPlay
 
         void Update()
         {
-            var transformDisplay = _displayOptions!.MainScreenTransform;
+            if (_displayOptions == null)
+            {
+                _displayOptions = MajInstances.Settings?.Display;
+                if (_displayOptions == null) return;
+                // Awake时_displayOptions为null导致ApplyTransform跳过，首次获取后补执行
+                ApplyTransform();
+            }
+            var transformDisplay = _displayOptions.MainScreenTransform;
 
             if (!transformDisplay)
             {
@@ -231,19 +287,27 @@ namespace MajdataPlay
                     _lastTransformDisplay = false;
                     _lastOffset = float.NaN;
                     _lastScale = float.NaN;
+                    _lastSubDisplayOffset = float.NaN;
                     RestoreOriginal();
                 }
                 return;
             }
             _lastTransformDisplay = true;
 
-            var screenOffset = _displayOptions!.MainScreenPosition;
-            var screenScale = _displayOptions!.MainScreenScale;
+            var subDisplayOffset = _displayOptions.SubDisplayOffset;
+            var screenOffset = _displayOptions.MainScreenOffset;
+            var screenScale = _displayOptions.MainScreenScale;
 
-
+            bool subChanged = subDisplayOffset != _lastSubDisplayOffset;
             bool mainChanged = screenOffset != _lastOffset || screenScale != _lastScale;
-            
-            if (!mainChanged) return;
+
+            if (!subChanged && !mainChanged) return;
+
+            if (subChanged)
+            {
+                _lastSubDisplayOffset = subDisplayOffset;
+                ApplySubDisplayOffset(subDisplayOffset * 100f);
+            }
 
             if (mainChanged)
             {
@@ -251,65 +315,9 @@ namespace MajdataPlay
                 _lastScale = screenScale;
                 ApplyPosition(screenOffset, screenScale, updateCache: true);
             }
-            
-            /*
-            switch (_flag)
-            {
-                case FLAG_NOT_INIT:
-                    if (_displayOptions is null)
-                    {
-                        _displayOptions = MajInstances.Settings?.Display;
-                        if (_displayOptions is null)
-                        {
-                            return;
-                        }
-                        _flag = FLAG_INITED;
-                        goto case FLAG_INITED;
-                    }
-                    return;
-                case FLAG_INITED:
-                    var pos = _displayOptions!.MainScreenPosition;
-                    if (_lastMainScreenPos == pos)
-                    {
-                        return;
-                    }
-                    _lastMainScreenPos = pos;
-                    var posY = 810f - 270f * pos;
-                    rt.anchoredPosition = new Vector2(0, posY);
-                    if (pos != 1f)
-                    {
-                        if (_subCover is not null)
-                        {
-                            var diffY = MAIN_DISPLAY_POS_Y - posY;
-                            var newSubCoverHeight = (SUB_COVER_HEIGHT + diffY).Clamp(0, float.MaxValue);
-                            var newSubCoverPosY = (SUB_COVER_POS_Y - diffY / 2f).Clamp(0, float.MaxValue);
 
-                            var originPos = _subCoverRectTransform!.anchoredPosition;
-                            _subCoverRectTransform!.anchoredPosition = new Vector2(originPos.x, newSubCoverPosY);
-                            _subCoverRectTransform!.sizeDelta = new Vector2(SUB_COVER_WIDTH, newSubCoverHeight);
-                        }
-                        if (_subCoverBottom is not null)
-                        {
-                            var diffY = MAIN_DISPLAY_POS_Y - posY;
-                            var newSubCoverBottomHeight = (SUB_COVER_BOTTOM_HEIGHT - diffY).Clamp(0, float.MaxValue);
-                            var newSubCoverBottomPosY = (SUB_COVER_BOTTOM_POS_Y - diffY / 2f).Clamp(float.MinValue, 0);
-                            var originPos = _subCoverBottomRectTransform!.anchoredPosition;
-                            _subCoverBottomRectTransform!.anchoredPosition = new Vector2(originPos.x, newSubCoverBottomPosY);
-                            _subCoverBottomRectTransform!.sizeDelta = new Vector2(SUB_COVER_BOTTOM_WIDTH, newSubCoverBottomHeight);
-                        }
-                    }
-                    return;
-            }
-            */
+            UpdateSubCover();
+            
         }
-        
-        void OnDestroy()
-        {
-            // 不再还原CanvasScaler：
-            // 1. 每个场景有自己的CanvasTemplate实例，销毁后CanvasScaler跟着消失
-            // 2. 还原会导致过渡动画期间画面闪回默认位置/缩放
-            // 3. _originalReferenceResolution是static的，新场景始终能读到正确的原始值
-        }
-        
     }
 }
