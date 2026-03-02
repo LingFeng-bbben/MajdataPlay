@@ -20,7 +20,9 @@ namespace MajdataPlay.Scenes.List
             if (_cancellationTokenSource is not null)
             {
                 if (!_cancellationTokenSource.IsCancellationRequested)
+                {
                     _cancellationTokenSource.Cancel();
+                }
             }
             _cancellationTokenSource = new();
             PlayPreviewAsync(info, _cancellationTokenSource.Token).Forget();
@@ -35,16 +37,83 @@ namespace MajdataPlay.Scenes.List
             await UniTask.Delay(1000, cancellationToken: token, cancelImmediately: true);
             token.ThrowIfCancellationRequested();
 
+            var simaiChart = await info.GetMaidataAsync(token: token);
             var previewSample = await info.GetPreviewAudioTrackAsync(token: token);
 
             try
             {
+                var previewOffsetSec = -1f;
+                var previewLengthSec = -1f;
                 if (previewSample is null || previewSample.IsEmpty)
+                {
                     throw new InvalidAudioTrackException("Failed to decode audio track", string.Empty);
+                }
+                for (var i = 0; i < simaiChart.Commands.Count; i++)
+                {
+                    var command = simaiChart.Commands[i];
+                    switch(command.Prefix)
+                    {
+                        case "demo_seek":
+                            if (float.TryParse(command.Value, out var offsetSec))
+                            {
+                                if(previewOffsetSec != -1)
+                                {
+                                    MajDebug.LogWarning($"Multiple \"&demo_seek\" commands found. Previous value: {previewOffsetSec}, new value: {offsetSec}. Ignored.");
+                                }
+                                else if(offsetSec < 0)
+                                {
+                                    MajDebug.LogWarning($"Invalid \"&demo_seek\" value: {offsetSec}. Value must be non-negative. Ignored.");
+                                }
+                                else
+                                {
+                                    previewOffsetSec = offsetSec;
+                                }
+                            }
+                            else
+                            {
+                                MajDebug.LogWarning($"Failed to parse \"&demo_seek\" value: {command.Value}");
+                            }
+                            break;
+                        case "demo_len":
+                            if (float.TryParse(command.Value, out var lenSec))
+                            {
+                                if (previewLengthSec != -1)
+                                {
+                                    MajDebug.LogWarning($"Multiple \"&demo_len\" commands found. Previous value: {previewOffsetSec}, new value: {lenSec}, ignored");
+                                }
+                                else if (lenSec <= 0)
+                                {
+                                    MajDebug.LogWarning($"Invalid \"&demo_len\" value: {lenSec}. Value must be positive. Ignored.");
+                                }
+                                else
+                                {
+                                    previewLengthSec = lenSec;
+                                }
+                            }
+                            else
+                            {
+                                MajDebug.LogWarning($"Failed to parse \"&demo_len\" value: {command.Value}");
+                            }
+                            break;
+                    }
+                }
+                if(previewOffsetSec == -1)
+                {
+                    previewOffsetSec = 0;
+                }
+                if(previewLengthSec == -1)
+                {
+                    previewLengthSec = (float)previewSample.Length.TotalSeconds;
+                }
+                else
+                {
+                    previewLengthSec = Math.Min(previewLengthSec, (float)previewSample.Length.TotalSeconds - previewOffsetSec);
+                    previewLengthSec = Math.Max(0, previewLengthSec);
+                }
                 previewSample.SetVolume(MajInstances.Settings.Audio.Volume.BGM);
                 //set sample.CurrentSec Not implmented
                 previewSample.IsLoop = true;
-                previewSample.CurrentSec = 0;
+                previewSample.CurrentSec = previewOffsetSec;
                 previewSample.Speed = 1.0f;
                 previewSample.Play();
                 token.ThrowIfCancellationRequested();
@@ -58,6 +127,24 @@ namespace MajdataPlay.Scenes.List
                 }
                 while (true)
                 {
+                    var currentSec = previewSample.CurrentSec;
+                    if(previewLengthSec != 0)
+                    {
+                        if (currentSec - (previewOffsetSec + previewLengthSec) > -0.5f)
+                        {
+                            for (var i = 1f; i > 0; i = i - 0.2f)
+                            {
+                                token.ThrowIfCancellationRequested();
+                                previewSample.Volume = i * MajInstances.Settings.Audio.Volume.BGM;
+                                await UniTask.Delay(100, cancellationToken: token, cancelImmediately: true);
+                            }
+                            previewSample.Pause();
+                            await UniTask.Delay(2000, cancellationToken: token, cancelImmediately: true);
+                            previewSample.Volume = MajInstances.Settings.Audio.Volume.BGM;
+                            previewSample.CurrentSec = previewOffsetSec;
+                            previewSample.Play();
+                        }
+                    }
                     await UniTask.Yield(token, cancelImmediately: true);
                 }
             }
