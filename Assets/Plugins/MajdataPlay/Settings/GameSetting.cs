@@ -128,7 +128,7 @@ namespace MajdataPlay.Settings
         [Preserve]
         public float MainScreenScale { get; set; } = 1f;
         [Preserve]
-        public float MainScreenPosition { get; set; } = 0f;
+        public float MainScreenPosition { get; set; } = 1f;
         [Preserve]
         public float MainScreenCachedScreenCenterY { get; set; } = 960f;
         [Preserve]
