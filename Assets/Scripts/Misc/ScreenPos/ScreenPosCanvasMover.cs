@@ -64,9 +64,23 @@ namespace MajdataPlay
         
         DisplayOptions? _displayOptions;
 
-        // Start is called before the first frame update
         void Awake()
         {
+            _displayOptions = MajInstances.Settings?.Display;
+        }
+        private void Start()
+        {
+            StartCoroutine(delayedStart());
+        }
+        IEnumerator delayedStart()
+        {
+            _displayOptions = MajInstances.Settings?.Display;
+            while (_displayOptions is null)
+            {
+                yield return new WaitForEndOfFrame();
+                _displayOptions = MajInstances.Settings?.Display;
+            }
+
             rt = GetComponent<RectTransform>();
 
             // 保存预制体的原始Y位置，用于关闭MainScreenTransform时恢复
