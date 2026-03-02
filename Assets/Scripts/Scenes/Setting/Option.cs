@@ -206,6 +206,43 @@ namespace MajdataPlay.Scenes.Setting
                             }
                         }
                         break;
+
+
+                    case "MainScreenScale":
+                    {
+                        if (MajEnv.Settings.Debug.OffsetUnit == Settings.OffsetUnitOption.Second)
+                        {
+                            _maxValue = 1.5m;
+                            _minValue = 0.5m;
+                            _step = 0.01m;
+                        }
+                        else
+                        {
+                            _maxValue = 1.5m;
+                            _minValue = 0.5m;
+                            _step = 0.1m;
+                        }
+                    } 
+                        break;
+                    
+                    case "MainScreenPosition":
+                    {
+                        if (MajEnv.Settings.Debug.OffsetUnit == Settings.OffsetUnitOption.Second)
+                        {
+                            _maxValue = 5m;
+                            _minValue = -5m;
+                            _step = 0.01m;
+                        }
+                        else
+                        {
+                            _maxValue = 1.25m;
+                            _minValue = 0.5m;
+                            _step = 0.1m;
+                        }
+                    } 
+                        break;
+
+
                     case "DisplayOffset":
                         {
                             if (MajEnv.Settings.Debug.OffsetUnit == Settings.OffsetUnitOption.Second)
