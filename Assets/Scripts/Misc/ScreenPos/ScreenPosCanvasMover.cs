@@ -1,3 +1,4 @@
+using MajdataPlay.Editor;
 using MajdataPlay.Numerics;
 using MajdataPlay.Settings;
 using MajdataPlay.Utils;
@@ -27,45 +28,85 @@ namespace MajdataPlay
 
         Transform _transform;
         RectTransform _rt;
-        
+
         // 主屏幕 Y 轴的"零偏移基准位置"（Canvas 坐标系），偏移量以此为基础叠加
+        [SerializeField]
+        [ReadOnlyField]
         float _basePosY;
         // 预制体自带的原始 Y 位置，关闭 MainScreenTransform 功能时用于完整还原
+        [SerializeField]
+        [ReadOnlyField]
         float _originalPosY;
         // 父节点的 RectTransform，用于在无 CanvasScaler 时读取父容器高度以计算屏幕中心
+        [SerializeField]
+        [ReadOnlyField]
         RectTransform? _parentRt;
 
         // 脏检测（避免每帧重复计算）
+        [SerializeField]
+        [ReadOnlyField]
         float _lastOffset = float.NaN;       // 上一帧的主屏幕偏移量
+        [SerializeField]
+        [ReadOnlyField]
         float _lastScale = float.NaN;        // 上一帧的主屏幕缩放
+        [SerializeField]
+        [ReadOnlyField]
         float _lastSubDisplayOffset = float.NaN; // 上一帧的副屏幕偏移量
+        [SerializeField]
+        [ReadOnlyField]
+        float _lastSubDisplayScale = float.NaN; // 上一帧的副屏幕偏移量
+        [SerializeField]
+        [ReadOnlyField]
         bool _lastTransformDisplay;          // 上一帧 MainScreenTransform 开关的状态
 
         // 屏幕中心缓存，缩放时需要以屏幕中心为锚点补偿位移
+        [SerializeField]
+        [ReadOnlyField]
         float _cachedScreenCenterY;
+        [SerializeField]
+        [ReadOnlyField]
         CanvasScaler? _canvasScaler;
         // 跨场景保存真正的原始分辨率
         static Vector2? _originalReferenceResolution;
         // 当前场景启动时记录的基准分辨率
+        [SerializeField]
+        [ReadOnlyField]
         Vector2 _baseReferenceResolution;
 
         // 持久化 Canvas 同步
         // SceneSwitcher 的 DontDestroyOnLoad Canvas 负责场景切换过渡动画，
         // 必须与当前场景的 Canvas 保持相同的缩放和位置，否则过渡时画面会跳变
+        [SerializeField]
+        [ReadOnlyField]
         CanvasScaler? _persistentCanvasScaler;
+        [SerializeField]
+        [ReadOnlyField]
         RectTransform? _persistentMainDisplay;
 
         // 副屏遮罩（Sub_Cover）
+        [SerializeField]
+        [ReadOnlyField]
         GameObject _subCover;
+        [SerializeField]
+        [ReadOnlyField]
         Transform _subCoverTransform;
+        [SerializeField]
+        [ReadOnlyField]
         RectTransform? _subCoverRectTransform;
-        
+
+        [SerializeField]
+        [ReadOnlyField]
         GameObject _subCoverBottom;
+        [SerializeField]
+        [ReadOnlyField]
         Transform _subCoverBottomTransform;
+        [SerializeField]
+        [ReadOnlyField]
         RectTransform _subCoverBottomRectTransform;
 
         //副屏幕（Sub_Display）
-
+        [SerializeField]
+        [ReadOnlyField]
         RectTransform? _subDisplay;
 
         DisplayOptions? _displayOptions;
@@ -182,6 +223,7 @@ namespace MajdataPlay
             if (_subDisplay != null)
             {
                 _subDisplay.anchoredPosition = new Vector2(_subDisplay.anchoredPosition.x, SUB_DISPLAY_ORIGINAL_POS_Y);
+                _subDisplay.localScale = Vector3.one;
             }
             // 恢复Sub_Cover位置和大小
             if (_subCoverRectTransform != null)
@@ -222,9 +264,13 @@ namespace MajdataPlay
                 _rt.localScale = Vector3.one;
                 // 同步持久化Canvas（SceneSwitcher过渡动画）
                 if (_persistentCanvasScaler != null)
+                {
                     _persistentCanvasScaler.referenceResolution = newRef;
+                }
                 if (_persistentMainDisplay != null)
+                {
                     _persistentMainDisplay.anchoredPosition = new Vector2(0, posY);
+                }
             }
             else
             {
@@ -233,11 +279,13 @@ namespace MajdataPlay
                 float scaleCorrection = (_cachedScreenCenterY - posYBase) * (1f - scale);
                 _rt.anchoredPosition = new Vector2(0, posYBase + scaleCorrection);
                 if (scale > 0)
+                {
                     _rt.localScale = new Vector3(scale, scale, 1f);
+                }
             }
         }
 
-        void ApplySubDisplayOffset(float offset)
+        void ApplySubDisplayTransform(float offset, float scale)
         {
             if (_subDisplay == null)
             {
@@ -245,11 +293,12 @@ namespace MajdataPlay
             }
             float newY = SUB_DISPLAY_ORIGINAL_POS_Y + offset;
             _subDisplay.anchoredPosition = new Vector2(_subDisplay.anchoredPosition.x, newY);
+            _subDisplay.localScale = new Vector3(scale, scale, 1f);
         }
 
         void UpdateSubCover()
         {
-            if(_subCoverRectTransform is null || _subDisplay is null)
+            if(_subCoverRectTransform == null || _subDisplay == null)
             {
                 return;
             }
@@ -278,8 +327,9 @@ namespace MajdataPlay
                 ApplyPosition(offset, scale);
 
                 var subOffset = _displayOptions.SubDisplayOffset;
+                var subScale = _displayOptions.SubDisplayScale;
                 _lastSubDisplayOffset = subOffset;
-                ApplySubDisplayOffset(subOffset * 100f);
+                ApplySubDisplayTransform(subOffset * 100f, subScale);
 
                 UpdateSubCover();
             }
@@ -317,6 +367,7 @@ namespace MajdataPlay
                                 _lastOffset = float.NaN;
                                 _lastScale = float.NaN;
                                 _lastSubDisplayOffset = float.NaN;
+                                _lastSubDisplayScale = float.NaN;
                                 RestoreOriginal();
                             }
                             return;
@@ -324,10 +375,11 @@ namespace MajdataPlay
                         _lastTransformDisplay = true;
 
                         var subDisplayOffset = _displayOptions.SubDisplayOffset;
+                        var subDisplayScale = _displayOptions.SubDisplayScale;
                         var screenOffset = _displayOptions.MainScreenOffset;
                         var screenScale = _displayOptions.MainScreenScale;
 
-                        bool subChanged = subDisplayOffset != _lastSubDisplayOffset;
+                        bool subChanged = subDisplayOffset != _lastSubDisplayOffset || subDisplayScale != _lastSubDisplayScale;
                         bool mainChanged = screenOffset != _lastOffset || screenScale != _lastScale;
 
                         if (!subChanged && !mainChanged)
@@ -338,7 +390,8 @@ namespace MajdataPlay
                         if (subChanged)
                         {
                             _lastSubDisplayOffset = subDisplayOffset;
-                            ApplySubDisplayOffset(subDisplayOffset * 100f);
+                            _lastSubDisplayScale = subDisplayScale;
+                            ApplySubDisplayTransform(subDisplayOffset * 100f , subDisplayScale);
                         }
 
                         if (mainChanged)

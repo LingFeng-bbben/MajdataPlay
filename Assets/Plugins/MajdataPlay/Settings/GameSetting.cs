@@ -138,6 +138,8 @@ namespace MajdataPlay.Settings
         [Preserve]
         public float SubDisplayOffset { get; set; } = 0f;
         [Preserve]
+        public float SubDisplayScale { get; set; } = 1f;
+        [Preserve]
         public RenderQualityOption RenderQuality { get; set; } = RenderQualityOption.Low;
 #if UNITY_STANDALONE
         [SettingVisualizationIgnore]
