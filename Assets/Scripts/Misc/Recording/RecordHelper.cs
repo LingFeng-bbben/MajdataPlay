@@ -29,7 +29,11 @@ namespace MajdataPlay.Recording
         {
             get
             {
+#if UNITY_STANDALONE
                 return MajEnv.Settings.Game.RecordMode == RecordModeOption.OBSTrigger;
+#else
+                return false;
+#endif
             }
         }
 

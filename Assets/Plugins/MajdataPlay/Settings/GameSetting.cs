@@ -56,8 +56,10 @@ namespace MajdataPlay.Settings
         public int Rotation { get; set; } = 0;
         [Preserve]
         public RandomModeOption Random { get; set; } = RandomModeOption.Disabled;
+#if UNITY_STANDALONE
         [Preserve]
         public RecordModeOption RecordMode { get; set; } = RecordModeOption.Disable;
+#endif
     }
     [Preserve]
     public class JudgeOptions
@@ -121,13 +123,17 @@ namespace MajdataPlay.Settings
         public float SlideScale { get; set; } = 1f;
         [Preserve]
         public TouchFeedbackLevel TouchFeedback { get; set; } = TouchFeedbackLevel.Outer_Only;
+#if UNITY_STANDALONE
         [SettingVisualizationIgnore]
         public string Resolution { get; set; } = "1080x1920";
+#endif
         public float MainScreenPosition { get; set; } = 1f;
         [Preserve]
         public RenderQualityOption RenderQuality { get; set; } = RenderQualityOption.Low;
+#if UNITY_STANDALONE
         [SettingVisualizationIgnore]
         public bool Topmost { get; set; } = false;
+#endif
         [Preserve]
         public int FPSLimit { get; set; } = 120;
 #if !(UNITY_ANDROID || UNITY_IOS)
@@ -282,8 +288,10 @@ namespace MajdataPlay.Settings
 #endif
         [Preserve]
         public bool DisplayFPS { get; set; } = true;
+#if UNITY_STANDALONE
         [SettingVisualizationIgnore]
         public bool FullScreen { get; set; } = true;
+#endif
         [SettingVisualizationIgnore]
         public int MenuOptionIterationSpeed { get; set; } = 45;
         [Preserve]
@@ -292,8 +300,10 @@ namespace MajdataPlay.Settings
         public float NoteAppearRate { get; set; } = 0.265f;
         [Preserve]
         public OffsetUnitOption OffsetUnit { get; set; } = OffsetUnitOption.Frame;
+#if UNITY_STANDALONE
         [SettingVisualizationIgnore]
         public bool HideCursorInGame { get; set; } = true;
+#endif
         [SettingVisualizationIgnore]
         public bool NoteFolding { get; set; } = true;
         [Preserve]
