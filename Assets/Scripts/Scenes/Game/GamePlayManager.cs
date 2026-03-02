@@ -189,7 +189,7 @@ namespace MajdataPlay.Scenes.Game
                 _displayOffsetSec = _setting.Debug.DisplayOffset * MajEnv.FRAME_LENGTH_SEC;
             }
             _trackVolume = (MajEnv.Settings.Audio.Volume.Track + _chartSetting.TrackVolumeOffset).Clamp(0, 2);
-#if !UNITY_EDITOR
+#if !UNITY_EDITOR && UNITY_STANDALONE
             if(_setting.Debug.HideCursorInGame)
             {
                 Cursor.visible = false;
