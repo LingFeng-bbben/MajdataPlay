@@ -38,6 +38,7 @@ namespace MajdataPlay.IO
         readonly static ReadOnlyMemory<Vector4> _unitCircle = ReadOnlyMemory<Vector4>.Empty;
 
         static ushort _version = 0;
+        
         static int _lastScreenWidth = -1;
         static int _lastScreenHeight = -1;
         static float _lastFingerRadius = 0.5f;
@@ -47,6 +48,8 @@ namespace MajdataPlay.IO
         static float _lastCAreaExtraRadius = 1f;
         static float _lastDAreaExtraRadius = 1f;
         static float _lastEAreaExtraRadius = 1f;
+        static float _lastMainScreenOffset = 1f;
+        static bool _lastMainScreenTransform = false;
         static float _maxTouchRadius = -1f;
         //readonly static Dictionary<SensorArea, HashSet<int>> _touchRecords = new(8);
         public static bool UseOuterTouchAsSensor { get; set; }
@@ -134,7 +137,8 @@ namespace MajdataPlay.IO
                 }
                 var touchPosData = 0UL;
                 var touchRadius = touch.radius.magnitude;
-                var button = PositionToSensorState(sensorStates, 
+                PositionToSensorState(sensorStates,
+                    extraButton,
                     mainCamera, 
                     touch.screenPosition, 
                     touchRadius / PLATFORM_TOUCH_RADIUS_ADJUST, 
@@ -143,10 +147,6 @@ namespace MajdataPlay.IO
                 {
                     MajDebug.LogInfo($"Touch radius: {touchRadius}");
                     _maxTouchRadius = touchRadius;
-                }
-                if (button != -1)
-                {
-                    extraButton[button] = true;
                 }
 #if UNITY_ANDROID || UNITY_IOS
                 _touchRecorder.TryGetValue(touch.touchId, out var lastTouchPosData);
@@ -194,41 +194,43 @@ namespace MajdataPlay.IO
             {
                 return;
             }
-            var button = PositionToSensorState(sensorStates, mainCamera, mouse.position.value);
-            if (button != -1)
-            {
-                extraButton[button] = true;
-            }
+            PositionToSensorState(sensorStates, extraButton, mainCamera, mouse.position.value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static int PositionToSensorState(Span<bool> newStates, Camera mainCamera, Vector3 position)
+        static void PositionToSensorState(Span<bool> sensorStates, Span<bool> buttonStates, Camera mainCamera, Vector3 position)
         {
             var _ = 0UL;
-            return PositionToSensorState(newStates, mainCamera, position, 0, ref _);
+            PositionToSensorState(sensorStates, buttonStates, mainCamera, position, 0, ref _);
         }
         /// <summary>
         /// return extra button pos 0-7, if none return -1
         /// </summary>
-        /// <param name="newStates"></param>
+        /// <param name="sensorStates"></param>
         /// <param name="mainCamera"></param>
         /// <param name="position"></param>
         /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static int PositionToSensorState(Span<bool> newStates, Camera mainCamera, Vector3 position, float touchRadius, ref ulong rawPositionData)
+        static void PositionToSensorState(Span<bool> sensorStates,
+            Span<bool> buttonStates,
+            Camera mainCamera, 
+            Vector3 position, 
+            float touchRadius, 
+            ref ulong rawPositionData)
         {
             var x = (int)position.x;
             var y = (int)position.y;
             if(x < 0 || y < 0)
             {
-                return -1;
+                return;
             }
             var cubeRay = mainCamera.ScreenToWorldPoint(position);
             var newP = ((ulong)_version) << (12 + 34);
             var rayToCenter = cubeRay - new Vector3(0, 0, -10);
             var radToCenter = rayToCenter.magnitude;
+            var edgeYPosition = Mathf.Max(5.08f + (1.5f + _lastMainScreenOffset * 2.7f), 5.4f);
             var extraButton = -1;
-            if(radToCenter > 9.28)
+            if (cubeRay.y > edgeYPosition)
             {
                 extraButton = 9;
             }
@@ -276,7 +278,7 @@ namespace MajdataPlay.IO
 
             for (var i = 0; i < 34; i++)
             {
-                newStates[i] |= (newP & (1UL << (i + 12))) != 0;
+                sensorStates[i] |= (newP & (1UL << (i + 12))) != 0;
             }
             if (extraButton != -1)
             {
@@ -287,24 +289,26 @@ namespace MajdataPlay.IO
             {
                 if (extraButton < 8 && extraButton != -1)
                 {
-                    newStates[extraButton] = true;
-                    return -1;
+                    sensorStates[extraButton] = true;
+                    return;
                 }
                 else
                 {
-                    return extraButton;
+                    buttonStates[extraButton] = true;
+                    return;
                 }
             }
             else
             {
                 if(extraButton != -1)
                 {
-                    newStates.Clear();
-                    return extraButton;
+                    sensorStates.Clear();
+                    buttonStates[extraButton] = true;
+                    return;
                 }
                 else
                 {
-                    return -1;
+                    return;
                 }
             }
         }
