@@ -2056,7 +2056,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: -239, y: -159}
+  m_AnchoredPosition: {x: -239, y: -607}
   m_SizeDelta: {x: 540, y: 255.4}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &267818655
@@ -11085,11 +11085,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 307026145555316282, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
       propertyPath: m_SortingLayerID
-      value: -784860803
+      value: 587624755
       objectReference: {fileID: 0}
     - target: {fileID: 307026145555316282, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
       propertyPath: m_OverrideSorting
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1133653314586614399, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
       propertyPath: m_CullTransparentMesh
@@ -11213,11 +11213,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5182002033360230505, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
       propertyPath: m_SortingLayerID
-      value: -784860803
+      value: 587624755
       objectReference: {fileID: 0}
     - target: {fileID: 5182002033360230505, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
       propertyPath: m_OverrideSorting
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5205452559665588105, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
       propertyPath: m_IsActive

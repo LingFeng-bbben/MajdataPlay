@@ -112,6 +112,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4b176ff446f80b488686f76d54d6e09, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _basePosY: 0
+  _originalPosY: 0
+  _parentRt: {fileID: 0}
+  _screenHeight: 1920
+  _screenWidth: 1080
+  _canvasScaleFactor: 1
+  _lastOffset: NaN
+  _lastScale: NaN
+  _lastSubDisplayOffset: NaN
+  _lastSubDisplayScale: NaN
+  _lastTransformDisplay: 0
+  _cachedScreenCenterY: 0
+  _canvasScaler: {fileID: 0}
+  _baseReferenceResolution: {x: 0, y: 0}
+  _persistentCanvasScaler: {fileID: 0}
+  _persistentMainDisplay: {fileID: 0}
+  _subCover: {fileID: 0}
+  _subCoverTransform: {fileID: 0}
+  _subCoverRectTransform: {fileID: 0}
+  _subCoverBottom: {fileID: 0}
+  _subCoverBottomTransform: {fileID: 0}
+  _subCoverBottomRectTransform: {fileID: 0}
+  _subDisplay: {fileID: 0}
 --- !u!1 &6176999685295524468
 GameObject:
   m_ObjectHideFlags: 0
@@ -482,10 +505,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 4485814405497562604}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 315.00003}
-  m_SizeDelta: {x: 1080, y: 390}
+  m_AnchorMin: {x: 0.5, y: 0}
+  m_AnchorMax: {x: 0.5, y: 0}
+  m_AnchoredPosition: {x: 0, y: 1500}
+  m_SizeDelta: {x: 1080, y: 840}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8343533234234080899
 CanvasRenderer:
@@ -509,14 +532,14 @@ Canvas:
   m_PlaneDistance: 100
   m_PixelPerfect: 1
   m_ReceivesEvents: 1
-  m_OverrideSorting: 0
+  m_OverrideSorting: 1
   m_OverridePixelPerfect: 1
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 0
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: -32768
   m_TargetDisplay: 0
 --- !u!114 &8246146771354057080
 MonoBehaviour:

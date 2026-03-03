@@ -14,6 +14,9 @@ namespace MajdataPlay
         const int FLAG_NOT_INIT = 0;
         const int FLAG_INITED = 1;
 
+        const float SCREEN_CANVAS_HEIGHT = 1920;
+        const float SCREEN_CANVAS_WIDTH = 1080;
+
         const float MAIN_DISPLAY_POS_Y = 540;
         const float SUB_COVER_HEIGHT = 390;
         const float SUB_COVER_WIDTH = 1080;
@@ -41,6 +44,17 @@ namespace MajdataPlay
         [SerializeField]
         [ReadOnlyField]
         RectTransform? _parentRt;
+
+        [SerializeField]
+        [ReadOnlyField]
+        float _screenHeight = 1920;
+        [SerializeField]
+        [ReadOnlyField]
+        float _screenWidth = 1080;
+        [SerializeField]
+        [ReadOnlyField]
+        float _canvasScaleFactor = 1f;
+
 
         // 脏检测（避免每帧重复计算）
         [SerializeField]
@@ -199,6 +213,13 @@ namespace MajdataPlay
             {
                 _subDisplay = subDisplay.GetComponent<RectTransform>();
             }
+            _canvasScaleFactor = Mathf.Max(
+                Screen.width / _baseReferenceResolution.x,
+                Screen.height / _baseReferenceResolution.y);
+            var screenRect = _parentRt!.rect;
+            MajDebug.LogDebug($"[ScreenPosCanvasMover]Canvas scale factor: {_canvasScaleFactor}");
+            _screenHeight = screenRect.height / _canvasScaleFactor;
+            _screenWidth = screenRect.width / _canvasScaleFactor;
         }
         
         void RestoreOriginal()
@@ -225,7 +246,7 @@ namespace MajdataPlay
                 _subDisplay.anchoredPosition = new Vector2(_subDisplay.anchoredPosition.x, SUB_DISPLAY_ORIGINAL_POS_Y);
                 _subDisplay.localScale = Vector3.one;
             }
-            // 恢复Sub_Cover位置和大小
+            //恢复Sub_Cover位置和大小
             if (_subCoverRectTransform != null)
             {
                 _subCoverRectTransform.anchoredPosition = new Vector2(0, SUB_COVER_POS_Y);
@@ -258,6 +279,9 @@ namespace MajdataPlay
                     _baseReferenceResolution.x / scale,
                     _baseReferenceResolution.y / scale
                 );
+                //_canvasScaleFactor = Mathf.Max(
+                //    Screen.width / newRef.x,
+                //    Screen.height / newRef.y);
                 _canvasScaler.referenceResolution = newRef;
                 float posY = (_basePosY - offset * 270f) + _cachedScreenCenterY * (1f / scale - 1f);
                 _rt.anchoredPosition = new Vector2(0, posY);
@@ -303,12 +327,12 @@ namespace MajdataPlay
                 return;
             }
             // Sub_Display底边 (pivot 0.5,0.5)
-            float subDisplayBottom = _subDisplay.anchoredPosition.y - SUB_DISPLAY_HEIGHT / 2f;
+            //float subDisplayBottom = _subDisplay.anchoredPosition.y - SUB_DISPLAY_HEIGHT / 2f;
             // Main_Display顶边 (pivot 0.5,0.5)
             float mainDisplayTop = _rt.anchoredPosition.y + MAIN_DISPLAY_HEIGHT / 2f;
 
-            float coverHeight = Mathf.Max(0f, subDisplayBottom - mainDisplayTop);
-            float coverCenterY = (subDisplayBottom + mainDisplayTop) / 2f;
+            float coverHeight = Mathf.Max(0f, SCREEN_CANVAS_HEIGHT - mainDisplayTop);
+            float coverCenterY = (SCREEN_CANVAS_HEIGHT + mainDisplayTop) / 2f;
 
             _subCoverRectTransform.anchoredPosition = new Vector2(0, coverCenterY);
             _subCoverRectTransform.sizeDelta = new Vector2(SUB_COVER_WIDTH, coverHeight);
