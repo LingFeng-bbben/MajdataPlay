@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Collections;
+﻿using Cysharp.Threading.Tasks;
+using MajdataPlay.Collections;
 using MajdataPlay.Scenes.Game.Notes.Skins;
 using MajdataPlay.Utils;
 using SkiaSharp;
@@ -22,28 +23,37 @@ namespace MajdataPlay
             }
             set
             {
-                _tapLines[0] = value.TapLine_Normal;
-                _tapLines[1] = value.TapLine_Each;
-                _tapLines[2] = value.TapLine_Break;
+                if(value == _selectedSkin)
+                {
+                    return;
+                }
+                _selectedSkin.UnloadAsync()
+                    .ContinueWith(async () =>
+                    {
+                        await value.LoadAsync();
+                        _tapLines[0] = value.TapLine_Normal;
+                        _tapLines[1] = value.TapLine_Each;
+                        _tapLines[2] = value.TapLine_Break;
 
-                _starLines[0] = value.TapLine_Slide;
-                _starLines[1] = value.TapLine_Each;
-                _starLines[2] = value.TapLine_Break;
+                        _starLines[0] = value.TapLine_Slide;
+                        _starLines[1] = value.TapLine_Each;
+                        _starLines[2] = value.TapLine_Break;
 
-                _holdEnds[0] = value.HoldEndPoint_Normal;
-                _holdEnds[1] = value.HoldEndPoint_Each;
-                _holdEnds[2] = value.HoldEndPoint_Break;
+                        _holdEnds[0] = value.HoldEndPoint_Normal;
+                        _holdEnds[1] = value.HoldEndPoint_Each;
+                        _holdEnds[2] = value.HoldEndPoint_Break;
 
-                _touchHoldFans[0] = value.TouchHold[0];
-                _touchHoldFans[1] = value.TouchHold[1];
-                _touchHoldFans[2] = value.TouchHold[2];
-                _touchHoldFans[3] = value.TouchHold[3];
+                        _touchHoldFans[0] = value.TouchHold[0];
+                        _touchHoldFans[1] = value.TouchHold[1];
+                        _touchHoldFans[2] = value.TouchHold[2];
+                        _touchHoldFans[3] = value.TouchHold[3];
 
-                _touchHoldBreakFans[0] = value.TouchHold_Break[0];
-                _touchHoldBreakFans[1] = value.TouchHold_Break[1];
-                _touchHoldBreakFans[2] = value.TouchHold_Break[2];
-                _touchHoldBreakFans[3] = value.TouchHold_Break[3];
-                _selectedSkin = value;
+                        _touchHoldBreakFans[0] = value.TouchHold_Break[0];
+                        _touchHoldBreakFans[1] = value.TouchHold_Break[1];
+                        _touchHoldBreakFans[2] = value.TouchHold_Break[2];
+                        _touchHoldBreakFans[3] = value.TouchHold_Break[3];
+                        _selectedSkin = value;
+                    }).Forget();
             }
         }
         public CustomSkin[] LoadedSkins
@@ -87,25 +97,17 @@ namespace MajdataPlay
             var path = MajEnv.SkinPath;
             var selectedSkinName = MajInstances.Settings.Display.Skin;
             var dicts = Directory.GetDirectories(path);
-            var tasks = new Task<CustomSkin>[dicts.Length];
             foreach (var (i, skinPath) in dicts.WithIndex())
             {
-                tasks[i] = CustomSkin.LoadAsync(skinPath);
-            }
-            var waitAllTask = Task.WhenAll(tasks);
-            while(!waitAllTask.IsCompleted)
-            {
-                await Task.Delay(TimeSpan.FromSeconds(MajEnv.FRAME_LENGTH_SEC));
-            }
-            foreach(var (i, task) in tasks.WithIndex())
-            {
-                if(task.IsFaulted)
+                try
+                {
+                    _loadedSkins.Add(CustomSkin.Create(skinPath));
+                }
+                catch(Exception e)
                 {
                     MajDebug.LogError($"Failed to load skin from {dicts[i]}");
-                    MajDebug.LogException(task.Exception);
-                    continue;
+                    MajDebug.LogException(e);
                 }
-                _loadedSkins.Add(task.Result);
             }
             if(_loadedSkins.Count == 0)
             {
@@ -118,10 +120,36 @@ namespace MajdataPlay
                 if(targetSkin.Name != CustomSkin.Empty.Name)
                 {
                     MajInstances.Settings.Display.Skin = targetSkin.Name;
+                    await targetSkin.LoadAsync();
                 }
             }
+            if(!targetSkin.IsLoaded)
+            {
+                await targetSkin.LoadAsync();
+            }
             _loadedSkinArray = _loadedSkins.ToArray();
-            SelectedSkin = targetSkin;
+            _selectedSkin = targetSkin;
+            _tapLines[0] = targetSkin.TapLine_Normal;
+            _tapLines[1] = targetSkin.TapLine_Each;
+            _tapLines[2] = targetSkin.TapLine_Break;
+
+            _starLines[0] = targetSkin.TapLine_Slide;
+            _starLines[1] = targetSkin.TapLine_Each;
+            _starLines[2] = targetSkin.TapLine_Break;
+
+            _holdEnds[0] = targetSkin.HoldEndPoint_Normal;
+            _holdEnds[1] = targetSkin.HoldEndPoint_Each;
+            _holdEnds[2] = targetSkin.HoldEndPoint_Break;
+
+            _touchHoldFans[0] = targetSkin.TouchHold[0];
+            _touchHoldFans[1] = targetSkin.TouchHold[1];
+            _touchHoldFans[2] = targetSkin.TouchHold[2];
+            _touchHoldFans[3] = targetSkin.TouchHold[3];
+
+            _touchHoldBreakFans[0] = targetSkin.TouchHold_Break[0];
+            _touchHoldBreakFans[1] = targetSkin.TouchHold_Break[1];
+            _touchHoldBreakFans[2] = targetSkin.TouchHold_Break[2];
+            _touchHoldBreakFans[3] = targetSkin.TouchHold_Break[3];
             IsInited = true;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
