@@ -112,7 +112,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         public override void Initialize()
         {
-            if (State >= NoteStatus.Initialized)
+            if (State >= NoteStatus.Inited)
             {
                 return;
             }
@@ -188,7 +188,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 star.transform.localScale = new Vector3(0f, 0f, 1f);
             }
 
-            State = NoteStatus.Initialized;
+            State = NoteStatus.Inited;
         }
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
@@ -370,7 +370,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             var starTransforms = _starTransforms.Span;
             switch (State)
             {
-                case NoteStatus.Initialized:
+                case NoteStatus.Inited:
                     SetStarActive(false);
                     if (ThisFrameSec - Timing > 0)
                     {

@@ -15,7 +15,6 @@ using UnityEngine.Profiling;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
-    using Unsafe = System.Runtime.CompilerServices.Unsafe;
     internal sealed class HoldDrop : NoteLongDrop, IDistanceProvider, INoteQueueMember<TapQueueInfo>, IPoolableNote<HoldPoolingInfo, TapQueueInfo>, IRendererContainer, IMajComponent
     {
         public RendererStatus RendererState
@@ -23,22 +22,32 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             get => _rendererState;
             set
             {
-                if (State < NoteStatus.Initialized)
+                if (State < NoteStatus.Inited)
+                {
                     return;
+                }
 
                 switch (value)
                 {
                     case RendererStatus.Off:
-                        _thisRenderer.forceRenderingOff = true;
-                        _exRenderer.forceRenderingOff = true;
-                        _tapLineRenderer.forceRenderingOff = true;
-                        _endRenderer.forceRenderingOff = true;
+                        _thisRenderer.enabled = false;
+                        _exRenderer.enabled = false;
+                        _tapLineRenderer.enabled = false;
+                        _endRenderer.enabled = false;
+                        //_thisRenderer.forceRenderingOff = true;
+                        //_exRenderer.forceRenderingOff = true;
+                        //_tapLineRenderer.forceRenderingOff = true;
+                        //_endRenderer.forceRenderingOff = true;
                         break;
                     case RendererStatus.On:
-                        _thisRenderer.forceRenderingOff = false;
-                        _exRenderer.forceRenderingOff = !IsEX;
-                        _tapLineRenderer.forceRenderingOff = false;
-                        _endRenderer.forceRenderingOff = false;
+                        _thisRenderer.enabled = true;
+                        _exRenderer.enabled = IsEX;
+                        _tapLineRenderer.enabled = true;
+                        _endRenderer.enabled = true;
+                        //_thisRenderer.forceRenderingOff = false;
+                        //_exRenderer.forceRenderingOff = !IsEX;
+                        //_tapLineRenderer.forceRenderingOff = false;
+                        //_endRenderer.forceRenderingOff = false;
                         break;
                 }
             }
@@ -114,11 +123,13 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             _tapLineObject.layer = MajEnv.HIDDEN_LAYER;
             _exObject.layer = MajEnv.HIDDEN_LAYER;
             _endObject.layer = MajEnv.HIDDEN_LAYER;
-            Active = false;
 
-            //if (!IsAutoplay)
-            //    _noteManager.OnGameIOUpdate += GameIOListener;
-            //_noteChecker = new(Check);
+            _thisRenderer.enabled = false;
+            _exRenderer.enabled = false;
+            _tapLineRenderer.enabled = false;
+            _endRenderer.enabled = false;
+
+            Active = false;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override void Autoplay()
@@ -213,7 +224,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         public void Initialize(HoldPoolingInfo poolingInfo)
         {
-            if (State >= NoteStatus.Initialized && State < NoteStatus.End)
+            if (State >= NoteStatus.Inited && State < NoteStatus.End)
             {
                 return;
             }
@@ -267,7 +278,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             SetTapLineActive(false);
             SetEndActive(false);
 
-            State = NoteStatus.Initialized;
+            State = NoteStatus.Inited;
         }
         void End(float endJudgeOffset = 0)
         {
@@ -360,7 +371,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             switch (State)
             {
-                case NoteStatus.Initialized:
+                case NoteStatus.Inited:
                     if (destScale >= 0f)
                     {
                         //transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (StartPos - 1));

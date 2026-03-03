@@ -73,7 +73,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         public bool IsInitialized
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => State >= NoteStatus.Initialized;
+            get => State >= NoteStatus.Inited;
         }
         public bool IsEnded
         {

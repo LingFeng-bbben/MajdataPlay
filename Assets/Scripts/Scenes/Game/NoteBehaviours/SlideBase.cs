@@ -59,8 +59,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 Span<int> reamaining = stackalloc int[3];
                 var judgeQueues = _judgeQueues.AsSpan();
-                foreach (var (i, queue) in judgeQueues.WithIndex())
+                for (var i = 0; i < judgeQueues.Length; i++)
                 {
+                    var queue = judgeQueues[i];
                     reamaining[i] = queue.Length;
                 }
                 return reamaining.Max();
@@ -320,7 +321,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             for (var i = 0; i <= endIndex; i++)
             {
                 //_slideBarRenderers[i].forceRenderingOff = true;
-                _slideBars[i].layer = 3;
+                _slideBars[i].layer = MajEnv.HIDDEN_LAYER;
             }
         }
         [Il2CppSetOption(Option.NullChecks, false)]
@@ -329,7 +330,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         protected bool PlaySlideOK(in NoteJudgeResult result)
         {
             if (_slideOK is null)
+            {
                 return false;
+            }
 
             bool canPlay;
             canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Settings.Display.SlideJudgeType, result);
@@ -346,14 +349,14 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             for (var i = 0; i < _slideBarRenderers.Count; i++)
             {
                 var sr = _slideBarRenderers[i];
-
+                var obj = _slideBars[i];
                 if (alpha <= 0f)
                 {
-                    sr.forceRenderingOff = true;
+                    obj.layer = MajEnv.HIDDEN_LAYER;
                 }
                 else
                 {
-                    sr.forceRenderingOff = false;
+                    obj.layer = MajEnv.DEFAULT_LAYER;
                     sr.color = new Color(1f, 1f, 1f, alpha);
                 }
             }
@@ -387,11 +390,13 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void SetStarActive(bool state)
         {
+            var stars = _stars.Span;
             switch (state)
             {
                 case true:
-                    foreach (var star in _stars.Span)
+                    for (var i = 0; i < stars.Length; i++)
                     {
+                        var star = stars[i];
                         if (star is null)
                         {
                             continue;
@@ -400,8 +405,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                     }
                     break;
                 case false:
-                    foreach (var star in _stars.Span)
+                    for (var i = 0; i < stars.Length; i++)
                     {
+                        var star = stars[i];
                         if (star is null)
                         {
                             continue;

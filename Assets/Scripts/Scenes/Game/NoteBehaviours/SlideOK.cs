@@ -135,6 +135,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 State = NoteStatus.End;
                 _spriteRenderer.sharedMaterial = _defaultMaterial;
                 SetActiveInternal(false);
+                GameObject.layer = MajEnv.HIDDEN_LAYER;
             }
             else
             {
@@ -224,7 +225,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         public override void SetActive(bool state)
         {
             if (Active == state)
+            {
                 return;
+            }
             SetActiveInternal(state);
         }
         void SetActiveInternal(bool state)
@@ -233,14 +236,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             switch (state)
             {
                 case true:
-                    _spriteRenderer.forceRenderingOff = false;
                     _spriteRenderer.enabled = true;
                     _animator.enabled = true;
                     break;
                 case false:
-                    _spriteRenderer.forceRenderingOff = !false;
-                    _spriteRenderer.enabled = !true;
-                    _animator.enabled = !true;
+                    _spriteRenderer.enabled = false;
+                    _animator.enabled = false;
                     break;
             }
         }

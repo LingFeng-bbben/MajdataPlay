@@ -20,15 +20,17 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             get => _rendererState;
             set
             {
-                if (State < NoteStatus.Initialized)
+                if (State < NoteStatus.Inited)
+                {
                     return;
+                }
                 switch (value)
                 {
                     case RendererStatus.Off:
-                        _sr.forceRenderingOff = true;
+                        _sr.enabled = false;
                         break;
                     case RendererStatus.On:
-                        _sr.forceRenderingOff = false;
+                        _sr.enabled = true;
                         break;
                 }
             }
@@ -39,7 +41,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         public NoteStatus State { get; set; } = NoteStatus.Start;
         public bool IsDestroyed => State == NoteStatus.End;
         public NoteQueueInfo QueueInfo => TapQueueInfo.Default;
-        public bool IsInitialized => State >= NoteStatus.Initialized;
+        public bool IsInitialized => State >= NoteStatus.Inited;
 
         public float timing;
         public int startPosition = 1;
@@ -65,7 +67,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             _sr = gameObject.GetComponent<SpriteRenderer>();
             _sr.sprite = null!;
             RendererState = RendererStatus.Off;
-            _sr.forceRenderingOff = true;
+            _sr.enabled = false;
+            GameObject.layer = MajEnv.HIDDEN_LAYER;
             Active = true;
             if (!_isCurvSpritesInited)
             {
@@ -77,8 +80,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         public void Initialize(EachLinePoolingInfo poolingInfo)
         {
-            if (State >= NoteStatus.Initialized && State < NoteStatus.End)
+            if (State >= NoteStatus.Inited && State < NoteStatus.End)
+            {
                 return;
+            }
             startPosition = poolingInfo.StartPos;
             timing = poolingInfo.Timing;
             speed = poolingInfo.Speed;
@@ -86,15 +91,18 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             _sr.sprite = _curvSprites[curvLength - 1];
             Transform.localScale = new Vector3(1.225f / 4.8f, 1.225f / 4.8f, 1f);
             Transform.rotation = Quaternion.Euler(0, 0, -45f * (startPosition - 1));
-            State = NoteStatus.Initialized;
+            State = NoteStatus.Inited;
             RendererState = RendererStatus.Off;
             if (DistanceProvider is null)
+            {
                 MajDebug.LogWarning("DistanceProvider not found");
+            }
         }
         public void End()
         {
             State = NoteStatus.End;
             RendererState = RendererStatus.Off;
+            GameObject.layer = MajEnv.HIDDEN_LAYER;
             NoteA = null;
             NoteB = null;
             DistanceProvider = null;
@@ -104,8 +112,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         void OnLateUpdate()
         {
             Profiler.BeginSample("EachLineDrop.OnLateUpdate");
-            if (State < NoteStatus.Initialized || IsDestroyed)
+            if (State < NoteStatus.Inited || IsDestroyed)
+            {
                 return;
+            }
             var timing = _noteController.ThisFrameSec - this.timing;
             var distance = DistanceProvider is not null ? DistanceProvider.Distance : timing * speed + 4.8f;
             var scaleRate = _noteAppearRate;
@@ -114,7 +124,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             switch (State)
             {
-                case NoteStatus.Initialized:
+                case NoteStatus.Inited:
                     if (destScale >= 0f)
                     {
                         RendererState = RendererStatus.Off;
@@ -125,9 +135,14 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                     return;
                 case NoteStatus.Scaling:
                     if (destScale > 0.3f)
+                    {
                         RendererState = RendererStatus.On;
+                        GameObject.layer = MajEnv.DEFAULT_LAYER;
+                    }
                     if (distance < 1.225f)
+                    {
                         Transform.localScale = new Vector3(1.225f / 4.8f, 1.225f / 4.8f, 1f);
+                    }
                     else
                     {
                         State = NoteStatus.Running;

@@ -18,7 +18,6 @@ using UnityEngine.Profiling;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
-    using Unsafe = System.Runtime.CompilerServices.Unsafe;
     internal sealed class SlideDrop : SlideBase, IConnectableSlide, IMajComponent
     {
         public bool IsMirror
@@ -199,7 +198,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 _slideOK = null;
             }
 
-            State = NoteStatus.Initialized;
+            State = NoteStatus.Inited;
             _djAutoplayRatio = SlideLength / 14;
 //#if UNITY_EDITOR
 //            var obj = Instantiate(_slideBars[0]);
@@ -311,7 +310,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             switch (State)
             {
-                case NoteStatus.Initialized:
+                case NoteStatus.Inited:
                     SetStarActive(false);
                     if (ThisFrameSec - Timing > 0)
                     {

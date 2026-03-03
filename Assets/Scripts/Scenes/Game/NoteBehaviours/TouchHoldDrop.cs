@@ -17,7 +17,6 @@ using UnityEngine.UI;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
-    using Unsafe = System.Runtime.CompilerServices.Unsafe;
     internal sealed class TouchHoldDrop : NoteLongDrop, INoteQueueMember<TouchQueueInfo>, IRendererContainer, IPoolableNote<TouchHoldPoolingInfo, TouchQueueInfo>, IMajComponent
     {
         public TouchGroup? GroupInfo { get; private set; } = null;
@@ -28,22 +27,30 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             get => _rendererState;
             set
             {
-                if (State < NoteStatus.Initialized)
+                if (State < NoteStatus.Inited)
+                {
                     return;
+                }
 
                 switch (value)
                 {
                     case RendererStatus.Off:
-                        foreach (var renderer in _fanRenderers)
-                            renderer.forceRenderingOff = true;
-                        _borderRenderer.forceRenderingOff = true;
-                        _borderMask.forceRenderingOff = true;
+                        for (var i = 0; i < _fanRenderers.Length; i++)
+                        {
+                            var renderer = _fanRenderers[i];
+                            renderer.enabled = false;
+                        }
+                        _borderRenderer.enabled = false;
+                        _borderMask.enabled = false;
                         break;
                     case RendererStatus.On:
-                        foreach (var renderer in _fanRenderers)
-                            renderer.forceRenderingOff = false;
-                        _borderRenderer.forceRenderingOff = false;
-                        _borderMask.forceRenderingOff = false;
+                        for (var i = 0; i < _fanRenderers.Length; i++)
+                        {
+                            var renderer = _fanRenderers[i];
+                            renderer.enabled = true;
+                        }
+                        _borderRenderer.enabled = true;
+                        _borderMask.enabled = true;
                         break;
                     default:
                         return;
@@ -127,13 +134,16 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             SetBorderActive(false);
             SetPointActive(false);
             Active = false;
+
+            for (var i = 0; i < _fanRenderers.Length; i++)
+            {
+                var renderer = _fanRenderers[i];
+                renderer.enabled = false;
+            }
+            _borderRenderer.enabled = false;
             _borderMask.enabled = false;
             _borderMask.alphaCutoff = 0;
 
-            //if (!IsAutoplay)
-            //    _noteManager.OnGameIOUpdate += GameIOListener;
-
-            RendererState = RendererStatus.Off;
             Transform.localScale *= USERSETTING_TOUCH_SCALE;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -213,7 +223,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         public void Initialize(TouchHoldPoolingInfo poolingInfo)
         {
-            if (State >= NoteStatus.Initialized && State < NoteStatus.End)
+            if (State >= NoteStatus.Inited && State < NoteStatus.End)
             {
                 return;
             }
@@ -284,7 +294,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             _borderMask.frontSortingOrder = SortOrder - _borderSortOrder;
             _borderMask.backSortingOrder = SortOrder - _borderSortOrder - 1;
 
-            State = NoteStatus.Initialized;
+            State = NoteStatus.Inited;
         }
         void End()
         {
@@ -422,7 +432,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             switch (State)
             {
-                case NoteStatus.Initialized:
+                case NoteStatus.Inited:
                     if (-timing < wholeDuration)
                     {
                         _multTouchHandler.Register(_sensorPos, IsEach, IsBreak);

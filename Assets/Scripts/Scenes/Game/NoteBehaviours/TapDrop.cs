@@ -13,7 +13,6 @@ using UnityEngine.Profiling;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
-    using Unsafe = System.Runtime.CompilerServices.Unsafe;
     internal sealed class TapDrop : NoteDrop, IDistanceProvider, INoteQueueMember<TapQueueInfo>, IRendererContainer, IPoolableNote<TapPoolingInfo, TapQueueInfo>, IMajComponent
     {
         public RendererStatus RendererState
@@ -21,20 +20,28 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             get => _rendererState;
             set
             {
-                if (State < NoteStatus.Initialized)
+                if (State < NoteStatus.Inited)
+                {
                     return;
+                }
 
                 switch (value)
                 {
                     case RendererStatus.Off:
-                        _thisRenderer.forceRenderingOff = true;
-                        _exRenderer.forceRenderingOff = true;
-                        _tapLineRenderer.forceRenderingOff = true;
+                        _thisRenderer.enabled = false;
+                        _exRenderer.enabled = false;
+                        _tapLineRenderer.enabled = false;
+                        //_thisRenderer.forceRenderingOff = true;
+                        //_exRenderer.forceRenderingOff = true;
+                        //_tapLineRenderer.forceRenderingOff = true;
                         break;
                     case RendererStatus.On:
-                        _thisRenderer.forceRenderingOff = false;
-                        _exRenderer.forceRenderingOff = !IsEX;
-                        _tapLineRenderer.forceRenderingOff = false;
+                        _thisRenderer.enabled = true;
+                        _exRenderer.enabled = IsEX;
+                        _tapLineRenderer.enabled = true;
+                        //_thisRenderer.forceRenderingOff = false;
+                        //_exRenderer.forceRenderingOff = !IsEX;
+                        //_tapLineRenderer.forceRenderingOff = false;
                         break;
                 }
             }
@@ -92,15 +99,19 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             base.SetActive(false);
             _tapLineObject.layer = MajEnv.HIDDEN_LAYER;
             _exObject.layer = MajEnv.HIDDEN_LAYER;
-            Active = false;
 
-            //if (!IsAutoplay)
-            //    _noteManager.OnGameIOUpdate += GameIOListener;
+            _thisRenderer.enabled = false;
+            _exRenderer.enabled = false;
+            _tapLineRenderer.enabled = false;
+
+            Active = false;
         }
         public void Initialize(TapPoolingInfo poolingInfo)
         {
-            if (State >= NoteStatus.Initialized && State < NoteStatus.End)
+            if (State >= NoteStatus.Inited && State < NoteStatus.End)
+            {
                 return;
+            }
             StartPos = poolingInfo.StartPos;
             Timing = poolingInfo.Timing;
             _judgeTiming = Timing;
@@ -132,7 +143,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             SetActive(true);
             SetTapLineActive(false);
 
-            State = NoteStatus.Initialized;
+            State = NoteStatus.Inited;
         }
         void End()
         {
@@ -237,7 +248,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             switch (State)
             {
-                case NoteStatus.Initialized:
+                case NoteStatus.Inited:
                     if (destScale >= 0f)
                     {
                         Transform.position = _innerPos;
@@ -340,14 +351,20 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             RendererState = RendererStatus.Off;
 
             if (IsStar)
+            {
                 LoadStarSkin();
+            }
             else
+            {
                 LoadTapSkin();
+            }
         }
         public override void SetActive(bool state)
         {
             if (Active == state)
+            {
                 return;
+            }
             base.SetActive(state);
             switch (state)
             {

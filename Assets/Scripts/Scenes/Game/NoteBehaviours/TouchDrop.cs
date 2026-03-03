@@ -25,18 +25,26 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             get => _rendererState;
             set
             {
-                if (State < NoteStatus.Initialized)
+                if (State < NoteStatus.Inited)
+                {
                     return;
+                }
 
                 switch (value)
                 {
                     case RendererStatus.Off:
-                        foreach (var renderer in _fanRenderers)
-                            renderer.forceRenderingOff = true;
+                        for (var i = 0; i < _fanRenderers.Length; i++)
+                        {
+                            var renderer = _fanRenderers[i];
+                            renderer.enabled = false;
+                        }                                
                         break;
                     case RendererStatus.On:
-                        foreach (var renderer in _fanRenderers)
-                            renderer.forceRenderingOff = false;
+                        for (var i = 0; i < _fanRenderers.Length; i++)
+                        {
+                            var renderer = _fanRenderers[i];
+                            renderer.enabled = true;
+                        }
                         break;
                     default:
                         return;
@@ -119,17 +127,21 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             SetJustBorderActive(false);
             SetPointActive(false);
             Active = false;
-            //_noteChecker = new(Check);
 
-            //if(!IsAutoplay)
-            //    _noteManager.OnGameIOUpdate += GameIOListener;
-            RendererState = RendererStatus.Off;
+            for (var i = 0; i < _fanRenderers.Length; i++)
+            {
+                var renderer = _fanRenderers[i];
+                renderer.enabled = false;
+            }
+
             Transform.localScale *= USERSETTING_TOUCH_SCALE;
         }
         public void Initialize(TouchPoolingInfo poolingInfo)
         {
-            if (State >= NoteStatus.Initialized && State < NoteStatus.End)
+            if (State >= NoteStatus.Inited && State < NoteStatus.End)
+            {
                 return;
+            }
 
             StartPos = poolingInfo.StartPos;
             Timing = poolingInfo.Timing - TOUCH_DISPLAY_OFFSET_SEC;
@@ -180,7 +192,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             SetJustBorderActive(false);
             SetPointActive(false);
 
-            State = NoteStatus.Initialized;
+            State = NoteStatus.Inited;
         }
         void End()
         {
@@ -369,7 +381,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             switch (State)
             {
-                case NoteStatus.Initialized:
+                case NoteStatus.Inited:
                     if (-timing < _wholeDuration)
                     {
                         _multTouchHandler.Register(_sensorPos, IsEach, IsBreak);
@@ -544,13 +556,21 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         protected override void PlayJudgeSFX(in NoteJudgeResult judgeResult)
         {
             if (judgeResult.IsMissOrTooFast)
+            {
                 return;
+            }
             if (judgeResult.IsBreak)
+            {
                 _audioEffMana.PlayTapSound(judgeResult);
+            }
             else
+            {
                 _audioEffMana.PlayTouchSound();
+            }
             if (_isFirework)
+            {
                 _audioEffMana.PlayHanabiSound();
+            }
         }
         RendererStatus _rendererState = RendererStatus.Off;
     }
