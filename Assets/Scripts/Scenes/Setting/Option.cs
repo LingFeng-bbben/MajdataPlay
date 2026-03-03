@@ -209,25 +209,33 @@ namespace MajdataPlay.Scenes.Setting
 
 
                     case "MainScreenScale":
-                    {
-                        _maxValue = 1.5m;
-                        _minValue = 0.5m;
-                        _step = 0.01m;
-                    } 
-                    break;
+                        {
+                            _maxValue = 1.5m;
+                            _minValue = 0.5m;
+                            _step = 0.01m;
+                        } 
+                        break;
                     
-                    case "MainScreenPosition":
-                    {
-                        _maxValue = 1m;
-                        _minValue = -1m;
-                        _step = 0.1m;
-                    } 
+                    case "MainScreenOffset":
+                        {
+                            _maxValue = 1m;
+                            _minValue = -1m;
+                            _step = 0.1m;
+                        } 
                         break;
                     
                     case "SubDisplayOffset":
-                        _maxValue = 5m;
-                        _minValue = -5m;
-                        _step = 0.01m;
+                        {
+                            _maxValue = 5m;
+                            _minValue = -5m;
+                            _step = 0.01m;
+                        }
+                        break;
+
+                    case "SubDisplayScale":
+                        {
+                            _step = 0.01m;
+                        }
                         break;
 
 
