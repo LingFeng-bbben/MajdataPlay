@@ -128,6 +128,11 @@ namespace MajdataPlay.Scenes.Game
         float _audioTimeOffsetSec = 0f;
         float _displayOffsetSec = 0f;
 
+        // From simai command &mv_seek
+        float _videoOffsetSec = 0f;
+        // From simai command &mv_wait
+        float _videoWaitTimeSec = 0f;
+
         Task _generateAnswerSFXTask = Task.CompletedTask;
         TextMeshProUGUI _errText;
         MajTimer _timer = MajTimeline.CreateTimer();
@@ -563,7 +568,38 @@ namespace MajdataPlay.Scenes.Game
 
             ChartMirror(ref maidata);
             _chart = await SimaiParser.ParseChartAsync(_songDetail.Levels[levelIndex], _songDetail.Designers[levelIndex], maidata);
-
+            var mvSeekCmd = _simaiFile.Commands.FirstOrDefault(x => x.Prefix == "mv_seek");
+            var mvWaitCmd = _simaiFile.Commands.FirstOrDefault(x => x.Prefix == "mv_wait");
+            if (float.TryParse(mvSeekCmd.Value, out var offsetSec))
+            {
+                if (offsetSec < 0)
+                {
+                    MajDebug.LogWarning($"Invalid \"&mv_seek\" value: {offsetSec}. Value must be non-negative. Ignored.");
+                }
+                else
+                {
+                    _videoOffsetSec = offsetSec;
+                }
+            }
+            else
+            {
+                MajDebug.LogWarning($"Failed to parse \"&mv_seek\" value: {mvSeekCmd.Value}");
+            }
+            if (float.TryParse(mvWaitCmd.Value, out var waitTimeSec))
+            {
+                if (waitTimeSec < 0)
+                {
+                    MajDebug.LogWarning($"Invalid \"&mv_wait\" value: {waitTimeSec}. Value must be non-negative. Ignored.");
+                }
+                else
+                {
+                    _videoWaitTimeSec = waitTimeSec;
+                }
+            }
+            else
+            {
+                MajDebug.LogWarning($"Failed to parse \"&mv_wait\" value: {mvSeekCmd.Value}");
+            }
             if (IsPracticeMode)
             {
                 if (_gameInfo.TimeRange is Range<double> timeRange)
@@ -782,15 +818,9 @@ namespace MajdataPlay.Scenes.Game
             {
                 var userSettingBGDim = _setting.Game.BackgroundDim;
                 var dimDiff = 1 - userSettingBGDim;
-                var isVideoStarted = false;
                 while (_timer.ElapsedSecondsAsFloat - _audioStartTime < 0)
                 {
                     var timeDiff = _timer.ElapsedSecondsAsFloat - _audioStartTime;
-                    if (timeDiff > -0.1f && !isVideoStarted) 
-                    {
-                        _bgManager.PlayVideo(startSec, PlaybackSpeed);
-                        isVideoStarted = true;
-                    }
                     if(timeDiff > -BG_FADE_IN_LENGTH_SEC)
                     {
                         var dim = 1 - (((BG_FADE_IN_LENGTH_SEC + timeDiff) / BG_FADE_IN_LENGTH_SEC) * dimDiff);
@@ -800,10 +830,21 @@ namespace MajdataPlay.Scenes.Game
                     token.ThrowIfCancellationRequested();
                 }
             }
-            else
+            UniTask.Void(async () =>
             {
-                _bgManager.PlayVideo(startSec + 0.25f, PlaybackSpeed);
-            }
+                MajDebug.LogDebug($"Waiting for the video to be ready to play\nVideo seek: {_videoOffsetSec}s\nVideo wait time: {_videoWaitTimeSec}s");
+                var videoStartTime = startSec + _videoWaitTimeSec * PlaybackSpeed;
+                while (_timer.ElapsedSecondsAsFloat < _videoWaitTimeSec)
+                {
+                    token.ThrowIfCancellationRequested();
+                    await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+                }
+                token.ThrowIfCancellationRequested();
+                var videoStartAt = startSec + _videoOffsetSec * PlaybackSpeed;
+                MajDebug.LogDebug($"Start playing video at {videoStartAt}s");
+                _bgManager.PlayVideo(videoStartAt, PlaybackSpeed);
+                MajDebug.LogDebug("Video wait loop exited");
+            });
             _bgManager.SetBackgroundDim(_setting.Game.BackgroundDim);
             _audioSample.Play();
             _audioSample.Volume = 0;
