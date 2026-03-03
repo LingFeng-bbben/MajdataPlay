@@ -856,13 +856,16 @@ namespace MajdataPlay.IO
             
             try
             {
+#if UNITY_ANDROID || UNITY_IOS
+                Array.Fill(_btnClickedCountInThisFrame, 0);
+                Array.Fill(_sensorClickedCountInThisFrame, 0);
+#endif
 #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS
                 ButtonRing.OnPreUpdate();
 #endif
 #if UNITY_STANDALONE
                 TouchPanel.OnPreUpdate();
-#elif UNITY_ANDROID || UNITY_IOS
-                Array.Fill(_sensorClickedCountInThisFrame, 0);
+                
 #endif
                 var debugOptions = MajEnv.Settings.Debug;
                 var displayOptions = MajEnv.Settings.Display;
@@ -924,6 +927,17 @@ namespace MajdataPlay.IO
                 var btn = buttons[i];
                 _btnStatusInPreviousFrame[i] = _btnStatusInThisFrame[i];
                 _btnStatusInThisFrame[i] = btn.State;
+#if UNITY_ANDROID || UNITY_IOS
+                if(i < 8)
+                {
+                    var isClicked = _btnStatusInPreviousFrame[i] == SwitchStatus.Off &&
+                                    _btnStatusInThisFrame[i] == SwitchStatus.On;
+                    if(isClicked)
+                    {
+                        _btnClickedCountInThisFrame[i]++;
+                    }
+                }
+#endif
             }
             for (var i = 0; i < 33; i++)
             {

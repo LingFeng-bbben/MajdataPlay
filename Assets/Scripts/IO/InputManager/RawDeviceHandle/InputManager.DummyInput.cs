@@ -88,7 +88,10 @@ namespace MajdataPlay.IO
                 });
             }
 #if UNITY_ANDROID || UNITY_IOS
-            buttonClickedCount.CopyTo(_btnClickedCountInThisFrame);
+            for (var i = 0; i < buttonClickedCount.Length; i++)
+            {
+                _btnClickedCountInThisFrame[i] += buttonClickedCount[i];
+            }
             for (var i = 0; i < sensorClickedCount.Length; i++) 
             {
                 var clickedCount = sensorClickedCount[i];

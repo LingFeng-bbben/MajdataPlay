@@ -303,6 +303,7 @@ namespace MajdataPlay.IO
                 var gameButtons = _buttons.Slice(0, 8);
                 try
                 {
+                    MajDebug.LogInfo($"ButtonRing: listening keyboard input");
                     while (true)
                     {
                         token.ThrowIfCancellationRequested();
@@ -377,6 +378,7 @@ namespace MajdataPlay.IO
                 var gameButtons = _buttons.Slice(0, 8);
                 try
                 {
+                    MajDebug.LogInfo($"ButtonRing: listening gamepad input");
                     while (true)
                     {
                         token.ThrowIfCancellationRequested();
