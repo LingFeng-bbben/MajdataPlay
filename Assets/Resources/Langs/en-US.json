@@ -273,12 +273,6 @@
     "MAJSETTING_PROPERTY_Track_DESC": "Track related settings",
     "Press the 4th button to use default cover": "Press the 4th button to skip waiting and use the default cover",
     "Video loading timeout, fall back to default cover": "Video loading timed out\nThe song cover will be used as the background",
-    "Waiting for the video player": {
-      "": {
-        "": {
-          "{0}": "Waiting for the video player...{0}"
-        }
-      }
-    }
+    "Waiting for the video player...{0}": "Waiting for the video player...{0}"
   }
 }
