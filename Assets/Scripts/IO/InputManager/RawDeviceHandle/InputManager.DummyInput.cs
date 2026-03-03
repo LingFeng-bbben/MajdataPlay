@@ -12,6 +12,7 @@ using Unity.Burst;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.EnhancedTouch;
 using UnityEngine.InputSystem.Utilities;
 using UnityEngine.Profiling;
 using UnityEngine.UI;
@@ -73,7 +74,7 @@ namespace MajdataPlay.IO
 #if UNITY_STANDALONE || UNITY_EDITOR
             else if (Mouse.current != null)
             {
-                FromMouse(Mouse.current, newStates, extraButtonStates, mainCamera);
+                FromMouse(Mouse.current, buttonClickedCount, sensorClickedCount, newStates, extraButtonStates, mainCamera);
             }
 #endif
             var now = MajTimeline.UnscaledTime;
@@ -157,34 +158,57 @@ namespace MajdataPlay.IO
 #if UNITY_ANDROID || UNITY_IOS
                 _touchRecorder.TryGetValue(touch.touchId, out var lastTouchPosData);
 
-                for (var i = 0; i < 34; i++)
+                if (UseOuterTouchAsSensor)
                 {
-                    var lastState = false;
-                    var currentState = false;
-                    var clickedCounter = Span<int>.Empty;
+                    for (var i = 0; i < 34; i++)
+                    {
+                        var lastState = false;
+                        var currentState = false;
 
-                    if (UseOuterTouchAsSensor && i < 8)
-                    {
-                        clickedCounter = sensorClickedCount;
-                        lastState = ((lastTouchPosData & (1UL << (i + 12))) | (lastTouchPosData & (1UL << i))) != 0;
-                        currentState = ((touchPosData & (1UL << (i + 12))) | (touchPosData & (1UL << i))) != 0;
+                        if (i < 8)
+                        {
+                            lastState = ((lastTouchPosData & (1UL << (i + 12))) | (lastTouchPosData & (1UL << i))) != 0;
+                            currentState = ((touchPosData & (1UL << (i + 12))) | (touchPosData & (1UL << i))) != 0;
+                        }
+                        else
+                        {
+                            lastState = (lastTouchPosData & (1UL << (i + 12))) != 0;
+                            currentState = (touchPosData & (1UL << (i + 12))) != 0;
+                        }
+
+                        if (!lastState && currentState)
+                        {
+                            sensorClickedCount[i]++;
+                        }
                     }
-                    else if (i < 8)
+                }
+                else
+                {
+                    for (var i = 0; i < 8; i++)
                     {
-                        clickedCounter = buttonClickedCount;
-                        lastState = (lastTouchPosData & (1UL << i )) != 0;
+                        var lastState = false;
+                        var currentState = false;
+
+                        lastState = (lastTouchPosData & (1UL << i)) != 0;
                         currentState = (touchPosData & (1UL << i)) != 0;
+
+                        if (!lastState && currentState)
+                        {
+                            buttonClickedCount[i]++;
+                        }
                     }
-                    else
+                    for (var i = 0; i < 34; i++)
                     {
-                        clickedCounter = sensorClickedCount;
+                        var lastState = false;
+                        var currentState = false;
+
                         lastState = (lastTouchPosData & (1UL << (i + 12))) != 0;
                         currentState = (touchPosData & (1UL << (i + 12))) != 0;
-                    }
 
-                    if (!lastState && currentState)
-                    {
-                        clickedCounter[i]++;
+                        if (!lastState && currentState)
+                        {
+                            sensorClickedCount[i]++;
+                        }
                     }
                 }
 
@@ -201,14 +225,80 @@ namespace MajdataPlay.IO
         }
 
 
-        static void FromMouse(Mouse mouse, Span<bool> sensorStates, Span<bool> extraButton, Camera mainCamera)
+        static void FromMouse(Mouse mouse,
+            Span<int> buttonClickedCount,
+            Span<int> sensorClickedCount,
+            Span<bool> sensorStates, 
+            Span<bool> extraButton, 
+            Camera mainCamera)
         {
             var leftButton = mouse.leftButton;
             if(!leftButton.isPressed)
             {
+                _touchRecorder.Remove(1);
                 return;
             }
-            PositionToSensorState(sensorStates, extraButton, mainCamera, mouse.position.value);
+            var touchPosData = 0UL;
+            PositionToSensorState(sensorStates, extraButton, mainCamera, mouse.position.value, 0, ref touchPosData);
+#if UNITY_ANDROID || UNITY_IOS
+            _touchRecorder.TryGetValue(1, out var lastTouchPosData);
+
+            if(UseOuterTouchAsSensor)
+            {
+                for (var i = 0; i < 34; i++)
+                {
+                    var lastState = false;
+                    var currentState = false;
+
+                    if (i < 8)
+                    {
+                        lastState = ((lastTouchPosData & (1UL << (i + 12))) | (lastTouchPosData & (1UL << i))) != 0;
+                        currentState = ((touchPosData & (1UL << (i + 12))) | (touchPosData & (1UL << i))) != 0;
+                    }
+                    else
+                    {
+                        lastState = (lastTouchPosData & (1UL << (i + 12))) != 0;
+                        currentState = (touchPosData & (1UL << (i + 12))) != 0;
+                    }
+
+                    if (!lastState && currentState)
+                    {
+                        sensorClickedCount[i]++;
+                    }
+                }
+            }
+            else
+            {
+                for (var i = 0; i < 8; i++)
+                {
+                    var lastState = false;
+                    var currentState = false;
+
+                    lastState = (lastTouchPosData & (1UL << i)) != 0;
+                    currentState = (touchPosData & (1UL << i)) != 0;
+
+                    if (!lastState && currentState)
+                    {
+                        buttonClickedCount[i]++;
+                    }
+                }
+                for (var i = 0; i < 34; i++)
+                {
+                    var lastState = false;
+                    var currentState = false;
+
+                    lastState = (lastTouchPosData & (1UL << (i + 12))) != 0;
+                    currentState = (touchPosData & (1UL << (i + 12))) != 0;
+
+                    if (!lastState && currentState)
+                    {
+                        sensorClickedCount[i]++;
+                    }
+                }
+            }
+                
+            _touchRecorder[1] = touchPosData;
+#endif
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
