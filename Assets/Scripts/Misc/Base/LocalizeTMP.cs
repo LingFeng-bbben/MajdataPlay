@@ -18,13 +18,13 @@ namespace MajdataPlay
             try
             {
                 text = GetComponent<TMP_Text>();
-                text.text = Localization.GetLocalizedText(local_key);
+                text.text = local_key.i18n();
             }
             catch { }
             try
             {
                 text_legacy = GetComponent<Text>();
-                text_legacy.text = Localization.GetLocalizedText(local_key);
+                text_legacy.text = local_key.i18n();
             }
             catch { }
         }

@@ -427,9 +427,7 @@ namespace MajdataPlay.Scenes.Game
             {
                 await UniTask.SwitchToMainThread();
                 InputManager.ClearAllSubscriber();
-                var s = Localization.GetLocalizedText("Empty Chart");
-                //var ss = string.Format(Localization.GetLocalizedText("Return to {0} in {1} seconds"), "List", "1");
-                MajInstances.SceneSwitcher.SetLoadingText($"{s}", Color.red);
+                MajInstances.SceneSwitcher.SetLoadingText("Empty Chart".i18n(), Color.red);
                 await UniTask.Delay(1000);
                 ReturnTo().Forget();
             }
@@ -437,8 +435,7 @@ namespace MajdataPlay.Scenes.Game
             {
                 await UniTask.SwitchToMainThread();
                 InputManager.ClearAllSubscriber();
-                var s = Localization.GetLocalizedText("OBSError");
-                MajInstances.SceneSwitcher.SetLoadingText($"{s}", Color.red);
+                MajInstances.SceneSwitcher.SetLoadingText("OBSError".i18n(), Color.red);
                 await UniTask.Delay(1000);
                 ReturnTo().Forget();
             }
@@ -476,7 +473,7 @@ namespace MajdataPlay.Scenes.Game
             catch(Exception e)
             {
                 await UniTask.SwitchToMainThread();
-                MajInstances.SceneSwitcher.SetLoadingText($"{Localization.GetLocalizedText("Unknown error")}\n{e.Message}", Color.red);
+                MajInstances.SceneSwitcher.SetLoadingText($"{"Unknown error".i18n()}\n{e.Message}", Color.red);
                 MajDebug.LogError(e);
                 throw;
             }

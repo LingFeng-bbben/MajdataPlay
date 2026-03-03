@@ -1,1002 +1,268 @@
 {
   "Code": "zh-CN",
   "Author": "Majdata",
-  "MappingTable": [
-    {
-      "Origin": "Missing MSVC",
-      "Content": "Missing MSVC"
-    },
-    {
-      "Origin": "MAJTEXT_LOADING_SCORE_STORAGE",
-      "Content": "正在读取数据库"
-    },
-    {
-      "Origin": "MAJTEXT_LOADING_SKIN",
-      "Content": "正在加载皮肤"
-    },
-    {
-      "Origin": "MAJTEXT_SCANNING_CHARTS",
-      "Content": "正在扫描谱面"
-    },
-    {
-      "Origin": "MAJTEXT_SCANNING_CHARTS_FROM_{0}",
-      "Content": "正在从{0}拉取谱面"
-    },
-    {
-      "Origin": "MAJTEXT_SCAN_CHARTS_FAILED",
-      "Content": "扫描谱面时出现问题"
-    },
-    {
-      "Origin": "MAJTEXT_NO_CHART",
-      "Content": "没有可用的谱面"
-    },
-    {
-      "Origin": "MAJTEXT_PRESS_ANY_KEY",
-      "Content": "触摸继续"
-    },
-    {
-      "Origin": "Downloading",
-      "Content": "正在下载"
-    },
-    {
-      "Origin": "Failed to download chart",
-      "Content": "下载失败"
-    },
-    {
-      "Origin": "Unknown error",
-      "Content": "未知错误"
-    },
-    {
-      "Origin": "Failed to load chart",
-      "Content": "加载谱面时发生错误"
-    },
-    {
-      "Origin": "Deserialization",
-      "Content": "正在加载谱面"
-    },
-    {
-      "Origin": "Loading Chart",
-      "Content": "正在吃绝赞"
-    },
-    {
-      "Origin": "MAJSETTING_CATEGORY_Game",
-      "Content": "游戏设定"
-    },
-    {
-      "Origin": "MAJSETTING_CATEGORY_Judge",
-      "Content": "判定设定"
-    },
-    {
-      "Origin": "MAJSETTING_CATEGORY_Display",
-      "Content": "显示设定"
-    },
-    {
-      "Origin": "MAJSETTING_CATEGORY_Audio",
-      "Content": "音频设定"
-    },
-    {
-      "Origin": "MAJSETTING_CATEGORY_Volume",
-      "Content": "音量设定"
-    },
-    {
-      "Origin": "MAJSETTING_CATEGORY_Mod",
-      "Content": "Mod"
-    },
-    {
-      "Origin": "MAJSETTING_CATEGORY_Debug",
-      "Content": "调试"
-    },
-    {
-      "Origin": "MAJSETTING_CATEGORY_ChartSetting",
-      "Content": "谱面设置"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TapSpeed",
-      "Content": "Tap速度"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TapSpeed_DESC",
-      "Content": "控制\nTap、Hold、Star\n的下落速度"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TouchSpeed",
-      "Content": "Touch速度"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TouchSpeed_DESC",
-      "Content": "控制\nTouch、TouchHold\n的淡入速度"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_SlideFadeInOffset",
-      "Content": "Slide淡入偏移"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_SlideFadeInOffset_DESC",
-      "Content": "调整Slide的淡入时机\n往右调整将推迟Slide淡入"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_BackgroundDim",
-      "Content": "背景亮度"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_BackgroundDim_DESC",
-      "Content": "控制背景的明亮度\n数值越大越暗"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_Language",
-      "Content": "语言"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_Language_DESC",
-      "Content": "言語/LANGUAGE"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_StarRotation",
-      "Content": "Star旋转"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_StarRotation_DESC",
-      "Content": "开启后，\nStar将根据Slide的速度进行旋转"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_BGInfo",
-      "Content": "中央显示"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_BGInfo_DESC",
-      "Content": "调整屏幕中央显示的信息"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TrackSkip",
-      "Content": "跳过乐曲"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TrackSkip_DESC",
-      "Content": "开启后，\n按住2367即可强制跳过乐曲"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_FastRetry",
-      "Content": "快速重开"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_FastRetry_DESC",
-      "Content": "开启后，\n按住3456即可重新开始乐曲"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_AudioOffset",
-      "Content": "音频偏移(A判)"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_AudioOffset_DESC",
-      "Content": "音押，当你觉得谱面对不上音频时可以调整该项\nFast较多往左调，Late较多往右调"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_JudgeOffset",
-      "Content": "判定偏移(B判)"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_JudgeOffset_DESC",
-      "Content": "目押，当你觉得设备存在输入延迟时可以调整该项\nFast较多往左调，Late较多往右调"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_Mode",
-      "Content": "判定模式"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_Mode_DESC",
-      "Content": "此项会影响Hold、Slide的判定行为\n(旧框/新框判定)"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_Skin",
-      "Content": "Note皮肤"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_Skin_DESC",
-      "Content": "更换Note使用的皮肤"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_DisplayCriticalPerfect",
-      "Content": "显示Critical判定"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_DisplayCriticalPerfect_DESC",
-      "Content": "开启后，将会显示Critical判定"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_DisplayBreakScore",
-      "Content": "显示Break分数"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_DisplayBreakScore_DESC",
-      "Content": "开启后，会显示Break类Note的详细得分"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_FastLateType",
-      "Content": "Fast/Late显示等级"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_FastLateType_DESC",
-      "Content": "控制Note的Fast/Late显示级别\n不符合条件的判定结果将不会显示\n影响Tap、Hold、Touch、TouchHold"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_NoteJudgeType",
-      "Content": "Note判定显示等级"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_NoteJudgeType_DESC",
-      "Content": "控制Note的判定显示级别\n不符合条件的判定结果将不会显示\n影响Tap、Hold"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TouchJudgeType",
-      "Content": "Touch判定显示等级"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TouchJudgeType_DESC",
-      "Content": "控制Touch的判定显示级别\n不符合条件的判定结果将不会显示\n影响Touch、TouchHold"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_SlideJudgeType",
-      "Content": "Slide判定显示等级"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_SlideJudgeType_DESC",
-      "Content": "控制Slide的判定显示级别\n不符合条件的判定结果将不会显示\n影响Slide、Wifi"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_BreakJudgeType",
-      "Content": "Break判定显示等级"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_BreakJudgeType_DESC",
-      "Content": "控制Break的判定显示级别\n不符合条件的判定结果将不会显示\n影响Tap、Hold、Touch、TouchHold"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_BreakFastLateType",
-      "Content": "Break Fast/Late显示等级"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_BreakFastLateType_DESC",
-      "Content": "控制Break的FAST/LATE显示级别\n不符合条件的判定结果将不会显示\n影响Break Tap、Hold"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_SlideSortOrder",
-      "Content": "Slide排列顺序"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_SlideSortOrder_DESC",
-      "Content": "Classic: 旧Slide在新Slide下方\nModern: 旧Slide在新Slide上方"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_InnerJudgeDistance",
-      "Content": "内圈判定显示距离"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_InnerJudgeDistance_DESC",
-      "Content": "调整Touch判定结果的显示位置\n数值越小越靠近中心"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_OuterJudgeDistance",
-      "Content": "外圈判定显示距离"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_OuterJudgeDistance_DESC",
-      "Content": "调整Tap、Star、Hold判定结果的显示位置\n数值越小越靠近中心"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TapScale",
-      "Content": "Tap缩放级别"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TapScale_DESC",
-      "Content": "调整Tap在游玩时的大小"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_HoldScale",
-      "Content": "Hold缩放级别"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_HoldScale_DESC",
-      "Content": "调整Hold在游玩时的大小"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_SlideScale",
-      "Content": "Slide缩放级别"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_SlideScale_DESC",
-      "Content": "调整Slide在游玩时的大小\n此项不影响Wifi Slide"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TouchScale",
-      "Content": "Touch缩放级别"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TouchScale_DESC",
-      "Content": "调整Touch在游玩时的大小"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_DisplayHoldHeadJudgeResult",
-      "Content": "显示Hold头判判定"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_DisplayHoldHeadJudgeResult_DESC",
-      "Content": ""
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TouchFeedback",
-      "Content": "触摸反馈"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TouchFeedback_DESC",
-      "Content": "设置触摸反馈的显示级别"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_MainScreenPosition",
-      "Content": "主屏幕位置"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_MainScreenPosition_DESC",
-      "Content": "调整游玩区域的垂直坐标"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_Resolution",
-      "Content": "分辨率"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_Resolution_DESC",
-      "Content": "不可调整"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_Answer",
-      "Content": "正解音"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_Answer_DESC",
-      "Content": "Nothing"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_BGM",
-      "Content": "背景音乐"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_BGM_DESC",
-      "Content": "Nothing"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_Track",
-      "Content": "谱面音乐"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_Track_DESC",
-      "Content": "Nothing"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_Tap",
-      "Content": "Tap/Hold判定音"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_Tap_DESC",
-      "Content": "Nothing"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_Slide",
-      "Content": "Slide判定音"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_Slide_DESC",
-      "Content": "Nothing"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_Break",
-      "Content": "Break判定音"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_Break_DESC",
-      "Content": "Nothing"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_Touch",
-      "Content": "Touch判定音"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_Touch_DESC",
-      "Content": "Nothing"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_Voice",
-      "Content": "小小蓝白"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_Voice_DESC",
-      "Content": "Nothing"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_DisplaySensor",
-      "Content": "显示被触发的传感器"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_DisplaySensor_DESC",
-      "Content": "开启后，被触发的传感器会被渲染"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TouchSimulationRadius",
-      "Content": "模拟触摸半径"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TouchSimulationRadius_DESC",
-      "Content": "对触摸屏有效\n值越大手越大"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TouchAAreaExtraRadius",
-      "Content": "模拟触摸A区半径"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TouchAAreaExtraRadius_DESC",
-      "Content": "对A区的额外半径\n值越大越容易触发A组传感器"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TouchBAreaExtraRadius",
-      "Content": "模拟触摸B区半径"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TouchBAreaExtraRadius_DESC",
-      "Content": "对B区的额外半径\n值越大越容易触发B组传感器"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TouchCAreaExtraRadius",
-      "Content": "模拟触摸C区半径"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TouchCAreaExtraRadius_DESC",
-      "Content": "对C区的额外半径\n值越大越容易触发C组传感器"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TouchDAreaExtraRadius",
-      "Content": "模拟触摸D区半径"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TouchDAreaExtraRadius_DESC",
-      "Content": "对D区的额外半径\n值越大越容易触发D组传感器"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TouchEAreaExtraRadius",
-      "Content": "模拟触摸E区半径"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TouchEAreaExtraRadius_DESC",
-      "Content": "对E区的额外半径\n值越大越容易触发E组传感器"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_DisplayFPS",
-      "Content": "显示帧率"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_DisplayFPS_DESC",
-      "Content": "开启后，会在屏幕右上角显示当前帧率"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_FullScreen",
-      "Content": "强制全屏"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_FullScreen_DESC",
-      "Content": "Nothing"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TryFixAudioSync",
-      "Content": "音频卡顿时修正时间"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TryFixAudioSync_DESC",
-      "Content": "开启后，当发生音频卡顿时\n会尝试修正Note与音频的时间轴"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_NoteAppearRate",
-      "Content": "Note淡入偏移"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_NoteAppearRate_DESC",
-      "Content": "调整Tap、Hold、Star的淡入行为"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_DisableGCInGameing",
-      "Content": "在游玩时关闭GC"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_DisableGCInGameing_DESC",
-      "Content": "开启后，有可能解决音频卡顿的问题"
-    },
-    {
-      "Origin": "Outer_Only",
-      "Content": "仅外部"
-    },
-    {
-      "Origin": "Inner_Only",
-      "Content": "仅内部"
-    },
-    {
-      "Origin": "All",
-      "Content": "全部"
-    },
-    {
-      "Origin": "BelowCP",
-      "Content": "Critical以下"
-    },
-    {
-      "Origin": "BelowP",
-      "Content": "Perfect以下"
-    },
-    {
-      "Origin": "BelowGR",
-      "Content": "Great以下"
-    },
-    {
-      "Origin": "MissOnly",
-      "Content": "仅Miss"
-    },
-    {
-      "Origin": "Enable",
-      "Content": "启用"
-    },
-    {
-      "Origin": "Disable",
-      "Content": "禁用"
-    },
-    {
-      "Origin": "True",
-      "Content": "是"
-    },
-    {
-      "Origin": "False",
-      "Content": "否"
-    },
-    {
-      "Origin": "Unavailable",
-      "Content": "不可用"
-    },
-    {
-      "Origin": "Downloading Audio Track",
-      "Content": "下载音频中"
-    },
-    {
-      "Origin": "Downloading Maidata",
-      "Content": "下载谱面中"
-    },
-    {
-      "Origin": "Downloading Picture",
-      "Content": "下载图片中"
-    },
-    {
-      "Origin": "Downloading Video",
-      "Content": "下载视频中"
-    },
-    {
-      "Origin": "MAJTEXT_SORTFIND_Search",
-      "Content": "搜索"
-    },
-    {
-      "Origin": "MAJTEXT_SORTFIND_UseKeyboardHint",
-      "Content": "拿出你的键盘使劲的敲啊..."
-    },
-    {
-      "Origin": "MAJTEXT_SORTFIND_Sort",
-      "Content": "排序"
-    },
-    {
-      "Origin": "MAJTEXT_SORTFIND_SortbyTime",
-      "Content": "添加\n时间"
-    },
-    {
-      "Origin": "MAJTEXT_SORTFIND_SortbyDiff",
-      "Content": "谱面\n难度"
-    },
-    {
-      "Origin": "MAJTEXT_SORTFIND_SortbyDes",
-      "Content": "谱面\n作者"
-    },
-    {
-      "Origin": "MAJTEXT_SORTFIND_SortbyTitle",
-      "Content": "谱面\n标题"
-    },
-    {
-      "Origin": "MAJTEXT_SORTFIND_SortbyDefault",
-      "Content": "默认"
-    },
-    {
-      "Origin": "MAJTEXT_SORTFIND_SortbyRank",
-      "Content": "历史\n成绩"
-    },
-    {
-      "Origin": "Inner",
-      "Content": "内"
-    },
-    {
-      "Origin": "Outer",
-      "Content": "外"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_Mirror",
-      "Content": "镜像"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_Mirror_DESC",
-      "Content": "对称称对\n大8大"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_Rotation",
-      "Content": "旋转"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_Rotation_DESC",
-      "Content": "正数为顺时针旋转\n负数为逆时针旋转"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_PlaybackSpeed",
-      "Content": "游玩速度"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_PlaybackSpeed_DESC",
-      "Content": "就是变速齿轮的意思啦"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_NoteMask",
-      "Content": "Note遮罩"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_NoteMask_DESC",
-      "Content": "更适合中出式音游的遮罩"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_AllBreak",
-      "Content": "全Break"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_AllBreak_DESC",
-      "Content": "所有音符全部变成Break"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_AllEx",
-      "Content": "全Ex"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_AllEx_DESC",
-      "Content": "所有音符全部变成Ex"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_AllTouch",
-      "Content": "全Touch"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_AllTouch_DESC",
-      "Content": "所有音符全部变成Touch"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_ButtonRingForTouch",
-      "Content": "纯内屏体验"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_ButtonRingForTouch_DESC",
-      "Content": "按键也可以处理Slide、Touch"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_SlideNoHead",
-      "Content": "无头星星"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_SlideNoHead_DESC",
-      "Content": "去掉所有星星头"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_SlideNoTrack",
-      "Content": "去掉Slide"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_SlideNoTrack_DESC",
-      "Content": "去掉所有星星的Slide"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_AutoPlay",
-      "Content": "自动游玩"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_AutoPlay_DESC",
-      "Content": "小小蓝白帮你打"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_JudgeStyle",
-      "Content": "判定风格"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_JudgeStyle_DESC",
-      "Content": "调整判定的松严"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_Global",
-      "Content": "全局"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_Global_DESC",
-      "Content": "控制全局音量"
-    },
-    {
-      "Origin": "Empty Chart",
-      "Content": "此难度为空"
-    },
-    {
-      "Origin": "Waiting for the video player...{0}",
-      "Content": "等待视频...{0}"
-    },
-    {
-      "Origin": "Press the 4th button to use default cover",
-      "Content": "按下4号键以跳过等待"
-    },
-    {
-      "Origin": "Video loading timeout, fall back to default cover",
-      "Content": "视频加载超时，将使用歌曲封面作为背景"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TouchPanelOffset",
-      "Content": "内屏输入偏移"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TouchPanelOffset_DESC",
-      "Content": "当你觉得内屏存在输入延迟时可以调整该项\nFast较多往左调，Late较多往右调"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_AnswerOffset",
-      "Content": "正解音偏移"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_AnswerOffset_DESC",
-      "Content": "调整正解音的播放时机，不影响判定\n往左调提早播放，往右调延后播放\n如果你不清楚它的作用，请不要调整"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_BGInfo_OPTION_Combo",
-      "Content": "Combo"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_BGInfo_OPTION_PCombo",
-      "Content": "完美Combo"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_BGInfo_OPTION_CPCombo",
-      "Content": "极致完美Combo"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_BGInfo_OPTION_Achievement_101",
-      "Content": "达成率 (101-)"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_BGInfo_OPTION_Achievement_100",
-      "Content": "达成率 (100-)"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_BGInfo_OPTION_Achievement",
-      "Content": "达成率"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_BGInfo_OPTION_AchievementClassical",
-      "Content": "FiNALE 达成率"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_BGInfo_OPTION_AchievementClassical_100",
-      "Content": "FiNALE 达成率 (100-)"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_BGInfo_OPTION_DXScore",
-      "Content": "DX分数"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_BGInfo_OPTION_DXScoreRank",
-      "Content": "DX分数等级"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_BGInfo_OPTION_S_Border",
-      "Content": "距S级"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_BGInfo_OPTION_SS_Border",
-      "Content": "距SS级"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_BGInfo_OPTION_SSS_Border",
-      "Content": "距SSS级"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_BGInfo_OPTION_MyBest",
-      "Content": "距最好成绩"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_BGInfo_OPTION_Diff",
-      "Content": "判定误差"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_BGInfo_OPTION_None",
-      "Content": "无"
-    },
-    {
-      "Origin": "MAJTEXT_THUMBUP_INFO",
-      "Content": "<好玩就点个赞吧"
-    },
-    {
-      "Origin": "MAJTEXT_THUMBUP_SENDING",
-      "Content": "..."
-    },
-    {
-      "Origin": "MAJTEXT_THUMBUP_SENDED",
-      "Content": "点赞成功"
-    },
-    {
-      "Origin": "MAJTEXT_THUMBUP_ALREADY",
-      "Content": "你已经点过赞了"
-    },
-    {
-      "Origin": "MAJTEXT_THUMBUP_FAILED",
-      "Content": "点赞失败"
-    },
-    {
-      "Origin": "MAJTEXT_SCORE_SENDING",
-      "Content": "..."
-    },
-    {
-      "Origin": "MAJTEXT_SCORE_SENDED",
-      "Content": "成绩已上传"
-    },
-    {
-      "Origin": "MAJTEXT_SCORE_FAILED",
-      "Content": "上传成绩失败"
-    },
-    {
-      "Origin": "MAJTEXT_LOGIN_SESSION_EXPIRED",
-      "Content": "账号身份信息已过期"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_Random",
-      "Content": "随机"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_Random_DESC",
-      "Content": "Note位置随机打乱\nRANDOM是随机重新分配轨道\nS-RANDOM是每个note随机"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_RenderQuality",
-      "Content": "渲染质量"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_RenderQuality_DESC",
-      "Content": "调整游戏的渲染质量。\n越高越清晰，越低越糊。"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_Topmost",
-      "Content": "窗口置顶"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_Topmost_DESC",
-      "Content": "让majplay窗口总在最前"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_FPSLimit",
-      "Content": "帧率限制"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_FPSLimit_DESC",
-      "Content": "限制游戏最高FPS"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_VSync",
-      "Content": "垂直同步"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_VSync_DESC",
-      "Content": "是否开启垂直同步"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_RecordMode",
-      "Content": "录制模式"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_RecordMode_DESC",
-      "Content": "Disable: 禁用\nOBS:使用OBS-Websocket服务器\n帮你按开始和停止录制\nOBS->工具->WS服务器->\n开启服务且关闭身份验证"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_DJAutoPolicy",
-      "Content": "DJAuto策略"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_DJAutoPolicy_OPTION_Strict",
-      "Content": "严格"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_DJAutoPolicy_OPTION_Permissive",
-      "Content": "宽容"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_AutoPlay_OPTION_Enable",
-      "Content": "开启"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_AutoPlay_OPTION_DJAuto_ButtonRing_First",
-      "Content": "DJAuto (按键优先)"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_AutoPlay_OPTION_DJAuto_TouchPanel_First",
-      "Content": "DJAuto (内屏优先)"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TopInfo",
-      "Content": "外框显示"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TopInfo_DESC",
-      "Content": "就是1号和8号键中间的小条子啦"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TopInfo_OPTION_Judge",
-      "Content": "判定结果"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TopInfo_OPTION_Timing",
-      "Content": "Fast/Late"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TopInfo_OPTION_None",
-      "Content": "不显示"
-    },
-    {
-      "Origin": "OBSError",
-      "Content": "无法连接到OBS WebSocket"
-    },
-    {
-      "Origin": "Input_Hint",
-      "Content": "按Select(或触摸副屏)搜索和排序歌曲，长按刷新歌单。触摸歌曲封面随机选曲。长按4号键开启练习模式。\n按Alt+Enter切换全屏模式。长按5号键退出登录。按Alt+F4退出游戏。"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_SubdivideSlideJudgeGrade",
-      "Content": "细分Slide判定等级"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_SubdivideSlideJudgeGrade_DESC",
-      "Content": "开启后将允许Slide出现小P判定"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_OffsetUnit",
-      "Content": "偏移单位"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_OffsetUnit_DESC",
-      "Content": "调整各类偏移的单位"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_OffsetUnit_OPTION_Second",
-      "Content": "秒"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_OffsetUnit_OPTION_Frame",
-      "Content": "帧"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_DisplayOffset",
-      "Content": "帧偏移"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_DisplayOffset_DESC",
-      "Content": "用于补偿帧延迟\n如果你不清楚它的作用，请不要调整"
-    },
-    {
-      "Origin": "MAJTEXT_SETTING_OFFSETUNIT_Second",
-      "Content": "单位: 秒"
-    },
-    {
-      "Origin": "MAJTEXT_SETTING_OFFSETUNIT_Frame",
-      "Content": "单位: 帧"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TrackVolumeOffset",
-      "Content": "音乐音量偏移"
-    },
-    {
-      "Origin": "MAJSETTING_PROPERTY_TrackVolumeOffset_DESC",
-      "Content": "Nothing"
-    }
-  ]
+  "Translations": {
+    "All": "全部",
+    "BelowCP": "Critical以下",
+    "BelowGR": "Great以下",
+    "BelowP": "Perfect以下",
+    "Deserialization": "正在加载谱面",
+    "Disable": "禁用",
+    "Downloading": "正在下载",
+    "Downloading Audio Track": "下载音频中",
+    "Downloading Maidata": "下载谱面中",
+    "Downloading Picture": "下载图片中",
+    "Downloading Video": "下载视频中",
+    "Empty Chart": "此难度为空",
+    "Enable": "启用",
+    "Failed to download chart": "下载失败",
+    "Failed to load chart": "加载谱面时发生错误",
+    "False": "否",
+    "Inner": "内",
+    "Inner_Only": "仅内部",
+    "Input_Hint": "按Select(或触摸副屏)搜索和排序歌曲，长按刷新歌单。触摸歌曲封面随机选曲。长按4号键开启练习模式。\n按Alt+Enter切换全屏模式。长按5号键退出登录。按Alt+F4退出游戏。",
+    "Loading Chart": "正在吃绝赞",
+    "MAJSETTING_CATEGORY_Audio": "音频设定",
+    "MAJSETTING_CATEGORY_ChartSetting": "谱面设置",
+    "MAJSETTING_CATEGORY_Debug": "调试",
+    "MAJSETTING_CATEGORY_Display": "显示设定",
+    "MAJSETTING_CATEGORY_Game": "游戏设定",
+    "MAJSETTING_CATEGORY_Judge": "判定设定",
+    "MAJSETTING_CATEGORY_Mod": "Mod",
+    "MAJSETTING_CATEGORY_Volume": "音量设定",
+    "MAJSETTING_PROPERTY_AllBreak": "全Break",
+    "MAJSETTING_PROPERTY_AllBreak_DESC": "所有音符全部变成Break",
+    "MAJSETTING_PROPERTY_AllEx": "全Ex",
+    "MAJSETTING_PROPERTY_AllEx_DESC": "所有音符全部变成Ex",
+    "MAJSETTING_PROPERTY_AllTouch": "全Touch",
+    "MAJSETTING_PROPERTY_AllTouch_DESC": "所有音符全部变成Touch",
+    "MAJSETTING_PROPERTY_Answer": "正解音",
+    "MAJSETTING_PROPERTY_AnswerOffset": "正解音偏移",
+    "MAJSETTING_PROPERTY_AnswerOffset_DESC": "调整正解音的播放时机，不影响判定\n往左调提早播放，往右调延后播放\n如果你不清楚它的作用，请不要调整",
+    "MAJSETTING_PROPERTY_Answer_DESC": "Nothing",
+    "MAJSETTING_PROPERTY_AudioOffset": "音频偏移(A判)",
+    "MAJSETTING_PROPERTY_AudioOffset_DESC": "音押，当你觉得谱面对不上音频时可以调整该项\nFast较多往左调，Late较多往右调",
+    "MAJSETTING_PROPERTY_AutoPlay": "自动游玩",
+    "MAJSETTING_PROPERTY_AutoPlay_DESC": "小小蓝白帮你打",
+    "MAJSETTING_PROPERTY_AutoPlay_OPTION_DJAuto_ButtonRing_First": "DJAuto (按键优先)",
+    "MAJSETTING_PROPERTY_AutoPlay_OPTION_DJAuto_TouchPanel_First": "DJAuto (内屏优先)",
+    "MAJSETTING_PROPERTY_AutoPlay_OPTION_Enable": "开启",
+    "MAJSETTING_PROPERTY_BGInfo": "中央显示",
+    "MAJSETTING_PROPERTY_BGInfo_DESC": "调整屏幕中央显示的信息",
+    "MAJSETTING_PROPERTY_BGInfo_OPTION_Achievement": "达成率",
+    "MAJSETTING_PROPERTY_BGInfo_OPTION_AchievementClassical": "FiNALE 达成率",
+    "MAJSETTING_PROPERTY_BGInfo_OPTION_AchievementClassical_100": "FiNALE 达成率 (100-)",
+    "MAJSETTING_PROPERTY_BGInfo_OPTION_Achievement_100": "达成率 (100-)",
+    "MAJSETTING_PROPERTY_BGInfo_OPTION_Achievement_101": "达成率 (101-)",
+    "MAJSETTING_PROPERTY_BGInfo_OPTION_CPCombo": "极致完美Combo",
+    "MAJSETTING_PROPERTY_BGInfo_OPTION_Combo": "Combo",
+    "MAJSETTING_PROPERTY_BGInfo_OPTION_DXScore": "DX分数",
+    "MAJSETTING_PROPERTY_BGInfo_OPTION_DXScoreRank": "DX分数等级",
+    "MAJSETTING_PROPERTY_BGInfo_OPTION_Diff": "判定误差",
+    "MAJSETTING_PROPERTY_BGInfo_OPTION_MyBest": "距最好成绩",
+    "MAJSETTING_PROPERTY_BGInfo_OPTION_None": "无",
+    "MAJSETTING_PROPERTY_BGInfo_OPTION_PCombo": "完美Combo",
+    "MAJSETTING_PROPERTY_BGInfo_OPTION_SSS_Border": "距SSS级",
+    "MAJSETTING_PROPERTY_BGInfo_OPTION_SS_Border": "距SS级",
+    "MAJSETTING_PROPERTY_BGInfo_OPTION_S_Border": "距S级",
+    "MAJSETTING_PROPERTY_BGM": "背景音乐",
+    "MAJSETTING_PROPERTY_BGM_DESC": "Nothing",
+    "MAJSETTING_PROPERTY_BackgroundDim": "背景亮度",
+    "MAJSETTING_PROPERTY_BackgroundDim_DESC": "控制背景的明亮度\n数值越大越暗",
+    "MAJSETTING_PROPERTY_Break": "Break判定音",
+    "MAJSETTING_PROPERTY_BreakFastLateType": "Break Fast/Late显示等级",
+    "MAJSETTING_PROPERTY_BreakFastLateType_DESC": "控制Break的FAST/LATE显示级别\n不符合条件的判定结果将不会显示\n影响Break Tap、Hold",
+    "MAJSETTING_PROPERTY_BreakJudgeType": "Break判定显示等级",
+    "MAJSETTING_PROPERTY_BreakJudgeType_DESC": "控制Break的判定显示级别\n不符合条件的判定结果将不会显示\n影响Tap、Hold、Touch、TouchHold",
+    "MAJSETTING_PROPERTY_Break_DESC": "Nothing",
+    "MAJSETTING_PROPERTY_ButtonRingForTouch": "纯内屏体验",
+    "MAJSETTING_PROPERTY_ButtonRingForTouch_DESC": "按键也可以处理Slide、Touch",
+    "MAJSETTING_PROPERTY_DJAutoPolicy": "DJAuto策略",
+    "MAJSETTING_PROPERTY_DJAutoPolicy_DESC": "严格模式下只允许使用外键或内屏的任意一种\n宽松模式下如果外键或内屏被触发，允许使用内屏或外键",
+    "MAJSETTING_PROPERTY_DJAutoPolicy_OPTION_Permissive": "宽容",
+    "MAJSETTING_PROPERTY_DJAutoPolicy_OPTION_Strict": "严格",
+    "MAJSETTING_PROPERTY_DisableGCInGameing": "在游玩时关闭GC",
+    "MAJSETTING_PROPERTY_DisableGCInGameing_DESC": "开启后，有可能解决音频卡顿的问题",
+    "MAJSETTING_PROPERTY_DisplayBreakScore": "显示Break分数",
+    "MAJSETTING_PROPERTY_DisplayBreakScore_DESC": "开启后，会显示Break类Note的详细得分",
+    "MAJSETTING_PROPERTY_DisplayCriticalPerfect": "显示Critical判定",
+    "MAJSETTING_PROPERTY_DisplayCriticalPerfect_DESC": "开启后，将会显示Critical判定",
+    "MAJSETTING_PROPERTY_DisplayFPS": "显示帧率",
+    "MAJSETTING_PROPERTY_DisplayFPS_DESC": "开启后，会在屏幕右上角显示当前帧率",
+    "MAJSETTING_PROPERTY_DisplayHoldHeadJudgeResult": "显示Hold头判判定",
+    "MAJSETTING_PROPERTY_DisplayHoldHeadJudgeResult_DESC": "开启后, Hold头的判定结果将会被显示",
+    "MAJSETTING_PROPERTY_DisplayOffset": "帧偏移",
+    "MAJSETTING_PROPERTY_DisplayOffset_DESC": "用于补偿帧延迟\n如果你不清楚它的作用，请不要调整",
+    "MAJSETTING_PROPERTY_DisplaySensor": "显示被触发的传感器",
+    "MAJSETTING_PROPERTY_DisplaySensor_DESC": "开启后，被触发的传感器会被渲染",
+    "MAJSETTING_PROPERTY_FPSLimit": "帧率限制",
+    "MAJSETTING_PROPERTY_FPSLimit_DESC": "限制游戏最高FPS",
+    "MAJSETTING_PROPERTY_FastLateType": "Fast/Late显示等级",
+    "MAJSETTING_PROPERTY_FastLateType_DESC": "控制Note的Fast/Late显示级别\n不符合条件的判定结果将不会显示\n影响Tap、Hold、Touch、TouchHold",
+    "MAJSETTING_PROPERTY_FastRetry": "快速重开",
+    "MAJSETTING_PROPERTY_FastRetry_DESC": "开启后，\n按住3456即可重新开始乐曲",
+    "MAJSETTING_PROPERTY_FullScreen": "强制全屏",
+    "MAJSETTING_PROPERTY_FullScreen_DESC": "Nothing",
+    "MAJSETTING_PROPERTY_Global": "全局",
+    "MAJSETTING_PROPERTY_Global_DESC": "控制全局音量",
+    "MAJSETTING_PROPERTY_HoldScale": "Hold缩放级别",
+    "MAJSETTING_PROPERTY_HoldScale_DESC": "调整Hold在游玩时的大小",
+    "MAJSETTING_PROPERTY_InnerJudgeDistance": "内圈判定显示距离",
+    "MAJSETTING_PROPERTY_InnerJudgeDistance_DESC": "调整Touch判定结果的显示位置\n数值越小越靠近中心",
+    "MAJSETTING_PROPERTY_JudgeOffset": "判定偏移(B判)",
+    "MAJSETTING_PROPERTY_JudgeOffset_DESC": "目押，当你觉得设备存在输入延迟时可以调整该项\nFast较多往左调，Late较多往右调",
+    "MAJSETTING_PROPERTY_JudgeStyle": "判定风格",
+    "MAJSETTING_PROPERTY_JudgeStyle_DESC": "调整判定的松严",
+    "MAJSETTING_PROPERTY_Language": "语言",
+    "MAJSETTING_PROPERTY_Language_DESC": "言語/LANGUAGE",
+    "MAJSETTING_PROPERTY_MainScreenPosition": "主屏幕位置",
+    "MAJSETTING_PROPERTY_MainScreenPosition_DESC": "调整游玩区域的垂直坐标",
+    "MAJSETTING_PROPERTY_Mirror": "镜像",
+    "MAJSETTING_PROPERTY_Mirror_DESC": "对称称对\n大8大",
+    "MAJSETTING_PROPERTY_Mode": "判定模式",
+    "MAJSETTING_PROPERTY_Mode_DESC": "此项会影响Hold、Slide的判定行为\n(旧框/新框判定)",
+    "MAJSETTING_PROPERTY_NoteAppearRate": "Note淡入偏移",
+    "MAJSETTING_PROPERTY_NoteAppearRate_DESC": "调整Tap、Hold、Star的淡入行为",
+    "MAJSETTING_PROPERTY_NoteJudgeType": "Note判定显示等级",
+    "MAJSETTING_PROPERTY_NoteJudgeType_DESC": "控制Note的判定显示级别\n不符合条件的判定结果将不会显示\n影响Tap、Hold",
+    "MAJSETTING_PROPERTY_NoteMask": "Note遮罩",
+    "MAJSETTING_PROPERTY_NoteMask_DESC": "更适合中出式音游的遮罩",
+    "MAJSETTING_PROPERTY_OffsetUnit": "偏移单位",
+    "MAJSETTING_PROPERTY_OffsetUnit_DESC": "调整各类偏移的单位",
+    "MAJSETTING_PROPERTY_OffsetUnit_OPTION_Frame": "帧",
+    "MAJSETTING_PROPERTY_OffsetUnit_OPTION_Second": "秒",
+    "MAJSETTING_PROPERTY_OuterJudgeDistance": "外圈判定显示距离",
+    "MAJSETTING_PROPERTY_OuterJudgeDistance_DESC": "调整Tap、Star、Hold判定结果的显示位置\n数值越小越靠近中心",
+    "MAJSETTING_PROPERTY_PlaybackSpeed": "游玩速度",
+    "MAJSETTING_PROPERTY_PlaybackSpeed_DESC": "就是变速齿轮的意思啦",
+    "MAJSETTING_PROPERTY_Random": "随机",
+    "MAJSETTING_PROPERTY_Random_DESC": "Note位置随机打乱\nRANDOM是随机重新分配轨道\nS-RANDOM是每个note随机",
+    "MAJSETTING_PROPERTY_RecordMode": "录制模式",
+    "MAJSETTING_PROPERTY_RecordMode_DESC": "Disable: 禁用\nOBS:使用OBS-Websocket服务器\n帮你按开始和停止录制\nOBS->工具->WS服务器->\n开启服务且关闭身份验证",
+    "MAJSETTING_PROPERTY_RenderQuality": "渲染质量",
+    "MAJSETTING_PROPERTY_RenderQuality_DESC": "调整游戏的渲染质量。\n越高越清晰，越低越糊。",
+    "MAJSETTING_PROPERTY_Resolution": "分辨率",
+    "MAJSETTING_PROPERTY_Resolution_DESC": "不可调整",
+    "MAJSETTING_PROPERTY_Rotation": "旋转",
+    "MAJSETTING_PROPERTY_Rotation_DESC": "正数为顺时针旋转\n负数为逆时针旋转",
+    "MAJSETTING_PROPERTY_Skin": "Note皮肤",
+    "MAJSETTING_PROPERTY_Skin_DESC": "更换Note使用的皮肤",
+    "MAJSETTING_PROPERTY_SkipVideoDownload": "跳过视频下载",
+    "MAJSETTING_PROPERTY_SkipVideoDownload_DESC": "加载在线谱面时, 跳过视频下载",
+    "MAJSETTING_PROPERTY_Slide": "Slide判定音",
+    "MAJSETTING_PROPERTY_SlideFadeInOffset": "Slide淡入偏移",
+    "MAJSETTING_PROPERTY_SlideFadeInOffset_DESC": "调整Slide的淡入时机\n往右调整将推迟Slide淡入",
+    "MAJSETTING_PROPERTY_SlideJudgeType": "Slide判定显示等级",
+    "MAJSETTING_PROPERTY_SlideJudgeType_DESC": "控制Slide的判定显示级别\n不符合条件的判定结果将不会显示\n影响Slide、Wifi",
+    "MAJSETTING_PROPERTY_SlideNoHead": "无头星星",
+    "MAJSETTING_PROPERTY_SlideNoHead_DESC": "去掉所有星星头",
+    "MAJSETTING_PROPERTY_SlideNoTrack": "去掉Slide",
+    "MAJSETTING_PROPERTY_SlideNoTrack_DESC": "去掉所有星星的Slide",
+    "MAJSETTING_PROPERTY_SlideScale": "Slide缩放级别",
+    "MAJSETTING_PROPERTY_SlideScale_DESC": "调整Slide在游玩时的大小\n此项不影响Wifi Slide",
+    "MAJSETTING_PROPERTY_SlideSortOrder": "Slide排列顺序",
+    "MAJSETTING_PROPERTY_SlideSortOrder_DESC": "Classic: 旧Slide在新Slide下方\nModern: 旧Slide在新Slide上方",
+    "MAJSETTING_PROPERTY_Slide_DESC": "Nothing",
+    "MAJSETTING_PROPERTY_StarRotation": "Star旋转",
+    "MAJSETTING_PROPERTY_StarRotation_DESC": "开启后，\nStar将根据Slide的速度进行旋转",
+    "MAJSETTING_PROPERTY_SubdivideSlideJudgeGrade": "细分Slide判定等级",
+    "MAJSETTING_PROPERTY_SubdivideSlideJudgeGrade_DESC": "开启后将允许Slide出现小P判定",
+    "MAJSETTING_PROPERTY_Tap": "Tap/Hold判定音",
+    "MAJSETTING_PROPERTY_TapScale": "Tap缩放级别",
+    "MAJSETTING_PROPERTY_TapScale_DESC": "调整Tap在游玩时的大小",
+    "MAJSETTING_PROPERTY_TapSpeed": "Tap速度",
+    "MAJSETTING_PROPERTY_TapSpeed_DESC": "控制\nTap、Hold、Star\n的下落速度",
+    "MAJSETTING_PROPERTY_Tap_DESC": "Nothing",
+    "MAJSETTING_PROPERTY_TopInfo": "外框显示",
+    "MAJSETTING_PROPERTY_TopInfo_DESC": "就是1号和8号键中间的小条子啦",
+    "MAJSETTING_PROPERTY_TopInfo_OPTION_Judge": "判定结果",
+    "MAJSETTING_PROPERTY_TopInfo_OPTION_None": "不显示",
+    "MAJSETTING_PROPERTY_TopInfo_OPTION_Timing": "Fast/Late",
+    "MAJSETTING_PROPERTY_Topmost": "窗口置顶",
+    "MAJSETTING_PROPERTY_Topmost_DESC": "让MajPlay窗口总在最前",
+    "MAJSETTING_PROPERTY_Touch": "Touch判定音",
+    "MAJSETTING_PROPERTY_TouchAAreaExtraRadius": "模拟触摸A区半径",
+    "MAJSETTING_PROPERTY_TouchAAreaExtraRadius_DESC": "对A区的额外半径\n值越大越容易触发A组传感器",
+    "MAJSETTING_PROPERTY_TouchBAreaExtraRadius": "模拟触摸B区半径",
+    "MAJSETTING_PROPERTY_TouchBAreaExtraRadius_DESC": "对B区的额外半径\n值越大越容易触发B组传感器",
+    "MAJSETTING_PROPERTY_TouchCAreaExtraRadius": "模拟触摸C区半径",
+    "MAJSETTING_PROPERTY_TouchCAreaExtraRadius_DESC": "对C区的额外半径\n值越大越容易触发C组传感器",
+    "MAJSETTING_PROPERTY_TouchDAreaExtraRadius": "模拟触摸D区半径",
+    "MAJSETTING_PROPERTY_TouchDAreaExtraRadius_DESC": "对D区的额外半径\n值越大越容易触发D组传感器",
+    "MAJSETTING_PROPERTY_TouchEAreaExtraRadius": "模拟触摸E区半径",
+    "MAJSETTING_PROPERTY_TouchEAreaExtraRadius_DESC": "对E区的额外半径\n值越大越容易触发E组传感器",
+    "MAJSETTING_PROPERTY_TouchFeedback": "触摸反馈",
+    "MAJSETTING_PROPERTY_TouchFeedback_DESC": "设置触摸反馈的显示级别",
+    "MAJSETTING_PROPERTY_TouchJudgeType": "Touch判定显示等级",
+    "MAJSETTING_PROPERTY_TouchJudgeType_DESC": "控制Touch的判定显示级别\n不符合条件的判定结果将不会显示\n影响Touch、TouchHold",
+    "MAJSETTING_PROPERTY_TouchPanelOffset": "内屏输入偏移",
+    "MAJSETTING_PROPERTY_TouchPanelOffset_DESC": "当你觉得内屏存在输入延迟时可以调整该项\nFast较多往左调，Late较多往右调",
+    "MAJSETTING_PROPERTY_TouchRadiusAdjust": "触摸半径补偿",
+    "MAJSETTING_PROPERTY_TouchRadiusAdjust_DESC": "相当于让你的触摸变大一圈, 值越大触摸越大",
+    "MAJSETTING_PROPERTY_TouchScale": "Touch缩放级别",
+    "MAJSETTING_PROPERTY_TouchScale_DESC": "调整Touch在游玩时的大小",
+    "MAJSETTING_PROPERTY_TouchSimulationRadius": "模拟触摸半径",
+    "MAJSETTING_PROPERTY_TouchSimulationRadius_DESC": "对触摸屏有效\n值越大手越大",
+    "MAJSETTING_PROPERTY_TouchSpeed": "Touch速度",
+    "MAJSETTING_PROPERTY_TouchSpeed_DESC": "控制\nTouch、TouchHold\n的淡入速度",
+    "MAJSETTING_PROPERTY_Touch_DESC": "Nothing",
+    "MAJSETTING_PROPERTY_Track": "谱面音乐",
+    "MAJSETTING_PROPERTY_TrackSkip": "跳过乐曲",
+    "MAJSETTING_PROPERTY_TrackSkip_DESC": "开启后，\n按住2367即可强制跳过乐曲",
+    "MAJSETTING_PROPERTY_TrackVolumeOffset": "音乐音量偏移",
+    "MAJSETTING_PROPERTY_TrackVolumeOffset_DESC": "Nothing",
+    "MAJSETTING_PROPERTY_Track_DESC": "Nothing",
+    "MAJSETTING_PROPERTY_TryFixAudioSync": "音频卡顿时修正时间",
+    "MAJSETTING_PROPERTY_TryFixAudioSync_DESC": "开启后，当发生音频卡顿时\n会尝试修正Note与音频的时间轴",
+    "MAJSETTING_PROPERTY_VSync": "垂直同步",
+    "MAJSETTING_PROPERTY_VSync_DESC": "是否开启垂直同步",
+    "MAJSETTING_PROPERTY_Voice": "小小蓝白",
+    "MAJSETTING_PROPERTY_Voice_DESC": "Nothing",
+    "MAJTEXT_LOADING_SCORE_STORAGE": "正在读取数据库",
+    "MAJTEXT_LOADING_SKIN": "正在加载皮肤",
+    "MAJTEXT_LOGING_OUT": "登出中...",
+    "MAJTEXT_LOGIN_CONNECT_TIMEOUT": "连接超时",
+    "MAJTEXT_LOGIN_CONNECT_UNREACHABLE": "无法连接到服务器",
+    "MAJTEXT_LOGIN_LOGIN_FAILED": "登录失败",
+    "MAJTEXT_LOGIN_SESSION_EXPIRED": "账号身份信息已过期",
+    "MAJTEXT_LOGIN_UNKNOWN_ERROR": "发生未知错误, 请联系开发团队",
+    "MAJTEXT_NO_CHART": "没有可用的谱面",
+    "MAJTEXT_ONLINE_METHOD_NOT_ALLOWED": "405了, 可能是需要换源或挂梯子",
+    "MAJTEXT_ONLINE_USERNAME_OR_PASSWORD_INCORRECT": "用户名或密码错误",
+    "MAJTEXT_PRESS_ANY_KEY": "触摸继续",
+    "MAJTEXT_SCANNING_CHARTS": "正在扫描谱面",
+    "MAJTEXT_SCANNING_CHARTS_FROM_{0}": "正在从{0}拉取谱面",
+    "MAJTEXT_SCAN_CHARTS_FAILED": "扫描谱面时出现问题",
+    "MAJTEXT_SCORE_FAILED": "上传成绩失败",
+    "MAJTEXT_SCORE_SENDED": "成绩已上传",
+    "MAJTEXT_SCORE_SENDING": "上传成绩中...",
+    "MAJTEXT_SETTING_OFFSETUNIT_Frame": "单位: 帧",
+    "MAJTEXT_SETTING_OFFSETUNIT_Second": "单位: 秒",
+    "MAJTEXT_SORTFIND_Search": "搜索",
+    "MAJTEXT_SORTFIND_Sort": "排序",
+    "MAJTEXT_SORTFIND_SortbyDefault": "默认",
+    "MAJTEXT_SORTFIND_SortbyDes": "谱面\n作者",
+    "MAJTEXT_SORTFIND_SortbyDiff": "谱面\n难度",
+    "MAJTEXT_SORTFIND_SortbyRank": "历史\n成绩",
+    "MAJTEXT_SORTFIND_SortbyTime": "添加\n时间",
+    "MAJTEXT_SORTFIND_SortbyTitle": "谱面\n标题",
+    "MAJTEXT_SORTFIND_UseKeyboardHint": "拿出你的键盘使劲的敲啊...",
+    "MAJTEXT_THUMBUP_ALREADY": "你已经点过赞了",
+    "MAJTEXT_THUMBUP_FAILED": "点赞失败",
+    "MAJTEXT_THUMBUP_INFO": "<好玩就点个赞吧",
+    "MAJTEXT_THUMBUP_SENDED": "点赞成功",
+    "MAJTEXT_THUMBUP_SENDING": "点赞中...",
+    "MissOnly": "仅Miss",
+    "Missing MSVC": "Missing MSVC",
+    "Missing MSVC CONTENT": "没找到MSVC库\\n点OK前往下载页面",
+    "OBSError": "无法连接到OBS WebSocket",
+    "Outer": "外",
+    "Outer_Only": "仅外部",
+    "Press the 4th button to use default cover": "按下4号键以跳过等待",
+    "True": "是",
+    "Unavailable": "不可用",
+    "Unknown error": "未知错误",
+    "Video loading timeout, fall back to default cover": "视频加载超时，将使用歌曲封面作为背景",
+    "Waiting for the video player...{0}": "等待视频...{0}"
+  }
 }
