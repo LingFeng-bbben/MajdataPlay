@@ -39,6 +39,7 @@ namespace MajdataPlay.IO
             get
             {
                 ThrowIfDisposed();
+                ThrowIfCanSeekNotSupported();
                 return _audioSource!.time;
             }
             set
@@ -173,7 +174,10 @@ namespace MajdataPlay.IO
                 www.SendWebRequest();
                 while (!www.isDone) ;
                 var myClip = DownloadHandlerAudioClip.GetContent(www);
-                return new UnityAudioSample(myClip, gameObject);
+                return new UnityAudioSample(myClip, gameObject)
+                {
+                    CanSeek = false,
+                };
             }
         }
         public static async UniTask<UnityAudioSample> CreateAsync(string filePath, GameObject gameObject)
@@ -183,7 +187,10 @@ namespace MajdataPlay.IO
                 www.SetRequestHeader("User-Agent", MajEnv.HTTP_USER_AGENT);
                 await www.SendWebRequest();
                 var myClip = DownloadHandlerAudioClip.GetContent(www);
-                return new UnityAudioSample(myClip, gameObject);
+                return new UnityAudioSample(myClip, gameObject)
+                {
+                    CanSeek = false
+                };
             }
         }
     }

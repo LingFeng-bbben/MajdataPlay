@@ -121,7 +121,10 @@ namespace MajdataPlay.Scenes.List
                 previewSample.SetVolume(MajInstances.Settings.Audio.Volume.BGM);
                 //set sample.CurrentSec Not implmented
                 previewSample.IsLoop = true;
-                previewSample.CurrentSec = previewOffsetSec;
+                if(previewSample.CanSeek)
+                {
+                    previewSample.CurrentSec = previewOffsetSec;
+                }
                 previewSample.Speed = 1.0f;
                 previewSample.Play();
                 token.ThrowIfCancellationRequested();
@@ -135,22 +138,25 @@ namespace MajdataPlay.Scenes.List
                 }
                 while (true)
                 {
-                    var currentSec = previewSample.CurrentSec;
-                    if(previewLengthSec != 0)
+                    if(previewSample.CanSeek)
                     {
-                        if (currentSec - (previewOffsetSec + previewLengthSec) > -0.5f)
+                        var currentSec = previewSample.CurrentSec;
+                        if (previewLengthSec != 0)
                         {
-                            for (var i = 1f; i > 0; i = i - 0.2f)
+                            if (currentSec - (previewOffsetSec + previewLengthSec) > -0.5f)
                             {
-                                token.ThrowIfCancellationRequested();
-                                previewSample.Volume = i * MajInstances.Settings.Audio.Volume.BGM;
-                                await UniTask.Delay(100, cancellationToken: token, cancelImmediately: true);
+                                for (var i = 1f; i > 0; i = i - 0.2f)
+                                {
+                                    token.ThrowIfCancellationRequested();
+                                    previewSample.Volume = i * MajInstances.Settings.Audio.Volume.BGM;
+                                    await UniTask.Delay(100, cancellationToken: token, cancelImmediately: true);
+                                }
+                                previewSample.Pause();
+                                await UniTask.Delay(2000, cancellationToken: token, cancelImmediately: true);
+                                previewSample.Volume = MajInstances.Settings.Audio.Volume.BGM;
+                                previewSample.CurrentSec = previewOffsetSec;
+                                previewSample.Play();
                             }
-                            previewSample.Pause();
-                            await UniTask.Delay(2000, cancellationToken: token, cancelImmediately: true);
-                            previewSample.Volume = MajInstances.Settings.Audio.Volume.BGM;
-                            previewSample.CurrentSec = previewOffsetSec;
-                            previewSample.Play();
                         }
                     }
                     await UniTask.Yield(token, cancelImmediately: true);

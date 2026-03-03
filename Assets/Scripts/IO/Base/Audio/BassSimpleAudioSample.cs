@@ -52,6 +52,7 @@ namespace MajdataPlay.IO
                 using(Lock)
                 {
                     ThrowIfDisposed();
+                    ThrowIfCanSeekNotSupported();
                     return Bass.ChannelBytes2Seconds(_stream, Bass.ChannelGetPosition(_stream));
                 }
             }
@@ -260,7 +261,10 @@ namespace MajdataPlay.IO
                     gain = 1 / channelmax;
                 }
 
-                var sample = new BassSimpleAudioSample(stream, gain, handle, speedChange);
+                var sample = new BassSimpleAudioSample(stream, gain, handle, speedChange)
+                {
+                    CanSeek = true,
+                };
                 sample.Volume = 1;
                 sample._decode = decode;
                 return sample;
@@ -293,7 +297,10 @@ namespace MajdataPlay.IO
             MajDebug.LogInfo(stream);
             MajDebug.LogInfo(Bass.LastError);
 
-            var sample = new BassSimpleAudioSample(stream, 1, false);
+            var sample = new BassSimpleAudioSample(stream, 1, false)
+            {
+                CanSeek = false,
+            };
             sample.Volume = 1;
 
             return sample;
