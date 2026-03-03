@@ -37,6 +37,8 @@ namespace MajdataPlay.Scenes.List
         bool _isInited = false;
         bool _isExited = false;
 
+        bool _isOnlineEnabled = false;
+
         bool _isPlayedExplosion = false;
 
         float _autoSlideTimer = 0f;
@@ -97,6 +99,7 @@ namespace MajdataPlay.Scenes.List
                     }
                 }
             }
+            _isOnlineEnabled = MajEnv.Settings.Online.Enable;
             InputManager.BindAnyArea(OnAnyInput);
         }
         void Start()
@@ -167,7 +170,7 @@ namespace MajdataPlay.Scenes.List
             SensorCheck();
             ButtonCheck();
             _inactiveTimeSec += MajTimeline.UnscaledDeltaTime;
-            if (TimeSpan.FromSeconds(_inactiveTimeSec) > TimeSpan.FromMinutes(MAX_ALLOWED_INACTIVE_TIME_MIN))
+            if (_isOnlineEnabled && TimeSpan.FromSeconds(_inactiveTimeSec) > TimeSpan.FromMinutes(MAX_ALLOWED_INACTIVE_TIME_MIN))
             {
                 EnterLogin();
                 return;
@@ -428,13 +431,12 @@ namespace MajdataPlay.Scenes.List
                     _coverListDisplayer.SwitchToDirList();
                     LedRing.SetButtonLight(Color.white, 4);
                     SongStorage.WorkingCollection.Index = 0;
-                    return;
                 }
-                if (_coverListDisplayer.IsDirList)
+                else if (_isOnlineEnabled && _coverListDisplayer.IsDirList)
                 {
                     EnterLogin();
-                    return;
                 }
+                return;
             }
             else
             {
