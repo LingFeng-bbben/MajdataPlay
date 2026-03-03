@@ -300,7 +300,7 @@ namespace MajdataPlay.IO
             {
                 await UniTask.Yield(PlayerLoopTiming.LastPreUpdate);
                 var token = MajEnv.GlobalCT;
-                var gameButtons = _buttons.Span.Slice(0, 8);
+                var gameButtons = _buttons.Slice(0, 8);
                 try
                 {
                     while (true)
@@ -318,7 +318,7 @@ namespace MajdataPlay.IO
 
                             for (var i = 0; i < gameButtons.Length; i++)
                             {
-                                var button = gameButtons[i];
+                                var button = gameButtons.Span[i];
                                 var keyCode = button.BindingKey;
                                 var state = (keyCode switch
                                 {
@@ -342,9 +342,9 @@ namespace MajdataPlay.IO
 
                             using (new LockDisposable())
                             {
-                                var states = _buttonRealTimeStates.AsSpan();
-                                var hadOn = _isBtnHadOnInternal.AsSpan();
-                                var hadOff = _isBtnHadOffInternal.AsSpan();
+                                var states = _buttonRealTimeStates;
+                                var hadOn = _isBtnHadOnInternal;
+                                var hadOff = _isBtnHadOffInternal;
 
                                 for (int i = 0; i < 12; i++)
                                 {
@@ -374,7 +374,7 @@ namespace MajdataPlay.IO
             {
                 await UniTask.Yield(PlayerLoopTiming.LastPreUpdate);
                 var token = MajEnv.GlobalCT;
-                var gameButtons = _buttons.Span.Slice(0, 8);
+                var gameButtons = _buttons.Slice(0, 8);
                 try
                 {
                     while (true)
@@ -392,7 +392,7 @@ namespace MajdataPlay.IO
 
                             for (var i = 0; i < gameButtons.Length; i++)
                             {
-                                var button = gameButtons[i];
+                                var button = gameButtons.Span[i];
                                 var keyCode = button.BindingKey;
                                 var state = (keyCode switch
                                 {
@@ -419,9 +419,9 @@ namespace MajdataPlay.IO
 
                             using (new LockDisposable())
                             {
-                                var states = _buttonRealTimeStates.AsSpan();
-                                var hadOn = _isBtnHadOnInternal.AsSpan();
-                                var hadOff = _isBtnHadOffInternal.AsSpan();
+                                var states = _buttonRealTimeStates;
+                                var hadOn = _isBtnHadOnInternal;
+                                var hadOff = _isBtnHadOffInternal;
 
                                 for (int i = 0; i < 12; i++)
                                 {
