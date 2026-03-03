@@ -853,6 +853,7 @@ namespace MajdataPlay.IO
                 Array.Fill(_sensorClickedCountInThisFrame, 0);
 #endif
                 var debugOptions = MajEnv.Settings.Debug;
+                var displayOptions = MajEnv.Settings.Display;
                 var height = Screen.height;
                 var width = Screen.width;
                 var fingerRad = FingerRadius;
@@ -862,6 +863,8 @@ namespace MajdataPlay.IO
                 var cExtraRad = debugOptions.TouchCAreaExtraRadius;
                 var dExtraRad = debugOptions.TouchDAreaExtraRadius;
                 var eExtraRad = debugOptions.TouchEAreaExtraRadius;
+                var mainScreenTransform = displayOptions.MainScreenTransform;
+                var mainScreenOffset = displayOptions.MainScreenOffset;
 
                 var isModified = height != _lastScreenHeight ||
                                  width != _lastScreenWidth ||
@@ -871,7 +874,8 @@ namespace MajdataPlay.IO
                                  cExtraRad != _lastCAreaExtraRadius ||
                                  dExtraRad != _lastDAreaExtraRadius ||
                                  eExtraRad != _lastEAreaExtraRadius ||
-                                 touchRadiusAdjust != _lastTouchRadiusAdjust;
+                                 touchRadiusAdjust != _lastTouchRadiusAdjust ||
+                                 mainScreenOffset != _lastMainScreenOffset;
                 if (isModified)
                 {
                     _lastScreenWidth = width;
@@ -883,6 +887,15 @@ namespace MajdataPlay.IO
                     _lastDAreaExtraRadius = dExtraRad;
                     _lastEAreaExtraRadius = eExtraRad;
                     _lastTouchRadiusAdjust = touchRadiusAdjust;
+                    _lastMainScreenTransform = mainScreenTransform;
+                    if(_lastMainScreenTransform)
+                    {
+                        _lastMainScreenOffset = mainScreenOffset;
+                    }
+                    else
+                    {
+                        _lastMainScreenOffset = 1f;
+                    }                    
                 }
                 _version++;
                 UpdateMousePosition();
