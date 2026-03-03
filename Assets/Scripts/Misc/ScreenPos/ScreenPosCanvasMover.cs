@@ -18,9 +18,9 @@ namespace MajdataPlay
         const float SCREEN_CANVAS_WIDTH = 1080;
 
         const float MAIN_DISPLAY_POS_Y = 540;
-        const float SUB_COVER_HEIGHT = 390;
+        const float SUB_COVER_HEIGHT = 840;
         const float SUB_COVER_WIDTH = 1080;
-        const float SUB_COVER_POS_Y = 315;
+        const float SUB_COVER_POS_Y = 1500;
 
         const float SUB_DISPLAY_ORIGINAL_POS_Y = 735f;
         const float SUB_DISPLAY_HEIGHT = 450f;
