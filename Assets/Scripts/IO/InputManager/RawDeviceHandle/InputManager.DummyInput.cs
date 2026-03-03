@@ -287,15 +287,16 @@ namespace MajdataPlay.IO
             rawPositionData = newP;
             if (UseOuterTouchAsSensor)
             {
-                if (extraButton < 8 && extraButton != -1)
+                if (extraButton != -1)
                 {
-                    sensorStates[extraButton] = true;
-                    return;
-                }
-                else
-                {
-                    buttonStates[extraButton] = true;
-                    return;
+                    if(extraButton < 8)
+                    {
+                        sensorStates[extraButton] = true;
+                    }
+                    else
+                    {
+                        buttonStates[extraButton] = true;
+                    }
                 }
             }
             else
@@ -304,11 +305,6 @@ namespace MajdataPlay.IO
                 {
                     sensorStates.Clear();
                     buttonStates[extraButton] = true;
-                    return;
-                }
-                else
-                {
-                    return;
                 }
             }
         }
