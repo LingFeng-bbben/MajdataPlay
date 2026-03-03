@@ -32,7 +32,7 @@ namespace MajdataPlay.IO
                 newStates[index] |= report.State;
             }
 
-#if UNITY_STANDALONE
+#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS
             for (var i = 0; i < 12; i++)
             {
                 var state = (ButtonRing.IsOn(i) || ButtonRing.IsHadOn(i)) ? SwitchStatus.On : SwitchStatus.Off;

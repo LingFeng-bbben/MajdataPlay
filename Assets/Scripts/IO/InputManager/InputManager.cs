@@ -380,7 +380,11 @@ namespace MajdataPlay.IO
             }
 #if UNITY_STANDALONE
             IODeviceDetect();
+#endif
+#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS
             ButtonRing.Init();
+#endif
+#if UNITY_STANDALONE
             TouchPanel.Init();
             LedDevice.Init();
 #endif
@@ -852,8 +856,10 @@ namespace MajdataPlay.IO
             
             try
             {
-#if UNITY_STANDALONE
+#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS
                 ButtonRing.OnPreUpdate();
+#endif
+#if UNITY_STANDALONE
                 TouchPanel.OnPreUpdate();
 #elif UNITY_ANDROID || UNITY_IOS
                 Array.Fill(_sensorClickedCountInThisFrame, 0);

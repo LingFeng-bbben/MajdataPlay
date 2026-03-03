@@ -36,7 +36,7 @@ namespace MajdataPlay.IO
                 return !IsKeyDown(keyCode);
             }
 #if UNITY_STANDALONE_WIN
-            static Win32API.RawKey ToWinKeyCode(KeyCode keyCode)
+            public static Win32API.RawKey ToWinKeyCode(KeyCode keyCode)
             {
                 return keyCode switch
                 {
@@ -56,7 +56,7 @@ namespace MajdataPlay.IO
                 };
             }
 #endif
-            static UnityEngine.InputSystem.Key ToUnityKeyCode(KeyCode keyCode)
+            public static UnityEngine.InputSystem.Key ToUnityKeyCode(KeyCode keyCode)
             {
                 return keyCode switch
                 {

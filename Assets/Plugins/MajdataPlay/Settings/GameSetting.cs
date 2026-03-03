@@ -24,10 +24,8 @@ namespace MajdataPlay.Settings
         public DebugOptions Debug { get; init; } = new();
         [SettingVisualizationIgnore]
         public OnlineOptions Online { get; init; } = new();
-#if UNITY_STANDALONE
         [SettingVisualizationIgnore]
         public IOOptions IO { get; init; } = new();
-#endif
     }
     [Preserve]
     public class GameOptions
@@ -354,27 +352,37 @@ namespace MajdataPlay.Settings
         [JsonProperty]
         public LogLevel DebugLevel { get; set; } = LogLevel.Info;
     }
-#if UNITY_STANDALONE
     [Preserve]
     public class IOOptions
     {
+#if UNITY_STANDALONE
         [Preserve]
         public DeviceManufacturerOption? Manufacturer { get; set; } = null;
+#endif
         [Preserve]
         public InputDeviceOptions InputDevice { get; set; } = new();
+#if UNITY_STANDALONE
         [Preserve]
         public OutputDeviceOptions OutputDevice { get; set; } = new();
+#endif
     }
     [Preserve]
     public class InputDeviceOptions
     {
+#if UNITY_STANDALONE
         [Preserve]
         public int Player { get; set; } = 1;
         [Preserve]
         public ButtonRingOptions ButtonRing { get; set; } = new();
         [Preserve]
         public TouchPanelOptions TouchPanel { get; set; } = new();
+#else
+        [Preserve]
+        public bool EnableKeyboardInput { get; set; } = false;
+        public bool EnableGamepadInput { get; set; } = false;
+#endif
     }
+#if UNITY_STANDALONE
     [Preserve]
     public class OutputDeviceOptions
     {
