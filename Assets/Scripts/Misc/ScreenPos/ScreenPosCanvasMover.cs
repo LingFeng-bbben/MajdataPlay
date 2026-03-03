@@ -22,10 +22,13 @@ namespace MajdataPlay
         const float SUB_COVER_WIDTH = 1080;
         const float SUB_COVER_POS_Y = 1500;
 
+        const float SUB_COVER_BOTTOM_HEIGHT = 0;
+        const float SUB_COVER_BOTTOM_WIDTH = 1080;
+        const float SUB_COVER_BOTTOM_POS_Y = 0;
+
         const float SUB_DISPLAY_ORIGINAL_POS_Y = 735f;
         const float SUB_DISPLAY_HEIGHT = 450f;
         const float MAIN_DISPLAY_HEIGHT = 1080f;
-        const float SUB_COVER_BOTTOM_POS_Y = -960;
 
         int _flag = FLAG_NOT_INIT;
 
@@ -252,6 +255,11 @@ namespace MajdataPlay
                 _subCoverRectTransform.anchoredPosition = new Vector2(0, SUB_COVER_POS_Y);
                 _subCoverRectTransform.sizeDelta = new Vector2(SUB_COVER_WIDTH, SUB_COVER_HEIGHT);
             }
+            if(_subCoverBottomRectTransform != null)
+            {
+                _subCoverBottomRectTransform.anchoredPosition = new Vector2(0, SUB_COVER_BOTTOM_POS_Y);
+                _subCoverBottomRectTransform.sizeDelta = new Vector2(SUB_COVER_BOTTOM_WIDTH, SUB_COVER_BOTTOM_HEIGHT);
+            }
         }
 
         void ApplyPosition(float offset, float scale, bool updateCache = false)
@@ -322,20 +330,28 @@ namespace MajdataPlay
 
         void UpdateSubCover()
         {
-            if(_subCoverRectTransform == null || _subDisplay == null)
+            if(_subCoverRectTransform != null)
             {
-                return;
+                // Sub_Display底边 (pivot 0.5,0.5)
+                //float subDisplayBottom = _subDisplay.anchoredPosition.y - SUB_DISPLAY_HEIGHT / 2f;
+                // Main_Display顶边 (pivot 0.5,0.5)
+                var mainDisplayTop = _rt.anchoredPosition.y + MAIN_DISPLAY_HEIGHT / 2f;
+
+                var coverHeight = Mathf.Max(0f, SCREEN_CANVAS_HEIGHT - mainDisplayTop);
+                var coverCenterY = (SCREEN_CANVAS_HEIGHT + mainDisplayTop) / 2f;
+
+                _subCoverRectTransform.anchoredPosition = new Vector2(0, coverCenterY);
+                _subCoverRectTransform.sizeDelta = new Vector2(SUB_COVER_WIDTH, coverHeight);
             }
-            // Sub_Display底边 (pivot 0.5,0.5)
-            //float subDisplayBottom = _subDisplay.anchoredPosition.y - SUB_DISPLAY_HEIGHT / 2f;
-            // Main_Display顶边 (pivot 0.5,0.5)
-            float mainDisplayTop = _rt.anchoredPosition.y + MAIN_DISPLAY_HEIGHT / 2f;
+            if(_subCoverBottomRectTransform != null)
+            {
+                var mainDisplayBottom = _rt.anchoredPosition.y - MAIN_DISPLAY_HEIGHT / 2f;
+                var coverHeight = Mathf.Max(0f, mainDisplayBottom);
+                var coverCenterY = coverHeight / 2;
 
-            float coverHeight = Mathf.Max(0f, SCREEN_CANVAS_HEIGHT - mainDisplayTop);
-            float coverCenterY = (SCREEN_CANVAS_HEIGHT + mainDisplayTop) / 2f;
-
-            _subCoverRectTransform.anchoredPosition = new Vector2(0, coverCenterY);
-            _subCoverRectTransform.sizeDelta = new Vector2(SUB_COVER_WIDTH, coverHeight);
+                _subCoverBottomRectTransform.anchoredPosition = new Vector2(0, coverCenterY);
+                _subCoverBottomRectTransform.sizeDelta = new(SUB_COVER_BOTTOM_WIDTH, coverHeight);
+            }            
         }
 
         void ApplyTransform()
