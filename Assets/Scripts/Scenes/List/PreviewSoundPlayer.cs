@@ -101,7 +101,14 @@ namespace MajdataPlay.Scenes.List
                 {
                     previewOffsetSec = 0;
                 }
-                if(previewLengthSec == -1)
+                else
+                {
+                    if(previewOffsetSec >= (float)previewSample.Length.TotalSeconds)
+                    {
+                        previewOffsetSec = 0;
+                    }    
+                }
+                if (previewLengthSec == -1)
                 {
                     previewLengthSec = (float)previewSample.Length.TotalSeconds;
                 }
@@ -110,6 +117,7 @@ namespace MajdataPlay.Scenes.List
                     previewLengthSec = Math.Min(previewLengthSec, (float)previewSample.Length.TotalSeconds - previewOffsetSec);
                     previewLengthSec = Math.Max(0, previewLengthSec);
                 }
+                MajDebug.LogDebug($"Playing preview song\nOffset: {previewOffsetSec}s\nLength: {previewLengthSec}s");
                 previewSample.SetVolume(MajInstances.Settings.Audio.Volume.BGM);
                 //set sample.CurrentSec Not implmented
                 previewSample.IsLoop = true;
