@@ -59,6 +59,7 @@ namespace MajdataPlay.IO
             var sensors = _sensors.Span;
             var mainCamera = Majdata<IMainCameraProvider>.Instance!.MainCamera;
 
+            Span<int> buttonClickedCount = stackalloc int[8];
             Span<int> sensorClickedCount = stackalloc int[34];
             Span<bool> newStates = stackalloc bool[34];
             Span<bool> extraButtonStates = stackalloc bool[12];
@@ -67,7 +68,7 @@ namespace MajdataPlay.IO
 
             if (touches.Count > 0)
             {
-                FromTouchPanel(touches, sensorClickedCount, newStates, extraButtonStates, mainCamera);
+                FromTouchPanel(touches, buttonClickedCount, sensorClickedCount, newStates, extraButtonStates, mainCamera);
             }
 #if UNITY_STANDALONE || UNITY_EDITOR
             else if (Mouse.current != null)
@@ -87,6 +88,7 @@ namespace MajdataPlay.IO
                 });
             }
 #if UNITY_ANDROID || UNITY_IOS
+            buttonClickedCount.CopyTo(_btnClickedCountInThisFrame);
             for (var i = 0; i < sensorClickedCount.Length; i++) 
             {
                 var clickedCount = sensorClickedCount[i];
@@ -119,6 +121,7 @@ namespace MajdataPlay.IO
             Profiler.EndSample();
         }
         static void FromTouchPanel(in ReadOnlyArray<Touch> touches,
+                                   Span<int> buttonClickedCount,
                                    Span<int> sensorClickedCount,
                                    Span<bool> sensorStates, 
                                    Span<bool> extraButton, Camera mainCamera)
@@ -155,21 +158,30 @@ namespace MajdataPlay.IO
                 {
                     var lastState = false;
                     var currentState = false;
+                    var clickedCounter = Span<int>.Empty;
 
                     if (UseOuterTouchAsSensor && i < 8)
                     {
+                        clickedCounter = sensorClickedCount;
                         lastState = ((lastTouchPosData & (1UL << (i + 12))) | (lastTouchPosData & (1UL << i))) != 0;
                         currentState = ((touchPosData & (1UL << (i + 12))) | (touchPosData & (1UL << i))) != 0;
                     }
+                    else if (i < 8)
+                    {
+                        clickedCounter = buttonClickedCount;
+                        lastState = (lastTouchPosData & (1UL << i )) != 0;
+                        currentState = (touchPosData & (1UL << i)) != 0;
+                    }
                     else
                     {
+                        clickedCounter = sensorClickedCount;
                         lastState = (lastTouchPosData & (1UL << (i + 12))) != 0;
                         currentState = (touchPosData & (1UL << (i + 12))) != 0;
                     }
 
                     if (!lastState && currentState)
                     {
-                        sensorClickedCount[i]++;
+                        clickedCounter[i]++;
                     }
                 }
 
@@ -182,7 +194,6 @@ namespace MajdataPlay.IO
                     _touchRecorder[touch.touchId] = touchPosData;
                 }
 #endif
-
             }
         }
 

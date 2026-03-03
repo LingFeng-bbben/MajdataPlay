@@ -56,6 +56,11 @@ namespace MajdataPlay.Settings
         public int Rotation { get; set; } = 0;
         [Preserve]
         public RandomModeOption Random { get; set; } = RandomModeOption.Disabled;
+#if UNITY_ANDROID || UNITY_IOS
+        [Preserve]
+        public bool ButtonRingForTouch { get; set; } = true;
+#endif
+
 #if UNITY_STANDALONE
         [Preserve]
         public RecordModeOption RecordMode { get; set; } = RecordModeOption.Disable;

@@ -315,16 +315,6 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 return;
             }
 
-#if UNITY_ANDROID || UNITY_IOS
-            if (_noteManager.IsSensorClickedInThisFrame(_sensorPos) && _noteManager.TryUseSensorClickEvent(_sensorPos))
-            {
-                Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
-            }
-            else
-            {
-                return;
-            }
-#else
             if (_noteManager.IsButtonClickedInThisFrame(_buttonPos) && _noteManager.TryUseButtonClickEvent(_buttonPos))
             {
                 Judge(ThisFrameSec);
@@ -337,7 +327,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 return;
             }
-#endif
+
             if (_isJudged)
             {
                 //MajDebug.LogError("Note is judged");

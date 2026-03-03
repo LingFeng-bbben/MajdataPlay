@@ -209,7 +209,9 @@ namespace MajdataPlay.Scenes.Game
             {
                 Destroy(GameObject.Find("EventSystem"));
             }
-            InputManager.UseOuterTouchAsSensor = true;
+#if UNITY_ANDROID || UNITY_IOS
+            InputManager.UseOuterTouchAsSensor = _setting.Game.ButtonRingForTouch;
+#endif
         }
         void Start()
         {

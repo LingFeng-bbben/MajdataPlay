@@ -80,6 +80,11 @@ namespace MajdataPlay.IO
             get => _sensorStatusInPreviousFrame;
         }
 #if UNITY_ANDROID || UNITY_IOS
+        public static ReadOnlySpan<int> ButtonClickedCountInThisFrame
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _btnClickedCountInThisFrame;
+        }
         public static ReadOnlySpan<int> SensorClickedCountInThisFrame
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -280,6 +285,7 @@ namespace MajdataPlay.IO
         readonly static SwitchStatus[] _sensorStatusInPreviousFrame = new SwitchStatus[33];
         readonly static SwitchStatus[] _sensorStatusInThisFrame = new SwitchStatus[33];
 #if UNITY_ANDROID || UNITY_IOS
+        readonly static int[] _btnClickedCountInThisFrame = new int[8];
         readonly static int[] _sensorClickedCountInThisFrame = new int[33];
 #endif
 
