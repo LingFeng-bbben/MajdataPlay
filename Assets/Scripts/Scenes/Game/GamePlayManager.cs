@@ -1067,17 +1067,30 @@ namespace MajdataPlay.Scenes.Game
         {
             if (State != GamePlayStatus.Ended)
             {
+                var _inner_2367 =   InputManager.CheckSensorStatus(SensorArea.A2, SwitchStatus.On) &&
+                                    InputManager.CheckSensorStatus(SensorArea.A3, SwitchStatus.On) &&
+                                    InputManager.CheckSensorStatus(SensorArea.A6, SwitchStatus.On) &&
+                                    InputManager.CheckSensorStatus(SensorArea.A7, SwitchStatus.On);
+                var _inner_3456 =   InputManager.CheckSensorStatus(SensorArea.A3, SwitchStatus.On) &&
+                                    InputManager.CheckSensorStatus(SensorArea.A4, SwitchStatus.On) &&
+                                    InputManager.CheckSensorStatus(SensorArea.A5, SwitchStatus.On) &&
+                                    InputManager.CheckSensorStatus(SensorArea.A6, SwitchStatus.On);
 
-                var _2367 = InputManager.CheckButtonStatus(ButtonZone.A2, SwitchStatus.On) &&
-                            InputManager.CheckButtonStatus(ButtonZone.A3, SwitchStatus.On) &&
-                            InputManager.CheckButtonStatus(ButtonZone.A6, SwitchStatus.On) &&
-                            InputManager.CheckButtonStatus(ButtonZone.A7, SwitchStatus.On) &&
-                            _isTrackSkipAvailable;
-                var _3456 = InputManager.CheckButtonStatus(ButtonZone.A3, SwitchStatus.On) &&
-                            InputManager.CheckButtonStatus(ButtonZone.A4, SwitchStatus.On) &&
-                            InputManager.CheckButtonStatus(ButtonZone.A5, SwitchStatus.On) &&
-                            InputManager.CheckButtonStatus(ButtonZone.A6, SwitchStatus.On) &&
-                            _isFastRetryAvailable;
+                var _outter_2367 =  InputManager.CheckButtonStatus(ButtonZone.A2, SwitchStatus.On) &&
+                                    InputManager.CheckButtonStatus(ButtonZone.A3, SwitchStatus.On) &&
+                                    InputManager.CheckButtonStatus(ButtonZone.A6, SwitchStatus.On) &&
+                                    InputManager.CheckButtonStatus(ButtonZone.A7, SwitchStatus.On);
+                var _outter_3456 =  InputManager.CheckButtonStatus(ButtonZone.A3, SwitchStatus.On) &&
+                                    InputManager.CheckButtonStatus(ButtonZone.A4, SwitchStatus.On) &&
+                                    InputManager.CheckButtonStatus(ButtonZone.A5, SwitchStatus.On) &&
+                                    InputManager.CheckButtonStatus(ButtonZone.A6, SwitchStatus.On);
+#if UNITY_ANDROID || UNITY_IOS
+                var _2367 = (_inner_2367||_outter_2367) && _isTrackSkipAvailable;
+                var _3456 = (_inner_3456||_outter_3456) && _isFastRetryAvailable;
+#else
+                var _2367 = _outter_2367 && _isTrackSkipAvailable;
+                var _3456 = _outter_3456 && _isFastRetryAvailable;
+#endif
                 var _p1Skip = InputManager.CheckButtonStatus(ButtonZone.P1, SwitchStatus.On);
                 if (_p1Skip)
                 {
