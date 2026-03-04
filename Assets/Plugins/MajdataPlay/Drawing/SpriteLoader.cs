@@ -26,7 +26,7 @@ namespace MajdataPlay.Drawing
         }
 
         //readonly static Sprite _emptySprite = Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
-        public static Sprite Load(string path)
+        public static Sprite Load(string path, bool markNonReadable = true)
         {
             if (!File.Exists(path))
             {
@@ -34,7 +34,7 @@ namespace MajdataPlay.Drawing
             }
             var bytes = File.ReadAllBytes(path);
             var texture = new Texture2D(0, 0);
-            texture.LoadImage(bytes);
+            texture.LoadImage(bytes, markNonReadable);
             return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
         }
 
@@ -102,50 +102,7 @@ namespace MajdataPlay.Drawing
             }
         }
 
-        //public static async Task<Sprite> LoadAsync(Uri uri, CancellationToken ct = default)
-        //{
-        //    try
-        //    {
-        //        await UniTask.SwitchToThreadPool();
-        //        Directory.CreateDirectory(MajEnv.CachePath);
-        //        var b64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(uri.OriginalString));
-        //        var cachefile = Path.Combine(MajEnv.CachePath, b64);
-        //        byte[] bytes = Array.Empty<byte>();
-        //        if (!File.Exists(cachefile))
-        //        {
-        //            var client = MajEnv.SharedHttpClient;
-        //            for (int i = 0; i < MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
-        //            {
-        //                try
-        //                {
-        //                    bytes = await client.GetByteArrayAsync(uri);
-        //                    break;
-        //                }
-        //                catch (Exception e)
-        //                {
-        //                    await Task.Delay(500);
-        //                }
-        //            }
-
-        //            await File.WriteAllBytesAsync(cachefile, bytes, ct);
-        //        }
-        //        else
-        //        {
-        //            MajDebug.LogInfo("Local Cache Hit");
-        //            bytes = await File.ReadAllBytesAsync(cachefile, ct);
-        //        }
-        //        ct.ThrowIfCancellationRequested();
-        //        var texture = await ImageDecodeAsync(bytes);
-        //        await UniTask.SwitchToMainThread();
-        //        return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
-        //    }
-        //    finally
-        //    {
-        //        await UniTask.SwitchToThreadPool();
-        //    }
-        //}
-
-        public static Sprite Load(string path, Vector4 border)
+        public static Sprite Load(string path, Vector4 border, bool markNonReadable = true)
         {
             if (!File.Exists(path))
             {
@@ -153,7 +110,7 @@ namespace MajdataPlay.Drawing
             }
             var bytes = File.ReadAllBytes(path);
             var texture = new Texture2D(0, 0);
-            texture.LoadImage(bytes);
+            texture.LoadImage(bytes, markNonReadable);
             return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), 100, 1,
                 SpriteMeshType.FullRect, border);
         }
