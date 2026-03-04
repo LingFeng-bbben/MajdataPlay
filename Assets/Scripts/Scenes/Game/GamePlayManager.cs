@@ -1173,10 +1173,10 @@ namespace MajdataPlay.Scenes.Game
 
                         _thisFrameSec = timeOffset;
 #if UNITY_ANDROID || UNITY_IOS
-                        if(realTimeDifference < 0 && !_objectCounter.AllFinished && _audioSample.IsPlaying)
-                        {
-                            _thisFrameSec += realTimeDifference;
-                        }
+                        //if(realTimeDifference < 0 && !_objectCounter.AllFinished && _audioSample.IsPlaying)
+                        //{
+                        //    _thisFrameSec += realTimeDifference;
+                        //}
 #endif
                         var sb = ZString.CreateStringBuilder(true);
                         try
