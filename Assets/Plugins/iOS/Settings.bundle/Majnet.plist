@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+    <dict>
+        <key>PreferenceSpecifiers</key>
+        <array>
+
+            <dict>
+                <key>Type</key>
+                <string>PSToggleSwitchSpecifier</string>
+                <key>Title</key>
+                <string>Enabled</string>
+                <key>Key</key>
+                <string>majnet_enabled</string>
+                <key>DefaultValue</key>
+                <false/>
+            </dict>
+
+
+            <dict>
+                <key>Type</key>
+                <string>PSMultiValueSpecifier</string>
+                <key>Title</key>
+                <string>API</string>
+                <key>Key</key>
+                <string>majnet_api</string>
+
+                <key>Titles</key>
+                <array>
+                    <string>CF</string>
+                    <string>CN</string>
+                </array>
+
+                <key>Values</key>
+                <array>
+                    <string>https://majdata.net/api/api3/</string>
+                    <string>https://maj-2.moyingmoe.top/api/api3/</string>
+                </array>
+
+                <key>DefaultValue</key>
+                <string>https://majdata.net/api/api3/</string>
+            </dict>
+
+
+            <dict>
+                <key>Type</key>
+                <string>PSTextFieldSpecifier</string>
+                <key>Title</key>
+                <string>Username</string>
+                <key>Key</key>
+                <string>majnet_username</string>
+                <key>DefaultValue</key>
+                <string></string>
+                <key>IsSecure</key>
+                <false/>
+            </dict>
+
+
+            <dict>
+                <key>Type</key>
+                <string>PSTextFieldSpecifier</string>
+                <key>Title</key>
+                <string>Password</string>
+                <key>Key</key>
+                <string>majnet_password</string>
+                <key>DefaultValue</key>
+                <string></string>
+                <key>IsSecure</key>
+                <true/>
+            </dict>
+
+        </array>
+    </dict>
+</plist>

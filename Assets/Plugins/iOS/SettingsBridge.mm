@@ -1,4 +1,6 @@
 #import <Foundation/Foundation.h>
+#include <stdlib.h>
+#include <string.h>
 
 extern "C" {
 
@@ -40,6 +42,10 @@ const char* _GetStringSetting(const char* key, const char* defaultValue) {
     if (value == nil) value = @"";
 
     return strdup([value UTF8String]);
+}
+
+void _FreeCString(const char* p) {
+    if (p) free((void*)p);
 }
 
 }

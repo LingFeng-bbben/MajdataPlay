@@ -167,11 +167,11 @@ PlayerSettings:
   applicationIdentifier:
     Android: net.majdata.majdataplay
     Standalone: com.DefaultCompany.2DProject
-    iPhone: net.majdata.majdataplay
+    iPhone: net.majdata.majdataplay2
   buildNumber:
     Standalone: 0
     VisionOS: 0
-    iPhone: 0
+    iPhone: 1
     tvOS: 0
   overrideDefaultApplicationIdentifier: 1
   AndroidBundleVersionCode: 1
@@ -244,7 +244,7 @@ PlayerSettings:
   metalCompileShaderBinary: 0
   iOSRenderExtraFrameOnPause: 0
   iosCopyPluginsCodeInsteadOfSymlink: 0
-  appleDeveloperTeamID: 
+  appleDeveloperTeamID: 253AX6B3P2
   iOSManualSigningProvisioningProfileID: 
   tvOSManualSigningProvisioningProfileID: 
   VisionOSManualSigningProvisioningProfileID: 
