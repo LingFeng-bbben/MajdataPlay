@@ -478,7 +478,10 @@ namespace MajdataPlay.Scenes.List
                     desiredListPos += delta;
                     if(originPos != desiredListPos)
                     {
-                        _isNeedPreload = true;
+                        if (!MajEnv.IsLowMemoryDevice)
+                        {
+                            _isNeedPreload = true;
+                        }
                         _preloadCooldownTimer = 0.5f;
                     }
                     break;

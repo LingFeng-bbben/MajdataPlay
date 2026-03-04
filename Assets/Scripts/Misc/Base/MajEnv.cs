@@ -93,6 +93,7 @@ namespace MajdataPlay
         [Preserve] public static Material BreakMaterial { get; }
         [Preserve] public static Material DefaultMaterial { get; }
         [Preserve] public static Material HoldShineMaterial { get; }
+        public static bool IsLowMemoryDevice { get; private set; }
         public static Thread MainThread { get; } = Thread.CurrentThread;
         public static Process GameProcess { get; } = Process.GetCurrentProcess();
 
@@ -254,7 +255,9 @@ namespace MajdataPlay
             CreateDirectoryIfNotExists(RecordOutputsPath);
             SharedHttpClient.Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS);
             MainThread.Priority = THREAD_PRIORITY_MAIN;
-            
+
+            IsLowMemoryDevice = SystemInfo.systemMemorySize < 4096;
+
 #if UNITY_IOS && !UNITY_EDITOR // iOS Native Setting (No Cache)
             if (IosSettings.GetBool("no_cache", false))
             {
