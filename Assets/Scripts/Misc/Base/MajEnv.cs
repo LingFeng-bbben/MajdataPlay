@@ -258,8 +258,8 @@ namespace MajdataPlay
 
             IsLowMemoryDevice = SystemInfo.systemMemorySize < 4096;
 
-#if UNITY_IOS && !UNITY_EDITOR // iOS Native Setting (No Cache)
-            if (IosSettings.GetBool("no_cache", false))
+#if UNITY_IOS //&& !UNITY_EDITOR // iOS Native Setting (No Cache)
+            if (IosSettings.Cache.DebugNoCache)
             {
                 TryDeleteDirectory(Path.Combine(CachePath, "Net"));
                 TryDeleteDirectory(Path.Combine(CachePath, "View"));
