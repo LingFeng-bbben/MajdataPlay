@@ -22,8 +22,9 @@ namespace MajdataPlay.Scenes.List
         public TMP_Text CommentText;
         public GameObject CommentBox;
         public GameObject[] Icons;
-
-
+        public Image ThumbUpImage;
+        public Color ThumbUpGoldColor;
+        public Color ThumbUpGreenColor;
         CancellationTokenSource _cts = new();
 
         public async UniTask RefreshContentAsync(ISongDetail detail, CancellationToken token = default)
@@ -44,10 +45,11 @@ namespace MajdataPlay.Scenes.List
                     {
                         task1 = UniTask.Create(async () =>
                         {
-                            LikeCount.text = (interact.Likes.Length - interact.DisLikeCount).ToString();
+                            var totalLikes = (interact.Likes.Length - interact.DisLikeCount);
+                            LikeCount.text = totalLikes.ToString();
                             PlayCount.text = interact.Plays.ToString();
                             CommentCount.text = interact.Comments.Length.ToString();
-                            //interact.IsLiked
+                            
                             foreach (var icon in Icons)
                             {
                                 icon.SetActive(true);
@@ -61,6 +63,18 @@ namespace MajdataPlay.Scenes.List
                                 token.ThrowIfCancellationRequested();
                             }
                             CommentBox.SetActive(false);
+                            if (interact.IsLiked)
+                            {
+                                ThumbUpImage.color = ThumbUpGreenColor;
+                            }
+                            else if (totalLikes > 5)
+                            {
+                                ThumbUpImage.color = ThumbUpGoldColor;
+                            }
+                            else
+                            {
+                                ThumbUpImage.color = Color.white;
+                            }
                         });
                     }
                     await UniTask.WhenAll(task1);
