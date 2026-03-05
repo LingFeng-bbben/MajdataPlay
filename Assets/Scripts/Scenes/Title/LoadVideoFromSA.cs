@@ -18,7 +18,16 @@ namespace MajdataPlay.Scenes.Title
         }
         void Start()
         {
-            var path = Path.Combine(MajEnv.AssetsPath, videopath);
+            var videoPath = videopath;
+            if (string.IsNullOrEmpty(videoPath) || videoPath.Length == 1)
+            {
+                return;
+            }
+            else if (videoPath[0] is '/' or '\\')
+            {
+                videoPath = videoPath.Substring(1);
+            }
+            var path = Path.Combine(MajEnv.AssetsPath, videoPath);
             MajDebug.LogInfo($"[{nameof(LoadVideoFromSA)}]Load video from {path}");
             player.url = path;
             if(LoadOnly)
