@@ -24,10 +24,12 @@ namespace MajdataPlay
             {
                 _current = value;
                 if (OnLanguageChanged is not null)
+                {
                     OnLanguageChanged(null, value);
+                }
             }
         }
-        readonly static JsonSerializerSettings jsonReaderSettings = new()
+        readonly static JsonSerializerSettings JsonReaderSettings = new()
         {
             Formatting = Formatting.Indented,
             Converters = 
@@ -76,7 +78,7 @@ namespace MajdataPlay
                     MajDebug.LogDebug("Lang file loaded: " + file);
                     var json = ta.text;
                     Language? lang = null;
-                    if (Serializer.Json.TryDeserialize(json, out lang, out var exception, jsonReaderSettings) && lang is not null)
+                    if (Serializer.Json.TryDeserialize(json, out lang, out var exception, JsonReaderSettings) && lang is not null)
                     {
                         loadedLangs.Add(lang);
                     }
@@ -106,23 +108,33 @@ namespace MajdataPlay
         /// Set language by code and author<para>such like: "zh-CN - Majdata"</para>
         /// </summary>
         /// <param name="langInfo"></param>
-        public static void SetLang(string langInfo)
+        public static bool SetLang(string langInfo)
         {
             if (Available.IsEmpty())
-                return;
+            {
+                return false;
+            }
             var result = Available.Find(x => x.ToString() == langInfo);
             if (result is null)
-                return;
+            {
+                return false;
+            }
             Current = result;
+            return true;
         }
-        public static void SetLangByCode(string code)
+        public static bool SetLangByCode(string code)
         {
             if (Available.IsEmpty())
-                return;
+            {
+                return false;
+            }
             var result = Available.Find(x => x.Code == code);
             if (result is null)
-                return;
+            {
+                return false;
+            }
             Current = result;
+            return true;
         }
 
         public static bool TryGetLocalizedText(string origin,out string strOut)

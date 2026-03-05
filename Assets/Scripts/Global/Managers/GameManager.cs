@@ -1,5 +1,6 @@
 using AOT;
 using MajdataPlay.Collections;
+using MajdataPlay.i18n;
 using MajdataPlay.IO;
 using MajdataPlay.Scenes.Test;
 using MajdataPlay.Settings;
@@ -125,14 +126,24 @@ namespace MajdataPlay
             var availableLangs = Localization.Available;
             if (!availableLangs.IsEmpty())
             {
-                var lang = availableLangs.Find(x => x.ToString() == Setting.Display.Language);
-                if (lang is null)
+                if(string.IsNullOrEmpty(Setting.Display.Language))
                 {
-                    lang = availableLangs.First();
-                    Setting.Display.Language = lang.ToString();
+                    if(Localization.SetLangByCode(Application.systemLanguage.ToLocale()))
+                    {
+                        Setting.Display.Language = Localization.Current.ToString();
+                    }
                 }
+                else
+                {
+                    var lang = availableLangs.Find(x => x.ToString() == Setting.Display.Language);
+                    if (lang is null)
+                    {
+                        lang = availableLangs.First();
+                        Setting.Display.Language = lang.ToString();
+                    }
 
-                Localization.Current = lang;
+                    Localization.Current = lang;
+                }  
             }
 
             var envType = typeof(MajEnv);
