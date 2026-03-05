@@ -29,6 +29,11 @@ namespace MajdataPlay
 
         public async UniTaskVoid SetSongScoreRanking(ISongDetail detail,ChartLevel selectedLevel, CancellationToken token = default)
         {
+            if(!_cts.IsCancellationRequested)
+            {
+                _cts.Cancel();
+                _cts = new();
+            }
             Hide();
             if (detail is OnlineSongDetail onlineDetail)
             {
