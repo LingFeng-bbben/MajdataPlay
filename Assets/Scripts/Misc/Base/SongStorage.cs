@@ -207,6 +207,7 @@ namespace MajdataPlay
                 waitAllTask = null;
                 Collections = collections;
                 MajDebug.LogInfo($"Loaded chart count: {TotalChartCount}");
+                Online.ClearResponseCache();
                 GC.Collect();
 
                 CollectionIndex = selectedDir;
@@ -292,6 +293,7 @@ namespace MajdataPlay
                 waitAllTask = null;
                 Collections = await FinalizeCollections(MajEnv.ChartPath, collections);
                 MajDebug.LogInfo($"Loaded chart count: {TotalChartCount}");
+                Online.ClearResponseCache();
                 GC.Collect();
 
                 CollectionIndex = selectedDir;
