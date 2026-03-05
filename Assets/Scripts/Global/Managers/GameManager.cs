@@ -86,7 +86,7 @@ namespace MajdataPlay
 #if UNITY_STANDALONE_WIN
             _timer = BuiltInTimeProvider.Winapi;
 #else
-            _timer = BuiltInTimeProvider.Unity;
+            _timer = BuiltInTimeProvider.Stopwatch;
 #endif
             MajTimeline.TimeProvider = _builtInTimeProviders.Span[(int)_timer];
 #if UNITY_STANDALONE
