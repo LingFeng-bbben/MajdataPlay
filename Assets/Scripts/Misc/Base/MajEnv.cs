@@ -7,6 +7,7 @@ using HidSharp.Platform.MacOS;
 using LibVLCSharp;
 #endif
 using MajdataPlay.Buffers;
+using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
 using MajdataPlay.Net;
 using MajdataPlay.Numerics;
@@ -261,7 +262,8 @@ namespace MajdataPlay
             IsLowMemoryDevice = SystemInfo.systemMemorySize < 4096;
 
 #if UNITY_IOS //&& !UNITY_EDITOR // iOS Native Setting (No Cache)
-            if (IosSettings.Cache.DebugNoCache)
+            IOSNativeSettings.Init();
+            if (IOSNativeSettings.DebugNoCache)
             {
                 TryDeleteDirectory(Path.Combine(CachePath, "Net"));
                 TryDeleteDirectory(Path.Combine(CachePath, "View"));
@@ -272,75 +274,125 @@ namespace MajdataPlay
                 MajDebug.LogInfo("iOS setting 'no_cache' is disabled.");
             }
 #endif
-
-            if (File.Exists(SettingsPath))
+            using (var buffer = new RentedList<ApiEndpoint>())
             {
-                var js = File.ReadAllText(SettingsPath);
-                GameSetting? setting;
-
-                if (!Serializer.Json.TryDeserialize(js, out setting, out var e, UserJsonReaderOption) || setting is null)
+                using var apiEndpoints = new RentedList<ApiEndpoint>();
+                if (File.Exists(SettingsPath))
                 {
-                    Settings = new();
-                    MajDebug.LogError($"Failed to read setting from file\nException: {e}");
-                    var bakFileName = $"{SettingsPath}.bak";
-                    while (File.Exists(bakFileName))
-                    {
-                        bakFileName = $"{bakFileName}.bak";
-                    }
+                    var js = File.ReadAllText(SettingsPath);
+                    GameSetting? setting;
 
-                    try
+
+                    if (!Serializer.Json.TryDeserialize(js, out setting, out var e, UserJsonReaderOption) || setting is null)
                     {
-                        File.Copy(SettingsPath, bakFileName, true);
+                        Settings = new();
+                        MajDebug.LogError($"Failed to read setting from file\nException: {e}");
+                        var bakFileName = $"{SettingsPath}.bak";
+                        while (File.Exists(bakFileName))
+                        {
+                            bakFileName = $"{bakFileName}.bak";
+                        }
+
+                        try
+                        {
+                            File.Copy(SettingsPath, bakFileName, true);
+                        }
+                        catch
+                        {
+                        }
                     }
-                    catch
+                    else
                     {
+                        Settings = setting;
                     }
+                    apiEndpoints.AddRange(Settings.Online.ApiEndpoints.AsSpan());
                 }
                 else
                 {
-                    Settings = setting;
-                    using var buffer = new RentedList<ApiEndpoint>();
-                    for (var i = 0; i < Settings.Online.ApiEndpoints.Length; i++)
+                    Settings = new GameSetting();
+
+                    var json = Serializer.Json.Serialize(Settings, UserJsonReaderOption);
+                    File.WriteAllText(SettingsPath, json);
+                }
+#if UNITY_IOS && !UNITY_EDITOR
+                if (IOSNativeSettings.MajnetEnabled)
+                {
+                    var isValid = true;
+                    var apiUri = default(Uri);
+                    isValid = isValid && Uri.TryCreate(IOSNativeSettings.MajnetApi, UriKind.Absolute, out apiUri);
+
+                    if (isValid)
                     {
-                        var apiEndpoint = Settings.Online.ApiEndpoints[i];
-                        var uri = apiEndpoint.Url;
-                        if (uri is null || string.IsNullOrEmpty(apiEndpoint.Name))
+                        var i = apiEndpoints.FindIndex(x => x.Url.OriginalString == IOSNativeSettings.MajnetApi);
+                        if(i != -1)
                         {
-                            continue;
+                            apiEndpoints.RemoveAt(i);
                         }
-
-                        if (uri.OriginalString.LastOrDefault() != '/')
+                        apiEndpoints.Add(new ApiEndpoint()
                         {
-                            apiEndpoint = new()
-                            {
-                                Name = apiEndpoint.Name,
-                                Url = new Uri(uri.OriginalString + "/"),
-                                Username = apiEndpoint.Username,
-                                Password = apiEndpoint.Password,
-                            };
-                        }
+                            Name = "MajdataNET",
+                            Url = apiUri!,
+                            Username = IOSNativeSettings.MajnetUsername,
+                            Password = IOSNativeSettings.MajnetPassword,
+                        });
+                    }
+                }
+                if (IOSNativeSettings.CustomEnabled)
+                {
+                    var isValid = true;
+                    var apiUri = default(Uri);
+                    isValid = isValid && Uri.TryCreate(IOSNativeSettings.CustomApi, UriKind.Absolute, out apiUri);
 
-                        apiEndpoint.RuntimeConfig.AuthUsername = apiEndpoint.Username;
-                        apiEndpoint.RuntimeConfig.AuthPassword = apiEndpoint.Password;
-                        buffer.Add(apiEndpoint);
+                    if (isValid)
+                    {
+                        apiEndpoints.Add(new ApiEndpoint()
+                        {
+                            Name = IOSNativeSettings.CustomName ?? "Custom Api",
+                            Url = apiUri!,
+                            Username = IOSNativeSettings.CustomUsername,
+                            Password = IOSNativeSettings.CustomPassword,
+                        });
+                    }
+                }
+                if (Enum.TryParse<LogLevel>(IOSNativeSettings.DebugLogLevel,false, out var logLevel))
+                {
+                    Settings.Debug.DebugLevel = logLevel;
+                }
+                Settings.Debug.NoteFolding = IOSNativeSettings.DebugNoteFolding;
+                Settings.Online.Enable = IOSNativeSettings.Online;
+
+#endif
+                for (var i = 0; i < Settings.Online.ApiEndpoints.Length; i++)
+                {
+                    var apiEndpoint = apiEndpoints[i];
+                    var uri = apiEndpoint.Url;
+                    if (uri is null || string.IsNullOrEmpty(apiEndpoint.Name))
+                    {
+                        continue;
                     }
 
-                    Settings.Online.ApiEndpoints = buffer.GroupBy(x => x.Url)
-                        .Select(x => x.FirstOrDefault())
-                        .Where(x => x is not null)
-                        .ToArray();
-                    //Reset Mod option after reboot
-                    //Settings.Mod = new ModOptions();
+                    if (uri.OriginalString.LastOrDefault() != '/')
+                    {
+                        apiEndpoint = new()
+                        {
+                            Name = apiEndpoint.Name,
+                            Url = new Uri(uri.OriginalString + "/"),
+                            Username = apiEndpoint.Username,
+                            Password = apiEndpoint.Password,
+                        };
+                    }
+
+                    apiEndpoint.RuntimeConfig.AuthUsername = apiEndpoint.Username;
+                    apiEndpoint.RuntimeConfig.AuthPassword = apiEndpoint.Password;
+                    buffer.Add(apiEndpoint);
                 }
-            }
-            else
-            {
-                Settings = new GameSetting();
 
-                var json = Serializer.Json.Serialize(Settings, UserJsonReaderOption);
-                File.WriteAllText(SettingsPath, json);
+                Settings.Online.ApiEndpoints = buffer.GroupBy(x => x.Url)
+                                                     .Select(x => x.FirstOrDefault())
+                                                     .Where(x => x is not null)
+                                                     .ToArray();
             }
-
+                
             if (File.Exists(_runtimeConfigPath))
             {
                 var js = File.ReadAllText(_runtimeConfigPath);

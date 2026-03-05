@@ -247,11 +247,10 @@ namespace MajdataPlay.Settings
     public class OnlineOptions
     {
         [Preserve]
-#if UNITY_IOS && !UNITY_EDITOR
-        public bool Enable { get; } = IosSettings.GetBool("enabled_online", false);
-#else
-        public bool Enable { get; set; } = false;
+#if UNITY_IOS
+        [JsonIgnore]
 #endif
+        public bool Enable { get; set; } = false;
 #if UNITY_STANDALONE && ENABLE_MONO
         public bool UseProxy { get; init; } = true;
         public string Proxy { get; init; } = string.Empty;
@@ -259,13 +258,15 @@ namespace MajdataPlay.Settings
         [Preserve]
         public ApiEndpoint[] ApiEndpoints { get; set; } = new ApiEndpoint[]
         {
+#if !UNITY_IOS
             new ApiEndpoint()
             {
-                Name = "Majnet",
+                Name = "MajdataNET",
                 Url = new("https://majdata.net/api3/api/"),
                 Username = "YourUsername",
                 Password = "YourPassword"
             }
+#endif
         };
     }
     [Preserve]
@@ -323,6 +324,9 @@ namespace MajdataPlay.Settings
         public bool HideCursorInGame { get; set; } = true;
 #endif
         [SettingVisualizationIgnore]
+#if UNITY_IOS
+        [JsonIgnore]
+#endif
         public bool NoteFolding { get; set; } = true;
         [Preserve]
         public DJAutoPolicyOption DJAutoPolicy { get; set; } = DJAutoPolicyOption.Strict;
@@ -353,7 +357,9 @@ namespace MajdataPlay.Settings
 #endif
         [Preserve]
         [SettingVisualizationIgnore]
-        [JsonProperty]
+#if UNITY_IOS
+        [JsonIgnore]
+#endif
         public LogLevel DebugLevel { get; set; } = LogLevel.Info;
     }
     [Preserve]
