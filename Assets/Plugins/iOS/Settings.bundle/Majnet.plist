@@ -28,12 +28,14 @@
                 <key>Titles</key>
                 <array>
                     <string>CF</string>
-                    <string>CN</string>
+                    <string>CN1</string>
+                    <string>CN2</string>
                 </array>
 
                 <key>Values</key>
                 <array>
                     <string>https://majdata.net/api/api3/</string>
+                    <string>https://maj.moyingmoe.top/api/api3/</string>
                     <string>https://maj-2.moyingmoe.top/api/api3/</string>
                 </array>
 
