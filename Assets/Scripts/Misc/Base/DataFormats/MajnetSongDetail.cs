@@ -1,3 +1,4 @@
+using MajdataPlay.Scenes.Game;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
@@ -48,6 +49,22 @@ namespace MajdataPlay
         public int DisLikeCount { get; init; }
         [Preserve]
         public ChartCommentSummary[] Comments { get; init; }
+    }
+    [Preserve]
+    [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
+    public struct MajNetSongScoreInfo
+    {
+        public string Hash { get; init; }
+        public MajNetSongScore[][] Scores { get; init; }
+    }
+    [Preserve]
+    [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
+    public struct MajNetSongScore
+    {
+        public UserSummary Player { get; init; }
+        public float Acc { get; init; }
+        public ComboState ComboState { get; init; }
+        public DateTime Timestamp { get; init; }
     }
     [Preserve]
     [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]

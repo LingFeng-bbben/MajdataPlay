@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -16,25 +17,38 @@ namespace MajdataPlay
         // Start is called before the first frame update
         void Start()
         {
-            hidePannels();
+            HidePannels();
         }
 
-        // Update is called once per frame
-        void Update()
-        {
-        
-        }
-
-        void hidePannels()
+        public void HidePannels()
         {
             NamePannel.SetActive(false);
             ScorePannel.SetActive(false);
         }
-        void showScores(/* scores */)
+        public void SetScores(ReadOnlySpan<MajNetSongScore> scores)
         {
+            if(scores.IsEmpty)
+            {
+                HidePannels();
+                return;
+            }
             NamePannel.SetActive(true);
             ScorePannel.SetActive(true);
-            //foreach scores...
+
+            for (var i = 0; i < PlayerNames.Length; i++)
+            {
+                PlayerNames[i].text = string.Empty;
+                Scores[i].text = string.Empty;
+            }
+
+            for (var i = 0; i < scores.Length && i < 3; i++)
+            {
+                ref readonly var score = ref scores[i];
+                PlayerNames[i].text = string.Format(NameTemplates[i], score.Player.Username);
+                var @int = MathF.Truncate(score.Acc);
+                var @float = score.Acc - @int;
+                Scores[i].text = string.Format(ScoresTemplate, @int, @float);
+            }
         }
     }
 }

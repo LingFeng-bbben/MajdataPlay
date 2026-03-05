@@ -553,7 +553,7 @@ namespace MajdataPlay.Scenes.List
                     CoverBigDisplayer.SetSongDetail(songInfo);
                     CoverBigDisplayer.SetMeta(songInfo.Title, songInfo.Artist, songInfo.Designers[selectedDifficulty], songInfo.Levels[selectedDifficulty]);
                     CoverBigDisplayer.SetScore(songScore);
-                    SubInfoDisplayer.RefreshContent(songInfo);
+                    SubInfoDisplayer.RefreshContentAsync(songInfo).Forget();
                     _previewSoundPlayer.PlayPreviewSound(songInfo);
                     chartAnalyzer.AnalyzeAndDrawGraphAsync(songInfo, (ChartLevel)selectedDifficulty).Forget();
                     FavoriteAdder.SetSong(songInfo);
