@@ -1,3 +1,4 @@
+#if UNITY_IOS
 using MajdataPlay.Platform.iOS;
 using System;
 using System.Runtime.InteropServices;
@@ -74,7 +75,7 @@ namespace MajdataPlay.Settings
 
         public static bool GetBool(string key, bool defaultValue)
         {
-#if UNITY_IOS && !UNITY_EDITOR
+#if !UNITY_EDITOR
             return NativeSettings.GetBoolSetting(key, defaultValue);
 #else
             return defaultValue;
@@ -83,7 +84,7 @@ namespace MajdataPlay.Settings
 
         public static int GetInt(string key, int defaultValue)
         {
-#if UNITY_IOS && !UNITY_EDITOR
+#if !UNITY_EDITOR
             return NativeSettings.GetIntSetting(key, defaultValue);
 #else
             return defaultValue;
@@ -92,7 +93,7 @@ namespace MajdataPlay.Settings
 
         public static string GetString(string key, string defaultValue)
         {
-#if UNITY_IOS && !UNITY_EDITOR
+#if !UNITY_EDITOR
             IntPtr ptr = IntPtr.Zero;
             try
             {
@@ -110,3 +111,4 @@ namespace MajdataPlay.Settings
         }
     }
 }
+#endif
