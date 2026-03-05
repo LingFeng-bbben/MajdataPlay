@@ -224,7 +224,9 @@ namespace MajdataPlay
                     }
 
                     if (MajInstances.Settings.Display.SkipVideoDownload)
+                    {
                         return string.Empty;
+                    }
                     for (var i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
                     {
                         try
@@ -247,13 +249,13 @@ namespace MajdataPlay
                                 }
                                 if(getReq.result is (UnityWebRequest.Result.Success or UnityWebRequest.Result.ProtocolError))
                                 {
-                                    if(getReq.responseCode != (long)HttpStatusCode.OK)
+                                    if(getReq.responseCode == (long)HttpStatusCode.NotFound)
                                     {
                                         using var _ = File.Create(cacheFlagPath);
                                         _videoPath = string.Empty;
                                         return _videoPath;
                                     }
-                                    else if(getReq.responseCode == (long)HttpStatusCode.NotFound)
+                                    else
                                     {
                                         break;
                                     }
@@ -263,7 +265,7 @@ namespace MajdataPlay
                             var httpClient = MajEnv.SharedHttpClient;
                             using var rsp = await httpClient.GetAsync(_videoUri, HttpCompletionOption.ResponseHeadersRead, token);
 
-                            if (rsp.StatusCode != HttpStatusCode.OK)
+                            if (rsp.StatusCode == HttpStatusCode.NotFound)
                             {
                                 using var _ = File.Create(cacheFlagPath);
                                 _videoPath = string.Empty;
