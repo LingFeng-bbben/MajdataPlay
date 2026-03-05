@@ -42,7 +42,7 @@ namespace MajdataPlay
                         task = UniTask.Create(async () =>
                         {
                             await UniTask.CompletedTask;
-                            SetScores(scoreInfo.Scores[(int)selectedLevel] ?? Array.Empty<MajNetSongScore>());
+                            SetScores(scoreInfo.Scores?[(int)selectedLevel] ?? Array.Empty<MajNetSongScore>());
                         });
                     }
                     await UniTask.WhenAll(task);

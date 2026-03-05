@@ -463,17 +463,18 @@ namespace MajdataPlay.Utils
             {
                 await UniTask.SwitchToThreadPool();
                 var cachedResponse = GetCachedResponse(song);
-                var isCacheAlive = (DateTime.Now - cachedResponse.Interact.LastActive).TotalSeconds < MajEnv.ONLINE_RESPONSE_CACHE_TTL_SEC;
+                var cachedInteract = cachedResponse.Interact;
+                var isCacheAlive = (DateTime.Now - cachedInteract.LastActive).TotalSeconds < MajEnv.ONLINE_RESPONSE_CACHE_TTL_SEC;
                 if (isCacheAlive)
                 {
-                    return cachedResponse.Interact.Response;
+                    return cachedInteract.Response;
                 }
-                using (await cachedResponse.Interact.RequestLock.LockAsync(token))
+                using (await cachedInteract.RequestLock.LockAsync(token))
                 {
-                    isCacheAlive = (DateTime.Now - cachedResponse.Interact.LastActive).TotalSeconds < MajEnv.ONLINE_RESPONSE_CACHE_TTL_SEC;
+                    isCacheAlive = (DateTime.Now - cachedInteract.LastActive).TotalSeconds < MajEnv.ONLINE_RESPONSE_CACHE_TTL_SEC;
                     if (isCacheAlive)
                     {
-                        return cachedResponse.Interact.Response;
+                        return cachedInteract.Response;
                     }
                     var serverInfo = song.ServerInfo;
                     var interactUrl = BuildMaiChartUri(song.ServerInfo, API_GET_MAICHART_INTERACT, song.Id);
@@ -524,17 +525,18 @@ namespace MajdataPlay.Utils
             {
                 await UniTask.SwitchToThreadPool();
                 var cachedResponse = GetCachedResponse(song);
-                var isCacheAlive = (DateTime.Now - cachedResponse.Interact.LastActive).TotalSeconds < MajEnv.ONLINE_RESPONSE_CACHE_TTL_SEC;
+                var cachedScoreInfo = cachedResponse.ScoreInfo;
+                var isCacheAlive = (DateTime.Now - cachedScoreInfo.LastActive).TotalSeconds < MajEnv.ONLINE_RESPONSE_CACHE_TTL_SEC;
                 if (isCacheAlive)
                 {
-                    return cachedResponse.ScoreInfo.Response;
+                    return cachedScoreInfo.Response;
                 }
-                using (await cachedResponse.Interact.RequestLock.LockAsync(token))
+                using (await cachedScoreInfo.RequestLock.LockAsync(token))
                 {
-                    isCacheAlive = (DateTime.Now - cachedResponse.Interact.LastActive).TotalSeconds < MajEnv.ONLINE_RESPONSE_CACHE_TTL_SEC;
+                    isCacheAlive = (DateTime.Now - cachedScoreInfo.LastActive).TotalSeconds < MajEnv.ONLINE_RESPONSE_CACHE_TTL_SEC;
                     if (isCacheAlive)
                     {
-                        return cachedResponse.ScoreInfo.Response;
+                        return cachedScoreInfo.Response;
                     }
                     var serverInfo = song.ServerInfo;
                     var interactUrl = BuildMaiChartUri(song.ServerInfo, API_GET_MAICHART_SCORE, song.Id);
@@ -548,8 +550,8 @@ namespace MajdataPlay.Utils
                         {
                             if(scoreInfo is MajNetSongScoreInfo scoreInfoRsp)
                             {
-                                cachedResponse.ScoreInfo.Response = scoreInfoRsp;
-                                cachedResponse.ScoreInfo.LastActive = DateTime.Now;
+                                cachedScoreInfo.Response = scoreInfoRsp;
+                                cachedScoreInfo.LastActive = DateTime.Now;
                             }
                             MajDebug.LogDebug(rsp);
                             return scoreInfo;
