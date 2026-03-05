@@ -523,41 +523,60 @@ namespace MajdataPlay.Utils
             await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
                 await UniTask.SwitchToThreadPool();
-                var serverInfo = song.ServerInfo;
-                var interactUrl = BuildMaiChartUri(song.ServerInfo, API_GET_MAICHART_SCORE, song.Id);
-                var rsp = default(EndpointResponse);
-
-                for (var i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
+                var cachedResponse = GetCachedResponse(song);
+                var isCacheAlive = (DateTime.Now - cachedResponse.Interact.LastActive).TotalSeconds < MajEnv.ONLINE_RESPONSE_CACHE_TTL_SEC;
+                if (isCacheAlive)
                 {
-                    var e = default(Exception?);
-                    rsp = await GetAsync(interactUrl, token);
-                    if (rsp.IsSuccessfully && rsp.IsDeserializable && rsp.TryDeserialize<MajNetSongScoreInfo?>(out var scoreInfo, out e) && scoreInfo is not null)
-                    {
-                        MajDebug.LogDebug(rsp);
-                        return scoreInfo;
-                    }
-                    else
-                    {
-                        MajDebug.LogError(rsp);
-                        MajDebug.LogError($"Failed to get chart interact: {e?.Message ?? "Unknown error"}");
-                    }
-                    if (rsp.ErrorCode == HttpErrorCode.Canceled)
-                    {
-                        break;
-                    }
-                    else if (rsp.StatusCode is HttpStatusCode.BadRequest
-                        or HttpStatusCode.NotFound
-                        or HttpStatusCode.Unauthorized
-                        or HttpStatusCode.Forbidden)
-                    {
-                        return null;
-                    }
-                    else if (!rsp.IsSuccessfully && rsp.StatusCode is not null)
-                    {
-                        return null;
-                    }
+                    return cachedResponse.ScoreInfo.Response;
                 }
-                return null;
+                using (await cachedResponse.Interact.RequestLock.LockAsync(token))
+                {
+                    isCacheAlive = (DateTime.Now - cachedResponse.Interact.LastActive).TotalSeconds < MajEnv.ONLINE_RESPONSE_CACHE_TTL_SEC;
+                    if (isCacheAlive)
+                    {
+                        return cachedResponse.ScoreInfo.Response;
+                    }
+                    var serverInfo = song.ServerInfo;
+                    var interactUrl = BuildMaiChartUri(song.ServerInfo, API_GET_MAICHART_SCORE, song.Id);
+                    var rsp = default(EndpointResponse);
+
+                    for (var i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
+                    {
+                        var e = default(Exception?);
+                        rsp = await GetAsync(interactUrl, token);
+                        if (rsp.IsSuccessfully && rsp.IsDeserializable && rsp.TryDeserialize<MajNetSongScoreInfo?>(out var scoreInfo, out e) && scoreInfo is not null)
+                        {
+                            if(scoreInfo is MajNetSongScoreInfo scoreInfoRsp)
+                            {
+                                cachedResponse.ScoreInfo.Response = scoreInfoRsp;
+                                cachedResponse.ScoreInfo.LastActive = DateTime.Now;
+                            }
+                            MajDebug.LogDebug(rsp);
+                            return scoreInfo;
+                        }
+                        else
+                        {
+                            MajDebug.LogError(rsp);
+                            MajDebug.LogError($"Failed to get chart interact: {e?.Message ?? "Unknown error"}");
+                        }
+                        if (rsp.ErrorCode == HttpErrorCode.Canceled)
+                        {
+                            break;
+                        }
+                        else if (rsp.StatusCode is HttpStatusCode.BadRequest
+                            or HttpStatusCode.NotFound
+                            or HttpStatusCode.Unauthorized
+                            or HttpStatusCode.Forbidden)
+                        {
+                            return null;
+                        }
+                        else if (!rsp.IsSuccessfully && rsp.StatusCode is not null)
+                        {
+                            return null;
+                        }
+                    }
+                    return null;
+                }
             }
         }
 
@@ -589,6 +608,11 @@ namespace MajdataPlay.Utils
                     if (rsp.IsSuccessfully)
                     {
                         MajDebug.LogDebug(rsp);
+                        var cachedResponse = GetCachedResponse(song);
+                        using (await cachedResponse.Interact.RequestLock.LockAsync())
+                        {
+                            cachedResponse.Interact.LastActive = DateTime.UnixEpoch;
+                        }
                         return rsp;
                     }
                     else
@@ -635,6 +659,11 @@ namespace MajdataPlay.Utils
                     if (rsp.IsSuccessfully)
                     {
                         MajDebug.LogDebug(rsp);
+                        var cachedResponse = GetCachedResponse(song);
+                        using (await cachedResponse.ScoreInfo.RequestLock.LockAsync())
+                        {
+                            cachedResponse.ScoreInfo.LastActive = DateTime.UnixEpoch;
+                        }
                         return rsp;
                     }
                     else
@@ -1187,6 +1216,7 @@ namespace MajdataPlay.Utils
         class CachedApiEndpointResponse
         {
             public CachedInteractResponse Interact { get; init; } = new();
+            public CachedScoreInfoResponse ScoreInfo { get; init; } = new();
         }
         class CachedInteractResponse
         {
@@ -1194,10 +1224,11 @@ namespace MajdataPlay.Utils
             public SemaphoreSlim RequestLock { get; init; } = new(1, 1);
             public DateTime LastActive { get; set; }
         }
-        //class CachedScoreInfoResponse
-        //{
-        //    public MajNet Response { get; set; }
-        //    public DateTime LastActive { get; set; }
-        //}
+        class CachedScoreInfoResponse
+        {
+            public MajNetSongScoreInfo Response { get; set; }
+            public SemaphoreSlim RequestLock { get; init; } = new(1, 1);
+            public DateTime LastActive { get; set; }
+        }
     }
 }
