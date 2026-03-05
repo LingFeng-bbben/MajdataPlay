@@ -131,7 +131,11 @@ namespace MajdataPlay.Settings
         public string Resolution { get; set; } = "1080x1920";
 #endif
         [Preserve]
+#if UNITY_ANDROID || UNITY_IOS
+        public bool MainScreenTransform { get; set; } = true;
+#else
         public bool MainScreenTransform { get; set; } = false;
+#endif
         [Preserve]
         public float MainScreenScale { get; set; } = 1f;
         [Preserve]

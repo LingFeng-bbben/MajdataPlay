@@ -41,6 +41,8 @@ namespace MajdataPlay
         public const float FRAME_LENGTH_SEC = 1f / 60;
         public const float FRAME_LENGTH_MSEC = FRAME_LENGTH_SEC * 1000;
 
+        public const int ONLINE_RESPONSE_CACHE_TTL_SEC = 30 * 60;
+
         public static readonly System.Threading.ThreadPriority THREAD_PRIORITY_IO =
             System.Threading.ThreadPriority.AboveNormal;
 

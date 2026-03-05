@@ -1,9 +1,11 @@
 using Cysharp.Text;
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Buffers;
-using MajdataPlay.Net;
-using MajdataPlay.UnsafeKit;
 using MajdataPlay.Drawing;
+using MajdataPlay.Net;
+using MajdataPlay.Threading;
+using MajdataPlay.UnsafeKit;
+using NeoSmart.AsyncLock;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
@@ -53,6 +55,9 @@ namespace MajdataPlay.Utils
         public const string API_POST_AUTH_REVOKE = "machine/auth/revoke";
 
         static SpinLock _dictLock = new();
+        static SpinLock _cachedResponseLock = new();
+
+        readonly static Dictionary<OnlineSongDetail, CachedApiEndpointResponse> _cachedResponse = new();
         readonly static Dictionary<ApiEndpoint, ApiEndpointStatistics> _endpointStatistics = new();
 
         public static async ValueTask HeartbeatAsync(CancellationToken token = default)
@@ -457,41 +462,60 @@ namespace MajdataPlay.Utils
             await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
                 await UniTask.SwitchToThreadPool();
-                var serverInfo = song.ServerInfo;
-                var interactUrl = BuildMaiChartUri(song.ServerInfo, API_GET_MAICHART_INTERACT, song.Id);
-                var rsp = default(EndpointResponse);
-
-                for (var i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
+                var cachedResponse = GetCachedResponse(song);
+                var isCacheAlive = (DateTime.Now - cachedResponse.Interact.LastActive).TotalSeconds < MajEnv.ONLINE_RESPONSE_CACHE_TTL_SEC;
+                if (isCacheAlive)
                 {
-                    var e = default(Exception?);
-                    rsp = await GetAsync(interactUrl, token);
-                    if (rsp.IsSuccessfully && rsp.IsDeserializable && rsp.TryDeserialize<MajNetSongInteract?>(out var intlist, out e) && intlist is not null)
-                    {
-                        MajDebug.LogDebug(rsp);
-                        return intlist;
-                    }
-                    else
-                    {
-                        MajDebug.LogError(rsp);
-                        MajDebug.LogError($"Failed to get chart interact: {e?.Message ?? "Unknown error"}");
-                    }
-                    if (rsp.ErrorCode == HttpErrorCode.Canceled)
-                    {
-                        break;
-                    }
-                    else if (rsp.StatusCode is HttpStatusCode.BadRequest
-                        or HttpStatusCode.NotFound
-                        or HttpStatusCode.Unauthorized
-                        or HttpStatusCode.Forbidden)
-                    {
-                        return null;
-                    }
-                    else if (!rsp.IsSuccessfully && rsp.StatusCode is not null)
-                    {
-                        return null;
-                    }
+                    return cachedResponse.Interact.Response;
                 }
-                return null;                
+                using (await cachedResponse.Interact.RequestLock.LockAsync(token))
+                {
+                    isCacheAlive = (DateTime.Now - cachedResponse.Interact.LastActive).TotalSeconds < MajEnv.ONLINE_RESPONSE_CACHE_TTL_SEC;
+                    if (isCacheAlive)
+                    {
+                        return cachedResponse.Interact.Response;
+                    }
+                    var serverInfo = song.ServerInfo;
+                    var interactUrl = BuildMaiChartUri(song.ServerInfo, API_GET_MAICHART_INTERACT, song.Id);
+                    var rsp = default(EndpointResponse);
+
+                    for (var i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
+                    {
+                        var e = default(Exception?);
+                        rsp = await GetAsync(interactUrl, token);
+                        if (rsp.IsSuccessfully && rsp.IsDeserializable && rsp.TryDeserialize<MajNetSongInteract?>(out var intlist, out e) && intlist is not null)
+                        {
+                            MajDebug.LogDebug(rsp);
+                            if(intlist is MajNetSongInteract interactRsp)
+                            {
+                                cachedResponse.Interact.Response = interactRsp;
+                                cachedResponse.Interact.LastActive = DateTime.Now;
+                            }
+                            return intlist;
+                        }
+                        else
+                        {
+                            MajDebug.LogError(rsp);
+                            MajDebug.LogError($"Failed to get chart interact: {e?.Message ?? "Unknown error"}");
+                        }
+                        if (rsp.ErrorCode == HttpErrorCode.Canceled)
+                        {
+                            break;
+                        }
+                        else if (rsp.StatusCode is HttpStatusCode.BadRequest
+                            or HttpStatusCode.NotFound
+                            or HttpStatusCode.Unauthorized
+                            or HttpStatusCode.Forbidden)
+                        {
+                            return null;
+                        }
+                        else if (!rsp.IsSuccessfully && rsp.StatusCode is not null)
+                        {
+                            return null;
+                        }
+                    }
+                    return null;
+                }                 
             }
         }
         public static async ValueTask<MajNetSongScoreInfo?> GetChartScoreInfoAsync(OnlineSongDetail song, CancellationToken token = default)
@@ -705,7 +729,23 @@ namespace MajdataPlay.Utils
                 return null;
             }
         }
-
+        public static void ClearResponseCache()
+        {
+            ref var @lock = ref _cachedResponseLock;
+            var isLocked = false;
+            try
+            {
+                @lock.Enter(ref isLocked);
+                _cachedResponse.Clear();
+            }
+            finally
+            {
+                if (isLocked)
+                {
+                    @lock.Exit();
+                }
+            }
+        }
         static async ValueTask<EndpointResponse> GetAsync(Uri uri, CancellationToken token = default)
         {
 #if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
@@ -1069,6 +1109,28 @@ namespace MajdataPlay.Utils
                 }
             }
         }
+        static CachedApiEndpointResponse GetCachedResponse(OnlineSongDetail songDetail)
+        {
+            ref var @lock = ref _cachedResponseLock;
+            var isLocked = false;
+            try
+            {
+                @lock.Enter(ref isLocked);
+                if (!_cachedResponse.TryGetValue(songDetail, out var cachedResponse))
+                {
+                    cachedResponse = new CachedApiEndpointResponse();
+                    _cachedResponse[songDetail] = cachedResponse;
+                }
+                return cachedResponse;
+            }
+            finally
+            {
+                if (isLocked)
+                {
+                    @lock.Exit();
+                }
+            }
+        }
         static int GetAllApiEndpointStatistic(IList<ApiEndpointStatistics> buffer)
         {
             ref var @lock = ref _dictLock;
@@ -1122,6 +1184,20 @@ namespace MajdataPlay.Utils
             public string Description { get; init; }
             public string Place { get; init; }
         }
+        class CachedApiEndpointResponse
+        {
+            public CachedInteractResponse Interact { get; init; } = new();
+        }
+        class CachedInteractResponse
+        {
+            public MajNetSongInteract Response { get; set; }
+            public SemaphoreSlim RequestLock { get; init; } = new(1, 1);
+            public DateTime LastActive { get; set; }
+        }
+        //class CachedScoreInfoResponse
+        //{
+        //    public MajNet Response { get; set; }
+        //    public DateTime LastActive { get; set; }
+        //}
     }
-
 }

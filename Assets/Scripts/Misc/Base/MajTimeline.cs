@@ -108,6 +108,7 @@ namespace MajdataPlay
         }
         internal static void OnPreUpdate()
         {
+            _currentTimer.OnPreUpdate();
             var current = UnscaledTime;
             var deltaTime = current - _lastUpdateTime;
             UnscaledDeltaTime = (float)deltaTime.TotalSeconds;

@@ -119,6 +119,7 @@ namespace MajdataPlay.Scenes.Game
         float _2367PressTime = 0;
         float _3456PressTime = 0;
         float _p1SkipTime = 0;
+        float _devicePlaybackOffset = 0f;
 
         // Offset
         float _chartOffset = 0f;
@@ -1185,12 +1186,12 @@ namespace MajdataPlay.Scenes.Game
                         var realTimeDifferenceb = (float)_bgManager.CurrentSec - (elapsedSeconds - _audioStartTime) * playbackSpeed;
 
                         _thisFrameSec = timeOffset;
-#if UNITY_ANDROID || UNITY_IOS
-                        //if(realTimeDifference < 0 && !_objectCounter.AllFinished && _audioSample.IsPlaying)
-                        //{
-                        //    _thisFrameSec += realTimeDifference;
-                        //}
-#endif
+                        if(_thisFrameSec <= 2f && _thisFrameSec >= 0f)
+                        {
+                            _devicePlaybackOffset = realTimeDifference;
+                        }
+                        _thisFrameSec += _devicePlaybackOffset;
+
                         var sb = ZString.CreateStringBuilder(true);
                         try
                         {

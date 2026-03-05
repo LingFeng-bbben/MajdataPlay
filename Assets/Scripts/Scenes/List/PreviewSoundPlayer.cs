@@ -125,6 +125,10 @@ namespace MajdataPlay.Scenes.List
                 {
                     previewSample.CurrentSec = previewOffsetSec;
                 }
+                else
+                {
+                    previewSample.Stop();
+                }
                 previewSample.Speed = 1.0f;
                 previewSample.Play();
                 token.ThrowIfCancellationRequested();

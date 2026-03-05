@@ -2,10 +2,18 @@
 
 namespace MajdataPlay.Timer
 {
-    internal class StopwatchTimeProvider : ITimeProvider
+    internal sealed class StopwatchTimeProvider : ITimeProvider
     {
         public BuiltInTimeProvider Type { get; } = BuiltInTimeProvider.Stopwatch;
-        public long Ticks => _stopwatch.ElapsedTicks;
+        public long Ticks
+        {
+            get
+            {
+                return _ticks;
+            }
+        }
+
+        long _ticks = 0;
 
         Stopwatch _stopwatch = new();
         public StopwatchTimeProvider() 
@@ -15,6 +23,10 @@ namespace MajdataPlay.Timer
         ~StopwatchTimeProvider() 
         {
             _stopwatch.Stop();
+        }
+        public void OnPreUpdate()
+        {
+            _ticks = _stopwatch.ElapsedTicks;
         }
     }
 }
