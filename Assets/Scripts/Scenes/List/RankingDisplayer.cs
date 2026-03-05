@@ -1,40 +1,80 @@
+using Cysharp.Threading.Tasks;
+using MajdataPlay.Net;
 using MajdataPlay.Scenes.Game;
+using MajdataPlay.Utils;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using TMPro;
+using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine;
 
 namespace MajdataPlay
 {
     public class RankingDisplayer : MonoBehaviour
     {
-        public GameObject NamePannel;
-        public GameObject ScorePannel;
         public TMP_Text[] PlayerNames;
         public TMP_Text[] Scores;
         public string[] NameTemplates;
         public string ScoresTemplate;
+
+        CancellationTokenSource _cts = new();
+
         // Start is called before the first frame update
         void Start()
         {
-            HidePannels();
+            Hide();
         }
 
-        public void HidePannels()
+        public async UniTaskVoid SetSongScoreRanking(ISongDetail detail,ChartLevel selectedLevel, CancellationToken token = default)
         {
-            NamePannel.SetActive(false);
-            ScorePannel.SetActive(false);
+            Hide();
+            if (detail is OnlineSongDetail onlineDetail)
+            {
+                using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(token, _cts.Token))
+                {
+                    var (isSuccessfully, scoreInfo) = await GetOnlineScoresAsync(onlineDetail, token);
+                    await UniTask.SwitchToMainThread();
+                    var task = UniTask.CompletedTask;
+                    if (isSuccessfully)
+                    {
+                        task = UniTask.Create(async () =>
+                        {
+                            await UniTask.CompletedTask;
+                            SetScores(scoreInfo.Scores[(int)selectedLevel] ?? Array.Empty<MajNetSongScore>());
+                        });
+                    }
+                    await UniTask.WhenAll(task);
+                }
+            }
         }
-        public void SetScores(ReadOnlySpan<MajNetSongScore> scores)
+
+        public void Hide()
+        {
+            var childs = transform.GetChildren();
+            foreach (var child in childs) { 
+                child.gameObject.SetActive(false);
+            }
+        }
+
+        public void Show()
+        {
+            var childs = transform.GetChildren();
+            foreach (var child in childs)
+            {
+                child.gameObject.SetActive(true);
+            }
+        }
+
+        private void SetScores(ReadOnlySpan<MajNetSongScore> scores)
         {
             if(scores.IsEmpty)
             {
-                HidePannels();
+                Hide();
                 return;
             }
-            NamePannel.SetActive(true);
-            ScorePannel.SetActive(true);
+            Show();
 
             for (var i = 0; i < PlayerNames.Length; i++)
             {
@@ -49,11 +89,11 @@ namespace MajdataPlay
                 var @int = MathF.Truncate(score.Acc);
                 var @float = score.Acc - @int;
                 var comboState = CombostateToStr(score.ComboState);
-                Scores[i].text = string.Format(ScoresTemplate, @int, @float);
+                Scores[i].text = string.Format(ScoresTemplate, @int, @float, comboState);
             }
         }
 
-        string CombostateToStr(ComboState cs)
+        private string CombostateToStr(ComboState cs)
         {
             if (cs == ComboState.APPlus) {
                 return "<color=#FFF808>AP<sup>+</sup></color>";
@@ -73,6 +113,40 @@ namespace MajdataPlay
             else
             {
                 return string.Empty;
+            }
+        }
+
+        private async UniTask<(bool IsSuccessfully, MajNetSongScoreInfo ScoreInfo)> GetOnlineScoresAsync(OnlineSongDetail song, CancellationToken token = default)
+        {
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
+            {
+                try
+                {
+                    await UniTask.SwitchToThreadPool();
+                    var scoreInfo = await Online.GetChartScoreInfoAsync(song, token);
+                    token.ThrowIfCancellationRequested();
+                    if (scoreInfo is null)
+                    {
+                        return (false, default);
+                    }
+
+                    return (true, (MajNetSongScoreInfo)scoreInfo);
+                }
+                catch (Exception ex)
+                {
+                    if (ex is HttpException e)
+                    {
+                        if (e.ErrorCode != HttpErrorCode.Canceled)
+                        {
+                            MajDebug.LogException(ex);
+                        }
+                    }
+                    else if (ex is not OperationCanceledException)
+                    {
+                        MajDebug.LogException(ex);
+                    }
+                }
+                return (false, default);
             }
         }
     }

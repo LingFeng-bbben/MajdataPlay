@@ -23,8 +23,6 @@ namespace MajdataPlay.Scenes.List
         public GameObject CommentBox;
         public GameObject[] Icons;
 
-        [SerializeField]
-        RankingDisplayer _rankingDisplayer;
 
         CancellationTokenSource _cts = new();
 
@@ -34,16 +32,14 @@ namespace MajdataPlay.Scenes.List
             {
                 id_text.text = "ID: " + onlineDetail.Id;
                 HideInteraction();
-                _rankingDisplayer.HidePannels();
                 _cts = new();
                 using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(token, _cts.Token))
                 {
                     token = linkedCts.Token;
                     var (isSuccessfully1, interact) = await GetOnlineInteractionAsync(onlineDetail, token);
-                    var (isSuccessfully2, scoreInfo) = await GetOnlineScoresAsync(onlineDetail, token);
+                    
                     await UniTask.SwitchToMainThread();
                     var task1 = UniTask.CompletedTask;
-                    var task2 = UniTask.CompletedTask;
                     if (isSuccessfully1)
                     {
                         task1 = UniTask.Create(async () =>
@@ -51,6 +47,7 @@ namespace MajdataPlay.Scenes.List
                             LikeCount.text = (interact.Likes.Length - interact.DisLikeCount).ToString();
                             PlayCount.text = interact.Plays.ToString();
                             CommentCount.text = interact.Comments.Length.ToString();
+                            //interact.IsLiked
                             foreach (var icon in Icons)
                             {
                                 icon.SetActive(true);
@@ -66,15 +63,7 @@ namespace MajdataPlay.Scenes.List
                             CommentBox.SetActive(false);
                         });
                     }
-                    if(isSuccessfully2)
-                    {
-                        task2 = UniTask.Create(async () =>
-                        {
-                            await UniTask.CompletedTask;
-                            _rankingDisplayer.SetScores(scoreInfo.Scores[(int)MajEnv.RuntimeConfig.List.SelectedDiff] ?? Array.Empty<MajNetSongScore>());
-                        });
-                    }
-                    await UniTask.WhenAll(task1, task2);
+                    await UniTask.WhenAll(task1);
                 }
             }
             else
@@ -86,7 +75,6 @@ namespace MajdataPlay.Scenes.List
         {
             id_text.text = "";
             HideInteraction();
-            _rankingDisplayer.HidePannels();
         }
 
         public void HideInteraction()
@@ -138,38 +126,6 @@ namespace MajdataPlay.Scenes.List
                 return (false, default);
             } 
         }
-        async UniTask<(bool IsSuccessfully, MajNetSongScoreInfo ScoreInfo)> GetOnlineScoresAsync(OnlineSongDetail song, CancellationToken token = default)
-        {
-            await using (UniTask.ReturnToCurrentSynchronizationContext())
-            {
-                try
-                {
-                    await UniTask.SwitchToThreadPool();
-                    var scoreInfo = await Online.GetChartScoreInfoAsync(song, token);
-                    token.ThrowIfCancellationRequested();
-                    if (scoreInfo is null)
-                    {
-                        return (false, default);
-                    }
-
-                    return (true, (MajNetSongScoreInfo)scoreInfo);
-                }
-                catch (Exception ex)
-                {
-                    if (ex is HttpException e)
-                    {
-                        if (e.ErrorCode != HttpErrorCode.Canceled)
-                        {
-                            MajDebug.LogException(ex);
-                        }
-                    }
-                    else if (ex is not OperationCanceledException)
-                    {
-                        MajDebug.LogException(ex);
-                    }
-                }
-                return (false, default);
-            }
-        }
+        
     }
 }
