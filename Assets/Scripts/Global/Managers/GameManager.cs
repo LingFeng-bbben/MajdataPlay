@@ -47,7 +47,7 @@ namespace MajdataPlay
         void Start()
         {
 #if UNITY_IOS && !UNITY_EDITOR
-            IOSSettings.Init();
+            IOSNativeSettings.Init();
 #endif
             MajEnv.InitPath();
             MajDebug.Init();
