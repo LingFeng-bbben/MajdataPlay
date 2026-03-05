@@ -96,7 +96,6 @@ namespace MajdataPlay.Scenes.List
             _cts = new();
             var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_listManager.CancellationToken, _cts.Token);
             ListManager.AllBackgroundTasks.Add(SetCoverAsync(detail, linkedCts.Token));
-            _chartAnalyzer.AnalyzeAndDrawGraphAsync(detail, (ChartLevel)diff, token: linkedCts.Token).Forget();
         }
         public void SetNoCover()
         {

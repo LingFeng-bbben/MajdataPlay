@@ -6,6 +6,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using TMPro;
 using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine;
@@ -27,24 +28,29 @@ namespace MajdataPlay
             Hide();
         }
 
-        public async UniTaskVoid SetSongScoreRanking(ISongDetail detail,ChartLevel selectedLevel, CancellationToken token = default)
+        public async Task SetSongScoreRanking(ISongDetail detail,ChartLevel selectedLevel, CancellationToken token = default)
         {
-            if(!_cts.IsCancellationRequested)
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
-                _cts.Cancel();
-                _cts = new();
-            }
-            Hide();
-            if (detail is OnlineSongDetail onlineDetail)
-            {
-                using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(token, _cts.Token))
+                await UniTask.SwitchToMainThread();
+                if (!_cts.IsCancellationRequested)
                 {
-                    token = linkedCts.Token;
-                    var (isSuccessfully, scoreInfo) = await GetOnlineScoresAsync(onlineDetail, token);
-                    await UniTask.SwitchToMainThread(cancellationToken: token);
-                    if (isSuccessfully)
+                    _cts.Cancel();
+                    _cts = new();
+                }
+                Hide();
+                if (detail is OnlineSongDetail onlineDetail)
+                {
+                    await UniTask.SwitchToThreadPool();
+                    using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(token, _cts.Token))
                     {
-                        SetScores(scoreInfo.Scores?[(int)selectedLevel] ?? Array.Empty<MajNetSongScore>());
+                        token = linkedCts.Token;
+                        var (isSuccessfully, scoreInfo) = await GetOnlineScoresAsync(onlineDetail, token);
+                        await UniTask.SwitchToMainThread(PlayerLoopTiming.LastUpdate, token);
+                        if (isSuccessfully)
+                        {
+                            SetScores(scoreInfo.Scores?[(int)selectedLevel] ?? Array.Empty<MajNetSongScore>());
+                        }
                     }
                 }
             }

@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace MajdataPlay.Scenes.List
@@ -25,10 +26,10 @@ namespace MajdataPlay.Scenes.List
                 }
             }
             _cancellationTokenSource = new();
-            PlayPreviewAsync(info, _cancellationTokenSource.Token).Forget();
+            ListManager.AllBackgroundTasks.Add(PlayPreviewAsync(info, _cancellationTokenSource.Token));
         }
 
-        async UniTaskVoid PlayPreviewAsync(ISongDetail info, CancellationToken token)
+        async Task PlayPreviewAsync(ISongDetail info, CancellationToken token)
         {
 
             var selectSound = MajInstances.AudioManager.GetSFX("bgm_select.mp3");

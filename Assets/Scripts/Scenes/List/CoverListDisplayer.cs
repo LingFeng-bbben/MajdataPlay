@@ -455,9 +455,9 @@ namespace MajdataPlay.Scenes.List
                 var songScore = ScoreManager.GetScore(songinfo, _listConfig.SelectedDiff);
                 CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
                 CoverBigDisplayer.SetScore(songScore);
-                chartAnalyzer.AnalyzeAndDrawGraphAsync(songinfo, (ChartLevel)selectedDifficulty).Forget();
+                ListManager.AllBackgroundTasks.Add(chartAnalyzer.AnalyzeAndDrawGraphAsync(songinfo, (ChartLevel)selectedDifficulty));
                 FavoriteAdder.SetSong(songinfo);
-                RankingDisplayer.SetSongScoreRanking(songinfo, (ChartLevel)selectedDifficulty).Forget();
+                ListManager.AllBackgroundTasks.Add(RankingDisplayer.SetSongScoreRanking(songinfo, (ChartLevel)selectedDifficulty));
                 var allocatedSongCoverDisplayer = _allocatedSongCoverDisplayer.Span;
                 for (int i = 0; i < allocatedSongCoverDisplayer.Length; i++)
                 {
@@ -558,9 +558,9 @@ namespace MajdataPlay.Scenes.List
                     CoverBigDisplayer.SetScore(songScore);
                     SubInfoDisplayer.RefreshContentAsync(songInfo).Forget();
                     _previewSoundPlayer.PlayPreviewSound(songInfo);
-                    chartAnalyzer.AnalyzeAndDrawGraphAsync(songInfo, (ChartLevel)selectedDifficulty).Forget();
+                    ListManager.AllBackgroundTasks.Add(chartAnalyzer.AnalyzeAndDrawGraphAsync(songInfo, (ChartLevel)selectedDifficulty));
                     FavoriteAdder.SetSong(songInfo);
-                    RankingDisplayer.SetSongScoreRanking(songInfo, (ChartLevel)selectedDifficulty).Forget();
+                    ListManager.AllBackgroundTasks.Add(RankingDisplayer.SetSongScoreRanking(songInfo, (ChartLevel)selectedDifficulty));
                     SetCursor(songInfo);
                     break;
             }

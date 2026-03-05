@@ -29,27 +29,34 @@ namespace MajdataPlay.Scenes.List
 
         public async UniTask RefreshContentAsync(ISongDetail detail, CancellationToken token = default)
         {
-            if (detail is OnlineSongDetail onlineDetail)
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
-                id_text.text = "ID: " + onlineDetail.Id;
-                HideInteraction();
-                _cts = new();
-                using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(token, _cts.Token))
+                await UniTask.SwitchToMainThread();
+                if (!_cts.IsCancellationRequested)
                 {
-                    token = linkedCts.Token;
-                    var (isSuccessfully1, interact) = await GetOnlineInteractionAsync(onlineDetail, token);
-                    
-                    await UniTask.SwitchToMainThread();
-                    var task1 = UniTask.CompletedTask;
-                    if (isSuccessfully1)
+                    _cts.Cancel();
+                    _cts = new();
+                }
+                Hide();
+                if (detail is OnlineSongDetail onlineDetail)
+                {
+                    id_text.text = "ID: " + onlineDetail.Id;
+                    HideInteraction();
+                    await UniTask.SwitchToThreadPool();
+                    using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(token, _cts.Token))
                     {
-                        task1 = UniTask.Create(async () =>
+                        token = linkedCts.Token;
+                        var (isSuccessfully1, interact) = await GetOnlineInteractionAsync(onlineDetail, token);
+
+                        await UniTask.SwitchToMainThread(PlayerLoopTiming.LastUpdate, token);
+                        var task1 = UniTask.CompletedTask;
+                        if (isSuccessfully1)
                         {
                             var totalLikes = (interact.Likes.Length - interact.DisLikeCount);
                             LikeCount.text = totalLikes.ToString();
                             PlayCount.text = interact.Plays.ToString();
                             CommentCount.text = interact.Comments.Length.ToString();
-                            
+
                             foreach (var icon in Icons)
                             {
                                 icon.SetActive(true);
@@ -59,7 +66,7 @@ namespace MajdataPlay.Scenes.List
                             {
                                 var text = comment.Sender + "หตฃบ\n" + comment.Content + "\n";
                                 CommentText.text = text;
-                                await UniTask.Delay(5000, cancellationToken: token);
+                                await UniTask.Delay(5000, delayTiming: PlayerLoopTiming.LastUpdate, cancellationToken: token);
                                 token.ThrowIfCancellationRequested();
                             }
                             CommentBox.SetActive(false);
@@ -75,14 +82,9 @@ namespace MajdataPlay.Scenes.List
                             {
                                 ThumbUpImage.color = Color.white;
                             }
-                        });
+                        }
                     }
-                    await UniTask.WhenAll(task1);
                 }
-            }
-            else
-            {
-                Hide();
             }
         }
         public void Hide()

@@ -1,5 +1,7 @@
 using Cysharp.Text;
 using Cysharp.Threading.Tasks;
+using MajdataPlay.Buffers;
+using MajdataPlay.Drawing;
 using MajdataPlay.Utils;
 using MajSimai;
 using NeoSmart.AsyncLock;
@@ -12,11 +14,10 @@ using System.Drawing;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MajdataPlay.Drawing;
+using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UIElements;
-using MajdataPlay.Buffers;
 #nullable enable
 namespace MajdataPlay.Scenes.Game
 {
@@ -48,6 +49,7 @@ namespace MajdataPlay.Scenes.Game
 #else
         const int MAX_CACHE_COUNT = 32;
 #endif
+        CancellationTokenSource _cts = new();
         readonly AsyncLock _lock = new();
         readonly Dictionary<SimaiChart, WeakReference<MaidataAnalyzeResult>> _cachedTextures = new(MAX_CACHE_COUNT);
         readonly RentedList<SimaiChart> _cachedMaiCharts = new(MAX_CACHE_COUNT);
@@ -90,103 +92,108 @@ namespace MajdataPlay.Scenes.Game
             _cachedMaiCharts.Clear();
             _cachedTextures.Clear();
         }
-        public async UniTask AnalyzeAndDrawGraphAsync(ISongDetail songDetail, ChartLevel level, float length = -1, bool noCache = false, CancellationToken token = default)
+        public async Task AnalyzeAndDrawGraphAsync(ISongDetail songDetail, ChartLevel level, float length = -1, bool noCache = false, CancellationToken token = default)
         {
             await using (UniTask.ReturnToCurrentSynchronizationContext(cancellationToken: token))
             {
-                await UniTask.SwitchToThreadPool();
-                using (await _lock.LockAsync(token))
+                if(!_cts.IsCancellationRequested)
                 {
-                    try
+                    _cts.Cancel();
+                }
+                _cts = new();
+                using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(token, _cts.Token))
+                {
+                    token = linkedCts.Token;
+                    await UniTask.SwitchToThreadPool();
+                    using (await _lock.LockAsync(token))
                     {
-                        await UniTask.SwitchToMainThread(token);
-                        SetLoading();
-                        await UniTask.SwitchToThreadPool();
-                        var simaiFile = await songDetail.GetMaidataAsync(token: token);
-                        var maiChart = simaiFile.Charts[(int)level];
-                        if (maiChart.IsEmpty)
+                        try
                         {
-                            await UniTask.SwitchToMainThread(token);
-                            SetHelp();
-                            return;
-                        }
-                        double lastnoteTiming;
-                        using (var noteTimings = new RentedList<SimaiTimingPoint>())
-                        {
-                            noteTimings.AddRange(maiChart.NoteTimings);
-                            lastnoteTiming = length == -1 ? noteTimings.LastOrDefault()?.Timing ?? length : length;
-                        }
-                        var result = await AnalyzeMaidataAsync(maiChart, (float)lastnoteTiming, noCache);
-                        await UniTask.SwitchToMainThread(token);
-                        token.ThrowIfCancellationRequested();
-                        if (_cachedTextures.Count == MAX_CACHE_COUNT)
-                        {
-                            var c = _cachedMaiCharts[0];
-                            var @ref = _cachedTextures[c];
-                            _cachedTextures.Remove(c);
-                            _cachedMaiCharts.RemoveAt(0);
-                            if(@ref.TryGetTarget(out var r))
+                            await UniTask.SwitchToMainThread(PlayerLoopTiming.LastUpdate, token);
+                            SetLoading();
+                            await UniTask.SwitchToThreadPool();
+                            var simaiFile = await songDetail.GetMaidataAsync(token: token);
+                            var maiChart = simaiFile.Charts[(int)level];
+                            if (maiChart.IsEmpty)
                             {
-                                var tex = r.LineGraph;
-                                if(tex.IsNativeAlive())
+                                await UniTask.SwitchToMainThread(PlayerLoopTiming.LastUpdate, token);
+                                SetHelp();
+                                return;
+                            }
+                            double lastnoteTiming;
+                            using (var noteTimings = new RentedList<SimaiTimingPoint>())
+                            {
+                                noteTimings.AddRange(maiChart.NoteTimings);
+                                lastnoteTiming = length == -1 ? noteTimings.LastOrDefault()?.Timing ?? length : length;
+                            }
+                            var result = await AnalyzeMaidataAsync(maiChart, (float)lastnoteTiming, noCache, token);
+                            await UniTask.SwitchToMainThread(PlayerLoopTiming.LastUpdate, token);
+                            token.ThrowIfCancellationRequested();
+                            if (_cachedTextures.Count == MAX_CACHE_COUNT)
+                            {
+                                var c = _cachedMaiCharts[0];
+                                var @ref = _cachedTextures[c];
+                                _cachedTextures.Remove(c);
+                                _cachedMaiCharts.RemoveAt(0);
+                                if (@ref.TryGetTarget(out var r))
                                 {
-                                    UnityEngine.Object.DestroyImmediate(tex, true);
+                                    var tex = r.LineGraph;
+                                    if (tex.IsNativeAlive())
+                                    {
+                                        UnityEngine.Object.DestroyImmediate(tex, true);
+                                    }
                                 }
                             }
-                        }
-                        if(!_cachedTextures.ContainsKey(maiChart))
-                        {
-                            _cachedTextures.Add(maiChart, new(result));
-                            _cachedMaiCharts.Add(maiChart);
-                        }
-                        SetTexture(result.LineGraph);
-                        if (anaText is not null)
-                        {
-                            var max = result.PeakDensity;
-                            var esti = result.Esti;
-                            var minBPM = result.MinBPM;
-                            var maxBPM = result.MaxBPM;
-                            var time = result.Length;
-                            using var sb = ZString.CreateStringBuilder();
-                            sb.Append("Peak Density = "); sb.Append(max);
-                            sb.AppendLine();
-                            sb.Append("Esti = Lv."); sb.Append(esti);
-                            sb.AppendLine();
-                            sb.Append("Length = "); sb.AppendFormat("{0}:{1:00}.{2:000}", time.Minutes, time.Seconds, time.Milliseconds);
-                            sb.AppendLine();
+                            if (!_cachedTextures.ContainsKey(maiChart))
+                            {
+                                _cachedTextures.Add(maiChart, new(result));
+                                _cachedMaiCharts.Add(maiChart);
+                            }
+                            SetTexture(result.LineGraph);
+                            if (anaText is not null)
+                            {
+                                var max = result.PeakDensity;
+                                var esti = result.Esti;
+                                var minBPM = result.MinBPM;
+                                var maxBPM = result.MaxBPM;
+                                var time = result.Length;
+                                using var sb = ZString.CreateStringBuilder();
+                                sb.Append("Peak Density = "); sb.Append(max);
+                                sb.AppendLine();
+                                sb.Append("Esti = Lv."); sb.Append(esti);
+                                sb.AppendLine();
+                                sb.Append("Length = "); sb.AppendFormat("{0}:{1:00}.{2:000}", time.Minutes, time.Seconds, time.Milliseconds);
+                                sb.AppendLine();
 
-                            if (minBPM == maxBPM)
-                            {
-                                sb.Append("BPM = "); sb.Append(minBPM);
+                                if (minBPM == maxBPM)
+                                {
+                                    sb.Append("BPM = "); sb.Append(minBPM);
+                                }
+                                else
+                                {
+                                    sb.Append("BPM = "); sb.Append(minBPM); sb.Append(" - "); sb.Append(maxBPM);
+                                }
+                                //anaText.text = "Peak Density = " + max + "\n";
+                                //anaText.text += "Esti = Lv." + (esti) + "\n";
+                                //anaText.text += "Length = " + ZString.Format("{0}:{1:00}.{2:000}", time.Minutes, time.Seconds, time.Milliseconds) + "\n";
+                                //anaText.text += "BPM = " + minBPM + " - " + maxBPM;
+                                anaText.text = sb.ToString();
                             }
-                            else
+                        }
+                        catch (Exception ex)
+                        {
+                            if (ex is not OperationCanceledException)
                             {
-                                sb.Append("BPM = "); sb.Append(minBPM); sb.Append(" - "); sb.Append(maxBPM);
+                                MajDebug.LogException(ex);
                             }
-                            //anaText.text = "Peak Density = " + max + "\n";
-                            //anaText.text += "Esti = Lv." + (esti) + "\n";
-                            //anaText.text += "Length = " + ZString.Format("{0}:{1:00}.{2:000}", time.Minutes, time.Seconds, time.Milliseconds) + "\n";
-                            //anaText.text += "BPM = " + minBPM + " - " + maxBPM;
-                            anaText.text = sb.ToString();
+                            await UniTask.SwitchToMainThread(PlayerLoopTiming.LastUpdate, token);
+                            SetError();
+                            //_rawImage.texture = new Texture2D(0, 0);
+                            if (anaText is not null)
+                            {
+                                anaText.text = string.Empty;
+                            }
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        if (ex is not OperationCanceledException)
-                        {
-                            MajDebug.LogException(ex);
-                        }
-                        await UniTask.SwitchToMainThread(token);
-                        SetError();
-                        //_rawImage.texture = new Texture2D(0, 0);
-                        if (anaText is not null)
-                        {
-                            anaText.text = string.Empty;
-                        }
-                    }
-                    finally
-                    {
-                        await UniTask.SwitchToMainThread();
                     }
                 }
             }
@@ -279,7 +286,7 @@ namespace MajdataPlay.Scenes.Game
             _loadingPrefab?.SetActive(false);
             _rawImage.texture = texture;
         }
-        async UniTask<MaidataAnalyzeResult> AnalyzeMaidataAsync(SimaiChart data, float totalLength, bool noCache = false)
+        async UniTask<MaidataAnalyzeResult> AnalyzeMaidataAsync(SimaiChart data, float totalLength, bool noCache = false, CancellationToken token = default)
         {
             await UniTask.SwitchToThreadPool();
             if (!noCache)
@@ -302,12 +309,15 @@ namespace MajdataPlay.Scenes.Game
             noteTimings.AddRange(data.NoteTimings);
             for (float time = 0; time < totalLength; time += 0.5f)
             {
+                token.ThrowIfCancellationRequested();
                 var timingPoints = noteTimings.Where(o => o.Timing > time - 0.75f && o.Timing <= time + 0.75f);
                 float y0 = 0, y1 = 0, y2 = 0;
                 foreach (var timingPoint in timingPoints)
                 {
+                    token.ThrowIfCancellationRequested();
                     foreach (var note in timingPoint.Notes)
                     {
+                        token.ThrowIfCancellationRequested();
                         switch (note.Type)
                         {
                             case SimaiNoteType.Tap:
@@ -343,15 +353,13 @@ namespace MajdataPlay.Scenes.Game
             //normalize
             for (var i = 0; i < tapPoints.Count; i++)
             {
+                token.ThrowIfCancellationRequested();
                 tapPoints[i] = new Vector2(tapPoints[i].x, tapPoints[i].y / max);
                 slidePoints[i] = new Vector2(slidePoints[i].x, slidePoints[i].y / max);
                 touchPoints[i] = new Vector2(touchPoints[i].x, touchPoints[i].y / max);
             }
 
-            var tex = await DrawGraphAsync(tapPoints, slidePoints, touchPoints);
-
-            await UniTask.SwitchToThreadPool();
-
+            var tex = await DrawGraphAsync(tapPoints, slidePoints, touchPoints, token);
             var result = new MaidataAnalyzeResult()
             {
                 Esti = esti,
@@ -363,59 +371,66 @@ namespace MajdataPlay.Scenes.Game
             };
             return result;
         }
-        static async ValueTask<Texture> DrawGraphAsync(List<Vector2> tapPoints, List<Vector2> slidePoints, List<Vector2> touchPoints)
+        static async ValueTask<Texture> DrawGraphAsync(List<Vector2> tapPoints, 
+            List<Vector2> slidePoints, 
+            List<Vector2> touchPoints,
+            CancellationToken token = default)
         {
-            var width = 1018;
-            var height = 187;
-            var imageInfo = new SKImageInfo(width, height);
-            using var surface = SKSurface.Create(imageInfo);
-
-            var canvas = surface.Canvas;
-            canvas.Clear(SKColor.Empty);
-            using (var tapPaint = new SKPaint())
-            using (var slidePaint = new SKPaint())
-            using (var touchPaint = new SKPaint())
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
-                tapPaint.Color = _colorA.ToSkColor();
-                tapPaint.IsAntialias = true;
-                tapPaint.Style = SKPaintStyle.Fill;
-                slidePaint.Color = _colorB.ToSkColor();
-                slidePaint.IsAntialias = true;
-                slidePaint.Style = SKPaintStyle.Fill;
-                touchPaint.Color = _colorC.ToSkColor();
-                touchPaint.IsAntialias = true;
-                touchPaint.Style = SKPaintStyle.Fill;
-                using (var tapPath = new SKPath())
-                using (var slidePath = new SKPath())
-                using (var touchPath = new SKPath())
-                {
-                    tapPath.MoveTo(0, height);
-                    slidePath.MoveTo(0, height);
-                    touchPath.MoveTo(0, height);
-                    for (var i = 0; i < tapPoints.Count; i++)
-                    {
-                        var x = tapPoints[i].x * width;
-                        var y = tapPoints[i].y;
-                        tapPath.LineTo(x, (1 - y) * height);
-                        y += slidePoints[i].y;
-                        slidePath.LineTo(x, (1 - y) * height);
-                        y += touchPoints[i].y;
-                        touchPath.LineTo(x, (1 - y) * height);
-                    }
-                    tapPath.LineTo(width, height);
-                    slidePath.LineTo(width, height);
-                    touchPath.LineTo(width, height);
-                    tapPath.Close();
-                    slidePath.Close();
-                    touchPath.Close();
+                var width = 1018;
+                var height = 187;
+                var imageInfo = new SKImageInfo(width, height);
+                using var surface = SKSurface.Create(imageInfo);
 
-                    canvas.DrawPath(touchPath, touchPaint);
-                    canvas.DrawPath(slidePath, slidePaint);
-                    canvas.DrawPath(tapPath, tapPaint);
+                var canvas = surface.Canvas;
+                canvas.Clear(SKColor.Empty);
+                using (var tapPaint = new SKPaint())
+                using (var slidePaint = new SKPaint())
+                using (var touchPaint = new SKPaint())
+                {
+                    tapPaint.Color = _colorA.ToSkColor();
+                    tapPaint.IsAntialias = true;
+                    tapPaint.Style = SKPaintStyle.Fill;
+                    slidePaint.Color = _colorB.ToSkColor();
+                    slidePaint.IsAntialias = true;
+                    slidePaint.Style = SKPaintStyle.Fill;
+                    touchPaint.Color = _colorC.ToSkColor();
+                    touchPaint.IsAntialias = true;
+                    touchPaint.Style = SKPaintStyle.Fill;
+                    using (var tapPath = new SKPath())
+                    using (var slidePath = new SKPath())
+                    using (var touchPath = new SKPath())
+                    {
+                        tapPath.MoveTo(0, height);
+                        slidePath.MoveTo(0, height);
+                        touchPath.MoveTo(0, height);
+                        for (var i = 0; i < tapPoints.Count; i++)
+                        {
+                            token.ThrowIfCancellationRequested();
+                            var x = tapPoints[i].x * width;
+                            var y = tapPoints[i].y;
+                            tapPath.LineTo(x, (1 - y) * height);
+                            y += slidePoints[i].y;
+                            slidePath.LineTo(x, (1 - y) * height);
+                            y += touchPoints[i].y;
+                            touchPath.LineTo(x, (1 - y) * height);
+                        }
+                        tapPath.LineTo(width, height);
+                        slidePath.LineTo(width, height);
+                        touchPath.LineTo(width, height);
+                        tapPath.Close();
+                        slidePath.Close();
+                        touchPath.Close();
+
+                        canvas.DrawPath(touchPath, touchPaint);
+                        canvas.DrawPath(slidePath, slidePaint);
+                        canvas.DrawPath(tapPath, tapPaint);
+                    }
                 }
+                await UniTask.SwitchToMainThread(PlayerLoopTiming.LastUpdate, token);
+                return GraphHelper.GraphSnapshot(surface);
             }
-            await UniTask.Yield();
-            return GraphHelper.GraphSnapshot(surface);
         }
     }
 }
