@@ -1,3 +1,4 @@
+using MajdataPlay.Scenes.Game;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -47,7 +48,31 @@ namespace MajdataPlay
                 PlayerNames[i].text = string.Format(NameTemplates[i], score.Player.Username);
                 var @int = MathF.Truncate(score.Acc);
                 var @float = score.Acc - @int;
+                var comboState = CombostateToStr(score.ComboState);
                 Scores[i].text = string.Format(ScoresTemplate, @int, @float);
+            }
+        }
+
+        string CombostateToStr(ComboState cs)
+        {
+            if (cs == ComboState.APPlus) {
+                return "<color=#FFF808>AP<sup>+</sup></color>";
+            }
+            else if (cs == ComboState.FCPlus)
+            {
+                return "<color=#72FD59>FC<sup>+</sup></color>";
+            }
+            else if (cs == ComboState.AP)
+            {
+                return "<color=#FFF808>AP</color>";
+            }
+            else if (cs == ComboState.FC)
+            {
+                return "<color=#72FD59>FC</color>";
+            }
+            else
+            {
+                return string.Empty;
             }
         }
     }
