@@ -1186,11 +1186,13 @@ namespace MajdataPlay.Scenes.Game
                         var realTimeDifferenceb = (float)_bgManager.CurrentSec - (elapsedSeconds - _audioStartTime) * playbackSpeed;
 
                         _thisFrameSec = timeOffset;
-                        if(_thisFrameSec <= 2f && _thisFrameSec >= 0f)
+#if !UNITY_STANDALONE
+                        if (_thisFrameSec <= 2f && _thisFrameSec >= 0f)
                         {
                             _devicePlaybackOffset = realTimeDifference;
                         }
                         _thisFrameSec += _devicePlaybackOffset;
+#endif
 
                         var sb = ZString.CreateStringBuilder(true);
                         try
