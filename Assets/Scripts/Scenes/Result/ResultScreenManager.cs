@@ -305,12 +305,12 @@ namespace MajdataPlay.Scenes.Result
             var breakJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Break]);
             string[] nmsl = new string[]
             {
-                "NOTES\t\tCP    \t\tP    \t\tGr    \t\tGd   \t\tM",
-                $"Tap  \t\t\t{tapJudgeInfo.CriticalPerfect}\t\t{tapJudgeInfo.Perfect}\t\t{tapJudgeInfo.Great}\t\t{tapJudgeInfo.Good}\t\t{tapJudgeInfo.Miss}",
-                $"Hold\t\t\t{holdJudgeInfo.CriticalPerfect}\t\t{holdJudgeInfo.Perfect}\t\t{holdJudgeInfo.Great}\t\t{holdJudgeInfo.Good}\t\t{holdJudgeInfo.Miss}",
-                $"Slide\t\t\t{slideJudgeInfo.CriticalPerfect}\t\t{slideJudgeInfo.Perfect}\t\t{slideJudgeInfo.Great}\t\t{slideJudgeInfo.Good}\t\t{slideJudgeInfo.Miss}",
-                $"Touch\t\t\t{touchJudgeInfo.CriticalPerfect}\t\t{touchJudgeInfo.Perfect}\t\t{touchJudgeInfo.Great}\t\t{touchJudgeInfo.Good}\t\t{touchJudgeInfo.Miss}",
-                $"Break\t\t\t{breakJudgeInfo.CriticalPerfect}\t\t{breakJudgeInfo.Perfect}\t\t{breakJudgeInfo.Great}\t\t{breakJudgeInfo.Good}\t\t{breakJudgeInfo.Miss}"
+                $"<color=#FFFFFF><indent=0%>NOTES<indent=16.6%><color=#FFF90E>Critical<indent=33.3%><color=#FFB30D>Perfect<indent=50%><color=#FFA2F1>Great<indent=66.6%><color=#00DF0E>Good<indent=83.3%><color=#C7C7C7>Miss",
+                $"<color=#FFFFFF><indent=0%>Tap<indent=16.6%><color=#FFF90E>{tapJudgeInfo.CriticalPerfect}<indent=33.3%><color=#FFB30D>{tapJudgeInfo.Perfect}<indent=50%><color=#FFA2F1>{tapJudgeInfo.Great}<indent=66.6%><color=#00DF0E>{tapJudgeInfo.Good}<indent=83.3%><color=#C7C7C7>{tapJudgeInfo.Miss}",
+                $"<color=#FFFFFF><indent=0%>Hold<indent=16.6%><color=#FFF90E>{holdJudgeInfo.CriticalPerfect}<indent=33.3%><color=#FFB30D>{holdJudgeInfo.Perfect}<indent=50%><color=#FFA2F1>{holdJudgeInfo.Great}<indent=66.6%><color=#00DF0E>{holdJudgeInfo.Good}<indent=83.3%><color=#C7C7C7>{holdJudgeInfo.Miss}",
+                $"<color=#FFFFFF><indent=0%>Slide<indent=16.6%><color=#FFF90E>{slideJudgeInfo.CriticalPerfect}<indent=33.3%><color=#FFB30D>{slideJudgeInfo.Perfect}<indent=50%><color=#FFA2F1>{slideJudgeInfo.Great}<indent=66.6%><color=#00DF0E>{slideJudgeInfo.Good}<indent=83.3%><color=#C7C7C7>{slideJudgeInfo.Miss}",
+                $"<color=#FFFFFF><indent=0%>Touch<indent=16.6%><color=#FFF90E>{touchJudgeInfo.CriticalPerfect}<indent=33.3%><color=#FFB30D>{touchJudgeInfo.Perfect}<indent=50%><color=#FFA2F1>{touchJudgeInfo.Great}<indent=66.6%><color=#00DF0E>{touchJudgeInfo.Good}<indent=83.3%><color=#C7C7C7>{touchJudgeInfo.Miss}",
+                $"<color=#FFFFFF><indent=0%>Break<indent=16.6%><color=#FFF90E>{breakJudgeInfo.CriticalPerfect}<indent=33.3%><color=#FFB30D>{breakJudgeInfo.Perfect}<indent=50%><color=#FFA2F1>{breakJudgeInfo.Great}<indent=66.6%><color=#00DF0E>{breakJudgeInfo.Good}<indent=83.3%><color=#C7C7C7>{breakJudgeInfo.Miss}",
             };
             return string.Join("\n", nmsl);
         }

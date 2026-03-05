@@ -1,14 +1,15 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using TMPro;
-using UnityEngine.UI;
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Net;
-using System.Threading;
 using MajdataPlay.Utils;
-using System.Threading.Tasks;
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using TMPro;
+using Unity.VisualScripting.Antlr3.Runtime;
+using UnityEngine;
+using UnityEngine.UI;
 #nullable enable
 namespace MajdataPlay.Scenes.List
 {
@@ -21,18 +22,63 @@ namespace MajdataPlay.Scenes.List
         public TMP_Text CommentText;
         public GameObject CommentBox;
         public GameObject[] Icons;
-
+        public Image ThumbUpImage;
+        public Color ThumbUpGoldColor;
+        public Color ThumbUpGreenColor;
         CancellationTokenSource _cts = new();
 
-        // Start is called before the first frame update
-        public void RefreshContent(ISongDetail detail)
+        public async UniTask RefreshContentAsync(ISongDetail detail, CancellationToken token = default)
         {
             if (detail is OnlineSongDetail onlineDetail)
             {
                 id_text.text = "ID: " + onlineDetail.Id;
                 HideInteraction();
                 _cts = new();
-                GetOnlineInteraction(onlineDetail, _cts.Token).Forget();
+                using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(token, _cts.Token))
+                {
+                    token = linkedCts.Token;
+                    var (isSuccessfully1, interact) = await GetOnlineInteractionAsync(onlineDetail, token);
+                    
+                    await UniTask.SwitchToMainThread();
+                    var task1 = UniTask.CompletedTask;
+                    if (isSuccessfully1)
+                    {
+                        task1 = UniTask.Create(async () =>
+                        {
+                            var totalLikes = (interact.Likes.Length - interact.DisLikeCount);
+                            LikeCount.text = totalLikes.ToString();
+                            PlayCount.text = interact.Plays.ToString();
+                            CommentCount.text = interact.Comments.Length.ToString();
+                            
+                            foreach (var icon in Icons)
+                            {
+                                icon.SetActive(true);
+                            }
+                            CommentBox.SetActive(true);
+                            foreach (var comment in interact.Comments)
+                            {
+                                var text = comment.Sender + "หตฃบ\n" + comment.Content + "\n";
+                                CommentText.text = text;
+                                await UniTask.Delay(5000, cancellationToken: token);
+                                token.ThrowIfCancellationRequested();
+                            }
+                            CommentBox.SetActive(false);
+                            if (interact.IsLiked)
+                            {
+                                ThumbUpImage.color = ThumbUpGreenColor;
+                            }
+                            else if (totalLikes > 5)
+                            {
+                                ThumbUpImage.color = ThumbUpGoldColor;
+                            }
+                            else
+                            {
+                                ThumbUpImage.color = Color.white;
+                            }
+                        });
+                    }
+                    await UniTask.WhenAll(task1);
+                }
             }
             else
             {
@@ -61,57 +107,21 @@ namespace MajdataPlay.Scenes.List
         {
             _cts.Cancel();
         }
-        async UniTaskVoid GetOnlineInteraction(OnlineSongDetail song, CancellationToken token = default)
+        async UniTask<(bool IsSuccessfully, MajNetSongInteract Interact)> GetOnlineInteractionAsync(OnlineSongDetail song, CancellationToken token = default)
         {
             await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
                 try
                 {
                     await UniTask.SwitchToThreadPool();
-                    var interactUrl = song.ServerInfo.Url + "/maichart/" + song.Id + "/interact";
-#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
-                    await UniTask.SwitchToMainThread();
-                    using var req = UnityWebRequestFactory.Get(interactUrl);
-                    var asyncOp = req.SendWebRequest();
-                    while (!asyncOp.isDone)
-                    {
-                        if (token.IsCancellationRequested)
-                        {
-                            req.Abort();
-                            throw new HttpException(interactUrl, HttpErrorCode.Canceled);
-                        }
-                        await UniTask.Yield();
-                    }
-                    if (!req.IsSuccessStatusCode())
-                    {
-                        HideInteraction();
-                        return;
-                    }
-                    var list = await Serializer.Json.DeserializeAsync<MajNetSongInteract>(req.downloadHandler.text);
-#else
-                    var client = MajEnv.SharedHttpClient;
-                    using var rsp = await client.GetAsync(interactUrl, token);
-                    using var intjson = await rsp.Content.ReadAsStreamAsync();
-                    var list = await Serializer.Json.DeserializeAsync<MajNetSongInteract>(intjson);
-#endif
-                    await UniTask.SwitchToMainThread(cancellationToken: token);
+                    var interact = await Online.GetChartInteractAsync(song, token);
                     token.ThrowIfCancellationRequested();
-                    LikeCount.text = (list.Likes.Length - list.DisLikeCount).ToString();
-                    PlayCount.text = list.Plays.ToString();
-                    CommentCount.text = list.Comments.Length.ToString();
-                    foreach (var icon in Icons)
+                    if (interact is null)
                     {
-                        icon.SetActive(true);
+                        return (false, default);
                     }
-                    CommentBox.SetActive(true);
-                    foreach (var comment in list.Comments)
-                    {
-                        var text = comment.Sender + "หตฃบ\n" + comment.Content + "\n";
-                        CommentText.text = text;
-                        await UniTask.Delay(5000, cancellationToken: token);
-                        token.ThrowIfCancellationRequested();
-                    }
-                    CommentBox.SetActive(false);
+
+                    return (true, (MajNetSongInteract)interact);
                 }
                 catch (Exception ex)
                 {
@@ -126,13 +136,10 @@ namespace MajdataPlay.Scenes.List
                     {
                         MajDebug.LogException(ex);
                     }
-                    await UniTask.SwitchToMainThread();
-                    if (!token.IsCancellationRequested)
-                    {
-                        HideInteraction();
-                    }
                 }
+                return (false, default);
             } 
         }
+        
     }
 }

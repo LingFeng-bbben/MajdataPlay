@@ -49,6 +49,7 @@ namespace MajdataPlay.Scenes.List
         public SubInfoDisplayer SubInfoDisplayer;
         public ChartAnalyzer chartAnalyzer;
         public FavoriteAdder FavoriteAdder;
+        public RankingDisplayer RankingDisplayer;
 
         public int desiredListPos = 0;
         public float listPosReal;
@@ -318,6 +319,7 @@ namespace MajdataPlay.Scenes.List
             _songDetailBindings = Memory<SongDetailBinding>.Empty;
             SubInfoDisplayer.Hide();
             FavoriteAdder.Hide();
+            RankingDisplayer.Hide();
             Mode = CoverListMode.Directory;
             desiredListPos = SongStorage.CollectionIndex;
 
@@ -455,6 +457,7 @@ namespace MajdataPlay.Scenes.List
                 CoverBigDisplayer.SetScore(songScore);
                 chartAnalyzer.AnalyzeAndDrawGraphAsync(songinfo, (ChartLevel)selectedDifficulty).Forget();
                 FavoriteAdder.SetSong(songinfo);
+                RankingDisplayer.SetSongScoreRanking(songinfo, (ChartLevel)selectedDifficulty).Forget();
                 var allocatedSongCoverDisplayer = _allocatedSongCoverDisplayer.Span;
                 for (int i = 0; i < allocatedSongCoverDisplayer.Length; i++)
                 {
@@ -553,10 +556,11 @@ namespace MajdataPlay.Scenes.List
                     CoverBigDisplayer.SetSongDetail(songInfo);
                     CoverBigDisplayer.SetMeta(songInfo.Title, songInfo.Artist, songInfo.Designers[selectedDifficulty], songInfo.Levels[selectedDifficulty]);
                     CoverBigDisplayer.SetScore(songScore);
-                    SubInfoDisplayer.RefreshContent(songInfo);
+                    SubInfoDisplayer.RefreshContentAsync(songInfo).Forget();
                     _previewSoundPlayer.PlayPreviewSound(songInfo);
                     chartAnalyzer.AnalyzeAndDrawGraphAsync(songInfo, (ChartLevel)selectedDifficulty).Forget();
                     FavoriteAdder.SetSong(songInfo);
+                    RankingDisplayer.SetSongScoreRanking(songInfo, (ChartLevel)selectedDifficulty).Forget();
                     SetCursor(songInfo);
                     break;
             }
@@ -600,7 +604,7 @@ namespace MajdataPlay.Scenes.List
                     break;
                 case CoverListMode.Directory:
                     FolderCoverUpdate(_songCollectionBindings);
-                    if(Time.frameCount % 50 == 0)
+                    if(Time.frameCount % 100 == 0)
                     {
                         if (_currentCollection.Count > 0)
                         {

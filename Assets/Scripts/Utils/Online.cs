@@ -476,7 +476,7 @@ namespace MajdataPlay.Utils
                         return cachedResponse.Interact.Response;
                     }
                     var serverInfo = song.ServerInfo;
-                    var interactUrl = BuildMaiChartUri(song.ServerInfo, API_POST_MAICHART_INTERACT, song.Id);
+                    var interactUrl = BuildMaiChartUri(song.ServerInfo, API_GET_MAICHART_INTERACT, song.Id);
                     var rsp = default(EndpointResponse);
 
                     for (var i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
@@ -518,6 +518,49 @@ namespace MajdataPlay.Utils
                 }                 
             }
         }
+        public static async ValueTask<MajNetSongScoreInfo?> GetChartScoreInfoAsync(OnlineSongDetail song, CancellationToken token = default)
+        {
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
+            {
+                await UniTask.SwitchToThreadPool();
+                var serverInfo = song.ServerInfo;
+                var interactUrl = BuildMaiChartUri(song.ServerInfo, API_GET_MAICHART_SCORE, song.Id);
+                var rsp = default(EndpointResponse);
+
+                for (var i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
+                {
+                    var e = default(Exception?);
+                    rsp = await GetAsync(interactUrl, token);
+                    if (rsp.IsSuccessfully && rsp.IsDeserializable && rsp.TryDeserialize<MajNetSongScoreInfo?>(out var scoreInfo, out e) && scoreInfo is not null)
+                    {
+                        MajDebug.LogDebug(rsp);
+                        return scoreInfo;
+                    }
+                    else
+                    {
+                        MajDebug.LogError(rsp);
+                        MajDebug.LogError($"Failed to get chart interact: {e?.Message ?? "Unknown error"}");
+                    }
+                    if (rsp.ErrorCode == HttpErrorCode.Canceled)
+                    {
+                        break;
+                    }
+                    else if (rsp.StatusCode is HttpStatusCode.BadRequest
+                        or HttpStatusCode.NotFound
+                        or HttpStatusCode.Unauthorized
+                        or HttpStatusCode.Forbidden)
+                    {
+                        return null;
+                    }
+                    else if (!rsp.IsSuccessfully && rsp.StatusCode is not null)
+                    {
+                        return null;
+                    }
+                }
+                return null;
+            }
+        }
+
         public static async ValueTask<EndpointResponse> PostLikeAsync(OnlineSongDetail song, CancellationToken token = default)
         {
             await using (UniTask.ReturnToCurrentSynchronizationContext())
