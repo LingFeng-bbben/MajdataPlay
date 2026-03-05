@@ -39,18 +39,13 @@ namespace MajdataPlay
             {
                 using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(token, _cts.Token))
                 {
+                    token = linkedCts.Token;
                     var (isSuccessfully, scoreInfo) = await GetOnlineScoresAsync(onlineDetail, token);
-                    await UniTask.SwitchToMainThread();
-                    var task = UniTask.CompletedTask;
+                    await UniTask.SwitchToMainThread(cancellationToken: token);
                     if (isSuccessfully)
                     {
-                        task = UniTask.Create(async () =>
-                        {
-                            await UniTask.CompletedTask;
-                            SetScores(scoreInfo.Scores?[(int)selectedLevel] ?? Array.Empty<MajNetSongScore>());
-                        });
+                        SetScores(scoreInfo.Scores?[(int)selectedLevel] ?? Array.Empty<MajNetSongScore>());
                     }
-                    await UniTask.WhenAll(task);
                 }
             }
         }
