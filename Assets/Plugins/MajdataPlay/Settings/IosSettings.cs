@@ -94,7 +94,7 @@ namespace MajdataPlay.Settings
         public static int GetInt(string key, int defaultValue)
         {
 #if UNITY_IOS && !UNITY_EDITOR
-            return _GetIntSetting(key, intDefaultValue: defaultValue);
+            return _GetIntSetting(key, defaultValue);
 #else
             return defaultValue;
 #endif
