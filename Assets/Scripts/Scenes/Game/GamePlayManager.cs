@@ -1186,7 +1186,7 @@ namespace MajdataPlay.Scenes.Game
                         var realTimeDifferenceb = (float)_bgManager.CurrentSec - (elapsedSeconds - _audioStartTime) * playbackSpeed;
 
                         _thisFrameSec = timeOffset;
-#if !UNITY_STANDALONE
+#if UNITY_ANDROID || UNITY_IOS
                         if (_thisFrameSec <= 2f && _thisFrameSec >= 0f)
                         {
                             _devicePlaybackOffset = realTimeDifference;
