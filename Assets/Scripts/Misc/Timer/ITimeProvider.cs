@@ -8,7 +8,9 @@ namespace MajdataPlay.Timer
 {
     public interface ITimeProvider
     {
-        public BuiltInTimeProvider Type { get; }
-        public long Ticks { get; }
+        BuiltInTimeProvider Type { get; }
+        long Ticks { get; }
+
+        void OnPreUpdate();
     }
 }
