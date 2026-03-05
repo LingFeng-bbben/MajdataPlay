@@ -2,7 +2,6 @@ using Cysharp.Text;
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Buffers;
 using MajdataPlay.Drawing;
-using MajdataPlay.Net;
 using MajdataPlay.Threading;
 using MajdataPlay.UnsafeKit;
 using NeoSmart.AsyncLock;
@@ -20,10 +19,11 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MajdataPlay.Utils;
 using UnityEngine;
 using UnityEngine.Networking;
 #nullable enable
-namespace MajdataPlay.Utils
+namespace MajdataPlay.Net
 {
     internal static class Online
     {
