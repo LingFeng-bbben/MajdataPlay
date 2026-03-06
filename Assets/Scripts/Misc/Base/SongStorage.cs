@@ -326,9 +326,8 @@ namespace MajdataPlay
             //Online Charts
             if (MajInstances.Settings.Online.Enable)
             {
-                foreach (var item in MajInstances.Settings.Online.ApiEndpoints.OrderBy(x => x.Name).GroupBy(x => x.Url))
+                foreach (var api in MajEnv.ApiEndpoints.OrderBy(x => x.Name))
                 {
-                    var api = item.FirstOrDefault();
                     if (api is null)
                     {
                         continue;
@@ -337,6 +336,7 @@ namespace MajdataPlay
                     {
                         continue;
                     }
+                    MajDebug.LogInfo($"[MaiChart Scanner]Fetching chart list from {api.Url.OriginalString}");
                     progressReporter?.Report(ZString.Format("MAJTEXT_SCANNING_CHARTS_FROM_{0}".i18n(), api.Name));
                     var result = await GetOnlineCollection(api, progressReporter);
                     if (!result.IsEmpty)
@@ -344,6 +344,10 @@ namespace MajdataPlay
                         collections.Add(result);
                     }
                 }
+            }
+            else
+            {
+                MajDebug.LogInfo("[MaiChart Scanner]Online function was disabled, skipping.");
             }
             return await FinalizeCollections(rootPath, collections);
         }

@@ -120,6 +120,7 @@ namespace MajdataPlay
 
         public static GameSetting Settings { get; private set; }
         public static RuntimeConfig RuntimeConfig { get; private set; }
+        public static ApiEndpoint[] ApiEndpoints { get; private set; }
 
         public static CancellationToken GlobalCT
         {
@@ -335,6 +336,10 @@ namespace MajdataPlay
                             Password = IOSNativeSettings.MajnetPassword,
                         });
                     }
+                    else
+                    {
+                        MajDebug.LogWarning($"[iOSNativeSettings]Invalid uri: {IOSNativeSettings.MajnetApi}, ignored.");
+                    }
                 }
                 if (IOSNativeSettings.CustomEnabled)
                 {
@@ -351,6 +356,10 @@ namespace MajdataPlay
                             Username = IOSNativeSettings.CustomUsername,
                             Password = IOSNativeSettings.CustomPassword,
                         });
+                    }
+                    else
+                    {
+                        MajDebug.LogWarning($"[iOSNativeSettings]Invalid uri: {IOSNativeSettings.MajnetApi}, ignored.");
                     }
                 }
                 if (Enum.TryParse<LogLevel>(IOSNativeSettings.DebugLogLevel,false, out var logLevel))
@@ -386,10 +395,10 @@ namespace MajdataPlay
                     buffer.Add(apiEndpoint);
                 }
 
-                Settings.Online.ApiEndpoints = buffer.GroupBy(x => x.Url)
-                                                     .Select(x => x.FirstOrDefault())
-                                                     .Where(x => x is not null)
-                                                     .ToArray();
+                ApiEndpoints = buffer.GroupBy(x => x.Url)
+                                     .Select(x => x.FirstOrDefault())
+                                     .Where(x => x is not null)
+                                     .ToArray();
             }
                 
             if (File.Exists(_runtimeConfigPath))
