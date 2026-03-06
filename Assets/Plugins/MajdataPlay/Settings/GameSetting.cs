@@ -347,7 +347,7 @@ namespace MajdataPlay.Settings
         [Preserve]
         [Step("0.05")]
         [Range("-5", "5", HasMax = true, HasMin = true)]
-        public float TouchEAreaExtraRadius { get; set; } = 1.2f;
+        public float TouchEAreaExtraRadius { get; set; } = 0.12f;
         [Preserve]
         [Step("0.05")]
         [Range("-5", "5", HasMax = true, HasMin = true)]
@@ -376,7 +376,7 @@ namespace MajdataPlay.Settings
         [Preserve]
         [Step("0.05")]
         [Range("-5", "5", HasMax = true, HasMin = true)]
-        public float TouchEAreaExtraRadius { get; set; } = 1.2f;
+        public float TouchEAreaExtraRadius { get; set; } = 0.12f;
         [Preserve]
         [Step("0.05")]
         [Range("-5", "5", HasMax = true, HasMin = true)]
