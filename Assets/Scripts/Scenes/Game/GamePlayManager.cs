@@ -782,12 +782,19 @@ namespace MajdataPlay.Scenes.Game
                 await UniTask.Yield();
             }
             var allBackgroundTasks = ListManager.WaitForBackgroundTaskSuspendAsync();
+            await UniTask.SwitchToMainThread();
+            var isAwaited = !allBackgroundTasks.IsCompleted;
+            if (!allBackgroundTasks.IsCompleted)
+            {
+                _sceneSwitcher.SetLoadingText($"{"Waiting for all background tasks to suspend".i18n()}...");
+            }
             while (!allBackgroundTasks.IsCompleted)
             {
-                token.ThrowIfCancellationRequested();
-                await UniTask.SwitchToMainThread();
-                _sceneSwitcher.SetLoadingText($"{"Waiting for all background tasks to suspend".i18n()}...");
-                await UniTask.Yield();
+                await UniTask.Yield(token);
+            }
+            if(isAwaited)
+            {
+                await UniTask.Delay(2000, true, cancellationToken: token);
             }
             token.ThrowIfCancellationRequested();
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
