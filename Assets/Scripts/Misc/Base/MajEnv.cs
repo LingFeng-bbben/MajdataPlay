@@ -317,9 +317,8 @@ namespace MajdataPlay
 #if UNITY_IOS && !UNITY_EDITOR
                 if (IOSNativeSettings.MajnetEnabled)
                 {
-                    var isValid = true;
                     var apiUri = default(Uri);
-                    isValid = isValid && Uri.TryCreate(IOSNativeSettings.MajnetApi, UriKind.Absolute, out apiUri);
+                    var isValid = Uri.TryCreate(IOSNativeSettings.MajnetApi, UriKind.Absolute, out apiUri);
 
                     if (isValid)
                     {
@@ -343,9 +342,8 @@ namespace MajdataPlay
                 }
                 if (IOSNativeSettings.CustomEnabled)
                 {
-                    var isValid = true;
                     var apiUri = default(Uri);
-                    isValid = isValid && Uri.TryCreate(IOSNativeSettings.CustomApi, UriKind.Absolute, out apiUri);
+                    var isValid = Uri.TryCreate(IOSNativeSettings.CustomApi, UriKind.Absolute, out apiUri);
 
                     if (isValid)
                     {

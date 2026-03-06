@@ -14,16 +14,8 @@ public sealed class StepAttribute : Attribute
     }
 
     readonly decimal _value;
-    public StepAttribute(double value)
+    public StepAttribute(string value)
     {
-        _value = (decimal)value;
-    }
-    public StepAttribute(float value)
-    {
-        _value = (decimal)value;
-    }
-    public StepAttribute(int value)
-    {
-        _value = value;
+        _value = decimal.Parse(value);
     }
 }

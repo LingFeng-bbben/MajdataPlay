@@ -12,26 +12,22 @@ public sealed class RangeAttribute : Attribute
     public decimal Min
     {
         get => _min;
-        init => _min = value;
     }
     public decimal Max
     {
         get => _max;
-        init => _max = value;
     }
     public bool IsStartInclusive
     {
         get => _isStartInclusive;
-        set => _isStartInclusive = value;
     }
     public bool IsEndInclusive
     {
         get => _isEndInclusive;
-        set => _isEndInclusive = value;
     }
 
-    decimal _min;
-    decimal _max;
-    bool _isStartInclusive;
-    bool _isEndInclusive;
+    readonly decimal _min;
+    readonly decimal _max;
+    readonly bool _isStartInclusive;
+    readonly bool _isEndInclusive;
 }
