@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,9 +10,9 @@ using System.Threading.Tasks;
 namespace MajdataPlay.UnsafeKit;
 public static unsafe class UnsafeHelper
 {
-    public static T* Alloc<T>(ulong size) where T : unmanaged
+    public static T* Alloc<T>(long size) where T : unmanaged
     {
-        return (T*)Marshal.AllocHGlobal((IntPtr)(size * (ulong)sizeof(T)));
+        return (T*)Marshal.AllocHGlobal((IntPtr)(size * (long)sizeof(T)));
     }
     public static IntPtr Alloc(IntPtr size)
     {
@@ -23,5 +25,24 @@ public static unsafe class UnsafeHelper
     public static void Free(IntPtr ptr)
     {
         Marshal.FreeHGlobal(ptr);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T* AddByteOffset<T>(T* ptr, long offset) where T : unmanaged
+    {
+        var size = sizeof(T);
+        return ptr + size * offset;
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T* AddOffset<T>(T* ptr, long elementOffset) where T : unmanaged
+    {
+        return ptr + elementOffset;
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ref T GetElement<T>(T* ptr, long elementOffset) where T : unmanaged
+    {
+        ptr = AddOffset(ptr, elementOffset);
+
+        return ref *ptr;
     }
 }
