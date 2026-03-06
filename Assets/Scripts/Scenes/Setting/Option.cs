@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Collections;
+﻿using Cysharp.Text;
+using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
 using MajdataPlay.IO;
 using MajdataPlay.Numerics;
@@ -8,6 +9,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using TMPro;
+using Topten.RichTextKit.Editor;
 using Unity.Collections;
 using UnityEngine;
 using RangeAttribute = MajdataPlay.Settings.RangeAttribute;
@@ -48,6 +50,9 @@ namespace MajdataPlay.Scenes.Setting
         decimal? _maxValue = null;
         decimal? _minValue = null;
 
+        string _optionDescription = string.Empty;
+        string _optionName = string.Empty;
+
         float _iterationThrottle = 0;
         int _lastIndex = 0;
 
@@ -56,14 +61,14 @@ namespace MajdataPlay.Scenes.Setting
         {
             Localization.OnLanguageChanged += OnLangChanged;
             InitOptions();
-            nameText.text = $"MAJSETTING_PROPERTY_{PropertyInfo.Name}".i18n();
+            nameText.text = _optionName;
             if(_isNoDescription)
             {
                 descriptionText.text = string.Empty;
             }
             else
             {
-                descriptionText.text = $"MAJSETTING_PROPERTY_{PropertyInfo.Name}_DESC".i18n();
+                descriptionText.text = _optionDescription;
                 switch (PropertyInfo.Name)
                 {
                     case "SlideFadeInOffset":
@@ -76,7 +81,7 @@ namespace MajdataPlay.Scenes.Setting
                         break;
                 }
             }
-                UpdatePosition();
+            UpdatePosition();
             UpdateOption();
         }
         void OnLangChanged(object? sender,Language newLanguage)
@@ -102,7 +107,26 @@ namespace MajdataPlay.Scenes.Setting
             _isFloat = type.IsFloatType();
             _isNum = type.IsIntType() || _isFloat;
             _isNoDescription = PropertyInfo.GetCustomAttribute<NoDescriptionAttribute>() is not null;
-            
+            var optionNameAttr = PropertyInfo.GetCustomAttribute<OptionNameAttribute>();
+            var optionDescriptionAttr = PropertyInfo.GetCustomAttribute<DescriptionAttribute>();
+            _optionName = optionNameAttr?.Name ?? $"MAJSETTING_PROPERTY_{PropertyInfo.Name}";
+
+            if(optionDescriptionAttr is not null)
+            {
+                var paragraphs = optionDescriptionAttr.Paragraphs;
+                using var sb = ZString.CreateStringBuilder(true);
+
+                foreach(var paragraph in paragraphs)
+                {
+                    sb.Append(ZString.Format(paragraph, PropertyInfo.Name).i18n());
+                }
+                _optionDescription = sb.ToString();
+            }
+            else
+            {
+                _optionDescription = $"MAJSETTING_PROPERTY_{PropertyInfo.Name}_DESC".i18n();
+            }
+
             if (type.IsEnum)
             {
                 var values = Enum.GetValues(type);
