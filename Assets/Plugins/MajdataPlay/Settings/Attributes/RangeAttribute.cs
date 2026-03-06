@@ -1,5 +1,5 @@
 ﻿using System;
-
+#nullable enable
 namespace MajdataPlay.Settings;
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
 public sealed class RangeAttribute : Attribute
@@ -22,19 +22,6 @@ public sealed class RangeAttribute : Attribute
         get => _hasMax;
         init => _hasMax = value;
     }
-    public bool IsStartInclusive
-    {
-        get => _isStartInclusive;
-        init => _isStartInclusive = value;
-    }
-    public bool IsEndInclusive
-    {
-        get => _isEndInclusive;
-        init => _isEndInclusive = value;
-    }
-
-    readonly bool _isStartInclusive = true;
-    readonly bool _isEndInclusive = true;
 
     readonly bool _hasMin;
     readonly bool _hasMax;
@@ -46,9 +33,15 @@ public sealed class RangeAttribute : Attribute
     {
         
     }
-    public RangeAttribute(string min, string max)
+    public RangeAttribute(string? min, string? max)
     {
-        _min = decimal.Parse(min);
-        _max = decimal.Parse(max);
+        if(!string.IsNullOrEmpty(min))
+        {
+            _min = decimal.Parse(min);
+        }
+        if (!string.IsNullOrEmpty(max))
+        {
+            _max = decimal.Parse(max);
+        }
     }
 }

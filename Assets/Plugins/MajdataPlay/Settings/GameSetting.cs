@@ -41,7 +41,7 @@ namespace MajdataPlay.Settings
         [Preserve]
         public float SlideFadeInOffset { get; set; } = 0f;
         [Preserve]
-        [Step("0.1")]
+        [Step("0.05")]
         [Range("0", "1" ,HasMax = true, HasMin = true)]
         public float BackgroundDim { get; set; } = 0.8f;
         [Preserve]
@@ -58,7 +58,7 @@ namespace MajdataPlay.Settings
         public MirrorOption Mirror { get; set; } = MirrorOption.Off;
         [Preserve]
         [Step("1")]
-        [Range("0", "7", HasMax = true, HasMin = true)]
+        [Range("-7", "7", HasMax = true, HasMin = true)]
         public int Rotation { get; set; } = 0;
         [Preserve]
         public RandomModeOption Random { get; set; } = RandomModeOption.Disabled;
@@ -116,33 +116,33 @@ namespace MajdataPlay.Settings
         /// Such like Tap、Star、Hold and Break
         /// </summary>
         [Preserve]
-        [Step("0.1")]
+        [Step("0.05")]
         [Range("0", "1", HasMax = true, HasMin = true)]
         public float OuterJudgeDistance { get; set; } = 1f;
         /// <summary>
         /// Such like Touch and TouchHold
         /// </summary>
         [Preserve]
-        [Step("0.1")]
+        [Step("0.05")]
         [Range("0", "1", HasMax = true, HasMin = true)]
         public float InnerJudgeDistance { get; set; } = 1f;
         [Preserve]
         public bool DisplayHoldHeadJudgeResult { get; set; } = false;
         [Preserve]
-        [Step("0.1")]
-        [Range("0", "1", HasMax = true, HasMin = true)]
+        [Step("0.01")]
+        [Range("0", "2", HasMax = true, HasMin = true)]
         public float TapScale { get; set; } = 1f;
         [Preserve]
-        [Step("0.1")]
-        [Range("0", "1", HasMax = true, HasMin = true)]
+        [Step("0.01")]
+        [Range("0", "2", HasMax = true, HasMin = true)]
         public float HoldScale { get; set; } = 1f;
         [Preserve]
-        [Step("0.1")]
-        [Range("0", "1", HasMax = true, HasMin = true)]
+        [Step("0.01")]
+        [Range("0", "2", HasMax = true, HasMin = true)]
         public float TouchScale { get; set; } = 1f;
         [Preserve]
-        [Step("0.1")]
-        [Range("0", "1", HasMax = true, HasMin = true)]
+        [Step("0.01")]
+        [Range("0", "2", HasMax = true, HasMin = true)]
         public float SlideScale { get; set; } = 1f;
         [Preserve]
         public TouchFeedbackLevel TouchFeedback { get; set; } = TouchFeedbackLevel.Outer_Only;
@@ -157,14 +157,21 @@ namespace MajdataPlay.Settings
         public bool MainScreenTransform { get; set; } = false;
 #endif
         [Preserve]
+        [Step("0.01")]
+        [Range("0.05", "1.5", HasMax = true, HasMin = true)]
         public float MainScreenScale { get; set; } = 1f;
         [Preserve]
+        [Step("0.1")]
+        [Range("-1", "1", HasMax = true, HasMin = true)]
         public float MainScreenOffset { get; set; } = 1f;
         [HideInSettingUI]
         public float MainScreenCachedScreenCenterY { get; set; } = 960f;
         [Preserve]
+        [Step("0.01")]
+        [Range("-5", "5", HasMax = true, HasMin = true)]
         public float SubDisplayOffset { get; set; } = 0f;
         [Preserve]
+        [Step("0.01")]
         public float SubDisplayScale { get; set; } = 1f;
         [Preserve]
         public RenderQualityOption RenderQuality { get; set; } = RenderQualityOption.Low;
@@ -174,7 +181,7 @@ namespace MajdataPlay.Settings
 #endif
         [Preserve]
         [Step("1")]
-        [Range("0", "0", HasMax = false, HasMin = true)]
+        [Range("-1", "0", HasMax = false, HasMin = true)]
         public int FPSLimit { get; set; } = 120;
 #if !(UNITY_ANDROID || UNITY_IOS)
         [Preserve]
@@ -212,22 +219,40 @@ namespace MajdataPlay.Settings
     public class SFXVolume
     {
         [Preserve]
+        [Step("0.05")]
+        [Range("0", "1", HasMax = true, HasMin = true)]
         public float Global { get; set; } = 0.3f;
         [Preserve]
+        [Step("0.05")]
+        [Range("0", "1", HasMax = true, HasMin = true)]
         public float Answer { get; set; } = 0.8f;
         [Preserve]
+        [Step("0.05")]
+        [Range("0", "1", HasMax = true, HasMin = true)]
         public float BGM { get; set; } = 1f;
         [Preserve]
+        [Step("0.05")]
+        [Range("0", "1", HasMax = true, HasMin = true)]
         public float Track { get; set; } = 1f;
         [Preserve]
+        [Step("0.05")]
+        [Range("0", "1", HasMax = true, HasMin = true)]
         public float Tap { get; set; } = 0.3f;
         [Preserve]
+        [Step("0.05")]
+        [Range("0", "1", HasMax = true, HasMin = true)]
         public float Slide { get; set; } = 0.3f;
         [Preserve]
+        [Step("0.05")]
+        [Range("0", "1", HasMax = true, HasMin = true)]
         public float Break { get; set; } = 0.3f;
         [Preserve]
+        [Step("0.05")]
+        [Range("0", "1", HasMax = true, HasMin = true)]
         public float Touch { get; set; } = 0.3f;
         [Preserve]
+        [Step("0.05")]
+        [Range("0", "1", HasMax = true, HasMin = true)]
         public float Voice { get; set; } = 1f;
     }
     [Preserve]
@@ -235,7 +260,7 @@ namespace MajdataPlay.Settings
     {
         [Preserve]
         [Step("0.05")]
-        [Range("0", "1", HasMax = true, HasMin = true)]
+        [Range("0", "114514", HasMax = false, HasMin = true)]
         public float PlaybackSpeed { get; set; } = 1f;
         [Preserve]
         public AutoplayModeOption AutoPlay { get; set; } = AutoplayModeOption.Disable;
@@ -300,33 +325,61 @@ namespace MajdataPlay.Settings
         public bool DisplaySensor { get; set; } = false;
 #if UNITY_ANDROID
         [Preserve]
+        [Step("0.05")]
+        [Range("-5", "5", HasMax = true, HasMin = true)]
         public float TouchSimulationRadius { get; set; } = 0.5f;
         [Preserve]
+        [Step("0.05")]
+        [Range("-5", "5", HasMax = true, HasMin = true)]
         public float TouchAAreaExtraRadius { get; set; } = 0f;
         [Preserve]
+        [Step("0.05")]
+        [Range("-5", "5", HasMax = true, HasMin = true)]
         public float TouchBAreaExtraRadius { get; set; } = 0f;
         [Preserve]
+        [Step("0.05")]
+        [Range("-5", "5", HasMax = true, HasMin = true)]
         public float TouchCAreaExtraRadius { get; set; } = 0.23f;
         [Preserve]
+        [Step("0.05")]
+        [Range("-5", "5", HasMax = true, HasMin = true)]
         public float TouchDAreaExtraRadius { get; set; } = 0.2f;
         [Preserve]
+        [Step("0.05")]
+        [Range("-5", "5", HasMax = true, HasMin = true)]
         public float TouchEAreaExtraRadius { get; set; } = 1.2f;
         [Preserve]
+        [Step("0.05")]
+        [Range("-5", "5", HasMax = true, HasMin = true)]
         public float TouchRadiusAdjust { get; set; } = 0f;
 #else
         [Preserve]
+        [Step("0.05")]
+        [Range("-5", "5", HasMax = true, HasMin = true)]
         public float TouchSimulationRadius { get; set; } = 0.5f;
         [Preserve]
+        [Step("0.05")]
+        [Range("-5", "5", HasMax = true, HasMin = true)]
         public float TouchAAreaExtraRadius { get; set; } = 0f;
         [Preserve]
+        [Step("0.05")]
+        [Range("-5", "5", HasMax = true, HasMin = true)]
         public float TouchBAreaExtraRadius { get; set; } = 0f;
         [Preserve]
+        [Step("0.05")]
+        [Range("-5", "5", HasMax = true, HasMin = true)]
         public float TouchCAreaExtraRadius { get; set; } = 0.23f;
         [Preserve]
+        [Step("0.05")]
+        [Range("-5", "5", HasMax = true, HasMin = true)]
         public float TouchDAreaExtraRadius { get; set; } = 0.2f;
         [Preserve]
+        [Step("0.05")]
+        [Range("-5", "5", HasMax = true, HasMin = true)]
         public float TouchEAreaExtraRadius { get; set; } = 1.2f;
         [Preserve]
+        [Step("0.05")]
+        [Range("-5", "5", HasMax = true, HasMin = true)]
         public float TouchRadiusAdjust { get; set; } = 0f;
 #endif
         [Preserve]
@@ -338,6 +391,7 @@ namespace MajdataPlay.Settings
         [HideInSettingUI]
         public int MenuOptionIterationSpeed { get; set; } = 45;
         [Preserve]
+        [Range("0", "114514", HasMax = false, HasMin = true)]
         public float DisplayOffset { get; set; } = 0f;
         [Preserve]
         [Step("0.001")]
