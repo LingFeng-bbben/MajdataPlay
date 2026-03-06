@@ -176,7 +176,7 @@ namespace MajdataPlay.IO
                 var myClip = DownloadHandlerAudioClip.GetContent(www);
                 return new UnityAudioSample(myClip, gameObject)
                 {
-                    CanSeek = false,
+                    CanSeek = filePath.StartsWith("file://"),
                 };
             }
         }
@@ -189,7 +189,7 @@ namespace MajdataPlay.IO
                 var myClip = DownloadHandlerAudioClip.GetContent(www);
                 return new UnityAudioSample(myClip, gameObject)
                 {
-                    CanSeek = false
+                    CanSeek = filePath.StartsWith("file://")
                 };
             }
         }
