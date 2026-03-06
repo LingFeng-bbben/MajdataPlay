@@ -93,7 +93,7 @@ namespace MajdataPlay
         }
         public void HideMV()
         {
-            StopMV();
+            PauseMV();
             _videoPlayer.enabled = false;
             _mvRenderer.enabled = false;
             _bgObject.layer = MajEnv.HIDDEN_LAYER;
@@ -103,6 +103,7 @@ namespace MajdataPlay
             _mvRenderer.enabled = true;
             _videoPlayer.enabled = true;
             _bgObject.layer = MajEnv.DEFAULT_LAYER;
+            PlayMV();
         }
         public void FadeOut()
         {
