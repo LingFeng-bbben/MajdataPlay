@@ -109,14 +109,14 @@ namespace MajdataPlay.Scenes.Game
                     {
                         try
                         {
-                            await UniTask.SwitchToMainThread(PlayerLoopTiming.LastUpdate, token);
+                            await UniTask.SwitchToMainThread(token);
                             SetLoading();
                             await UniTask.SwitchToThreadPool();
                             var simaiFile = await songDetail.GetMaidataAsync(token: token);
                             var maiChart = simaiFile.Charts[(int)level];
                             if (maiChart.IsEmpty)
                             {
-                                await UniTask.SwitchToMainThread(PlayerLoopTiming.LastUpdate, token);
+                                await UniTask.SwitchToMainThread(token);
                                 SetHelp();
                                 return;
                             }
@@ -127,7 +127,7 @@ namespace MajdataPlay.Scenes.Game
                                 lastnoteTiming = length == -1 ? noteTimings.LastOrDefault()?.Timing ?? length : length;
                             }
                             var result = await AnalyzeMaidataAsync(maiChart, (float)lastnoteTiming, noCache, token);
-                            await UniTask.SwitchToMainThread(PlayerLoopTiming.LastUpdate, token);
+                            await UniTask.SwitchToMainThread(token);
                             token.ThrowIfCancellationRequested();
                             if (_cachedTextures.Count == MAX_CACHE_COUNT)
                             {
@@ -186,7 +186,7 @@ namespace MajdataPlay.Scenes.Game
                             {
                                 MajDebug.LogException(ex);
                             }
-                            await UniTask.SwitchToMainThread(PlayerLoopTiming.LastUpdate, token);
+                            await UniTask.SwitchToMainThread(token);
                             SetError();
                             //_rawImage.texture = new Texture2D(0, 0);
                             if (anaText is not null)
@@ -428,7 +428,7 @@ namespace MajdataPlay.Scenes.Game
                         canvas.DrawPath(tapPath, tapPaint);
                     }
                 }
-                await UniTask.SwitchToMainThread(PlayerLoopTiming.LastUpdate, token);
+                await UniTask.SwitchToMainThread(token);
                 return GraphHelper.GraphSnapshot(surface);
             }
         }

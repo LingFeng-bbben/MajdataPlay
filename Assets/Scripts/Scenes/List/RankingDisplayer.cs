@@ -46,7 +46,7 @@ namespace MajdataPlay
                     {
                         token = linkedCts.Token;
                         var (isSuccessfully, scoreInfo) = await GetOnlineScoresAsync(onlineDetail, token);
-                        await UniTask.SwitchToMainThread(PlayerLoopTiming.LastUpdate, token);
+                        await UniTask.SwitchToMainThread(token);
                         if (isSuccessfully)
                         {
                             SetScores(scoreInfo.Scores?[(int)selectedLevel] ?? Array.Empty<MajNetSongScore>());

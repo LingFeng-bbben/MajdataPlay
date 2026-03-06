@@ -32,24 +32,18 @@ namespace MajdataPlay.Scenes.List
             await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
                 await UniTask.SwitchToMainThread();
-                if (!_cts.IsCancellationRequested)
-                {
-                    _cts.Cancel();
-                    _cts = new();
-                }
                 Hide();
+                _cts = new();
                 if (detail is OnlineSongDetail onlineDetail)
                 {
                     id_text.text = "ID: " + onlineDetail.Id;
-                    HideInteraction();
                     await UniTask.SwitchToThreadPool();
                     using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(token, _cts.Token))
                     {
                         token = linkedCts.Token;
                         var (isSuccessfully1, interact) = await GetOnlineInteractionAsync(onlineDetail, token);
 
-                        await UniTask.SwitchToMainThread(PlayerLoopTiming.LastUpdate, token);
-                        var task1 = UniTask.CompletedTask;
+                        await UniTask.SwitchToMainThread(token);
                         if (isSuccessfully1)
                         {
                             var totalLikes = (interact.Likes.Length - interact.DisLikeCount);
@@ -64,9 +58,9 @@ namespace MajdataPlay.Scenes.List
                             CommentBox.SetActive(true);
                             foreach (var comment in interact.Comments)
                             {
-                                var text = comment.Sender + "Ëµ£º\n" + comment.Content + "\n";
+                                var text = comment.Sender + "è¯´:\n" + comment.Content + "\n";
                                 CommentText.text = text;
-                                await UniTask.Delay(5000, delayTiming: PlayerLoopTiming.LastUpdate, cancellationToken: token);
+                                await UniTask.Delay(5000, cancellationToken: token);
                                 token.ThrowIfCancellationRequested();
                             }
                             CommentBox.SetActive(false);
