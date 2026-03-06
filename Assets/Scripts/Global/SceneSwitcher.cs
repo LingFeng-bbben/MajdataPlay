@@ -10,6 +10,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Scripting;
 using UnityEngine.UI;
+using UnityEngine.Video;
 #nullable enable
 namespace MajdataPlay
 {
@@ -30,6 +31,12 @@ namespace MajdataPlay
         public TMP_Text loadingText;
         public Color LoadingLightColor;
 
+        [SerializeField]
+        VideoPlayer _videoPlayer;
+        [SerializeField]
+        SpriteRenderer _mvRenderer;
+        GameObject _bgObject;
+
         readonly string[] SCENE_NAMES = Enum.GetNames(typeof(MajScenes));
 
         const int SWITCH_ELAPSED_MS = 400;
@@ -49,6 +56,7 @@ namespace MajdataPlay
             _canvas = GetComponent<Canvas>();
             animator = GetComponent<Animator>();
             loadingText.gameObject.SetActive(false);
+            _bgObject = _videoPlayer.gameObject;
         }
         void OnUnitySceneChanged(Scene current, Scene next)
         {
@@ -71,6 +79,31 @@ namespace MajdataPlay
             SwitchSceneInternal(sceneName,autoFadeOut).Forget();
         }
 
+        public void PauseMV()
+        {
+            _videoPlayer.Pause();
+        }
+        public void PlayMV()
+        {
+            _videoPlayer.Play();
+        }
+        public void StopMV()
+        {
+            _videoPlayer.Stop();
+        }
+        public void HideMV()
+        {
+            StopMV();
+            _videoPlayer.enabled = false;
+            _mvRenderer.enabled = false;
+            _bgObject.layer = MajEnv.HIDDEN_LAYER;
+        }
+        public void ShowMV()
+        {
+            _mvRenderer.enabled = true;
+            _videoPlayer.enabled = true;
+            _bgObject.layer = MajEnv.DEFAULT_LAYER;
+        }
         public void FadeOut()
         {
             animator.SetBool("In", false);

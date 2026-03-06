@@ -214,6 +214,7 @@ namespace MajdataPlay.Scenes.Game
             InputManager.UseOuterTouchAsSensor = _setting.Game.ButtonRingForTouch;
 #endif
             InputManager.TouchButtonRingEdge = 5.4f;
+            MajInstances.SceneSwitcher.HideMV();
         }
         void Start()
         {
@@ -1389,6 +1390,7 @@ namespace MajdataPlay.Scenes.Game
                 Cursor.visible = true;
                 InputManager.UseOuterTouchAsSensor = false;
                 InputManager.TouchButtonRingEdge = 4.65f;
+                MajInstances.SceneSwitcher.ShowMV();
             }
         }
         #endregion
