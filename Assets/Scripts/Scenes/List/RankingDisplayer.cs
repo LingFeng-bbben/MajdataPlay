@@ -93,7 +93,7 @@ namespace MajdataPlay
                 ref readonly var score = ref scores[i];
                 PlayerNames[i].text = string.Format(NameTemplates[i], score.Player.Username);
                 var @int = MathF.Truncate(score.Acc);
-                var @float = (int)((score.Acc - @int) * 1000);
+                var @float = (int)((score.Acc - @int) * 10000);
                 var comboState = CombostateToStr(score.ComboState);
                 Scores[i].text = string.Format(ScoresTemplate, @int, @float, comboState);
             }
