@@ -22,21 +22,27 @@ namespace MajdataPlay.Settings
         public ModOptions Mod { get; init; } = new();
         [Preserve]
         public DebugOptions Debug { get; init; } = new();
-        [SettingVisualizationIgnore]
+        [HideInSettingUI]
         public OnlineOptions Online { get; init; } = new();
-        [SettingVisualizationIgnore]
+        [HideInSettingUI]
         public IOOptions IO { get; init; } = new();
     }
     [Preserve]
     public class GameOptions
     {
         [Preserve]
+        [Step("0.25")]
+        [Range(HasMax = false, HasMin = false)]
         public float TapSpeed { get; set; } = 7.5f;
         [Preserve]
+        [Step("0.25")]
+        [Range(HasMax = false, HasMin = false)]
         public float TouchSpeed { get; set; } = 7.5f;
         [Preserve]
         public float SlideFadeInOffset { get; set; } = 0f;
         [Preserve]
+        [Step("0.1")]
+        [Range("0", "1" ,HasMax = true, HasMin = true)]
         public float BackgroundDim { get; set; } = 0.8f;
         [Preserve]
         public bool StarRotation { get; set; } = true;
@@ -51,6 +57,8 @@ namespace MajdataPlay.Settings
         [Preserve]
         public MirrorOption Mirror { get; set; } = MirrorOption.Off;
         [Preserve]
+        [Step("1")]
+        [Range("0", "7", HasMax = true, HasMin = true)]
         public int Rotation { get; set; } = 0;
         [Preserve]
         public RandomModeOption Random { get; set; } = RandomModeOption.Disabled;
@@ -108,26 +116,38 @@ namespace MajdataPlay.Settings
         /// Such like Tap、Star、Hold and Break
         /// </summary>
         [Preserve]
+        [Step("0.1")]
+        [Range("0", "1", HasMax = true, HasMin = true)]
         public float OuterJudgeDistance { get; set; } = 1f;
         /// <summary>
         /// Such like Touch and TouchHold
         /// </summary>
         [Preserve]
+        [Step("0.1")]
+        [Range("0", "1", HasMax = true, HasMin = true)]
         public float InnerJudgeDistance { get; set; } = 1f;
         [Preserve]
         public bool DisplayHoldHeadJudgeResult { get; set; } = false;
         [Preserve]
+        [Step("0.1")]
+        [Range("0", "1", HasMax = true, HasMin = true)]
         public float TapScale { get; set; } = 1f;
         [Preserve]
+        [Step("0.1")]
+        [Range("0", "1", HasMax = true, HasMin = true)]
         public float HoldScale { get; set; } = 1f;
         [Preserve]
+        [Step("0.1")]
+        [Range("0", "1", HasMax = true, HasMin = true)]
         public float TouchScale { get; set; } = 1f;
         [Preserve]
+        [Step("0.1")]
+        [Range("0", "1", HasMax = true, HasMin = true)]
         public float SlideScale { get; set; } = 1f;
         [Preserve]
         public TouchFeedbackLevel TouchFeedback { get; set; } = TouchFeedbackLevel.Outer_Only;
 #if UNITY_STANDALONE
-        [SettingVisualizationIgnore]
+        [HideInSettingUI]
         public string Resolution { get; set; } = "1080x1920";
 #endif
         [Preserve]
@@ -140,7 +160,7 @@ namespace MajdataPlay.Settings
         public float MainScreenScale { get; set; } = 1f;
         [Preserve]
         public float MainScreenOffset { get; set; } = 1f;
-        [SettingVisualizationIgnore]
+        [HideInSettingUI]
         public float MainScreenCachedScreenCenterY { get; set; } = 960f;
         [Preserve]
         public float SubDisplayOffset { get; set; } = 0f;
@@ -149,10 +169,12 @@ namespace MajdataPlay.Settings
         [Preserve]
         public RenderQualityOption RenderQuality { get; set; } = RenderQualityOption.Low;
 #if UNITY_STANDALONE
-        [SettingVisualizationIgnore]
+        [HideInSettingUI]
         public bool Topmost { get; set; } = false;
 #endif
         [Preserve]
+        [Step("1")]
+        [Range("0", "0", HasMax = false, HasMin = true)]
         public int FPSLimit { get; set; } = 120;
 #if !(UNITY_ANDROID || UNITY_IOS)
         [Preserve]
@@ -212,6 +234,8 @@ namespace MajdataPlay.Settings
     public class ModOptions
     {
         [Preserve]
+        [Step("0.05")]
+        [Range("0", "1", HasMax = true, HasMin = true)]
         public float PlaybackSpeed { get; set; } = 1f;
         [Preserve]
         public AutoplayModeOption AutoPlay { get; set; } = AutoplayModeOption.Disable;
@@ -308,55 +332,56 @@ namespace MajdataPlay.Settings
         [Preserve]
         public bool DisplayFPS { get; set; } = true;
 #if UNITY_STANDALONE
-        [SettingVisualizationIgnore]
+        [HideInSettingUI]
         public bool FullScreen { get; set; } = true;
 #endif
-        [SettingVisualizationIgnore]
+        [HideInSettingUI]
         public int MenuOptionIterationSpeed { get; set; } = 45;
         [Preserve]
         public float DisplayOffset { get; set; } = 0f;
         [Preserve]
+        [Step("0.001")]
         public float NoteAppearRate { get; set; } = 0.265f;
         [Preserve]
         public OffsetUnitOption OffsetUnit { get; set; } = OffsetUnitOption.Frame;
 #if UNITY_STANDALONE
-        [SettingVisualizationIgnore]
+        [HideInSettingUI]
         public bool HideCursorInGame { get; set; } = true;
 #endif
-        [SettingVisualizationIgnore]
+        [HideInSettingUI]
 #if UNITY_IOS
         [JsonIgnore]
 #endif
         public bool NoteFolding { get; set; } = true;
         [Preserve]
         public DJAutoPolicyOption DJAutoPolicy { get; set; } = DJAutoPolicyOption.Strict;
-        [SettingVisualizationIgnore]
+        [HideInSettingUI]
         public int MaxQueuedFrames { get; set; } = 2;
 #if UNITY_IOS || UNITY_ANDROID
-        [SettingVisualizationIgnore]
+        [HideInSettingUI]
         public int TapPoolCapacity { get; set; } = 48;
-        [SettingVisualizationIgnore]
+        [HideInSettingUI]
         public int HoldPoolCapacity { get; set; } = 48;
-        [SettingVisualizationIgnore]
+        [HideInSettingUI]
         public int TouchPoolCapacity { get; set; } = 64;
-        [SettingVisualizationIgnore]
+        [HideInSettingUI]
         public int TouchHoldPoolCapacity { get; set; } = 64;
-        [SettingVisualizationIgnore]
+        [HideInSettingUI]
         public int EachLinePoolCapacity { get; set; } = 24;
 #else
-        [SettingVisualizationIgnore]
+        [HideInSettingUI]
         public int TapPoolCapacity { get; set; } = 96;
-        [SettingVisualizationIgnore]
+        [HideInSettingUI]
         public int HoldPoolCapacity { get; set; } = 96;
-        [SettingVisualizationIgnore]
+        [HideInSettingUI]
         public int TouchPoolCapacity { get; set; } = 64;
-        [SettingVisualizationIgnore]
+        [HideInSettingUI]
         public int TouchHoldPoolCapacity { get; set; } = 64;
-        [SettingVisualizationIgnore]
+        [HideInSettingUI]
         public int EachLinePoolCapacity { get; set; } = 48;
 #endif
         [Preserve]
-        [SettingVisualizationIgnore]
+        [HideInSettingUI]
 #if UNITY_IOS
         [JsonIgnore]
 #endif

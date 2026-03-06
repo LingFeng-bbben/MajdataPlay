@@ -10,9 +10,9 @@ namespace MajdataPlay.Settings
     [Preserve]
     public class ChartSetting
     {
-        [SettingVisualizationIgnore, Preserve]
+        [HideInSettingUI, Preserve]
         public string Hash { get; init; }
-        [SettingVisualizationIgnore, Preserve]
+        [HideInSettingUI, Preserve]
         public OffsetUnitOption Unit { get; set; } = OffsetUnitOption.Second;
         [Preserve]
         public float AudioOffset { get; set; } = 0f;
