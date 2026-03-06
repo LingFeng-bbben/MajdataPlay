@@ -43,6 +43,7 @@ namespace MajdataPlay.Scenes.Setting
         bool _isReadOnly = false;
         bool _isPressed = false;
         bool _isUp = false;
+        bool _isNoDescription = false;
         float _pressTime = 0;
         decimal? _maxValue = null;
         decimal? _minValue = null;
@@ -54,21 +55,28 @@ namespace MajdataPlay.Scenes.Setting
         public void Init()
         {
             Localization.OnLanguageChanged += OnLangChanged;
-            nameText.text = $"MAJSETTING_PROPERTY_{PropertyInfo.Name}".i18n();
-            descriptionText.text = $"MAJSETTING_PROPERTY_{PropertyInfo.Name}_DESC".i18n();
-            switch (PropertyInfo.Name)
-            {
-                case "SlideFadeInOffset":
-                case "AudioOffset":
-                case "JudgeOffset":
-                case "AnswerOffset":
-                case "TouchPanelOffset":
-                case "DisplayOffset":
-                    descriptionText.text += $"\n{$"MAJTEXT_SETTING_OFFSETUNIT_{MajEnv.Settings.Debug.OffsetUnit}".i18n()}";
-                    break;
-            }
             InitOptions();
-            UpdatePosition();
+            nameText.text = $"MAJSETTING_PROPERTY_{PropertyInfo.Name}".i18n();
+            if(_isNoDescription)
+            {
+                descriptionText.text = string.Empty;
+            }
+            else
+            {
+                descriptionText.text = $"MAJSETTING_PROPERTY_{PropertyInfo.Name}_DESC".i18n();
+                switch (PropertyInfo.Name)
+                {
+                    case "SlideFadeInOffset":
+                    case "AudioOffset":
+                    case "JudgeOffset":
+                    case "AnswerOffset":
+                    case "TouchPanelOffset":
+                    case "DisplayOffset":
+                        descriptionText.text += $"\n{$"MAJTEXT_SETTING_OFFSETUNIT_{MajEnv.Settings.Debug.OffsetUnit}".i18n()}";
+                        break;
+                }
+            }
+                UpdatePosition();
             UpdateOption();
         }
         void OnLangChanged(object? sender,Language newLanguage)
@@ -93,6 +101,7 @@ namespace MajdataPlay.Scenes.Setting
             var type = PropertyInfo.PropertyType;
             _isFloat = type.IsFloatType();
             _isNum = type.IsIntType() || _isFloat;
+            _isNoDescription = PropertyInfo.GetCustomAttribute<NoDescriptionAttribute>() is not null;
             
             if (type.IsEnum)
             {
@@ -145,7 +154,9 @@ namespace MajdataPlay.Scenes.Setting
                         {
                             if(MajEnv.Settings.Debug.OffsetUnit == Settings.OffsetUnitOption.Second)
                             {
-                                goto default;
+                                _maxValue = null;
+                                _minValue = null;
+                                _step = 0.001m;
                             }
                             else
                             {
@@ -172,15 +183,20 @@ namespace MajdataPlay.Scenes.Setting
                         }
                         break;
                     default:
-                        _maxValue = null;
-                        _minValue = null;
-                        if(type.IsIntType())
                         {
-                            _step = 1m;
-                        }
-                        else
-                        {
-                            _step = 0.001m;
+                            if(stepAttribute is null && rangeAttribute is null)
+                            {
+                                _maxValue = null;
+                                _minValue = null;
+                                if (type.IsIntType())
+                                {
+                                    _step = 1m;
+                                }
+                                else
+                                {
+                                    _step = 0.001m;
+                                }
+                            }
                         }
                         break;
                 }

@@ -391,7 +391,7 @@ namespace MajdataPlay.Settings
         [HideInSettingUI]
         public int MenuOptionIterationSpeed { get; set; } = 45;
         [Preserve]
-        [Range("0", "114514", HasMax = false, HasMin = true)]
+        [Range("0", null, HasMax = false, HasMin = true)]
         public float DisplayOffset { get; set; } = 0f;
         [Preserve]
         [Step("0.001")]
