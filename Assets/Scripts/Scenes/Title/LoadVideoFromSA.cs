@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -18,9 +19,18 @@ namespace MajdataPlay.Scenes.Title
         }
         void Start()
         {
+            DelayPlayVideo().Forget();
+        }
+        async UniTask DelayPlayVideo()
+        {
+            while(MajEnv.Settings is null)
+            {
+                await UniTask.Yield();
+            }
             var videoPath = videopath;
             if (string.IsNullOrEmpty(videoPath) || videoPath.Length == 1)
             {
+                MajDebug.LogWarning($"[{nameof(LoadVideoFromSA)}]Invalid video path: {videoPath}");
                 return;
             }
             else if (videoPath[0] is '/' or '\\')
@@ -30,7 +40,7 @@ namespace MajdataPlay.Scenes.Title
             var path = Path.Combine(MajEnv.AssetsPath, videoPath);
             MajDebug.LogInfo($"[{nameof(LoadVideoFromSA)}]Load video from {path}");
             player.url = path;
-            if(LoadOnly)
+            if (LoadOnly)
             {
                 player.Prepare();
             }
