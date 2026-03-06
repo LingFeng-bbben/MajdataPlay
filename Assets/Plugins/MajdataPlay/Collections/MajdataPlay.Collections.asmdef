@@ -1,7 +1,7 @@
 {
     "name": "MajdataPlay.Collections",
     "rootNamespace": "MajdataPlay.Collections",
-    "references": [],
+    "references": ["GUID:2454561f60ad11f4e9d09be67375b7a7"],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
