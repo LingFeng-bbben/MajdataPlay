@@ -368,7 +368,7 @@ namespace MajdataPlay
                 Settings.Online.Enable = IOSNativeSettings.Online;
 
 #endif
-                for (var i = 0; i < Settings.Online.ApiEndpoints.Length; i++)
+                for (var i = 0; i < apiEndpoints.Count; i++)
                 {
                     var apiEndpoint = apiEndpoints[i];
                     var uri = apiEndpoint.Url;
