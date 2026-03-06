@@ -719,9 +719,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
                 Slide_Each = null;
                 Slide_Break = null;
 
-                Wifi = null;
-                Wifi_Each = null;
-                Wifi_Break = null;
+                //Wifi = null;
+                //Wifi_Each = null;
+                //Wifi_Break = null;
 
                 Star = null;
                 Star_Double = null;
@@ -741,7 +741,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
                 Hold_Break = null;
                 Hold_Break_On = null;
 
-                Just = null;
+                //Just = null;
 
                 CriticalPerfect_Shine = null;
                 Perfect_Shine = null;
@@ -798,12 +798,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
                 TouchPoint_Break = null;
                 TouchJust = null;
 
-                TouchBorder = null;
-                TouchBorder_Each = null;
-                TouchBorder_Break = null;
+                //TouchBorder = null;
+                //TouchBorder_Each = null;
+                //TouchBorder_Break = null;
 
-                TouchHold = null;
-                TouchHold_Break = null;
+                //TouchHold = null;
+                //TouchHold_Break = null;
 
                 TouchHold_Off = null;
 
@@ -816,7 +816,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
                 TapLine_Slide = null;
                 TapLine_Break = null;
 
-                EachLines = null;
+                //EachLines = null;
 
                 HoldEndPoint_Normal = null;
                 HoldEndPoint_Each = null;
