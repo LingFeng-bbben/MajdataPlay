@@ -52,6 +52,11 @@ namespace MajdataPlay.IO
 #endif
             }
         }
+        public static float TouchButtonRingEdge
+        {
+            get => _lastTouchButtonRingEdge;
+            set => _lastTouchButtonRingEdge = value;
+        }
         public static float FingerRadius
         {
             get

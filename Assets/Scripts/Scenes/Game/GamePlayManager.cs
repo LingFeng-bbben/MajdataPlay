@@ -213,6 +213,7 @@ namespace MajdataPlay.Scenes.Game
 #if UNITY_ANDROID || UNITY_IOS
             InputManager.UseOuterTouchAsSensor = _setting.Game.ButtonRingForTouch;
 #endif
+            InputManager.TouchButtonRingEdge = 5.4f;
         }
         void Start()
         {
@@ -1387,6 +1388,7 @@ namespace MajdataPlay.Scenes.Game
             {
                 Cursor.visible = true;
                 InputManager.UseOuterTouchAsSensor = false;
+                InputManager.TouchButtonRingEdge = 4.65f;
             }
         }
         #endregion

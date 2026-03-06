@@ -52,6 +52,7 @@ namespace MajdataPlay.IO
         static float _lastMainScreenOffset = 1f;
         static bool _lastMainScreenTransform = false;
         static float _maxTouchRadius = -1f;
+        static float _lastTouchButtonRingEdge = 4.65f;
         //readonly static Dictionary<SensorArea, HashSet<int>> _touchRecords = new(8);
         public static bool UseOuterTouchAsSensor { get; set; }
         static void UpdateMousePosition()
@@ -338,7 +339,7 @@ namespace MajdataPlay.IO
             {
                 extraButton = 9;
             }
-            else if(radToCenter > 5.4f)
+            else if(radToCenter > _lastTouchButtonRingEdge)
             {
                 // out of the screen area to the button area
                 var degree = -Mathf.Atan2(rayToCenter.y, rayToCenter.x) * Mathf.Rad2Deg + 180;
