@@ -10,13 +10,15 @@ namespace MajdataPlay.Settings
     [Preserve]
     public class ChartSetting
     {
-        [SettingVisualizationIgnore, Preserve]
+        [HideInSettingUI, Preserve]
         public string Hash { get; init; }
-        [SettingVisualizationIgnore, Preserve]
+        [HideInSettingUI, Preserve]
         public OffsetUnitOption Unit { get; set; } = OffsetUnitOption.Second;
         [Preserve]
         public float AudioOffset { get; set; } = 0f;
         [Preserve]
+        [Step("0.05")]
+        [Range("-2", "2", HasMax = true, HasMin = true)]
         public float TrackVolumeOffset { get; set; } = 0f;
     }
 }

@@ -39,7 +39,7 @@ namespace MajdataPlay.Scenes.Setting
             var fromListRequest = _fromListRequest;
             var type = Setting.GetType();
             var properties = type.GetProperties()
-                                 .Where(x => x.GetCustomAttributes<SettingVisualizationIgnoreAttribute>().Count() == 0)
+                                 .Where(x => x.GetCustomAttributes<HideInSettingUI>().Count() == 0)
                                  .ToArray();
             var offset = 0;
 

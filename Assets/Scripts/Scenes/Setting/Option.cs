@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Collections;
+﻿using Cysharp.Text;
+using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
 using MajdataPlay.IO;
 using MajdataPlay.Numerics;
@@ -8,8 +9,10 @@ using System;
 using System.Linq;
 using System.Reflection;
 using TMPro;
+using Topten.RichTextKit.Editor;
 using Unity.Collections;
 using UnityEngine;
+using RangeAttribute = MajdataPlay.Settings.RangeAttribute;
 #nullable enable
 namespace MajdataPlay.Scenes.Setting
 {
@@ -42,9 +45,13 @@ namespace MajdataPlay.Scenes.Setting
         bool _isReadOnly = false;
         bool _isPressed = false;
         bool _isUp = false;
+        bool _isNoDescription = false;
         float _pressTime = 0;
         decimal? _maxValue = null;
         decimal? _minValue = null;
+
+        string _optionDescription = string.Empty;
+        string _optionName = string.Empty;
 
         float _iterationThrottle = 0;
         int _lastIndex = 0;
@@ -53,20 +60,27 @@ namespace MajdataPlay.Scenes.Setting
         public void Init()
         {
             Localization.OnLanguageChanged += OnLangChanged;
-            nameText.text = $"MAJSETTING_PROPERTY_{PropertyInfo.Name}".i18n();
-            descriptionText.text = $"MAJSETTING_PROPERTY_{PropertyInfo.Name}_DESC".i18n();
-            switch (PropertyInfo.Name)
-            {
-                case "SlideFadeInOffset":
-                case "AudioOffset":
-                case "JudgeOffset":
-                case "AnswerOffset":
-                case "TouchPanelOffset":
-                case "DisplayOffset":
-                    descriptionText.text += $"\n{$"MAJTEXT_SETTING_OFFSETUNIT_{MajEnv.Settings.Debug.OffsetUnit}".i18n()}";
-                    break;
-            }
             InitOptions();
+            nameText.text = _optionName;
+            if(_isNoDescription)
+            {
+                descriptionText.text = string.Empty;
+            }
+            else
+            {
+                descriptionText.text = _optionDescription;
+                switch (PropertyInfo.Name)
+                {
+                    case "SlideFadeInOffset":
+                    case "AudioOffset":
+                    case "JudgeOffset":
+                    case "AnswerOffset":
+                    case "TouchPanelOffset":
+                    case "DisplayOffset":
+                        descriptionText.text += $"\n{$"MAJTEXT_SETTING_OFFSETUNIT_{MajEnv.Settings.Debug.OffsetUnit}".i18n()}";
+                        break;
+                }
+            }
             UpdatePosition();
             UpdateOption();
         }
@@ -92,7 +106,27 @@ namespace MajdataPlay.Scenes.Setting
             var type = PropertyInfo.PropertyType;
             _isFloat = type.IsFloatType();
             _isNum = type.IsIntType() || _isFloat;
-            
+            _isNoDescription = PropertyInfo.GetCustomAttribute<NoDescriptionAttribute>() is not null;
+            var optionNameAttr = PropertyInfo.GetCustomAttribute<OptionNameAttribute>();
+            var optionDescriptionAttr = PropertyInfo.GetCustomAttribute<DescriptionAttribute>();
+            _optionName = optionNameAttr?.Name ?? $"MAJSETTING_PROPERTY_{PropertyInfo.Name}";
+
+            if(optionDescriptionAttr is not null)
+            {
+                var paragraphs = optionDescriptionAttr.Paragraphs;
+                using var sb = ZString.CreateStringBuilder(true);
+
+                foreach(var paragraph in paragraphs)
+                {
+                    sb.Append(ZString.Format(paragraph, PropertyInfo.Name).i18n());
+                }
+                _optionDescription = sb.ToString();
+            }
+            else
+            {
+                _optionDescription = $"MAJSETTING_PROPERTY_{PropertyInfo.Name}_DESC".i18n();
+            }
+
             if (type.IsEnum)
             {
                 var values = Enum.GetValues(type);
@@ -114,81 +148,29 @@ namespace MajdataPlay.Scenes.Setting
             }
             else if (_isNum)
             {
+                var rangeAttribute = PropertyInfo.GetCustomAttribute<RangeAttribute>();
+                var stepAttribute = PropertyInfo.GetCustomAttribute<StepAttribute>();
+                if(rangeAttribute is not null)
+                {
+                    _minValue = rangeAttribute.Min;
+                    _maxValue = rangeAttribute.Max;
+                    if(!rangeAttribute.HasMin)
+                    {
+                        _minValue = null;
+                    }
+                    if(!rangeAttribute.HasMax)
+                    {
+                        _maxValue = null;
+                    }
+                }
+                if(stepAttribute is not null)
+                {
+                    _step = stepAttribute.Value;
+                }
+
+                // Override
                 switch (PropertyInfo.Name)
                 {
-                    case "Global":
-                        _maxValue = 1;
-                        _step = 0.05m;
-                        _minValue = 0;
-                        break;
-                    case "Answer":
-                    case "BGM":
-                    case "Track":
-                    case "Tap":
-                    case "Judge":
-                    case "Slide":
-                    case "Break":
-                    case "Touch":
-                    case "Voice":
-                        _maxValue = 2;
-                        _step = 0.05m;
-                        _minValue = 0;
-                        break;
-                    case "TrackVolumeOffset":
-                        _maxValue = 2;
-                        _step = 0.05m;
-                        _minValue = -2;
-                        break;
-                    case "OuterJudgeDistance":
-                    case "InnerJudgeDistance":
-                    case "BackgroundDim":
-                        _maxValue = 1;
-                        _step = 0.05m;
-                        _minValue = 0;
-                        break;
-                    case "TouchSpeed":
-                    case "TapSpeed":
-                        _maxValue = null;
-                        _minValue = null;
-                        _step = 0.25m;
-                        break;
-                    case "Rotation":
-                        _maxValue = 7;
-                        _minValue = -7;
-                        _step = 1;
-                        break;
-                    case "PlaybackSpeed":
-                        _minValue = 0;
-                        _step = 0.05m;
-                        break;
-                    case "FPSLimit":
-                        _minValue = -1;
-                        _step = 1;
-                        break;
-                    case "MenuOptionIterationSpeed":
-                    case "Direct3DMaxQueuedFrames":
-                        _minValue = 0;
-                        _step = 1;
-                        break;
-                    case "TapScale":
-                    case "HoldScale":
-                    case "TouchScale":
-                    case "SlideScale":
-                        _maxValue = 2;
-                        _minValue = 0;
-                        _step = 0.01m;
-                        break;
-                    case "TouchSimulationRadius":
-                    case "TouchAAreaExtraRadius":
-                    case "TouchBAreaExtraRadius":
-                    case "TouchCAreaExtraRadius":
-                    case "TouchDAreaExtraRadius":
-                    case "TouchEAreaExtraRadius":
-                    case "TouchRadiusAdjust":
-                        _maxValue = 5;
-                        _minValue = -5;
-                        _step = 0.05m;
-                        break;
                     case "AudioOffset":
                     case "JudgeOffset":
                     case "AnswerOffset":
@@ -196,7 +178,9 @@ namespace MajdataPlay.Scenes.Setting
                         {
                             if(MajEnv.Settings.Debug.OffsetUnit == Settings.OffsetUnitOption.Second)
                             {
-                                goto default;
+                                _maxValue = null;
+                                _minValue = null;
+                                _step = 0.001m;
                             }
                             else
                             {
@@ -206,39 +190,6 @@ namespace MajdataPlay.Scenes.Setting
                             }
                         }
                         break;
-
-
-                    case "MainScreenScale":
-                        {
-                            _maxValue = 1.5m;
-                            _minValue = 0.5m;
-                            _step = 0.01m;
-                        } 
-                        break;
-                    
-                    case "MainScreenOffset":
-                        {
-                            _maxValue = 1m;
-                            _minValue = -1m;
-                            _step = 0.1m;
-                        } 
-                        break;
-                    
-                    case "SubDisplayOffset":
-                        {
-                            _maxValue = 5m;
-                            _minValue = -5m;
-                            _step = 0.01m;
-                        }
-                        break;
-
-                    case "SubDisplayScale":
-                        {
-                            _step = 0.01m;
-                        }
-                        break;
-
-
                     case "DisplayOffset":
                         {
                             if (MajEnv.Settings.Debug.OffsetUnit == Settings.OffsetUnitOption.Second)
@@ -256,15 +207,20 @@ namespace MajdataPlay.Scenes.Setting
                         }
                         break;
                     default:
-                        _maxValue = null;
-                        _minValue = null;
-                        if(type.IsIntType())
                         {
-                            _step = 1m;
-                        }
-                        else
-                        {
-                            _step = 0.001m;
+                            if(stepAttribute is null && rangeAttribute is null)
+                            {
+                                _maxValue = null;
+                                _minValue = null;
+                                if (type.IsIntType())
+                                {
+                                    _step = 1m;
+                                }
+                                else
+                                {
+                                    _step = 0.001m;
+                                }
+                            }
                         }
                         break;
                 }
