@@ -40,6 +40,7 @@ namespace MajdataPlay.Net
 
         public const string API_GET_USER_INFO = "account/info";
         public const string API_GET_USER_ICON = "account/icon?username={0}";
+        public const string API_GET_USER_SCORES = "account/scores";
         public const string API_GET_MAICHART_LIST = "maichart/list";
         public const string API_GET_MAICHART_INTERACT = "maichart/{0}/interact";
         public const string API_GET_MAICHART_SCORE = "maichart/{0}/score";
@@ -144,6 +145,42 @@ namespace MajdataPlay.Net
                     MajDebug.LogError("Get Userinfo failed: ");
                     MajDebug.LogException(e);
                     return null;
+                }
+            }
+        }
+        public static async ValueTask<MajNetAccountSongScore[]> GetUserScoresAsync(ApiEndpoint apiEndpoint, CancellationToken token = default)
+        {
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
+            {
+                await UniTask.SwitchToThreadPool();
+                try
+                {
+                    var uri = apiEndpoint.Url.Combine(API_GET_USER_SCORES);
+                    var rsp = default(EndpointResponse);
+                    for (var i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
+                    {
+                        rsp = await GetAsync(uri, token);
+                        if (rsp.StatusCode is HttpStatusCode.Unauthorized)
+                        {
+                            return Array.Empty<MajNetAccountSongScore>();
+                        }
+                        else if (!rsp.IsSuccessfully || !rsp.IsDeserializable)
+                        {
+                            MajDebug.LogError("Failed to get user scores");
+                            MajDebug.LogError($"Url:{uri}\nStatusCode:{rsp.StatusCode}\nErrorCode:{rsp.ErrorCode}\nMessage:{rsp.Message}");
+                            continue;
+                        }
+                        var userScores = await rsp.DeserializeAsync<MajNetAccountSongScore[]>() ?? Array.Empty<MajNetAccountSongScore>();
+                        MajDebug.LogInfo($"Fetched {userScores.Length} scores for the user from endpoint");
+                        return userScores;
+                    }
+                    return Array.Empty<MajNetAccountSongScore>();
+                }
+                catch (Exception e)
+                {
+                    MajDebug.LogError("Get user scores failed: ");
+                    MajDebug.LogException(e);
+                    return Array.Empty<MajNetAccountSongScore>();
                 }
             }
         }

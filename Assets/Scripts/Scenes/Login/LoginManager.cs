@@ -215,7 +215,7 @@ namespace MajdataPlay.Scenes.Login
                                         _loading.SetActive(true);
                                         _isReady = false;
                                         MajDebug.LogDebug("Checking login status");
-                                        var getUserInfoTask = Online.GetUserInfoAsync(endpoint);
+                                        var getUserInfoTask = FetchUserInfomationAsync(endpoint);
                                         while(!getUserInfoTask.IsCompleted)
                                         {
                                             await UniTask.Yield();
@@ -223,10 +223,13 @@ namespace MajdataPlay.Scenes.Login
                                         MajDebug.LogInfo("Logged in");
                                         endpoint.RuntimeConfig.AuthMethod = NetAuthMethodOption.QRCode;
                                         var userInfo = (UserSummary?)null;
+                                        var userScores = Array.Empty<MajNetAccountSongScore>();
                                         if(getUserInfoTask.IsCompletedSuccessfully)
                                         {
-                                            userInfo = getUserInfoTask.Result;
+                                            userInfo = getUserInfoTask.Result.Summary;
+                                            userScores = getUserInfoTask.Result.Scores;
                                         }
+                                        ScoreManager.LoadOnlineScores(userScores);
                                         await UpdateApiEndpointRuntimeConfigAsync(endpoint, userInfo);
                                         break;
                                     }
@@ -341,10 +344,17 @@ namespace MajdataPlay.Scenes.Login
                                         break;
                                     case HttpErrorCode.Unsuccessful:
                                         if (rsp.StatusCode is HttpStatusCode.Unauthorized)
+                                        {
                                             errMsg = "MAJTEXT_ONLINE_USERNAME_OR_PASSWORD_INCORRECT";
+                                        }
                                         else if (rsp.StatusCode is HttpStatusCode.MethodNotAllowed)
+                                        {
                                             errMsg = "MAJTEXT_ONLINE_METHOD_NOT_ALLOWED";
-                                        else errMsg = "MAJTEXT_LOGIN_UNKNOWN_ERROR";
+                                        }
+                                        else
+                                        {
+                                            errMsg = "MAJTEXT_LOGIN_UNKNOWN_ERROR";
+                                        }
                                         break;
                                     default:
                                         errMsg = "MAJTEXT_LOGIN_UNKNOWN_ERROR";
@@ -356,7 +366,7 @@ namespace MajdataPlay.Scenes.Login
                             else
                             {
                                 MajDebug.LogInfo("Logged in");
-                                var getUserInfoTask = Online.GetUserInfoAsync(endpoint);
+                                var getUserInfoTask = FetchUserInfomationAsync(endpoint);
                                 if (!string.IsNullOrEmpty(authRequestId))
                                 {
                                     await RevokeAuthSession(endpoint, authRequestId);
@@ -369,10 +379,13 @@ namespace MajdataPlay.Scenes.Login
                                 endpoint.RuntimeConfig.AuthUsername = username;
                                 endpoint.RuntimeConfig.AuthPassword = password;
                                 var userInfo = (UserSummary?)null;
+                                var userScores = Array.Empty<MajNetAccountSongScore>();
                                 if (getUserInfoTask.IsCompletedSuccessfully)
                                 {
-                                    userInfo = getUserInfoTask.Result;
+                                    userInfo = getUserInfoTask.Result.Summary;
+                                    userScores = getUserInfoTask.Result.Scores;
                                 }
+                                ScoreManager.LoadOnlineScores(userScores);
                                 await UpdateApiEndpointRuntimeConfigAsync(endpoint, userInfo);
                                 break;
                             }
@@ -428,6 +441,18 @@ namespace MajdataPlay.Scenes.Login
             }
             await UniTask.Delay(3000);
             sceneSwitcher.SwitchScene("List");
+        }
+        async ValueTask<UserInfo> FetchUserInfomationAsync(ApiEndpoint endpoint, CancellationToken token = default)
+        {
+            var userInfo = await Online.GetUserInfoAsync(endpoint, token);
+            var userScores = await Online.GetUserScoresAsync(endpoint, token);
+
+            token.ThrowIfCancellationRequested();
+            return new()
+            {
+                Summary = userInfo,
+                Scores = userScores,
+            };
         }
         async UniTask UpdateApiEndpointRuntimeConfigAsync(ApiEndpoint endpoint, UserSummary? userInfo)
         {
@@ -536,6 +561,11 @@ namespace MajdataPlay.Scenes.Login
         readonly struct AuthRequestResponse
         {
             public string RequestId { get; init; }
+        }
+        readonly struct UserInfo
+        {
+            public UserSummary? Summary { get; init; }
+            public MajNetAccountSongScore[] Scores { get; init; }
         }
     }
 }

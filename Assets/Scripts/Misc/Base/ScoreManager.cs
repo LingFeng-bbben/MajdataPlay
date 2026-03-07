@@ -18,6 +18,8 @@ namespace MajdataPlay
 
         static SpinLock _lock = new();
 
+        static Dictionary<string, SongScores>? _onlineBuckets = null;
+
         readonly static Dictionary<string, SongScores> _buckets = new();
 
         readonly static JsonSerializer _serializer = JsonSerializer.Create(new()
@@ -147,7 +149,7 @@ namespace MajdataPlay
         public static MaiScore GetScore(ISongDetail song, ChartLevel level)
         {
             var hash = song.Hash;
-            var records = CheckAndGetSongScores(hash);
+            var records = CheckAndGetSongScores(hash, song.IsOnline);
             switch (level)
             {
                 case ChartLevel.Easy:
@@ -172,7 +174,7 @@ namespace MajdataPlay
         {
             var hash = song.Hash;
 
-            return CheckAndGetSongScores(hash);
+            return CheckAndGetSongScores(hash, song.IsOnline);
         }
         public static async Task<bool> SaveScore(GameResult result, ChartLevel level)
         {
@@ -180,7 +182,7 @@ namespace MajdataPlay
             {
                 var songInfo = result.SongDetail;
                 var hash = songInfo.Hash;
-                var records = CheckAndGetSongScores(hash);
+                var records = CheckAndGetSongScores(hash, result.SongDetail.IsOnline);
                 var record = level switch
                 {
                     ChartLevel.Easy => records.Easy,
@@ -227,17 +229,101 @@ namespace MajdataPlay
                 return false;
             }
         }
-        static SongScores CheckAndGetSongScores(string hash)
+        public static void LoadOnlineScores(ReadOnlySpan<MajNetAccountSongScore> scores)
         {
             ref var @lock = ref _lock;
             var isLocked = false;
             try
             {
                 @lock.Enter(ref isLocked);
-                if (!_buckets.TryGetValue(hash, out var records))
+                _onlineBuckets = new();
+                if (scores.IsEmpty)
+                {
+                    return;
+                }
+                for (var i = 0; i < scores.Length; i++)
+                {
+                    var score = scores[i];
+                    if(!_onlineBuckets.TryGetValue(score.Hash, out var scoreRecord))
+                    {
+                        scoreRecord = SongScores.Create(score.Hash);
+                        _onlineBuckets.Add(score.Hash, scoreRecord);
+                    }
+                    var maiScore = default(MaiScore);
+                    switch(score.ChartLevel)
+                    {
+                        case ChartLevel.Easy:
+                            maiScore = scoreRecord.Easy;
+                            break;
+                        case ChartLevel.Basic:
+                            maiScore = scoreRecord.Basic;
+                            break;
+                        case ChartLevel.Advance:
+                            maiScore = scoreRecord.Advance;
+                            break;
+                        case ChartLevel.Expert:
+                            maiScore = scoreRecord.Expert;
+                            break;
+                        case ChartLevel.Master:
+                            maiScore = scoreRecord.Master;
+                            break;
+                        case ChartLevel.ReMaster:
+                            maiScore = scoreRecord.ReMaster;
+                            break;
+                        case ChartLevel.UTAGE:
+                            maiScore = scoreRecord.UTAGE;
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(score.ChartLevel), score.ChartLevel, null);
+                    }
+                    maiScore.Acc = score.Acc;
+                    maiScore.DXScore = score.DXScore;
+                    maiScore.ComboState = score.ComboState;
+                    maiScore.Timestamp = score.Timestamp;
+                    maiScore.PlayCount = 1;
+                }
+            }
+            finally
+            {
+                if (isLocked)
+                {
+                    @lock.Exit();
+                }
+            }
+        }
+        public static void UnloadOnlineScores()
+        {
+            ref var @lock = ref _lock;
+            var isLocked = false;
+            try
+            {
+                @lock.Enter(ref isLocked);
+                _onlineBuckets = null;
+            }
+            finally
+            {
+                if (isLocked)
+                {
+                    @lock.Exit();
+                }
+            }
+        }
+        static SongScores CheckAndGetSongScores(string hash, bool isOnline)
+        {
+            ref var @lock = ref _lock;
+            var isLocked = false;
+            try
+            {
+                @lock.Enter(ref isLocked);
+                var buckets = _buckets;
+                if (isOnline && _onlineBuckets is not null)
+                {
+                    buckets = _onlineBuckets;
+                }
+                if (!buckets.TryGetValue(hash, out var records))
                 {
                     records = SongScores.Create(hash);
-                    _buckets.Add(hash, records);
+                    buckets.Add(hash, records);
                 }
                 return records;
             }

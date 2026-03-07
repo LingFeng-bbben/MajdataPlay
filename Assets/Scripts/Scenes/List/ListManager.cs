@@ -612,6 +612,7 @@ namespace MajdataPlay.Scenes.List
             _pressTime = 0;
             _isExited = true;
             MajInstances.AudioManager.StopSFX("bgm_select.mp3");
+            ScoreManager.UnloadOnlineScores();
             EnterLoginBackgroundAsync();
         }
         async void EnterLoginBackgroundAsync()
