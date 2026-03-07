@@ -1407,7 +1407,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: '000.<size=60%>0000<size=100%>% <indent=63%><color=#FFF808>AP<sup>+</sup></color> '
+  m_text: '000.<size=90%>0000<size=100%>% <indent=70%><color=#FFF808>AP<sup>+</sup></color> '
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: dbc58334dc23ba04fbfee4bf5298b6a0, type: 2}
   m_sharedMaterial: {fileID: -9050617650548543871, guid: dbc58334dc23ba04fbfee4bf5298b6a0, type: 2}
@@ -8322,7 +8322,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: '000.<size=60%>0000<size=100%>% <indent=63%><color=#72FD59>FC<sup>+</sup></color> '
+  m_text: '000.<size=90%>0000<size=100%>% <indent=70%><color=#72FD59>FC<sup>+</sup></color> '
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: dbc58334dc23ba04fbfee4bf5298b6a0, type: 2}
   m_sharedMaterial: {fileID: -9050617650548543871, guid: dbc58334dc23ba04fbfee4bf5298b6a0, type: 2}
@@ -11364,7 +11364,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 000.<size=60%>0000<size=100%>% <indent=63%>AP+
+  m_text: 000.<size=90%>0000<size=100%>% <indent=70%>AP+
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: dbc58334dc23ba04fbfee4bf5298b6a0, type: 2}
   m_sharedMaterial: {fileID: -9050617650548543871, guid: dbc58334dc23ba04fbfee4bf5298b6a0, type: 2}
@@ -16265,7 +16265,7 @@ MonoBehaviour:
   - <color=#FFF808>1<sup>#</sup></color> <indent=15%>{0}
   - <color=#D7D7D7>2<sup>#</sup></color> <indent=15%>{0}
   - <color=#FFB576>3<sup>#</sup></color> <indent=15%>{0}
-  ScoresTemplate: '{0}.<size=60%>{1:D4}<size=100%>% <indent=63%> {2}'
+  ScoresTemplate: '{0}.<size=90%>{1:D4}<size=100%>% <indent=70%> {2}'
 --- !u!1 &1760903706
 GameObject:
   m_ObjectHideFlags: 0

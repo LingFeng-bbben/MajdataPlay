@@ -102,11 +102,11 @@ namespace MajdataPlay
         private string CombostateToStr(ComboState cs)
         {
             if (cs == ComboState.APPlus) {
-                return "<color=#FFF808>AP<sup>+</sup></color>";
+                return "<color=#FFF808>AP+</color>";
             }
             else if (cs == ComboState.FCPlus)
             {
-                return "<color=#72FD59>FC<sup>+</sup></color>";
+                return "<color=#72FD59>FC+</color>";
             }
             else if (cs == ComboState.AP)
             {
