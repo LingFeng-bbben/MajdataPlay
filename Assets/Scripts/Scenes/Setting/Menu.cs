@@ -33,7 +33,7 @@ namespace MajdataPlay.Scenes.Setting
         {
             var type = SubOptionObject.GetType();
             var properties = type.GetProperties()
-                                 .Where(x => x.GetCustomAttributes<HideInSettingUI>().Count() == 0)
+                                 .Where(x => x.GetCustomAttributes<HideInSettingUIAttribute>().Count() == 0)
                                  .ToArray();
             _options = new Option[properties.Length];
             foreach(var (i,property) in properties.WithIndex())
