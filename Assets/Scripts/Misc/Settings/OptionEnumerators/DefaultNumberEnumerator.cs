@@ -2,7 +2,7 @@
 
 #nullable enable
 namespace MajdataPlay.Settings.OptionEnumerators;
-public sealed class DefaultNumberEnumerator : OptionEnumeratorBase, IOptionEnumerator
+public class DefaultNumberEnumerator : OptionEnumeratorBase, IOptionEnumerator
 {
     decimal _step = 0;
     decimal _currentValue = 0;

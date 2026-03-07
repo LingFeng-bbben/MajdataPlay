@@ -1,7 +1,7 @@
 ﻿using System;
 
 namespace MajdataPlay.Settings.OptionEnumerators;
-public sealed class DefaultBooleanEnumerator : OptionEnumeratorBase, IOptionEnumerator
+public class DefaultBooleanEnumerator : OptionEnumeratorBase, IOptionEnumerator
 {
     protected override void InitInternal()
     {

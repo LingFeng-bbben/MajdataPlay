@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay.Settings.OptionEnumerators;
-public sealed class DefaultEnumEnumerator : OptionEnumeratorBase, IOptionEnumerator
+public class DefaultEnumEnumerator : OptionEnumeratorBase, IOptionEnumerator
 {
     protected override void InitInternal()
     {

@@ -4,6 +4,7 @@ using MajdataPlay.Extensions;
 using MajdataPlay.IO;
 using MajdataPlay.Numerics;
 using MajdataPlay.Settings;
+using MajdataPlay.Settings.OptionEnumerators;
 using MajdataPlay.Utils;
 using System;
 using System.Linq;
@@ -29,32 +30,23 @@ namespace MajdataPlay.Scenes.Setting
         TextMeshPro valueText;
         [SerializeField]
         TextMeshPro descriptionText;
-        [ReadOnly]
-        [SerializeField]
-        int _current = 0; // 当前选项的位置
-        [ReadOnly]
-        [SerializeField]
-        object[] _options = Array.Empty<object>(); // 可用的选项
 
-        int _maxOptionIndex = 0;
-        decimal _step = 1;
         bool _isEnabled = false;
         bool _isNum = false;
-        bool _isBound = false;
         bool _isFloat = false;
         bool _isReadOnly = false;
         bool _isPressed = false;
         bool _isUp = false;
         bool _isNoDescription = false;
         float _pressTime = 0;
-        decimal? _maxValue = null;
-        decimal? _minValue = null;
 
         string _optionDescription = string.Empty;
         string _optionName = string.Empty;
 
         float _iterationThrottle = 0;
         int _lastIndex = 0;
+
+        IOptionEnumerator _optionEnumerator;
 
         AudioManager _audioManager = MajInstances.AudioManager;
         public void Init()
@@ -109,6 +101,7 @@ namespace MajdataPlay.Scenes.Setting
             _isNoDescription = PropertyInfo.GetCustomAttribute<NoDescriptionAttribute>() is not null;
             var optionNameAttr = PropertyInfo.GetCustomAttribute<OptionNameAttribute>();
             var optionDescriptionAttr = PropertyInfo.GetCustomAttribute<DescriptionAttribute>();
+            var optionEnumeratorAttr = PropertyInfo.GetCustomAttribute<OptionEnumeratorAttribute>();
             _optionName = optionNameAttr?.Name ?? $"MAJSETTING_PROPERTY_{PropertyInfo.Name}";
 
             if(optionDescriptionAttr is not null)
@@ -127,157 +120,53 @@ namespace MajdataPlay.Scenes.Setting
                 _optionDescription = $"MAJSETTING_PROPERTY_{PropertyInfo.Name}_DESC".i18n();
             }
 
-            if (type.IsEnum)
+            if(optionEnumeratorAttr is not null)
             {
-                var values = Enum.GetValues(type);
-                _maxOptionIndex = values.Length - 1;
-                _options = new object[values.Length];
-                for (int i = 0; i < values.Length; i++)
+                var enumerator = default(IOptionEnumerator?);
+                try
                 {
-                    _options[i] = values.GetValue(i);
+                    enumerator = optionEnumeratorAttr.Instance();
                 }
-                var obj = PropertyInfo.GetValue(OptionObject);
-                _current = _options.FindIndex(x => (int)x == (int)obj);
-            }
-            else if(type == typeof(bool))
-            {
-                _options = new object[2] { true,false };
-                var obj = PropertyInfo.GetValue(OptionObject);
-                _maxOptionIndex = 1;
-                _current = (bool)obj ? 0 : 1;
-            }
-            else if (_isNum)
-            {
-                var rangeAttribute = PropertyInfo.GetCustomAttribute<RangeAttribute>();
-                var stepAttribute = PropertyInfo.GetCustomAttribute<StepAttribute>();
-                if(rangeAttribute is not null)
+                catch(Exception e)
                 {
-                    _minValue = rangeAttribute.Min;
-                    _maxValue = rangeAttribute.Max;
-                    if(!rangeAttribute.HasMin)
-                    {
-                        _minValue = null;
-                    }
-                    if(!rangeAttribute.HasMax)
-                    {
-                        _maxValue = null;
-                    }
+                    MajDebug.LogWarning($"[SettingUI]Failed to instantiate IOptionEnumerator specified by Attribute\nType: {optionEnumeratorAttr.EnumeratorType}\nException: {e}");
                 }
-                if(stepAttribute is not null)
+                if(enumerator is null)
                 {
-                    _step = stepAttribute.Value;
+                    MajDebug.LogWarning($"[SettingUI]Failed to instantiate IOptionEnumerator specified by Attribute\nType: {optionEnumeratorAttr.EnumeratorType}");
+                    _optionEnumerator = new DefaultReadOnlyEnumerator();
                 }
-
-                // Override
-                switch (PropertyInfo.Name)
+                else
                 {
-                    case "AudioOffset":
-                    case "JudgeOffset":
-                    case "AnswerOffset":
-                    case "TouchPanelOffset":
-                        {
-                            if(MajEnv.Settings.Debug.OffsetUnit == Settings.OffsetUnitOption.Second)
-                            {
-                                _maxValue = null;
-                                _minValue = null;
-                                _step = 0.001m;
-                            }
-                            else
-                            {
-                                _maxValue = null;
-                                _minValue = null;
-                                _step = 0.1m;
-                            }
-                        }
-                        break;
-                    case "DisplayOffset":
-                        {
-                            if (MajEnv.Settings.Debug.OffsetUnit == Settings.OffsetUnitOption.Second)
-                            {
-                                _maxValue = null;
-                                _minValue = 0;
-                                _step = 0.001m;
-                            }
-                            else
-                            {
-                                _maxValue = null;
-                                _minValue = 0;
-                                _step = 0.1m;
-                            }
-                        }
-                        break;
-                    default:
-                        {
-                            if(stepAttribute is null && rangeAttribute is null)
-                            {
-                                _maxValue = null;
-                                _minValue = null;
-                                if (type.IsIntType())
-                                {
-                                    _step = 1m;
-                                }
-                                else
-                                {
-                                    _step = 0.001m;
-                                }
-                            }
-                        }
-                        break;
+                    _optionEnumerator = enumerator;
                 }
             }
-            else // string
+            else
             {
-                switch (PropertyInfo.Name)
+                if (type.IsEnum)
                 {
-                    case "Resolution":
-                        _isReadOnly = true;
-                        break;
-                    case "Skin":
-                        var skinManager = MajInstances.SkinManager;
-                        var skinNames = skinManager.LoadedSkins.Select(x => x.Name)
-                                                               .ToArray();
-                        var currentSkin = skinManager.SelectedSkin;
-                        _options = skinNames;
-                        _maxOptionIndex = _options.Length - 1;
-                        _current = skinNames.FindIndex(x => x == currentSkin.Name);
-                        break;
-                    case "Language":
-                        var availableLangs = Localization.Available;
-                        if (availableLangs.IsEmpty())
-                        {
-                            _current = 0;
-                            _options = new object[] { "Unavailable" };
-                            _maxOptionIndex = 0;
-                            _isReadOnly = true;
-                            PropertyInfo.SetValue(OptionObject, "Unavailable");
-                            return;
-                        }
-                        var langNames = availableLangs.Select(x => x.ToString())
-                                                      .ToArray();
-                        var currentLang = Localization.Current;
-                        _options = langNames;
-                        _maxOptionIndex = _options.Length - 1;
-                        _current = availableLangs.FindIndex(x => x == currentLang);
-                        break;
-                    case "NoteMask":
-                        _options = new string[3]
-                        {
-                            "Disable",
-                            "Inner",
-                            "Outer"
-                        };
-                        var current = PropertyInfo.GetValue(OptionObject);
-                        _maxOptionIndex = _options.Length - 1;
-                        _current = _options.FindIndex(x => x == current);
-                        break;
+                    _optionEnumerator = new DefaultEnumEnumerator();
+                }
+                else if (type == typeof(bool))
+                {
+                    _optionEnumerator = new DefaultBooleanEnumerator();
+                }
+                else if (_isNum)
+                {
+                    _optionEnumerator = new DefaultNumberEnumerator();
+                }
+                else // string
+                {
+                    _optionEnumerator = new DefaultReadOnlyEnumerator();
                 }
             }
+            _optionEnumerator.Init(PropertyInfo, OptionObject);
         }
         void Update()
         {
             var currentIndex = Parent.SelectedIndex;
-            
 
+            _optionEnumerator.OnUpdate();
             if (currentIndex == Index && _isEnabled && !_isReadOnly)
             {
                 var isE4OrB4On = InputManager.CheckSensorStatusInThisFrame(SensorArea.E4, SwitchStatus.On) ||
@@ -365,41 +254,6 @@ namespace MajdataPlay.Scenes.Setting
             string localizedText;
             switch (PropertyInfo.Name)
             {
-                case "AudioOffset":
-                case "JudgeOffset":
-                case "AnswerOffset":
-                case "TouchPanelOffset":
-                    {
-                        if (MajEnv.Settings.Debug.OffsetUnit == OffsetUnitOption.Second)
-                        {
-                            _maxValue = null;
-                            _minValue = null;
-                            _step = 0.001m;
-                        }
-                        else
-                        {
-                            _maxValue = null;
-                            _minValue = null;
-                            _step = 0.1m;
-                        }
-                        goto default;
-                    }
-                case "DisplayOffset":
-                    {
-                        if (MajEnv.Settings.Debug.OffsetUnit == OffsetUnitOption.Second)
-                        {
-                            _maxValue = null;
-                            _minValue = 0;
-                            _step = 0.001m;
-                        }
-                        else
-                        {
-                            _maxValue = null;
-                            _minValue = 0;
-                            _step = 0.1m;
-                        }
-                        goto default;
-                    }
                 case "OuterJudgeDistance":
                 case "InnerJudgeDistance":
                     if((float)value == 0)
@@ -446,63 +300,13 @@ namespace MajdataPlay.Scenes.Setting
         }
         void Up()
         {
-            Diff(1);
+            _optionEnumerator.MoveNext();
             UpdateOption();
         }
         void Down()
         {
-            Diff(-1);
+            _optionEnumerator.MovePrevious();
             UpdateOption();
-        }
-        void Diff(int num)
-        {
-            num = num.Clamp(-1, 1);
-            if (_isNum) // 数值类
-            {
-                var valueObj = PropertyInfo.GetValue(OptionObject);
-                var valueType = valueObj.GetType();
-                var oldValue = Convert.ToDecimal(valueObj);
-                var newValue = Math.Round(oldValue + _step * num, 3);
-                
-                if (_maxValue is not null) //有上限
-                {
-                    newValue = Math.Min(newValue, (decimal)_maxValue);
-                }
-                if(_minValue is not null)
-                {
-                    newValue = Math.Max(newValue, (decimal)_minValue);
-                }
-                OnValueChanged(oldValue, newValue);
-                PropertyInfo.SetValue(OptionObject, Convert.ChangeType(newValue, valueType));
-            }
-            else //非数值类
-            {
-                _current += 1 * num;
-                if (_current < 0)
-                {
-                    _current = _maxOptionIndex;
-                }
-                if (_current>_maxOptionIndex)
-                {
-                    _current = 0;
-                }
-                var oldValue = PropertyInfo.GetValue(OptionObject);
-                var newValue = _options[_current];
-
-                OnValueChanged(oldValue, newValue);
-                PropertyInfo.SetValue(OptionObject, newValue);
-                switch (PropertyInfo.Name)
-                {
-                    case "Skin":
-                        var skins = MajInstances.SkinManager.LoadedSkins;
-                        var newSkin = skins.Find(x => x.Name == _options[_current].ToString());
-                        MajInstances.SkinManager.SelectedSkin = newSkin;
-                        break;
-                    case "Language":
-                        Localization.SetLang((string)_options[_current]);
-                        break;
-                }
-            }
         }
         void OnValueChanged(object oldValue,object newValue)
         {
