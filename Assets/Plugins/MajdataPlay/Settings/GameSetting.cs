@@ -4,6 +4,7 @@ using System.Threading;
 using UnityEngine.Scripting;
 using Newtonsoft.Json;
 using MajdataPlay.Net;
+using MajdataPlay.Settings.OptionEnumerators;
 #nullable enable
 namespace MajdataPlay.Settings
 {
@@ -260,7 +261,7 @@ namespace MajdataPlay.Settings
     {
         [Preserve]
         [Step("0.05")]
-        [Range("0", "114514", HasMax = false, HasMin = true)]
+        [Range("0", null, HasMax = false, HasMin = true)]
         public float PlaybackSpeed { get; set; } = 1f;
         [Preserve]
         public AutoplayModeOption AutoPlay { get; set; } = AutoplayModeOption.Disable;
