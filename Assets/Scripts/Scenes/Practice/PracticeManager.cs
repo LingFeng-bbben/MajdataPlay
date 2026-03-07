@@ -254,13 +254,13 @@ namespace MajdataPlay.Scenes.Practice
         void SensorCheck()
         {
             // Start Time "<"
-            ref var e6Statistic = ref _sensorStatistics[(int)SensorArea.E6];
+            ref var e6Statistic = ref _sensorStatistics[(int)SensorArea.A6];
             // Start Time ">"
             ref var b5Statistic = ref _sensorStatistics[(int)SensorArea.B5];
             // End Time "<"
             ref var b4Statistic = ref _sensorStatistics[(int)SensorArea.B4];
             // End Time ">"
-            ref var e4Statistic = ref _sensorStatistics[(int)SensorArea.E4];
+            ref var e4Statistic = ref _sensorStatistics[(int)SensorArea.A4];
             //Playback Speed "<"
             ref var e8Statistic = ref _sensorStatistics[(int)SensorArea.E8];
             ref var b7Statistic = ref _sensorStatistics[(int)SensorArea.B7];
