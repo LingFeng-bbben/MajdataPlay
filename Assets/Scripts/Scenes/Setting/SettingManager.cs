@@ -34,6 +34,10 @@ namespace MajdataPlay.Scenes.Setting
         static int _fromListRequest = NO_REQUEST;
 
         readonly SettingConfig _settingConfig = MajEnv.RuntimeConfig?.Setting ?? new();
+        void Awake()
+        {
+            InputManager.TouchButtonRingEdge = 4.8f;
+        }
         void Start()
         {
             var fromListRequest = _fromListRequest;
@@ -256,6 +260,7 @@ namespace MajdataPlay.Scenes.Setting
         private void OnDestroy()
         {
             _isExited = true;
+            InputManager.TouchButtonRingEdge = 5.4f;
             MajEnv.RequestSave();
             GC.Collect();
         }

@@ -23,7 +23,10 @@ namespace MajdataPlay.Scenes.TotalResult
         GameInfo _gameInfo = Majdata<GameInfo>.Instance!;
         bool _isExited = false;
         bool _isInited = false;
-        // Start is called before the first frame update
+        void Awake()
+        {
+            InputManager.TouchButtonRingEdge = 4.8f;
+        }
         void Start()
         {
             LedRing.SetAllLight(Color.white);
@@ -84,6 +87,10 @@ namespace MajdataPlay.Scenes.TotalResult
                 MajInstances.SceneSwitcher.SwitchScene("List", false);
                 
             }
+        }
+        void OnDestroy()
+        {
+            InputManager.TouchButtonRingEdge = 5.4f;
         }
     }
 }

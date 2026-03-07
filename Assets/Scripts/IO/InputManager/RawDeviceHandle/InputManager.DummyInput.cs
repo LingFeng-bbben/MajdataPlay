@@ -52,7 +52,7 @@ namespace MajdataPlay.IO
         static float _lastMainScreenOffset = 1f;
         static bool _lastMainScreenTransform = false;
         static float _maxTouchRadius = -1f;
-        static float _lastTouchButtonRingEdge = 4.65f;
+        static float _lastTouchButtonRingEdge = 5.4f;
         //readonly static Dictionary<SensorArea, HashSet<int>> _touchRecords = new(8);
         public static bool UseOuterTouchAsSensor { get; set; }
         static void UpdateMousePosition()

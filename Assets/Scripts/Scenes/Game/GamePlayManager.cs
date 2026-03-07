@@ -1396,7 +1396,6 @@ namespace MajdataPlay.Scenes.Game
             {
                 Cursor.visible = true;
                 InputManager.UseOuterTouchAsSensor = false;
-                InputManager.TouchButtonRingEdge = 4.65f;
                 MajInstances.SceneSwitcher.ShowMV();
             }
         }

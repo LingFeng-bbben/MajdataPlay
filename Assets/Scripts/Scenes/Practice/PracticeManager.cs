@@ -60,6 +60,10 @@ namespace MajdataPlay.Scenes.Practice
         readonly SwitchStatistic[] _buttonStatistics = new SwitchStatistic[12];
         readonly SwitchStatistic[] _sensorStatistics = new SwitchStatistic[33];
 
+         void Awake()
+        {
+            InputManager.TouchButtonRingEdge = 4.8f;
+        }
         private void Start()
         {
             _gameInfo = Majdata<GameInfo>.Instance!;
@@ -446,6 +450,7 @@ namespace MajdataPlay.Scenes.Practice
         private void OnDestroy()
         {
             cts?.Cancel();
+            InputManager.TouchButtonRingEdge = 5.4f;
             _audioTrack?.Stop();
             _audioTrack = null;
             _isExited = true;

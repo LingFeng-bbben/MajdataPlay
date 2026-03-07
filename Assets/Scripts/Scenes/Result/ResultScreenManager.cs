@@ -70,6 +70,10 @@ namespace MajdataPlay.Scenes.Result
         bool _isInited = false;
         bool _isExited = false;
 
+        void Awake()
+        {
+            InputManager.TouchButtonRingEdge = 4.8f;
+        }
         void Start()
         {
             rank.text = "";
@@ -360,6 +364,7 @@ namespace MajdataPlay.Scenes.Result
         }
         void OnDestroy()
         {
+            InputManager.TouchButtonRingEdge = 5.4f;
             DestroyImmediate(_noteJudgeDiffGraph.texture, true);
         }
         Texture DrawNoteJudgeDiffGraph(ReadOnlyMemory<float> noteJudgeDiffs)

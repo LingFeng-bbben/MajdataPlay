@@ -61,8 +61,8 @@ namespace MajdataPlay.Scenes.List
         void Awake()
         {
             Majdata<ListManager>.Instance = this;
-
-            if(AllBackgroundTasks.Count > 4096)
+            InputManager.TouchButtonRingEdge = 4.8f;
+            if (AllBackgroundTasks.Count > 4096)
             {
                 var indexs = Pool<int>.RentArray(AllBackgroundTasks.Count);
                 try
@@ -157,6 +157,7 @@ namespace MajdataPlay.Scenes.List
         {
             _isExited = true;
             _cts.Cancel();
+            InputManager.TouchButtonRingEdge = 5.4f;
             InputManager.UnbindAnyArea(OnAnyInput);
             Majdata<ListManager>.Free();
             MajEnv.SharedHttpClient.CancelPendingRequests();
