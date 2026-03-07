@@ -57,6 +57,7 @@ public abstract class OptionEnumeratorBase
 
     protected object Target = null!;
 
+    protected string Name { get; private set; } = string.Empty;
     protected Type Type
     {
         get
@@ -108,6 +109,7 @@ public abstract class OptionEnumeratorBase
         ModeFlag = FLAG_FIELD_MODE;
         _memberType = fieldInfo.FieldType;
         IsReadOnly = GetCustomAttribute<ReadOnlyOptionAttribute>() != null;
+        Name = fieldInfo.Name;
         InitInternal();
     }
     public void Init(PropertyInfo propertyInfo, object property)
@@ -125,6 +127,7 @@ public abstract class OptionEnumeratorBase
         ModeFlag = FLAG_PROPERTY_MODE;
         _memberType = propertyInfo.PropertyType;
         IsReadOnly = GetCustomAttribute<ReadOnlyOptionAttribute>() != null;
+        Name = propertyInfo.Name;
         InitInternal();
     }
 

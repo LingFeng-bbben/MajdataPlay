@@ -249,14 +249,14 @@ namespace MajdataPlay.Scenes.Setting
         }
         void UpdateOption()
         {
-            var value = PropertyInfo.GetValue(OptionObject);
-            var origin = value.ToString();
+            var value = _optionEnumerator?.Current;
+            var origin = value?.ToString() ?? "undefined";
             string localizedText;
             switch (PropertyInfo.Name)
             {
                 case "OuterJudgeDistance":
                 case "InnerJudgeDistance":
-                    if((float)value == 0)
+                    if(value is 0f)
                     {
                         localizedText = "OFF".i18n();
                     }
@@ -294,10 +294,6 @@ namespace MajdataPlay.Scenes.Setting
                     break;
             }
         }
-        void UpdateVolume()
-        {
-            _audioManager.ReadVolumeFromSettings();
-        }
         void Up()
         {
             _optionEnumerator.MoveNext();
@@ -307,65 +303,6 @@ namespace MajdataPlay.Scenes.Setting
         {
             _optionEnumerator.MovePrevious();
             UpdateOption();
-        }
-        void OnValueChanged(object oldValue,object newValue)
-        {
-            switch(PropertyInfo.Name)
-            {
-                case "OffsetUnit":
-                    {
-                        var eOldValue = (OffsetUnitOption)oldValue;
-                        var eNewValue = (OffsetUnitOption)newValue;
-                        if (eOldValue == eNewValue)
-                        {
-                            return;
-                        }
-                        else if(eNewValue == OffsetUnitOption.Second)
-                        {
-                            MajEnv.Settings.Judge.AudioOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.Settings.Judge.AudioOffset, 3); 
-                            MajEnv.Settings.Judge.JudgeOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.Settings.Judge.JudgeOffset, 3);
-                            MajEnv.Settings.Judge.TouchPanelOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.Settings.Judge.TouchPanelOffset, 3); 
-                            MajEnv.Settings.Judge.AnswerOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.Settings.Judge.AnswerOffset, 3); 
-                            MajEnv.Settings.Game.SlideFadeInOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.Settings.Game.SlideFadeInOffset, 3); 
-                            MajEnv.Settings.Debug.DisplayOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.Settings.Debug.DisplayOffset, 3);
-                            ChartSettingStorage.ConvertUnitToSecond();
-                        }
-                        else
-                        {
-                            MajEnv.Settings.Judge.AudioOffset = MathF.Round(MajEnv.Settings.Judge.AudioOffset / MajEnv.FRAME_LENGTH_SEC, 1);
-                            MajEnv.Settings.Judge.JudgeOffset = MathF.Round(MajEnv.Settings.Judge.JudgeOffset / MajEnv.FRAME_LENGTH_SEC, 1);
-                            MajEnv.Settings.Judge.TouchPanelOffset = MathF.Round(MajEnv.Settings.Judge.TouchPanelOffset / MajEnv.FRAME_LENGTH_SEC, 1);
-                            MajEnv.Settings.Judge.AnswerOffset = MathF.Round(MajEnv.Settings.Judge.AnswerOffset / MajEnv.FRAME_LENGTH_SEC, 1);
-                            MajEnv.Settings.Game.SlideFadeInOffset = MathF.Round(MajEnv.Settings.Game.SlideFadeInOffset / MajEnv.FRAME_LENGTH_SEC, 1);
-                            MajEnv.Settings.Debug.DisplayOffset = MathF.Round(MajEnv.Settings.Debug.DisplayOffset / MajEnv.FRAME_LENGTH_SEC, 1);
-                            ChartSettingStorage.ConvertUnitToFrame();
-                        }
-                    }
-                    break;
-                case "Global":
-                case "Answer":
-                case "BGM":
-                case "Tap":
-                case "Judge":
-                case "Slide":
-                case "Break":
-                case "Touch":
-                case "Voice":
-                    UpdateVolume();
-                    break;
-                case "VSync":
-                    QualitySettings.vSyncCount = Convert.ToBoolean(newValue) ? 1 : 0;
-                    break;
-                case "FPSLimit":
-                    Application.targetFrameRate = Convert.ToInt32(newValue);
-                    break;
-                case "RenderQuality":
-                    QualitySettings.SetQualityLevel(Convert.ToInt32(newValue), true);
-                    break;
-                case "Direct3DMaxQueuedFrames":
-                    QualitySettings.maxQueuedFrames = Convert.ToInt32(newValue);
-                    break;
-            }
         }
         void OnDestroy()
         {

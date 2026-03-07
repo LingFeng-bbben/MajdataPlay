@@ -40,6 +40,7 @@ namespace MajdataPlay.Settings
         [Range(HasMax = false, HasMin = false)]
         public float TouchSpeed { get; set; } = 7.5f;
         [Preserve]
+        [OptionEnumerator(typeof(GameOffsetEnumerator))]
         public float SlideFadeInOffset { get; set; } = 0f;
         [Preserve]
         [Step("0.05")]
@@ -77,12 +78,16 @@ namespace MajdataPlay.Settings
     public class JudgeOptions
     {
         [Preserve]
+        [OptionEnumerator(typeof(GameOffsetEnumerator))]
         public float AudioOffset { get; set; } = 0f;
         [Preserve]
+        [OptionEnumerator(typeof(GameOffsetEnumerator))]
         public float JudgeOffset { get; set; } = 0f;
         [Preserve]
+        [OptionEnumerator(typeof(GameOffsetEnumerator))]
         public float AnswerOffset { get; set; } = 0f;
         [Preserve]
+        [OptionEnumerator(typeof(GameOffsetEnumerator))]
         public float TouchPanelOffset { get; set; } = 0f;
         [Preserve]
         public JudgeModeOption Mode { get; set; } = JudgeModeOption.Modern;
@@ -91,8 +96,10 @@ namespace MajdataPlay.Settings
     public class DisplayOptions
     {
         [Preserve]
+        [OptionEnumerator(typeof(LanguageEnumerator))]
         public string Language { get; set; } = "zh-CN - Majdata";
         [Preserve]
+        [OptionEnumerator(typeof(SkinEnumerator))]
         public string Skin { get; set; } = "default";
         [Preserve]
         public bool DisplayCriticalPerfect { get; set; } = false;
@@ -175,6 +182,7 @@ namespace MajdataPlay.Settings
         [Step("0.01")]
         public float SubDisplayScale { get; set; } = 1f;
         [Preserve]
+        [OptionEnumerator(typeof(EngineEnumSettingEnumerator))]
         public RenderQualityOption RenderQuality { get; set; } = RenderQualityOption.Low;
 #if UNITY_STANDALONE
         [HideInSettingUI]
@@ -182,10 +190,12 @@ namespace MajdataPlay.Settings
 #endif
         [Preserve]
         [Step("1")]
-        [Range("-1", "0", HasMax = false, HasMin = true)]
+        [Range("-1", null, HasMax = false, HasMin = true)]
+        [OptionEnumerator(typeof(EngineNumberSettingEnumerator))]
         public int FPSLimit { get; set; } = 120;
 #if !(UNITY_ANDROID || UNITY_IOS)
         [Preserve]
+        [OptionEnumerator(typeof(EngineBooleanSettingEnumerator))]
         public bool VSync { get; set; } = true;
 #endif
         [Preserve]
@@ -222,38 +232,47 @@ namespace MajdataPlay.Settings
         [Preserve]
         [Step("0.05")]
         [Range("0", "1", HasMax = true, HasMin = true)]
+        [OptionEnumerator(typeof(AudioVolumeEnumerator))]
         public float Global { get; set; } = 0.3f;
         [Preserve]
         [Step("0.05")]
         [Range("0", "1", HasMax = true, HasMin = true)]
+        [OptionEnumerator(typeof(AudioVolumeEnumerator))]
         public float Answer { get; set; } = 0.8f;
         [Preserve]
         [Step("0.05")]
         [Range("0", "1", HasMax = true, HasMin = true)]
+        [OptionEnumerator(typeof(AudioVolumeEnumerator))]
         public float BGM { get; set; } = 1f;
         [Preserve]
         [Step("0.05")]
         [Range("0", "1", HasMax = true, HasMin = true)]
+        [OptionEnumerator(typeof(AudioVolumeEnumerator))]
         public float Track { get; set; } = 1f;
         [Preserve]
         [Step("0.05")]
         [Range("0", "1", HasMax = true, HasMin = true)]
+        [OptionEnumerator(typeof(AudioVolumeEnumerator))]
         public float Tap { get; set; } = 0.3f;
         [Preserve]
         [Step("0.05")]
         [Range("0", "1", HasMax = true, HasMin = true)]
+        [OptionEnumerator(typeof(AudioVolumeEnumerator))]
         public float Slide { get; set; } = 0.3f;
         [Preserve]
         [Step("0.05")]
         [Range("0", "1", HasMax = true, HasMin = true)]
+        [OptionEnumerator(typeof(AudioVolumeEnumerator))]
         public float Break { get; set; } = 0.3f;
         [Preserve]
         [Step("0.05")]
         [Range("0", "1", HasMax = true, HasMin = true)]
+        [OptionEnumerator(typeof(AudioVolumeEnumerator))]
         public float Touch { get; set; } = 0.3f;
         [Preserve]
         [Step("0.05")]
         [Range("0", "1", HasMax = true, HasMin = true)]
+        [OptionEnumerator(typeof(AudioVolumeEnumerator))]
         public float Voice { get; set; } = 1f;
     }
     [Preserve]
@@ -284,6 +303,7 @@ namespace MajdataPlay.Settings
         public bool ButtonRingForTouch { get; set; } = false;
 #endif
         [Preserve]
+        [OptionEnumerator(typeof(NoteMaskEnumerator))]
         public string NoteMask { get; set; } = "Disable";
 
         public bool IsAnyModActive()
@@ -393,6 +413,7 @@ namespace MajdataPlay.Settings
         public int MenuOptionIterationSpeed { get; set; } = 45;
         [Preserve]
         [Range("0", null, HasMax = false, HasMin = true)]
+        [OptionEnumerator(typeof(GameOffsetEnumerator))]
         public float DisplayOffset { get; set; } = 0f;
         [Preserve]
         [Step("0.001")]

@@ -44,7 +44,7 @@ public sealed class LanguageEnumerator : OptionEnumeratorBase, IOptionEnumerator
         var currentLang = Localization.Current;
         OptionValues = langNames;
         var currentIndex = availableLangs.FindIndex(x => x == currentLang);
-        if(currentIndex != -1)
+        if(currentIndex == -1)
         {
             currentIndex = 0;
         }

@@ -4,11 +4,11 @@
 namespace MajdataPlay.Settings.OptionEnumerators;
 public class DefaultNumberEnumerator : OptionEnumeratorBase, IOptionEnumerator
 {
-    decimal _step = 0;
-    decimal _currentValue = 0;
+    protected decimal Step = 0;
+    protected decimal CurrentValue = 0;
 
-    decimal? _maxValue = null;
-    decimal? _minValue = null;
+    protected decimal? MaxValue = null;
+    protected decimal? MinValue = null;
 
     public override bool MoveNext()
     {
@@ -16,18 +16,19 @@ public class DefaultNumberEnumerator : OptionEnumeratorBase, IOptionEnumerator
         {
             return false;
         }
-        var nextValue = _currentValue + _step;
-        if (_maxValue is decimal maxValue)
+        var nextValue = CurrentValue + Step;
+        if (MaxValue is decimal maxValue)
         {
-            if(_currentValue >= maxValue)
+            if(CurrentValue >= maxValue)
             {
                 return false;
             }
             nextValue = Math.Min(nextValue, maxValue);
         }
+        CurrentValue = nextValue;
         var valueToSet = (object)nextValue;
         OptionValues[0] = valueToSet;
-        Value = valueToSet;
+        Value = Convert.ChangeType(valueToSet, Type);
         return true;
     }
     public override bool MovePrevious()
@@ -36,25 +37,26 @@ public class DefaultNumberEnumerator : OptionEnumeratorBase, IOptionEnumerator
         {
             return false;
         }
-        var nextValue = _currentValue - _step;
-        if (_minValue is decimal minValue)
+        var nextValue = CurrentValue - Step;
+        if (MinValue is decimal minValue)
         {
-            if (_currentValue <= minValue)
+            if (CurrentValue <= minValue)
             {
                 return false;
             }
             nextValue = Math.Max(nextValue, minValue);
         }
+        CurrentValue = nextValue;
         var valueToSet = (object)nextValue;
         OptionValues[0] = valueToSet;
-        Value = valueToSet;
+        Value = Convert.ChangeType(valueToSet, Type);
         return true;
     }
 
     protected override void InitInternal()
     {
         var isNum = IsIntType || IsFloatType;
-        if (isNum)
+        if (!isNum)
         {
             throw new InvalidOperationException("Type provided must be an Number");
         }
@@ -63,33 +65,33 @@ public class DefaultNumberEnumerator : OptionEnumeratorBase, IOptionEnumerator
 
         if (rangeAttribute is not null)
         {
-            _minValue = rangeAttribute.Min;
-            _maxValue = rangeAttribute.Max;
+            MinValue = rangeAttribute.Min;
+            MaxValue = rangeAttribute.Max;
             if (!rangeAttribute.HasMin)
             {
-                _minValue = null;
+                MinValue = null;
             }
             if (!rangeAttribute.HasMax)
             {
-                _maxValue = null;
+                MaxValue = null;
             }
         }
         if (stepAttribute is not null)
         {
-            _step = stepAttribute.Value;
+            Step = stepAttribute.Value;
         }
 
         if (stepAttribute is null && rangeAttribute is null)
         {
-            _maxValue = null;
-            _minValue = null;
+            MaxValue = null;
+            MinValue = null;
             if (IsIntType)
             {
-                _step = 1m;
+                Step = 1m;
             }
             else
             {
-                _step = 0.001m;
+                Step = 0.001m;
             }
         }
 
@@ -97,7 +99,7 @@ public class DefaultNumberEnumerator : OptionEnumeratorBase, IOptionEnumerator
         ValueIndex = 0;
 
         var currentValue = Value;
-        OptionValues[0] = currentValue;
-        _currentValue = (decimal)currentValue;
+        CurrentValue = Convert.ToDecimal(currentValue);
+        OptionValues[0] = CurrentValue;
     }
 }
