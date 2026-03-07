@@ -1,4 +1,3 @@
-using MajdataPlay.Scenes.Game;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
@@ -34,60 +33,5 @@ namespace MajdataPlay
         public string[] Tags { get; set; } = Array.Empty<string>();
         [Preserve]
         public string[] PublicTags { get; set; } = Array.Empty<string>();
-    }
-    [Preserve]
-    [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-    public struct MajNetSongInteract
-    {
-        [Preserve]
-        public bool IsLiked { get; init; }
-        [Preserve]
-        public int Plays { get; init; }
-        [Preserve]
-        public string[] Likes { get; init; }
-        [Preserve]
-        public int DisLikeCount { get; init; }
-        [Preserve]
-        public ChartCommentSummary[] Comments { get; init; }
-    }
-    [Preserve]
-    [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-    public struct MajNetSongScoreInfo
-    {
-        public string Hash { get; init; }
-        public MajNetSongScore[][] Scores { get; init; }
-    }
-    [Preserve]
-    [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-    public struct MajNetSongScore
-    {
-        public UserSummary Player { get; init; }
-        public float Acc { get; init; }
-        public ComboState ComboState { get; init; }
-        public DateTime Timestamp { get; init; }
-    }
-    [Preserve]
-    [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-    public readonly struct ChartCommentSummary
-    {
-        [Preserve]
-        public string Sender { get; init; }
-        [Preserve]
-        public string Content { get; init; }
-        [Preserve]
-        public DateTime Timestamp { get; init; }
-        [Preserve]
-        public ChartCommentSummary[] Replies { get; init; }
-    }
-    [Preserve]
-    [JsonObject(NamingStrategyType = typeof(CamelCaseNamingStrategy))]
-    public readonly struct UserSummary
-    {
-        [Preserve]
-        public string Username { get; init; }
-        [Preserve]
-        public string Email { get; init; }
-        [Preserve]
-        public DateTime JoinDate { get; init; }
     }
 }
