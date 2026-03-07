@@ -8,7 +8,7 @@ using UnityEngine.Scripting;
 namespace MajdataPlay.Settings
 {
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
-    public sealed class HideInSettingUI : PreserveAttribute
+    public sealed class HideInSettingUIAttribute : PreserveAttribute
     {
     }
 }
