@@ -15,4 +15,5 @@ public interface IOptionEnumerator
 
     bool MoveNext();
     bool MovePrevious();
+    void OnUpdate();
 }

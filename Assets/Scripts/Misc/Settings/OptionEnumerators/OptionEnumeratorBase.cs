@@ -158,6 +158,10 @@ public abstract class OptionEnumeratorBase
         Value = OptionValues[ValueIndex];
         return true;
     }
+    public virtual void OnUpdate()
+    {
+
+    }
 
     protected abstract void InitInternal();
     protected T? GetCustomAttribute<T>() where T : Attribute
