@@ -11,7 +11,6 @@ namespace MajdataPlay.Settings
 
         // Root
         public static string AppVersion { get; private set; }
-        public static bool JsonIgnore { get; private set; }
 
         // Network
         public static bool Online { get; private set; }
@@ -41,7 +40,6 @@ namespace MajdataPlay.Settings
 
             // Root
             AppVersion = GetString("app_version", "0.1.48");
-            JsonIgnore = GetBool("json_ignore", false);
 
             // Network
             Online = GetBool("enabled_online", false);

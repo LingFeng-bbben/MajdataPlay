@@ -34,13 +34,13 @@
 
                 <key>Values</key>
                 <array>
-                    <string>https://majdata.net/api/api3/</string>
-                    <string>https://maj.moyingmoe.top/api/api3/</string>
-                    <string>https://maj-2.moyingmoe.top/api/api3/</string>
+                    <string>https://majdata.net/api3/api/</string>
+                    <string>https://maj.moyingmoe.top/api3/api/</string>
+                    <string>https://maj-2.moyingmoe.top/api3/api/</string>
                 </array>
 
                 <key>DefaultValue</key>
-                <string>https://majdata.net/api/api3/</string>
+                <string>https://majdata.net/api3/api/</string>
             </dict>
 
 

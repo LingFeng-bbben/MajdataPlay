@@ -21,18 +21,6 @@
 
             <dict>
                 <key>Type</key>
-                <string>PSToggleSwitchSpecifier</string>
-                <key>Title</key>
-                <string>JSON Ignore</string>
-                <key>Key</key>
-                <string>json_ignore</string>
-                <key>DefaultValue</key>
-                <false/>
-            </dict>
-
-
-            <dict>
-                <key>Type</key>
                 <string>PSGroupSpecifier</string>
                 <key>Title</key>
                 <string>Network</string>
