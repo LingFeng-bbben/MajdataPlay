@@ -209,34 +209,40 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         internal void OnLateUpdate()
         {
             Profiler.BeginSample("NoteEffectPool.OnLateUpdate");
-            if (!_isInited)
+            try
             {
-                return;
-            }
-            var s1 = _generatedTapEffectDisplayers.Span;
-            var s2 = _generatedTouchEffectDisplayers.Span;
-            var count1 = _generatedTapEffectDisplayers.Length;
-            var count2 = _generatedTouchEffectDisplayers.Length;
+                if (!_isInited)
+                {
+                    return;
+                }
+                var s1 = _generatedTapEffectDisplayers.Span;
+                var s2 = _generatedTouchEffectDisplayers.Span;
+                var count1 = _generatedTapEffectDisplayers.Length;
+                var count2 = _generatedTouchEffectDisplayers.Length;
 
-            for (var i = 0; i < count1; i++)
-            {
-                s1[i].OnLateUpdate();
-            }
-            for (var i = 0; i < count2; i++)
-            {
-                s2[i].OnLateUpdate();
-            }
+                for (var i = 0; i < count1; i++)
+                {
+                    s1[i].OnLateUpdate();
+                }
+                for (var i = 0; i < count2; i++)
+                {
+                    s2[i].OnLateUpdate();
+                }
 
-            //for (var i = 0; i < 33; i++)
-            //{
-            //    _touchJudgeEffects[i].OnLateUpdate();
-            //    _touchHoldJudgeEffects[i].OnLateUpdate();
-            //}
-            //for (var i = 0; i < 8; i++)
-            //{
-            //    _tapJudgeEffects[i].OnLateUpdate();
-            //}
-            Profiler.EndSample();
+                //for (var i = 0; i < 33; i++)
+                //{
+                //    _touchJudgeEffects[i].OnLateUpdate();
+                //    _touchHoldJudgeEffects[i].OnLateUpdate();
+                //}
+                //for (var i = 0; i < 8; i++)
+                //{
+                //    _tapJudgeEffects[i].OnLateUpdate();
+                //}
+            }
+            finally
+            {
+                Profiler.EndSample();
+            }
         }
         /// <summary>
         /// Tap、Hold、Star
