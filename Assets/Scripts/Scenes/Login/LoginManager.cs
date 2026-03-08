@@ -61,7 +61,7 @@ namespace MajdataPlay.Scenes.Login
 
         void Awake()
         {
-            _apiEndpoints = MajEnv.Settings.Online.ApiEndpoints;
+            _apiEndpoints = MajEnv.ApiEndpoints;
             _qrCodeRawImage = _qrCodeComponent.GetComponent<RawImage>();
             _eventSystem = GetComponent<EventSystem>();
             using var rentedApiEndpoints = new RentedList<ApiEndpoint>();
