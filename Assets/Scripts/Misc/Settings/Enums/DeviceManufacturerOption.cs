@@ -13,6 +13,7 @@ namespace MajdataPlay.Settings
         General,
         Yuan,
         Dao,
-        Nov
+        Nov,
+        Pipe = 9999
     }
 }

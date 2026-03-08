@@ -57,6 +57,7 @@ namespace MajdataPlay.IO
                     case DeviceManufacturerOption.General:
                         _touchPanelUpdateLoop = Task.Factory.StartNew(SerialPortUpdateLoop, TaskCreationOptions.LongRunning);
                         break;
+                    case DeviceManufacturerOption.Pipe:
                     case DeviceManufacturerOption.Dao:
                         _touchPanelUpdateLoop = Task.Factory.StartNew(SlaveThreadUpdateLoop, TaskCreationOptions.LongRunning);
                         break;
@@ -345,12 +346,12 @@ namespace MajdataPlay.IO
                     {
                         if (!isReconnecting)
                         {
-                            MajDebug.LogWarning($"TouchPanel: Cannot open {comPort}, using Mouse as fallback.");
+                            MajDebug.LogWarning($"[TouchPanel]Cannot open {comPort}, using Mouse as fallback.");
                             return;
                         }
                         else
                         {
-                            MajDebug.LogError($"TouchPanel: Cannot open {comPort}");
+                            MajDebug.LogError($"[TouchPanel]Cannot open {comPort}");
                             Thread.Sleep(RECONNECT_INTERVAL);
                             goto SERIAL_START;
                         }
@@ -395,20 +396,20 @@ namespace MajdataPlay.IO
                         catch (IOException e)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"TouchPanel: \n{e}");
-                            MajDebug.LogInfo($"TouchPanel: Trying to reconnect to {comPort}");
+                            MajDebug.LogError($"[TouchPanel]\n{e}");
+                            MajDebug.LogInfo($"[TouchPanel]Trying to reconnect to {comPort}");
                             Thread.Sleep(RECONNECT_INTERVAL);
                             goto SERIAL_START;
                         }
                         catch (TimeoutException)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"TouchPanel: Read timeout");
+                            MajDebug.LogError($"[TouchPanel]Read timeout");
                         }
                         catch (Exception e)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"TouchPanel: \n{e}");
+                            MajDebug.LogError($"[TouchPanel]\n{e}");
                         }
                         finally
                         {
@@ -458,7 +459,7 @@ namespace MajdataPlay.IO
 
                 if (usbDevice is null)
                 {
-                    MajDebug.LogError("TouchPanel: usb device not found or cannot open usb device");
+                    MajDebug.LogError("[TouchPanel]usb device not found or cannot open usb device");
                     return;
                 }
                 else if(usbDevice is IUsbDevice wholeDevice)
@@ -485,7 +486,7 @@ namespace MajdataPlay.IO
                             {
                                 if (usbReadResult != ErrorCode.IoTimedOut)
                                 {
-                                    MajDebug.LogError($"TouchPanel: Usb read error: {usbReadResult}");
+                                    MajDebug.LogError($"[TouchPanel]Usb read error: {usbReadResult}");
                                     break;
                                 }
                             }
@@ -525,11 +526,11 @@ namespace MajdataPlay.IO
                         catch (IOException ioE)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"TouchPanel: from USB reader: \n{ioE}");
+                            MajDebug.LogError($"[TouchPanel]from USB reader: \n{ioE}");
                         }
                         catch (Exception e)
                         {
-                            MajDebug.LogError($"TouchPanel: from USB reader: \n{e}");
+                            MajDebug.LogError($"[TouchPanel]from USB reader: \n{e}");
                         }
                         finally
                         {
@@ -588,7 +589,7 @@ namespace MajdataPlay.IO
 
             //    if (!HidManager.TryGetDevices(filter, out var devices))
             //    {
-            //        MajDebug.LogWarning("TouchPanel: hid device not found");
+            //        MajDebug.LogWarning("[TouchPanel]hid device not found");
             //        return;
             //    }
             //    foreach (var d in devices)
@@ -601,7 +602,7 @@ namespace MajdataPlay.IO
             //    }
             //    if (hidStream is null || device is null)
             //    {
-            //        MajDebug.LogError($"TouchPanel: cannot open hid devices:\n{string.Join('\n', devices)}");
+            //        MajDebug.LogError($"[TouchPanel]cannot open hid devices:\n{string.Join('\n', devices)}");
             //        return;
             //    }
 
@@ -650,11 +651,11 @@ namespace MajdataPlay.IO
             //            catch (IOException ioE)
             //            {
             //                IsConnected = false;
-            //                MajDebug.LogError($"TouchPanel: from HID listener: \n{ioE}");
+            //                MajDebug.LogError($"[TouchPanel]from HID listener: \n{ioE}");
             //            }
             //            catch (Exception e)
             //            {
-            //                MajDebug.LogError($"TouchPanel: from HID listener: \n{e}");
+            //                MajDebug.LogError($"[TouchPanel]from HID listener: \n{e}");
             //            }
             //            finally
             //            {
@@ -683,6 +684,7 @@ namespace MajdataPlay.IO
                 ref var @lock = ref _syncLock;
                 var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
+                var manufacturer = _deviceManufacturer;
 
                 currentThread.Name = "IO/T Thread";
                 currentThread.IsBackground = true;
@@ -693,14 +695,23 @@ namespace MajdataPlay.IO
                     _ioThreadSync.WaitNotify();
                     ReadOnlySpan<byte> buffer = _ioThreadSync.ReadBuffer;
                     IsConnected = true;
-                    MajDebug.LogInfo($"TouchPanel: TouchPanel slave thread has started");
+                    MajDebug.LogInfo($"[TouchPanel]Slave thread has started");
                     while (true)
                     {
                         token.ThrowIfCancellationRequested();
                         try
                         {
                             _ioThreadSync.WaitNotify();
-                            DaoHIDTouchPanel.Parse(buffer, _sensorRealTimeStates);
+                            switch(manufacturer)
+                            {
+                                case DeviceManufacturerOption.Dao:
+                                    DaoHIDTouchPanel.Parse(buffer, _sensorRealTimeStates);
+                                    break;
+                                case DeviceManufacturerOption.Pipe:
+                                    PipeTouchPanel.Parse(buffer, _sensorRealTimeStates);
+                                    break;
+                            }
+                            
                             _ioThreadSync.Notify();
                             var isLocked = false;
                             try
@@ -732,11 +743,11 @@ namespace MajdataPlay.IO
                         catch (IOException ioE)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"TouchPanel: \n{ioE}");
+                            MajDebug.LogError($"[TouchPanel]{ioE}");
                         }
                         catch (Exception e)
                         {
-                            MajDebug.LogError($"TouchPanel: \n{e}");
+                            MajDebug.LogError($"[TouchPanel]{e}");
                         }
                     }
                 }
@@ -766,7 +777,7 @@ namespace MajdataPlay.IO
                     }
                     else
                     {
-                        MajDebug.LogInfo($"TouchPanel: Trying to connect to TouchPannel via {serialSession.PortName}...");
+                        MajDebug.LogInfo($"[TouchPanel]Trying to connect to TouchPannel via {serialSession.PortName}...");
                         serialSession.Open();
                         var encoding = Encoding.ASCII;
                         var sensConfig = MajEnv.Settings.IO.InputDevice.TouchPanel.Sensitivities;
@@ -784,7 +795,7 @@ namespace MajdataPlay.IO
                         try
                         {
                             var sens = (sensConfig.A, sensConfig.B, sensConfig.C, sensConfig.D, sensConfig.E);
-                            MajDebug.LogInfo($"TouchPanel: Sensitivities:\nA:{sens.A}\nB:{sens.B}\nC:{sens.C}\nD:{sens.D}\nE:{sens.E}");
+                            MajDebug.LogInfo($"[TouchPanel]Sensitivities:\nA:{sens.A}\nB:{sens.B}\nC:{sens.C}\nD:{sens.D}\nE:{sens.E}");
                             for (byte a = 0x41; a <= 0x62; a++)
                             {
                                 var value = GetSensitivityValue(a, sens);
@@ -794,18 +805,18 @@ namespace MajdataPlay.IO
                         }
                         catch (TimeoutException)
                         {
-                            MajDebug.LogWarning($"TouchPanel: TouchPanel does not support sensitivity override: Write timeout");
+                            MajDebug.LogWarning($"[TouchPanel]TouchPanel does not support sensitivity override: Write timeout");
                             return false;
                         }
                         catch (Exception e)
                         {
-                            MajDebug.LogError($"TouchPanel: Failed to override sensitivity: \n{e}");
+                            MajDebug.LogError($"[TouchPanel]Failed to override sensitivity: \n{e}");
                             return false;
                         }
                         serialSession.Write(encoding.GetBytes("{STAT}"));
                         serialSession.DiscardInBuffer();
 
-                        MajDebug.LogInfo("TouchPanel: Connected");
+                        MajDebug.LogInfo("[TouchPanel]Connected");
                         return true;
                     }
                 }
@@ -1017,6 +1028,18 @@ namespace MajdataPlay.IO
                     return packet[(start + 1)..endIndex];
                 }
 
+            }
+            static class PipeTouchPanel
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                public static void Parse(ReadOnlySpan<byte> reportData, Span<bool> buffer)
+                {
+                    var data = BitConverter.ToUInt64(reportData);
+                    for (var i = 0; i < 35; i++)
+                    {
+                        buffer[i] = (data & (1UL << (12 + i))) != 0;
+                    }
+                }
             }
             static class DaoHIDTouchPanel
             {

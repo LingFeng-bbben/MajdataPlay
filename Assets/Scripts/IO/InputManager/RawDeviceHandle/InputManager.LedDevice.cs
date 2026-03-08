@@ -72,7 +72,7 @@ namespace MajdataPlay.IO
                             _ledDeviceUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
                             break;
                         default:
-                            MajDebug.LogWarning($"Led: Not supported led device manufacturer: {manufacturer}");
+                            MajDebug.LogWarning($"[Led]Not supported led device manufacturer: {manufacturer}");
                             break;
                     }
                 }
@@ -148,7 +148,7 @@ namespace MajdataPlay.IO
 
                 if (!EnsureSerialPortIsOpen(serial))
                 {
-                    MajDebug.LogWarning($"Led: Cannot open {serialPortOptions.PortName}, using dummy lights");
+                    MajDebug.LogWarning($"[Led]Cannot open {serialPortOptions.PortName}, using dummy lights");
                     return;
                 }
                 while (true)
@@ -183,7 +183,7 @@ namespace MajdataPlay.IO
                     }
                     catch (Exception e)
                     {
-                        MajDebug.LogError($"Led: \n{e}");
+                        MajDebug.LogError($"[Led]\n{e}");
                     }
                     finally
                     {
@@ -272,7 +272,7 @@ namespace MajdataPlay.IO
 
                 if (!HidManager.TryGetDevices(filter, out var devices))
                 {
-                    MajDebug.LogWarning("Led: hid device not found");
+                    MajDebug.LogWarning("[Led]hid device not found");
                     return;
                 }
                 foreach (var d in devices)
@@ -285,7 +285,7 @@ namespace MajdataPlay.IO
                 }
                 if (hidStream is null || device is null)
                 {
-                    MajDebug.LogError($"Led: cannot open hid devices:\n{string.Join('\n', devices)}");
+                    MajDebug.LogError($"[Led]cannot open hid devices:\n{string.Join('\n', devices)}");
                     return;
                 }
                 try
@@ -297,7 +297,7 @@ namespace MajdataPlay.IO
                     Span<byte> buffer = stackalloc byte[device.GetMaxOutputReportLength()];
                     buffer[0] = outputReportId;
                     IsConnected = true;
-                    MajDebug.LogInfo($"Led: Connected\nDevice: {device}");
+                    MajDebug.LogInfo($"[Led]Connected\nDevice: {device}");
                     stopwatch.Start();
                     while (true)
                     {
@@ -334,11 +334,11 @@ namespace MajdataPlay.IO
                         catch (IOException ioE)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"Led: \n{ioE}");
+                            MajDebug.LogError($"[Led]\n{ioE}");
                         }
                         catch (Exception e)
                         {
-                            MajDebug.LogError($"Led: \n{e}");
+                            MajDebug.LogError($"[Led]\n{e}");
                         }
                         finally
                         {

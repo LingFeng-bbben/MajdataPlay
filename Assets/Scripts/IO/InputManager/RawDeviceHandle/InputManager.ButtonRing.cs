@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine.InputSystem;
 using UnityEngine.Profiling;
+using System.IO.Pipes;
+
 
 #if UNITY_STANDALONE
 using HidSharp;
@@ -60,7 +62,7 @@ namespace MajdataPlay.IO
                             _buttonRingUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
                             break;
                         default:
-                            MajDebug.LogWarning($"ButtonRing: Not supported button ring device: {_buttonRingDevice}");
+                            MajDebug.LogWarning($"[ButtonRing]Not supported button ring device: {_buttonRingDevice}");
                             break;
                     }
                 }
@@ -72,9 +74,13 @@ namespace MajdataPlay.IO
                 {
                     _buttonRingUpdateLoop = Task.Factory.StartNew(KeyboardUpdateLoop, TaskCreationOptions.LongRunning);
                 }
+                else if (manufacturer is DeviceManufacturerOption.Pipe)
+                {
+                    _buttonRingUpdateLoop = Task.Factory.StartNew(PipeUpdateLoop, TaskCreationOptions.LongRunning);
+                }
                 else
                 {
-                    MajDebug.LogWarning($"ButtonRing: Not supported button ring manufacturer: {manufacturer}");
+                    MajDebug.LogWarning($"[ButtonRing]Not supported button ring manufacturer: {manufacturer}");
                 }
 #elif UNITY_ANDROID || UNITY_IOS
                 if(MajEnv.Settings.IO.InputDevice.EnableKeyboardInput)
@@ -303,7 +309,7 @@ namespace MajdataPlay.IO
                 var gameButtons = _buttons.Slice(0, 8);
                 try
                 {
-                    MajDebug.LogInfo($"ButtonRing: listening keyboard input");
+                    MajDebug.LogInfo($"[ButtonRing]listening keyboard input");
                     while (true)
                     {
                         token.ThrowIfCancellationRequested();
@@ -378,7 +384,7 @@ namespace MajdataPlay.IO
                 var gameButtons = _buttons.Slice(0, 8);
                 try
                 {
-                    MajDebug.LogInfo($"ButtonRing: listening gamepad input");
+                    MajDebug.LogInfo($"[ButtonRing]listening gamepad input");
                     while (true)
                     {
                         token.ThrowIfCancellationRequested();
@@ -512,7 +518,7 @@ namespace MajdataPlay.IO
                         catch (Exception e)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"From Keyboard listener: \n{e}");
+                            MajDebug.LogError($"[ButtonRing]From Keyboard listener: \n{e}");
                         }
                         finally
                         {
@@ -569,7 +575,7 @@ namespace MajdataPlay.IO
 
                 if (!HidManager.TryGetDevices(filter, out var devices))
                 {
-                    MajDebug.LogWarning("ButtonRing: hid device not found");
+                    MajDebug.LogWarning("[ButtonRing]hid device not found");
                     return;
                 }
                 foreach(var d in devices)
@@ -582,7 +588,7 @@ namespace MajdataPlay.IO
                 }
                 if(hidStream is null || device is null)
                 {
-                    MajDebug.LogError($"ButtonRing: cannot open hid devices:\n{string.Join('\n', devices)}");
+                    MajDebug.LogError($"[ButtonRing]cannot open hid devices:\n{string.Join('\n', devices)}");
                     return;
                 }
 
@@ -593,7 +599,7 @@ namespace MajdataPlay.IO
                     _ioThreadSync.Notify();
                     Span<byte> buffer = memory.Span;
                     IsConnected = true;
-                    MajDebug.LogInfo($"ButtonRing: Connected\nDevice: {device}");
+                    MajDebug.LogInfo($"[ButtonRing]Connected\nDevice: {device}");
                     stopwatch.Start();
                     while (true)
                     {
@@ -648,11 +654,11 @@ namespace MajdataPlay.IO
                         catch(IOException ioE)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"ButtonRing: \n{ioE}");
+                            MajDebug.LogError($"[ButtonRing]{ioE}");
                         }
                         catch (Exception e)
                         {
-                            MajDebug.LogError($"ButtonRing: \n{e}");
+                            MajDebug.LogError($"[ButtonRing]{e}");
                         }
                         finally
                         {
@@ -674,6 +680,106 @@ namespace MajdataPlay.IO
                 {
                     hidStream.Dispose();
                     IsConnected = false;
+                }
+            }
+            static void PipeUpdateLoop()
+            {
+                ref var @lock = ref _syncLock;
+                var pipeName = $"majdataplay_{_playerIndex}p";
+                var token = MajEnv.GlobalCT;
+                var pollingRate = _btnPollingRateMs;
+                var stopwatch = new Stopwatch();
+                var t1 = stopwatch.Elapsed;
+
+                using (var pipeClientStream = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut))
+                {
+                RE_CONNECT:
+                    while (!token.IsCancellationRequested)
+                    {
+                        try
+                        {
+                            MajDebug.LogInfo($"[ButtonRing]Attempting connect to pipe \"{pipeName}\"...");
+                            pipeClientStream.Connect(2000);
+                            MajDebug.LogInfo("[ButtonRing]Connected");
+                            break;
+                        }
+                        catch (Exception e)
+                        {
+                            MajDebug.LogError($"[ButtonRing]Failed to connect to pipe\n{e}");
+                        }
+                    }
+                    Memory<byte> memory = new byte[64];
+                    _ioThreadSync.ReadBufferMemory = memory;
+                    _ioThreadSync.PipeClientStream = pipeClientStream;
+                    _ioThreadSync.Notify();
+                    var buffer = memory.Span;
+                    stopwatch.Start();
+                    while (true)
+                    {
+                        token.ThrowIfCancellationRequested();
+                        try
+                        {
+                            var now = MajTimeline.UnscaledTime;
+                            var read = pipeClientStream.Read(buffer);
+                            IsConnected = true;
+                            var isLocked = false;
+                            if(read < 8)
+                            {
+                                continue;
+                            }
+                            _ioThreadSync.Notify();
+                            var data = BitConverter.ToUInt64(buffer);
+                            try
+                            {
+                                @lock.Enter(ref isLocked);
+                                var states = _buttonRealTimeStates.AsSpan();
+                                var hadOn = _isBtnHadOnInternal.AsSpan();
+                                var hadOff = _isBtnHadOffInternal.AsSpan();
+
+                                for (int i = 0; i < 12; i++)
+                                {
+                                    ref var state = ref states[i];
+                                    state = (data & (1UL << i)) != 0;
+                                    hadOn[i] |= state;
+                                    hadOff[i] |= !state;
+                                }
+                            }
+                            finally
+                            {
+                                if (isLocked)
+                                {
+                                    @lock.Exit();
+                                }
+                            }
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            break;
+                        }
+                        catch (IOException ioE)
+                        {
+                            IsConnected = false;
+                            MajDebug.LogError($"[ButtonRing]{ioE}");
+                        }
+                        catch (Exception e)
+                        {
+                            MajDebug.LogError($"[ButtonRing]{e}");
+                        }
+                        finally
+                        {
+                            buffer.Clear();
+                            if (pollingRate.TotalMilliseconds > 0)
+                            {
+                                var t2 = stopwatch.Elapsed;
+                                var elapsed = t2 - t1;
+                                t1 = t2;
+                                if (elapsed < pollingRate)
+                                {
+                                    Thread.Sleep(pollingRate - elapsed);
+                                }
+                            }
+                        }
+                    }
                 }
             }
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

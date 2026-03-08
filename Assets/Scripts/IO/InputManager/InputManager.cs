@@ -13,6 +13,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO.Pipes;
 using System.IO.Ports;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -645,6 +646,9 @@ namespace MajdataPlay.IO
 #endif
                                 BaudRate = ledDeviceSettings.SerialPortOptions.BaudRate ?? 115200,
                             };
+                            break;
+                        case DeviceManufacturerOption.Pipe:
+                            buttonRingType = ButtonRingDeviceOption.Pipe;
                             break;
                     }
                 }
@@ -1368,6 +1372,7 @@ namespace MajdataPlay.IO
             }
             public Memory<byte> WriteBufferMemory { get; set; } = Memory<byte>.Empty;
             public ReadOnlyMemory<byte> ReadBufferMemory { get; set; } = ReadOnlyMemory<byte>.Empty;
+            public NamedPipeClientStream PipeClientStream { get; set; }
 
             readonly EventWaitHandle _eventWaitHandle = new(false, EventResetMode.AutoReset);
 
