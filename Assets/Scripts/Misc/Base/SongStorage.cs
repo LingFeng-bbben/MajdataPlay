@@ -67,7 +67,7 @@ namespace MajdataPlay
         readonly static List<ISongDetail> _allCharts = new(8192);
         readonly static HashSet<string> _storageFav = new();
         static DanInfo? _userFavorites = null;
-        static MyFavoriteSongCollection _myFavorite;
+        static MyFavoriteSongCollection? _myFavorite;
 
         static bool _isInited = false;
 
@@ -423,7 +423,10 @@ namespace MajdataPlay
                                           .OrderBy(x => hashSet.ToList().IndexOf(x.Hash))
                                           .ToList();
             MajDebug.LogInfo(favoriteSongs.Count);
-            _myFavorite = new(favoriteSongs, new HashSet<string>(_storageFav));
+            if(_myFavorite is null)
+            {
+                _myFavorite = new(favoriteSongs, new HashSet<string>(_storageFav));
+            }
             //The collections and _myFavorite share a same ref of original List<T>
             collections.Add(_myFavorite);
             MajDebug.LogInfo("Load Dans");
