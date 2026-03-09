@@ -12,6 +12,9 @@ using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine.InputSystem;
 using UnityEngine.Profiling;
 using System.IO.Pipes;
+#if UNITY_IOS
+using MajdataPlay.Platform.iOS;
+#endif
 
 
 #if UNITY_STANDALONE
@@ -304,6 +307,15 @@ namespace MajdataPlay.IO
 #if UNITY_ANDROID || UNITY_IOS
             static async UniTask KeyboardUpdateLoop()
             {
+#if UNITY_IOS
+                await UniTask.SwitchToThreadPool();
+                var initResult = NativeKeyboard.Init();
+                if(initResult != ErrorCode.NoError)
+                {
+                    MajDebug.LogError($"[ButtonRing]Failed to initialize NativeKeyboard: {initResult}");
+                    return;
+                }
+#endif
                 await UniTask.Yield(PlayerLoopTiming.LastPreUpdate);
                 var token = MajEnv.GlobalCT;
                 var gameButtons = _buttons.Slice(0, 8);
@@ -315,8 +327,8 @@ namespace MajdataPlay.IO
                         token.ThrowIfCancellationRequested();
                         try
                         {
+#if UNITY_ANDROID
                             var keyboard = Keyboard.current;
-                            var now = MajTimeline.UnscaledTime;
 
                             if(keyboard is null)
                             {
@@ -345,6 +357,18 @@ namespace MajdataPlay.IO
                                 })?.isPressed ?? false;
                                 _buttonRealTimeStates[i] = state;
                             }
+#elif UNITY_IOS
+                            for (var i = 0; i < gameButtons.Length; i++)
+                            {
+                                var button = gameButtons.Span[i];
+                                var keyCode = KeyboardHelper.ToiOSGCKeyCode(button.BindingKey);
+                                var @return = NativeKeyboard.IsPressed(keyCode, ref _buttonRealTimeStates[i]);
+                                if(@return != ErrorCode.NoError)
+                                {
+                                    MajDebug.LogError($"[ButtonRing]Error occurred while reading key states from NativeKeyboard: {@return}");
+                                }
+                            }
+#endif
                             IsConnected = true;
 
                             using (new LockDisposable())
@@ -375,6 +399,9 @@ namespace MajdataPlay.IO
                 finally
                 {
                     IsConnected = false;
+#if UNITY_IOS
+                    NativeKeyboard.Free();
+#endif
                 }
             }
             static async UniTask GamepadUpdateLoop()

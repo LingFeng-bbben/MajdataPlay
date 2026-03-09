@@ -1,4 +1,6 @@
 ﻿using System;
+using MajdataPlay.Platform.iOS;
+
 #if UNITY_STANDALONE_WIN
 using MajdataPlay.Platform.Win32;
 #endif
@@ -72,6 +74,25 @@ namespace MajdataPlay.IO
                     KeyCode.SelectP1 => UnityEngine.InputSystem.Key.NumpadMultiply,
                     KeyCode.Service => UnityEngine.InputSystem.Key.Numpad7,
                     KeyCode.SelectP2 => UnityEngine.InputSystem.Key.Numpad3,
+                    _ => throw new ArgumentOutOfRangeException(nameof(keyCode)),
+                };
+            }
+            public static GCKeyCode ToiOSGCKeyCode(KeyCode keyCode)
+            {
+                return keyCode switch
+                {
+                    KeyCode.B1 => GCKeyCode.KeyW,
+                    KeyCode.B2 => GCKeyCode.KeyE,
+                    KeyCode.B3 => GCKeyCode.KeyD,
+                    KeyCode.B4 => GCKeyCode.KeyC,
+                    KeyCode.B5 => GCKeyCode.KeyX,
+                    KeyCode.B6 => GCKeyCode.KeyZ,
+                    KeyCode.B7 => GCKeyCode.KeyA,
+                    KeyCode.B8 => GCKeyCode.KeyQ,
+                    KeyCode.Test => GCKeyCode.Keypad9,
+                    KeyCode.SelectP1 => GCKeyCode.KeypadAsterisk,
+                    KeyCode.Service => GCKeyCode.Keypad7,
+                    KeyCode.SelectP2 => GCKeyCode.Keypad3,
                     _ => throw new ArgumentOutOfRangeException(nameof(keyCode)),
                 };
             }
