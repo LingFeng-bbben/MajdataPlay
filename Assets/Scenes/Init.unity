@@ -491,7 +491,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 130509344}
-  videopath: /MovieBG/title.mp4
+  videopath: /MovieBG/title
   LoadOnly: 0
 --- !u!328 &130509344
 VideoPlayer:

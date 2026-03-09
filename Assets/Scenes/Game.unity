@@ -1629,7 +1629,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 222767788}
-  videopath: /MovieBG/fullcombo.mp4
+  videopath: /MovieBG/fullcombo
   LoadOnly: 0
 --- !u!328 &222767788
 VideoPlayer:
@@ -8947,7 +8947,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 1313218770}
-  videopath: /MovieBG/allperfect.mp4
+  videopath: /MovieBG/allperfect
   LoadOnly: 0
 --- !u!328 &1313218770
 VideoPlayer:

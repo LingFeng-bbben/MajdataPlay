@@ -13,6 +13,11 @@ namespace MajdataPlay.Scenes.Title
         public string videopath;
         public bool LoadOnly;
 
+        readonly string[] ALLOWED_VIDEO_FORMAT = new string[2]
+        {
+            ".webm",
+            ".mp4"
+        };
         void Awake()
         {
             player = GetComponent<VideoPlayer>();
@@ -37,7 +42,23 @@ namespace MajdataPlay.Scenes.Title
             {
                 videoPath = videoPath.Substring(1);
             }
-            var path = Path.Combine(MajEnv.AssetsPath, videoPath);
+            var path = string.Empty;
+            var isValid = false;
+            foreach(var ext in ALLOWED_VIDEO_FORMAT)
+            {
+                path = Path.Combine(MajEnv.AssetsPath, videoPath + ext);
+
+                if(File.Exists(path))
+                {
+                    isValid = true;
+                    break;
+                }
+            }
+            if(!isValid)
+            {
+                MajDebug.LogError($"[{nameof(LoadVideoFromSA)}]Video does not exists: {videoPath}");
+                return;
+            }
             MajDebug.LogInfo($"[{nameof(LoadVideoFromSA)}]Load video from {path}");
             player.url = path;
             if (LoadOnly)
