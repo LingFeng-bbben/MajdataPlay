@@ -794,6 +794,7 @@ namespace MajdataPlay.Scenes.Game
             }
             if(isAwaited)
             {
+                GC.Collect();
                 await UniTask.Delay(2000, true, cancellationToken: token);
             }
             token.ThrowIfCancellationRequested();
