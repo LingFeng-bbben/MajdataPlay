@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Policy;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MajdataPlay.Settings
@@ -14,8 +15,10 @@ namespace MajdataPlay.Settings
     {
         static bool _isInited = false;
 
-        readonly static List<ChartSetting> _storage = new(1024);
+        readonly static Dictionary<string, ChartSetting> _storage = new(1024);
         static string STORAGE_PATH = string.Empty;
+
+        static SpinLock _lock = new();
         
         public static async ValueTask InitAsync()
         {
@@ -48,6 +51,10 @@ namespace MajdataPlay.Settings
                     for (var i = 0; i < data.Length; i++)
                     {
                         var setting = data[i];
+                        if(string.IsNullOrEmpty(setting.Hash) || _storage.TryGetValue(setting.Hash, out _))
+                        {
+                            continue;
+                        }
                         if (setting.Unit != MajEnv.Settings.Debug.OffsetUnit)
                         {
                             if(setting.Unit == OffsetUnitOption.Second) // Second => Frame
@@ -60,8 +67,8 @@ namespace MajdataPlay.Settings
                             }
                             setting.Unit = MajEnv.Settings.Debug.OffsetUnit;
                         }
+                        _storage.Add(setting.Hash, setting);
                     }
-                    _storage.AddRange(data);
                 }
             }
             finally
@@ -75,58 +82,104 @@ namespace MajdataPlay.Settings
         }
         public static ChartSetting GetSetting(string hash)
         {
-            var setting = _storage.Find(x => x.Hash == hash);
+            ref var @lock = ref _lock;
+            var isLocked = false;
 
-            if (setting is null)
+            try
             {
-                setting = new()
-                {
-                    Hash = hash,
-                    Unit = MajEnv.Settings.Debug.OffsetUnit
-                };
-                _storage.Add(setting);
-            }
+                @lock.Enter(ref isLocked);
 
-            return setting;
+                if (!_storage.TryGetValue(hash, out var setting))
+                {
+                    setting = new()
+                    {
+                        Hash = hash,
+                        Unit = MajEnv.Settings.Debug.OffsetUnit
+                    };
+                    _storage.Add(hash, setting);
+                }
+                return setting;
+            }
+            finally
+            {
+                if(isLocked)
+                {
+                    @lock.Exit();
+                }
+            }
         }
         public static void ConvertUnitToFrame()
         {
-            for (var i = 0; i < _storage.Count; i++)
+            ref var @lock = ref _lock;
+            var isLocked = false;
+            try
             {
-                var setting = _storage[i];
-                if(setting.Unit != OffsetUnitOption.Frame)
+                @lock.Enter(ref isLocked);
+                foreach(var setting in _storage.Values)
                 {
-                    setting.Unit = OffsetUnitOption.Frame;
-                    setting.AudioOffset /= MajEnv.FRAME_LENGTH_SEC;
+                    if (setting.Unit != OffsetUnitOption.Frame)
+                    {
+                        setting.Unit = OffsetUnitOption.Frame;
+                        setting.AudioOffset /= MajEnv.FRAME_LENGTH_SEC;
+                    }
+                }
+            }
+            finally
+            {
+                if (isLocked)
+                {
+                    @lock.Exit();
                 }
             }
         }
         public static void ConvertUnitToSecond()
         {
-            for (var i = 0; i < _storage.Count; i++)
+            ref var @lock = ref _lock;
+            var isLocked = false;
+            try
             {
-                var setting = _storage[i];
-                if (setting.Unit != OffsetUnitOption.Second)
+                @lock.Enter(ref isLocked);
+                foreach(var setting in _storage.Values)
                 {
-                    setting.Unit = OffsetUnitOption.Second;
-                    setting.AudioOffset *= MajEnv.FRAME_LENGTH_SEC;
+                    if (setting.Unit != OffsetUnitOption.Second)
+                    {
+                        setting.Unit = OffsetUnitOption.Second;
+                        setting.AudioOffset *= MajEnv.FRAME_LENGTH_SEC;
+                    }
+                }
+            }
+            finally
+            {
+                if (isLocked)
+                {
+                    @lock.Exit();
                 }
             }
         }
         static void OnSave()
         {
+            if (!_isInited)
+            {
+                return;
+            }
+            ref var @lock = ref _lock;
+            var isLocked = false;
             try
             {
-                if (!_isInited)
-                {
-                    return;
-                }
-                var json = Serializer.Json.Serialize(_storage);
-                File.WriteAllText(STORAGE_PATH, json);
+                @lock.Enter(ref isLocked);
+                var json = Serializer.Json.Serialize(_storage.Values);
+                File.WriteAllText(STORAGE_PATH, json);                
             }
             catch(Exception e)
             {
                 MajDebug.LogException(e);
+            }
+            finally
+            {
+                if (isLocked)
+                {
+                    @lock.Exit();
+                }
             }
         }
     }
