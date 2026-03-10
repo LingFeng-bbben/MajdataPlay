@@ -193,6 +193,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
         protected float MaxFadeInAlpha = 0.5f; // 淡入时最大不透明度
         protected float DJAutoplayProgress = 0;
+
+        protected int LastHiddenSlideBarIndex = 0;
         // Flags
         protected bool IsCheckable = false;
         protected bool IsSoundPlayed = false;
@@ -318,17 +320,21 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void HideBar(int endIndex)
         {
-            endIndex = endIndex - 1;
+            endIndex = endIndex - 1;       
             endIndex = Math.Min(endIndex, SlideBars.Count - 1);
-            for (var i = 0; i <= endIndex; i++)
+            if (endIndex < LastHiddenSlideBarIndex)
+            {
+                return;
+            }
+            for (; LastHiddenSlideBarIndex <= endIndex; LastHiddenSlideBarIndex++)
             {
                 //_slideBarRenderers[i].forceRenderingOff = true;
-                SlideBars[i].layer = MajEnv.HIDDEN_LAYER;
+                SlideBars[LastHiddenSlideBarIndex].layer = MajEnv.HIDDEN_LAYER;
             }
         }
         [Il2CppSetOption(Option.NullChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [MemberNotNullWhen(true, "_slideOK")]
+        [MemberNotNullWhen(true, "SlideOK")]
         protected bool PlaySlideOK(in NoteJudgeResult result)
         {
             if (SlideOK is null)
