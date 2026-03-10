@@ -13,11 +13,6 @@ namespace MajdataPlay.Scenes.Title
         public string videopath;
         public bool LoadOnly;
 
-        readonly string[] ALLOWED_VIDEO_FORMAT = new string[2]
-        {
-            ".webm",
-            ".mp4"
-        };
         void Awake()
         {
             player = GetComponent<VideoPlayer>();
@@ -44,7 +39,7 @@ namespace MajdataPlay.Scenes.Title
             }
             var path = string.Empty;
             var isValid = false;
-            foreach(var ext in ALLOWED_VIDEO_FORMAT)
+            foreach(var ext in MajEnv.SUPPORTED_VIDEO_FORMAT)
             {
                 path = Path.Combine(MajEnv.AssetsPath, videoPath + ext);
 

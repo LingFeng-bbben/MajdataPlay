@@ -73,10 +73,30 @@ namespace MajdataPlay
         public SongDetail(string chartFolder, SimaiMetadata metadata)
         {
             var files = new DirectoryInfo(chartFolder).GetFiles();
+            var videoBGFilename = new string[3]
+            {
+                "bg",
+                "pv",
+                "mv"
+            };
 
             _maidataPath = Path.Combine(chartFolder, "maidata.txt");
             _trackPath = files.FirstOrDefault(o => o.Name.ToLower() is "track.opus" or "track.mp3" or "track.ogg" or "track.aac" or "track.wav").FullName;
-            _videoPath = files.FirstOrDefault(o => o.Name.ToLower() is "bg.mp4" or "pv.mp4" or "mv.mp4")?.FullName ?? string.Empty;
+            _videoPath = files.FirstOrDefault(o =>
+            {
+                var thisFilename = o.Name.ToLower();
+                foreach (var filename in videoBGFilename)
+                {
+                    foreach(var ext in MajEnv.SUPPORTED_VIDEO_FORMAT)
+                    {
+                        if(thisFilename == filename + ext)
+                        {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            })?.FullName ?? string.Empty;
             _coverPath = files.FirstOrDefault(o => o.Name.ToLower() is "bg.png" or "bg.jpg")?.FullName ?? string.Empty;
             _maidata = null;
 

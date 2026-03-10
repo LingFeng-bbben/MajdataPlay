@@ -50,6 +50,12 @@ namespace MajdataPlay
         public static readonly System.Threading.ThreadPriority THREAD_PRIORITY_MAIN =
             System.Threading.ThreadPriority.Normal;
 
+        public static readonly string[] SUPPORTED_VIDEO_FORMAT = new string[2]
+        {
+            ".webm",
+            ".mp4"
+        };
+
         public static event Action? OnApplicationQuit;
         public static event Action? OnSave;
 
