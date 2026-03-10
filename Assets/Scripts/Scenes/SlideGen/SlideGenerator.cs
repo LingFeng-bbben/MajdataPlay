@@ -43,45 +43,45 @@ namespace MajdataPlay.Scenes.SlideGen
             //    GenerateSlides(type, step);
             //}
 #if UNITY_EDITOR
-            var guids = AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/Prefab/Game/Slides" });
-            var prefabs = new GameObject[guids.Length];
+            //var guids = AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/Prefab/Game/Slides" });
+            //var prefabs = new GameObject[guids.Length];
 
-            for (int i = 0; i < guids.Length; i++)
-            {
-                var path = AssetDatabase.GUIDToAssetPath(guids[i]);
-                prefabs[i] = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-            }
-            var poss = new Vector3[8][];
-            var sb = new StringBuilder();
-            foreach (var prefab in prefabs.Where(x => x.name.StartsWith("Star")))
-            {
-                var isMirror = false;
-            MIRROR_START:
-                for (var j = 1; j < 9; j++)
-                {
-                    var instance = PrefabUtility.InstantiatePrefab(prefab) as GameObject;
-                    var slideDrop = instance.GetComponent<SlideDrop>();
-                    slideDrop.StartPos = j;
-                    slideDrop.IsMirror = isMirror;
-                    slideDrop.Initialize();
-                    var posArray = slideDrop._starPositions.ToArray();
-                    poss[j - 1] = posArray;
-                    Object.DestroyImmediate(instance);
-                }
-                var arrayName = prefab.name;
-                if(isMirror)
-                {
-                    arrayName += "_Mirror";
-                }
-                var code = ArrayCodeGen(arrayName, poss);
-                sb.AppendLine(code);
-                if (!isMirror)
-                {
-                    isMirror = true;
-                    goto MIRROR_START;
-                }
-            }
-            var arrayCode = sb.ToString();
+            //for (int i = 0; i < guids.Length; i++)
+            //{
+            //    var path = AssetDatabase.GUIDToAssetPath(guids[i]);
+            //    prefabs[i] = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            //}
+            //var poss = new Vector3[8][];
+            //var sb = new StringBuilder();
+            //foreach (var prefab in prefabs.Where(x => x.name.StartsWith("Star")))
+            //{
+            //    var isMirror = false;
+            //MIRROR_START:
+            //    for (var j = 1; j < 9; j++)
+            //    {
+            //        var instance = PrefabUtility.InstantiatePrefab(prefab) as GameObject;
+            //        var slideDrop = instance.GetComponent<SlideDrop>();
+            //        slideDrop.StartPos = j;
+            //        slideDrop.IsMirror = isMirror;
+            //        slideDrop.Initialize();
+            //        var posArray = slideDrop._starPositions.ToArray();
+            //        poss[j - 1] = posArray;
+            //        Object.DestroyImmediate(instance);
+            //    }
+            //    var arrayName = prefab.name;
+            //    if(isMirror)
+            //    {
+            //        arrayName += "_Mirror";
+            //    }
+            //    var code = ArrayCodeGen(arrayName, poss);
+            //    sb.AppendLine(code);
+            //    if (!isMirror)
+            //    {
+            //        isMirror = true;
+            //        goto MIRROR_START;
+            //    }
+            //}
+            //var arrayCode = sb.ToString();
 #endif
         }
 
