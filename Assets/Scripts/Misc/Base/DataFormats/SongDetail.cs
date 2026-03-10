@@ -1,8 +1,9 @@
 using Cysharp.Threading.Tasks;
+using MajdataPlay.Drawing;
 using MajdataPlay.IO;
 using MajdataPlay.Net;
+using MajdataPlay.Settings;
 using MajdataPlay.Utils;
-using MajdataPlay.Drawing;
 using MajSimai;
 using NeoSmart.AsyncLock;
 using System;
@@ -56,6 +57,8 @@ namespace MajdataPlay
         SimaiFile? _maidata = null;
         SimaiMetadata _simaiMetadata;
 
+        ChartSetting _chartSettings;
+
         readonly bool _isEmptyCover = false;
         readonly AsyncLock _previewAudioTrackLock = new();
         readonly AsyncLock _audioTrackLock = new();
@@ -82,6 +85,7 @@ namespace MajdataPlay
                 _isEmptyCover = true;
             }
             _simaiMetadata = metadata;
+            _chartSettings = ChartSettingStorage.GetSetting(_simaiMetadata.Hash);
             Title = metadata.Title;
             Artist = metadata.Artist;
             Timestamp = files.FirstOrDefault(x => x.Name is "maidata.txt")?.LastWriteTime ?? DateTime.UnixEpoch;
@@ -110,6 +114,10 @@ namespace MajdataPlay
         }
         public ValueTask<string> GetVideoPathAsync(INetProgress? progress = null, CancellationToken token = default)
         {
+            if (_chartSettings.DisableVideoBG)
+            {
+                return UniTask.FromResult(string.Empty);
+            }
             ThrowIfDisposed();
             return UniTask.FromResult(_videoPath);
         }

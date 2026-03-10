@@ -22,6 +22,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
+using MajdataPlay.Settings;
 
 #nullable enable
 namespace MajdataPlay
@@ -76,6 +77,8 @@ namespace MajdataPlay
         WeakReference<Sprite> _fullSizeCoverRef = new(null!);
         SimaiFile? _maidata = null;
 
+        ChartSetting _chartSettings;
+
         readonly AsyncLock _previewAudioTrackLock = new();
         readonly AsyncLock _audioTrackLock = new();
         readonly AsyncLock _videoPathLock = new();
@@ -109,6 +112,7 @@ namespace MajdataPlay
             _coverUri = apiroot.Combine("image");
 
             Hash = songDetail.Hash;
+            _chartSettings = ChartSettingStorage.GetSetting(Hash);
             _hashHexStr = HashHelper.ToHexString(Convert.FromBase64String(Hash));
             _serverInfo = serverInfo;
             _cachePath = Path.Combine(MajEnv.CachePath, $"Net/{_serverInfo.Name}/{_hashHexStr}");
@@ -198,7 +202,11 @@ namespace MajdataPlay
             ThrowIfDisposed();
             try
             {
-                if (_videoPath is not null)
+                if (_chartSettings.DisableVideoBG)
+                {
+                    return string.Empty;
+                }
+                else if (_videoPath is not null)
                 {
                     return _videoPath;
                 }

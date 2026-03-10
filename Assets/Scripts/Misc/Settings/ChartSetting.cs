@@ -20,5 +20,6 @@ namespace MajdataPlay.Settings
         [Step("0.05")]
         [Range("-2", "2", HasMax = true, HasMin = true)]
         public float TrackVolumeOffset { get; set; } = 0f;
+        public bool DisableVideoBG { get; set; } = false;
     }
 }
