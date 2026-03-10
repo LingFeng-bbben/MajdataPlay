@@ -11,6 +11,72 @@ This project is based on [@LeZi9916](https://github.com/LeZi9916) 's DJAuto bran
 
 Simai is a maimai chart discription language developed by [Celeca](https://twitter.com/formiku39854)
 
+## Getting Started
+
+> ⚠️ This repository contains a Unity project, not a standard C#/.NET project.
+Do not open or build it using dotnet, Visual Studio solution files, or other .NET build tools.
+The project must be opened using the Unity Editor.
+
+### Requirements
+
+- Unity Editor (version specified in ProjectSettings/ProjectVersion.txt)
+
+- git
+
+- Unity Hub
+
+### Clone the Repository
+
+Clone the project using Git:
+
+```bash
+git clone https://github.com/LingFeng-bbben/MajdataPlay.git MajdataPlay
+cd MajdataPlay
+```
+
+### Initialize Submodules
+
+This project uses Git submodules. After cloning, run:
+
+```bash
+git submodule update --init --recursive
+```
+
+If you already cloned the repository without submodules, you can also run:
+
+```bash
+git submodule sync
+git submodule update --init --recursive
+```
+
+### Install the Required Unity Version
+
+This project must be opened with the Unity version specified in:
+
+```text
+ProjectSettings/ProjectVersion.txt
+```
+
+Example:
+
+```text
+m_EditorVersion: 2022.3.62f3
+```
+
+Install this version using Unity Hub.
+
+### Open the Project in Unity Hub
+
+1. Open Unity Hub
+
+2. Click Add Project
+
+3. Select the cloned project folder
+
+4. Ensure the correct Unity version is selected
+
+5. Open the project
+
 ## See Our Wiki Page for guide
 
 [WIKI](https://github.com/LingFeng-bbben/MajdataPlay/wiki)
