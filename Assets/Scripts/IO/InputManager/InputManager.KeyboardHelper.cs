@@ -1,8 +1,8 @@
 ﻿using System;
-using MajdataPlay.Platform.iOS;
-
 #if UNITY_STANDALONE_WIN
 using MajdataPlay.Platform.Win32;
+#elif UNITY_IOS
+using MajdataPlay.Platform.iOS;
 #endif
 using UnityEngine.InputSystem;
 //using Microsoft.Win32;
@@ -77,6 +77,7 @@ namespace MajdataPlay.IO
                     _ => throw new ArgumentOutOfRangeException(nameof(keyCode)),
                 };
             }
+#if UNITY_IOS
             public static GCKeyCode ToiOSGCKeyCode(KeyCode keyCode)
             {
                 return keyCode switch
@@ -96,6 +97,7 @@ namespace MajdataPlay.IO
                     _ => throw new ArgumentOutOfRangeException(nameof(keyCode)),
                 };
             }
+#endif
         }
     }
 }
