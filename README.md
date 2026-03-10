@@ -14,8 +14,10 @@ Simai is a maimai chart discription language developed by [Celeca](https://twitt
 ## Getting Started
 
 > ⚠️ This repository contains a Unity project, not a standard C#/.NET project.
-Do not open or build it using dotnet, Visual Studio solution files, or other .NET build tools.
-The project must be opened using the Unity Editor.
+> 
+> Do not open or build it using dotnet, Visual Studio solution files, or other .NET build tools.
+> 
+> The project must be opened using the Unity Editor.
 
 ### Requirements
 
