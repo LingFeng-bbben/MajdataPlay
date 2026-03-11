@@ -30,6 +30,7 @@
                     <string>CF</string>
                     <string>CN1</string>
                     <string>CN2</string>
+                    <string>CN3</string>
                 </array>
 
                 <key>Values</key>
@@ -37,6 +38,7 @@
                     <string>https://majdata.net/api3/api/</string>
                     <string>https://maj.moyingmoe.top/api3/api/</string>
                     <string>https://maj-2.moyingmoe.top/api3/api/</string>
+                    <string>https://maj-3.moyingmoe.top/api3/api/</string>
                 </array>
 
                 <key>DefaultValue</key>
