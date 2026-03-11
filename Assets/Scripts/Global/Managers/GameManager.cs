@@ -1,4 +1,5 @@
 using AOT;
+using Cysharp.Threading.Tasks;
 using MajdataPlay.Collections;
 using MajdataPlay.i18n;
 using MajdataPlay.IO;
@@ -25,6 +26,13 @@ namespace MajdataPlay
 #nullable enable
     internal sealed class GameManager : MajSingleton
     {
+#if UNITY_ANDROID
+        public static event EventHandler<AndroidJavaObject?>? OnNewIntent;
+        public static event EventHandler<bool>? OnAppFocus;
+        public static event EventHandler<bool>? OnAppPause;
+
+        public AndroidJavaObject CurrentActivity { get; private set; }
+#endif
         public static Camera MainCamera { get; private set; }
 
         public GameSetting Setting
@@ -44,6 +52,24 @@ namespace MajdataPlay
         readonly static List<IntPtr> _windowHandles = new();
         readonly static ReadOnlyMemory<ITimeProvider> _builtInTimeProviders = MajTimeline.BuiltInTimeProviders;
 
+#if UNITY_ANDROID
+        public static readonly AndroidJavaClass UnityPlayerClass = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+        public static readonly AndroidJavaClass MajdataPlayActivityClass = new AndroidJavaClass("net.majdata.majdataplay.MajdataPlayActivity");
+
+        OnNewIntentCallback _onNewIntentCallbackProxy;
+#endif
+        protected override void Awake()
+        {
+            base.Awake();
+#if UNITY_ANDROID
+            //UnityEngine.Debug.Log("[Android]Get current activity");
+            //CurrentActivity = UnityPlayerClass.GetStatic<AndroidJavaObject>("currentActivity");
+            UnityEngine.Debug.Log("[Android]Creating onNewIntent callback proxy");
+            _onNewIntentCallbackProxy = new(this);
+            UnityEngine.Debug.Log("[Android]Setting onNewIntent callback proxy");
+            MajdataPlayActivityClass.CallStatic("registerOnNewIntentCallback", _onNewIntentCallbackProxy);
+#endif
+        }
         void Start()
         {
 #if UNITY_IOS && !UNITY_EDITOR
@@ -314,6 +340,10 @@ namespace MajdataPlay
 #if UNITY_ANDROID || UNITY_IOS
         void OnApplicationFocus(bool focus)
         {
+            if (OnAppFocus is not null)
+            {
+                OnAppFocus(this, focus);
+            }
             if (!focus)
             {
                 MajEnv.RequestSave();
@@ -322,9 +352,22 @@ namespace MajdataPlay
 
         void OnApplicationPause(bool pause)
         {
+            if (OnAppPause is not null)
+            {
+                OnAppPause(this, pause);
+            }
             if (pause)
             {
                 MajEnv.RequestSave();
+            }
+        }
+        [Preserve]
+        void Android_OnNewIntent(AndroidJavaObject intent)
+        {
+            //var intentObject = CurrentActivity.Call<AndroidJavaObject>("getIntent");
+            if (OnNewIntent is not null)
+            {
+                OnNewIntent(this, intent);
             }
         }
 #endif
@@ -480,6 +523,20 @@ namespace MajdataPlay
 
             Directory.Move(sourceDirName: src, destDirName: dst);
             MajDebug.LogInfo($"Moved: {src} -> {dst}");
+        }
+
+        class OnNewIntentCallback : AndroidJavaProxy
+        {
+            readonly GameManager _gameManager;
+            public OnNewIntentCallback(GameManager gm) : base("net.majdata.majdataplay.CSharpOnNewIntentCallback") 
+            {
+                _gameManager = gm;
+            }
+
+            public void OnNewIntent(AndroidJavaObject intent)
+            {
+                _gameManager.Android_OnNewIntent(intent);
+            }
         }
     }
 }
