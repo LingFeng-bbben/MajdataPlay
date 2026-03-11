@@ -78,61 +78,11 @@ namespace MajdataPlay
 
         internal static async Task InitAsync(IProgress<string>? progressReporter = null)
         {
-            if (string.IsNullOrEmpty(MY_FAVORITE_EXPORT_PATH))
-            {
-                MY_FAVORITE_EXPORT_PATH = Path.Combine(MajEnv.ChartPath, MY_FAVORITE_FILENAME);
-            }
-            if(string.IsNullOrEmpty(MY_FAVORITE_STORAGE_PATH))
-            {
-                MY_FAVORITE_STORAGE_PATH = Path.Combine(MajEnv.CachePath, "Runtime", MY_FAVORITE_FILENAME);
-            }
             try
             {
                 await Task.Run(async () =>
                 {
-                    if (File.Exists(MY_FAVORITE_EXPORT_PATH))
-                    {
-                        bool result;
-                        Exception? exception;
-                        (result, _userFavorites, exception) = await Serializer.Json.TryDeserializeAsync<DanInfo>(File.OpenRead(MY_FAVORITE_EXPORT_PATH));
-                        if (!result)
-                        {
-                            var bakPath = $"{MY_FAVORITE_EXPORT_PATH}.bak";
-                            while (File.Exists(bakPath))
-                            {
-                                bakPath = $"{bakPath}.bak";
-                            }
-                            File.Copy(MY_FAVORITE_EXPORT_PATH, bakPath);
-                            MajDebug.LogError($"Failed to load favorites\nPath: {MY_FAVORITE_EXPORT_PATH}\nException: {exception}");
-                        }
-                    }
-                    if (File.Exists(MY_FAVORITE_STORAGE_PATH))
-                    {
-
-                        var (result, storageFav, exception) = await Serializer.Json.TryDeserializeAsync<HashSet<string>>(File.OpenRead(MY_FAVORITE_STORAGE_PATH));
-                        if (!result)
-                        {
-                            var bakPath = $"{MY_FAVORITE_STORAGE_PATH}.bak";
-                            while (File.Exists(bakPath))
-                            {
-                                bakPath = $"{bakPath}.bak";
-                            }
-                            File.Copy(MY_FAVORITE_STORAGE_PATH, bakPath);
-                            MajDebug.LogError($"Failed to load favorites\nPath: {MY_FAVORITE_STORAGE_PATH}\nException: {exception}");
-                        }
-                        else if(storageFav is not null)
-                        {
-                            foreach(var hash in storageFav)
-                            {
-                                if (string.IsNullOrEmpty(hash))
-                                {
-                                    continue;
-                                }
-                                _storageFav.Add(hash);
-                            }
-                        }
-                    }
-
+                    await RefreshMyFavAsync();
                     if (!Directory.Exists(MajEnv.ChartPath))
                     {
                         Directory.CreateDirectory(MajEnv.ChartPath);
@@ -175,6 +125,7 @@ namespace MajdataPlay
                 var selectedIndex = listConfig.SelectedSongIndex;
                 var selectedDir = listConfig.SelectedDir;
 
+                await RefreshMyFavAsync();
                 var collections = await GetCollections(MajEnv.ChartPath, progressReporter);
                 await Task.Delay(100);
                 progressReporter?.Report($"{"MAJTEXT_CLEANING_UP".i18n()}");
@@ -423,10 +374,7 @@ namespace MajdataPlay
                                           .OrderBy(x => hashSet.ToList().IndexOf(x.Hash))
                                           .ToList();
             MajDebug.LogInfo(favoriteSongs.Count);
-            if(_myFavorite is null)
-            {
-                _myFavorite = new(favoriteSongs, new HashSet<string>(_storageFav));
-            }
+            _myFavorite = new(favoriteSongs, new HashSet<string>(_storageFav));
             //The collections and _myFavorite share a same ref of original List<T>
             collections.Add(_myFavorite);
             MajDebug.LogInfo("Load Dans");
@@ -676,7 +624,7 @@ namespace MajdataPlay
         public static void AddToMyFavorites(ISongDetail songDetail)
         {
             _myFavorite.Add(songDetail);
-            RefreshMyFavStorage();
+            WriteMyFavStorage();
         }
         public static bool IsInMyFavorites(ISongDetail songDetail)
         {
@@ -685,16 +633,70 @@ namespace MajdataPlay
         public static void RemoveFromMyFavorites(ISongDetail songDetail)
         {
             _myFavorite.Remove(songDetail);
-            RefreshMyFavStorage();
+            WriteMyFavStorage();
         }
         public static void RemoveFromMyFavorites(string hashBase64Str)
         {
             _myFavorite.Remove(hashBase64Str);
-            RefreshMyFavStorage();
+            WriteMyFavStorage();
         }
-        static void RefreshMyFavStorage()
+        static void WriteMyFavStorage()
         {
             File.WriteAllText(MY_FAVORITE_STORAGE_PATH, Serializer.Json.Serialize(_myFavorite.ExportHashSet()));
+        }
+        static async Task RefreshMyFavAsync()
+        {
+            if (string.IsNullOrEmpty(MY_FAVORITE_EXPORT_PATH))
+            {
+                MY_FAVORITE_EXPORT_PATH = Path.Combine(MajEnv.ChartPath, MY_FAVORITE_FILENAME);
+            }
+            if (string.IsNullOrEmpty(MY_FAVORITE_STORAGE_PATH))
+            {
+                MY_FAVORITE_STORAGE_PATH = Path.Combine(MajEnv.CachePath, "Runtime", MY_FAVORITE_FILENAME);
+            }
+
+            if (File.Exists(MY_FAVORITE_EXPORT_PATH))
+            {
+                bool result;
+                Exception? exception;
+                (result, _userFavorites, exception) = await Serializer.Json.TryDeserializeAsync<DanInfo>(File.OpenRead(MY_FAVORITE_EXPORT_PATH));
+                if (!result)
+                {
+                    var bakPath = $"{MY_FAVORITE_EXPORT_PATH}.bak";
+                    while (File.Exists(bakPath))
+                    {
+                        bakPath = $"{bakPath}.bak";
+                    }
+                    File.Copy(MY_FAVORITE_EXPORT_PATH, bakPath);
+                    MajDebug.LogError($"Failed to load favorites\nPath: {MY_FAVORITE_EXPORT_PATH}\nException: {exception}");
+                }
+            }
+            if (File.Exists(MY_FAVORITE_STORAGE_PATH))
+            {
+
+                var (result, storageFav, exception) = await Serializer.Json.TryDeserializeAsync<HashSet<string>>(File.OpenRead(MY_FAVORITE_STORAGE_PATH));
+                if (!result)
+                {
+                    var bakPath = $"{MY_FAVORITE_STORAGE_PATH}.bak";
+                    while (File.Exists(bakPath))
+                    {
+                        bakPath = $"{bakPath}.bak";
+                    }
+                    File.Copy(MY_FAVORITE_STORAGE_PATH, bakPath);
+                    MajDebug.LogError($"Failed to load favorites\nPath: {MY_FAVORITE_STORAGE_PATH}\nException: {exception}");
+                }
+                else if (storageFav is not null)
+                {
+                    foreach (var hash in storageFav)
+                    {
+                        if (string.IsNullOrEmpty(hash))
+                        {
+                            continue;
+                        }
+                        _storageFav.Add(hash);
+                    }
+                }
+            }
         }
     }
 }
