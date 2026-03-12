@@ -208,8 +208,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void OnLateUpdate()
         {
-            Profiler.BeginSample("NoteEffectPool.OnLateUpdate");
-            try
+            using (UnityProfiler.Create("NoteEffectPool.OnLateUpdate"))
             {
                 if (!_isInited)
                 {
@@ -238,10 +237,6 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 //{
                 //    _tapJudgeEffects[i].OnLateUpdate();
                 //}
-            }
-            finally
-            {
-                Profiler.EndSample();
             }
         }
         /// <summary>

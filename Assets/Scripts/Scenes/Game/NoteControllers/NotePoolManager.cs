@@ -91,22 +91,23 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void OnPreUpdate()
         {
-            Profiler.BeginSample("NotePoolManager.PreUpdate");
-            switch(State)
+            using (UnityProfiler.Create("NotePoolManager.PreUpdate"))
             {
-                case ComponentState.Idle:
-                case ComponentState.Scanning:
-                case ComponentState.Loading:
-                case ComponentState.Parsing:
-                    return;
+                switch (State)
+                {
+                    case ComponentState.Idle:
+                    case ComponentState.Scanning:
+                    case ComponentState.Loading:
+                    case ComponentState.Parsing:
+                        return;
+                }
+                var currentSec = _noteTimeProvider.ThisFrameSec;
+                tapPool.OnPreUpdate(currentSec);
+                holdPool.OnPreUpdate(currentSec);
+                touchPool.OnPreUpdate(currentSec);
+                touchHoldPool.OnPreUpdate(currentSec);
+                eachLinePool.OnPreUpdate(currentSec);
             }
-            var currentSec = _noteTimeProvider.ThisFrameSec;
-            tapPool.OnPreUpdate(currentSec);
-            holdPool.OnPreUpdate(currentSec);
-            touchPool.OnPreUpdate(currentSec);
-            touchHoldPool.OnPreUpdate(currentSec);
-            eachLinePool.OnPreUpdate(currentSec);
-            Profiler.EndSample();
         }
         public void AddTap(TapPoolingInfo tapInfo)
         {

@@ -355,95 +355,97 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [OnPreUpdate]
         void OnPreUpdate()
         {
-            Profiler.BeginSample("WifiDrop.OnPreUpdate");
-            SlideBarFadeIn();
-            SlideCheck();
-            Profiler.EndSample();
+            using (UnityProfiler.Create("WifiDrop.OnPreUpdate"))
+            {
+                SlideBarFadeIn();
+                SlideCheck();
+            }
         }
         [OnUpdate]
         void OnUpdate()
         {
-            Profiler.BeginSample("WifiDrop.OnUpdate");
-            Autoplay();
-            SensorCheck();
-            var stars = Stars.Span;
-            var starTransforms = StarTransforms.Span;
-            switch (State)
+            using (UnityProfiler.Create("WifiDrop.OnUpdate"))
             {
-                case NoteStatus.Inited:
-                    SetStarActive(false);
-                    if (ThisFrameSec - Timing > 0)
-                    {
-                        SetStarActive(true);
-                        for (var i = 0; i < stars.Length; i++)
+                Autoplay();
+                SensorCheck();
+                var stars = Stars.Span;
+                var starTransforms = StarTransforms.Span;
+                switch (State)
+                {
+                    case NoteStatus.Inited:
+                        SetStarActive(false);
+                        if (ThisFrameSec - Timing > 0)
                         {
-                            var starTransform = starTransforms[i];
-
-                            starTransform.position = _starStartPositions[i];
-                        }
-                        State = NoteStatus.Scaling;
-                        goto case NoteStatus.Scaling;
-                    }
-                    break;
-                case NoteStatus.Scaling:
-                    var timing = ThisFrameSec - StartTiming;
-                    if (timing > 0f)
-                    {
-                        for (var i = 0; i < stars.Length; i++)
-                        {
-                            var starTransform = starTransforms[i];
-
-                            _starRenderers[i].color = new Color(1, 1, 1, 1);
-                            if (!IsSlideNoHead)
+                            SetStarActive(true);
+                            for (var i = 0; i < stars.Length; i++)
                             {
-                                starTransform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
+                                var starTransform = starTransforms[i];
+
+                                starTransform.position = _starStartPositions[i];
                             }
+                            State = NoteStatus.Scaling;
+                            goto case NoteStatus.Scaling;
                         }
-                        State = NoteStatus.Running;
-                        goto case NoteStatus.Running;
-                    }
-                    else if (IsSlideNoHead)
-                    {
-                        return;
-                    }
-                    var alpha = (1f - -timing / (StartTiming - Timing)).Clamp(0, 1);
+                        break;
+                    case NoteStatus.Scaling:
+                        var timing = ThisFrameSec - StartTiming;
+                        if (timing > 0f)
+                        {
+                            for (var i = 0; i < stars.Length; i++)
+                            {
+                                var starTransform = starTransforms[i];
 
-                    for (var i = 0; i < stars.Length; i++)
-                    {
-                        var starTransform = starTransforms[i];
+                                _starRenderers[i].color = new Color(1, 1, 1, 1);
+                                if (!IsSlideNoHead)
+                                {
+                                    starTransform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
+                                }
+                            }
+                            State = NoteStatus.Running;
+                            goto case NoteStatus.Running;
+                        }
+                        else if (IsSlideNoHead)
+                        {
+                            return;
+                        }
+                        var alpha = (1f - -timing / (StartTiming - Timing)).Clamp(0, 1);
 
-                        _starRenderers[i].color = new Color(1, 1, 1, alpha);
-                        starTransform.localScale = new Vector3(alpha + 0.5f, alpha + 0.5f, alpha + 0.5f);
-                    }
-                    break;
-                case NoteStatus.Running:
-                    if (GetRemainingTimeWithoutOffset() == 0)
-                    {
                         for (var i = 0; i < stars.Length; i++)
                         {
                             var starTransform = starTransforms[i];
-                            starTransform.position = _starEndPositions[i];
+
+                            _starRenderers[i].color = new Color(1, 1, 1, alpha);
+                            starTransform.localScale = new Vector3(alpha + 0.5f, alpha + 0.5f, alpha + 0.5f);
                         }
-                        State = NoteStatus.Arrived;
-                        goto case NoteStatus.Arrived;
-                    }
-                    var process = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
+                        break;
+                    case NoteStatus.Running:
+                        if (GetRemainingTimeWithoutOffset() == 0)
+                        {
+                            for (var i = 0; i < stars.Length; i++)
+                            {
+                                var starTransform = starTransforms[i];
+                                starTransform.position = _starEndPositions[i];
+                            }
+                            State = NoteStatus.Arrived;
+                            goto case NoteStatus.Arrived;
+                        }
+                        var process = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
 
-                    for (var i = 0; i < stars.Length; i++)
-                    {
-                        var starTransform = starTransforms[i];
-                        var a = _starEndPositions[i];
-                        var b = _starStartPositions[i];
-                        var ba = a - b;
-                        var newPos = ba * process + b;
+                        for (var i = 0; i < stars.Length; i++)
+                        {
+                            var starTransform = starTransforms[i];
+                            var a = _starEndPositions[i];
+                            var b = _starStartPositions[i];
+                            var ba = a - b;
+                            var newPos = ba * process + b;
 
-                        starTransform.position = newPos; //TODO add some runhua
-                    }
-                    break;
-                case NoteStatus.Arrived:
-                    break;
+                            starTransform.position = newPos; //TODO add some runhua
+                        }
+                        break;
+                    case NoteStatus.Arrived:
+                        break;
+                }
             }
-            Profiler.EndSample();
         }
         protected override void Autoplay()
         {

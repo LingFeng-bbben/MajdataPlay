@@ -129,19 +129,20 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void OnUpdate()
         {
-            Profiler.BeginSample("SlideOK.OnUpdate");
-            if (_elapsedTime > 0.5f)
+            using (UnityProfiler.Create("SlideOK.OnUpdate"))
             {
-                State = NoteStatus.End;
-                _spriteRenderer.sharedMaterial = _defaultMaterial;
-                SetActiveInternal(false);
-                GameObject.layer = MajEnv.HIDDEN_LAYER;
+                if (_elapsedTime > 0.5f)
+                {
+                    State = NoteStatus.End;
+                    _spriteRenderer.sharedMaterial = _defaultMaterial;
+                    SetActiveInternal(false);
+                    GameObject.layer = MajEnv.HIDDEN_LAYER;
+                }
+                else
+                {
+                    _elapsedTime += MajTimeline.DeltaTime;
+                }
             }
-            else
-            {
-                _elapsedTime += MajTimeline.DeltaTime;
-            }
-            Profiler.EndSample();
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int SetR()

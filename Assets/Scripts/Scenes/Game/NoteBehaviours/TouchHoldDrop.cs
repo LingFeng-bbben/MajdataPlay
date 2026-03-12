@@ -416,76 +416,78 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [OnPreUpdate]
         void OnPreUpdate()
         {
-            Profiler.BeginSample("TouchHoldDrop.OnPreUpdate");
-            TooLateCheck();
-            Check();
-            BodyCheck();
-            ForceEndCheck();
-            Autoplay();
-            Profiler.EndSample();
+            using (UnityProfiler.Create("TouchHoldDrop.OnPreUpdate"))
+            {
+                TooLateCheck();
+                Check();
+                BodyCheck();
+                ForceEndCheck();
+                Autoplay();
+            }
         }
         [OnUpdate]
         void OnUpdate()
         {
-            Profiler.BeginSample("TouchHoldDrop.OnUpdate");
-            var timing = GetTimeSpanToArriveTiming();
-
-            switch (State)
+            using (UnityProfiler.Create("TouchHoldDrop.OnUpdate"))
             {
-                case NoteStatus.Inited:
-                    if (-timing < wholeDuration)
-                    {
-                        _multTouchHandler.Register(_sensorPos, IsEach, IsBreak);
-                        SetPointActive(true);
-                        SetFanActive(true);
-                        RendererState = RendererStatus.On;
-                        State = NoteStatus.Scaling;
-                        goto case NoteStatus.Scaling;
-                    }
-                    return;
-                case NoteStatus.Scaling:
-                    {
-                        var newColor = Color.white;
-                        if (-timing < moveDuration)
+                var timing = GetTimeSpanToArriveTiming();
+
+                switch (State)
+                {
+                    case NoteStatus.Inited:
+                        if (-timing < wholeDuration)
                         {
-                            SetFansColor(Color.white);
-                            State = NoteStatus.Running;
-                            goto case NoteStatus.Running;
+                            _multTouchHandler.Register(_sensorPos, IsEach, IsBreak);
+                            SetPointActive(true);
+                            SetFanActive(true);
+                            RendererState = RendererStatus.On;
+                            State = NoteStatus.Scaling;
+                            goto case NoteStatus.Scaling;
                         }
-                        var alpha = ((wholeDuration + timing) / displayDuration).Clamp(0, 1);
-                        newColor.a = alpha;
-                        SetFansColor(newColor);
-                    }
-                    return;
-                case NoteStatus.Running:
-                    {
-                        var pow = -Mathf.Exp(8 * (timing * 0.43f / moveDuration) - 0.85f) + 0.42f;
-                        var distance = Mathf.Clamp(pow, 0f, 0.4f);
-                        if (float.IsNaN(distance))
-                            distance = 0f;
-                        if (timing >= 0)
+                        return;
+                    case NoteStatus.Scaling:
                         {
-                            var _pow = -Mathf.Exp(-0.85f) + 0.42f;
-                            var _distance = Mathf.Clamp(_pow, 0f, 0.4f);
-                            SetFansPosition(_distance);
-                            SetBorderActive(true);
-                            _borderMask.enabled = true;
-                            State = NoteStatus.Arrived;
-                            goto case NoteStatus.Arrived;
+                            var newColor = Color.white;
+                            if (-timing < moveDuration)
+                            {
+                                SetFansColor(Color.white);
+                                State = NoteStatus.Running;
+                                goto case NoteStatus.Running;
+                            }
+                            var alpha = ((wholeDuration + timing) / displayDuration).Clamp(0, 1);
+                            newColor.a = alpha;
+                            SetFansColor(newColor);
                         }
-                        else
-                            SetFansPosition(distance);
-                    }
-                    return;
-                case NoteStatus.Arrived:
-                    {
-                        var value = 0.91f * (1 - (Length - timing) / Length);
-                        var alpha = value.Clamp(0, 1f);
-                        _borderMask.alphaCutoff = alpha;
-                    }
-                    return;
+                        return;
+                    case NoteStatus.Running:
+                        {
+                            var pow = -Mathf.Exp(8 * (timing * 0.43f / moveDuration) - 0.85f) + 0.42f;
+                            var distance = Mathf.Clamp(pow, 0f, 0.4f);
+                            if (float.IsNaN(distance))
+                                distance = 0f;
+                            if (timing >= 0)
+                            {
+                                var _pow = -Mathf.Exp(-0.85f) + 0.42f;
+                                var _distance = Mathf.Clamp(_pow, 0f, 0.4f);
+                                SetFansPosition(_distance);
+                                SetBorderActive(true);
+                                _borderMask.enabled = true;
+                                State = NoteStatus.Arrived;
+                                goto case NoteStatus.Arrived;
+                            }
+                            else
+                                SetFansPosition(distance);
+                        }
+                        return;
+                    case NoteStatus.Arrived:
+                        {
+                            var value = 0.91f * (1 - (Length - timing) / Length);
+                            var alpha = value.Clamp(0, 1f);
+                            _borderMask.alphaCutoff = alpha;
+                        }
+                        return;
+                }
             }
-            Profiler.EndSample();
         }
         void RegisterGrade()
         {

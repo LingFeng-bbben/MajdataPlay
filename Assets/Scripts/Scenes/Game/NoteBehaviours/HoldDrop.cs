@@ -348,122 +348,124 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [OnPreUpdate]
         void OnPreUpdate()
         {
-            Profiler.BeginSample("HoldDrop.OnPreUpdate");
-            TooLateCheck();
-            Check();
-            BodyCheck();
-            ForceEndCheck();
-            Autoplay();
-            Profiler.EndSample();
+            using (UnityProfiler.Create("HoldDrop.OnPreUpdate"))
+            {
+                TooLateCheck();
+                Check();
+                BodyCheck();
+                ForceEndCheck();
+                Autoplay();
+            }
         }
         [OnUpdate]
         void OnUpdate()
         {
-            Profiler.BeginSample("HoldDrop.OnUpdate");
-            var timing = GetTimeSpanToArriveTiming();
-            var distance = timing * Speed + 4.8f;
-            var scaleRate = _noteAppearRate;
-            var destScale = distance * scaleRate + (1 - scaleRate * 1.225f);
-
-            var remaining = GetRemainingTimeWithoutOffset();
-            var holdTime = timing - Length;
-            var holdDistance = holdTime * Speed + 4.8f;
-
-            switch (State)
+            using (UnityProfiler.Create("HoldDrop.OnUpdate"))
             {
-                case NoteStatus.Inited:
-                    if (destScale >= 0f)
-                    {
-                        //transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (StartPos - 1));
-                        //_tapLineTransform.rotation = transform.rotation;
-                        //_thisRenderer.size = new Vector2(1.22f, 1.4f);
-                        _exRenderer.size = new Vector2(1.22f, 1.42f);
-                        _thisRenderer.size = new Vector2(1.22f, 1.42f);
-                        _tapLineTransform.localScale = new Vector3(0.2552f, 0.2552f, 1f);
-                        Transform.position = _innerPos;
-                        RendererState = RendererStatus.On;
+                var timing = GetTimeSpanToArriveTiming();
+                var distance = timing * Speed + 4.8f;
+                var scaleRate = _noteAppearRate;
+                var destScale = distance * scaleRate + (1 - scaleRate * 1.225f);
 
-                        State = NoteStatus.Scaling;
-                        goto case NoteStatus.Scaling;
-                    }
-                    //else
-                    //{
-                    //    Transform.localScale = new Vector3(0, 0);
-                    //}
-                    return;
-                case NoteStatus.Scaling:
-                    if (destScale > 0.3f)
-                        SetTapLineActive(true);
-                    if (distance < 1.225f)
-                    {
+                var remaining = GetRemainingTimeWithoutOffset();
+                var holdTime = timing - Length;
+                var holdDistance = holdTime * Speed + 4.8f;
+
+                switch (State)
+                {
+                    case NoteStatus.Inited:
+                        if (destScale >= 0f)
+                        {
+                            //transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (StartPos - 1));
+                            //_tapLineTransform.rotation = transform.rotation;
+                            //_thisRenderer.size = new Vector2(1.22f, 1.4f);
+                            _exRenderer.size = new Vector2(1.22f, 1.42f);
+                            _thisRenderer.size = new Vector2(1.22f, 1.42f);
+                            _tapLineTransform.localScale = new Vector3(0.2552f, 0.2552f, 1f);
+                            Transform.position = _innerPos;
+                            RendererState = RendererStatus.On;
+
+                            State = NoteStatus.Scaling;
+                            goto case NoteStatus.Scaling;
+                        }
+                        //else
+                        //{
+                        //    Transform.localScale = new Vector3(0, 0);
+                        //}
+                        return;
+                    case NoteStatus.Scaling:
+                        if (destScale > 0.3f)
+                            SetTapLineActive(true);
+                        if (distance < 1.225f)
+                        {
+                            Distance = distance;
+                            Transform.localScale = new Vector3(destScale, destScale) * USERSETTING_HOLD_SCALE;
+                        }
+                        else
+                        {
+                            Transform.localScale = new Vector3(1f, 1f) * USERSETTING_HOLD_SCALE;
+                            State = NoteStatus.Running;
+                            goto case NoteStatus.Running;
+                        }
+                        break;
+                    case NoteStatus.Running:
+                        if (remaining == 0)
+                        {
+                            State = NoteStatus.Arrived;
+                            goto case NoteStatus.Arrived;
+                        }
+                        if (holdDistance < 1.225f && distance >= 4.8f) // 头到达 尾未出现
+                        {
+                            holdDistance = 1.225f;
+                            distance = 4.8f;
+                        }
+                        else if (holdDistance < 1.225f && distance < 4.8f) // 头未到达 尾未出现
+                        {
+                            holdDistance = 1.225f;
+                        }
+                        else if (holdDistance >= 1.225f && distance >= 4.8f) // 头到达 尾出现
+                        {
+                            distance = 4.8f;
+
+                            SetEndActive(true);
+                            //_endRenderer.enabled = true;
+                        }
+                        else if (holdDistance >= 1.225f && distance < 4.8f) // 头未到达 尾出现
+                        {
+                            SetEndActive(true);
+                            //_endRenderer.enabled = true;
+                        }
                         Distance = distance;
-                        Transform.localScale = new Vector3(destScale, destScale) * USERSETTING_HOLD_SCALE;
-                    }
-                    else
-                    {
-                        Transform.localScale = new Vector3(1f, 1f) * USERSETTING_HOLD_SCALE;
-                        State = NoteStatus.Running;
-                        goto case NoteStatus.Running;
-                    }
-                    break;
-                case NoteStatus.Running:
-                    if (remaining == 0)
-                    {
-                        State = NoteStatus.Arrived;
-                        goto case NoteStatus.Arrived;
-                    }
-                    if (holdDistance < 1.225f && distance >= 4.8f) // 头到达 尾未出现
-                    {
-                        holdDistance = 1.225f;
-                        distance = 4.8f;
-                    }
-                    else if (holdDistance < 1.225f && distance < 4.8f) // 头未到达 尾未出现
-                    {
-                        holdDistance = 1.225f;
-                    }
-                    else if (holdDistance >= 1.225f && distance >= 4.8f) // 头到达 尾出现
-                    {
-                        distance = 4.8f;
+                        var dis = (distance - holdDistance) / 2 + holdDistance;
+                        var size = (distance - holdDistance + 1.4f * USERSETTING_HOLD_SCALE) / USERSETTING_HOLD_SCALE;
+                        var lineScale = Mathf.Abs(distance / 4.8f);
 
-                        SetEndActive(true);
-                        //_endRenderer.enabled = true;
-                    }
-                    else if (holdDistance >= 1.225f && distance < 4.8f) // 头未到达 尾出现
-                    {
-                        SetEndActive(true);
-                        //_endRenderer.enabled = true;
-                    }
-                    Distance = distance;
-                    var dis = (distance - holdDistance) / 2 + holdDistance;
-                    var size = (distance - holdDistance + 1.4f * USERSETTING_HOLD_SCALE) / USERSETTING_HOLD_SCALE;
-                    var lineScale = Mathf.Abs(distance / 4.8f);
+                        lineScale = lineScale >= 1f ? 1f : lineScale;
 
-                    lineScale = lineScale >= 1f ? 1f : lineScale;
+                        Transform.position = _outerPos * (dis / 4.8f); //0.325
+                        _tapLineTransform.localScale = new Vector3(lineScale, lineScale, 1f);
+                        _thisRenderer.size = new Vector2(1.22f, size);
+                        _exRenderer.size = new Vector2(1.22f, size);
+                        _endTransform.localPosition = new Vector3(0f, 0.6825f - size / 2);
 
-                    Transform.position = _outerPos * (dis / 4.8f); //0.325
-                    _tapLineTransform.localScale = new Vector3(lineScale, lineScale, 1f);
-                    _thisRenderer.size = new Vector2(1.22f, size);
-                    _exRenderer.size = new Vector2(1.22f, size);
-                    _endTransform.localPosition = new Vector3(0f, 0.6825f - size / 2);
-                    
-                    break;
-                case NoteStatus.Arrived:
-                    var endTiming = timing - Length;
-                    var endDistance = endTiming * Speed + 4.8f;
-                    var ratio = endDistance / 4.8f;
-                    var scale = Mathf.Abs(ratio);
-                    _tapLineTransform.localScale = new Vector3(1f, 1f, 1f);
-                    Distance = endDistance;
-                    Transform.position = _outerPos * ratio;
-                    _tapLineTransform.localScale = new Vector3(scale, scale, 1f);
-                    break;
-                default:
-                    return;
+                        break;
+                    case NoteStatus.Arrived:
+                        var endTiming = timing - Length;
+                        var endDistance = endTiming * Speed + 4.8f;
+                        var ratio = endDistance / 4.8f;
+                        var scale = Mathf.Abs(ratio);
+                        _tapLineTransform.localScale = new Vector3(1f, 1f, 1f);
+                        Distance = endDistance;
+                        Transform.position = _outerPos * ratio;
+                        _tapLineTransform.localScale = new Vector3(scale, scale, 1f);
+                        break;
+                    default:
+                        return;
+                }
+
+                //if (IsEX)
+                //    _exRenderer.size = _thisRenderer.size;
             }
-
-            //if (IsEX)
-            //    _exRenderer.size = _thisRenderer.size;
-            Profiler.EndSample();
         }
         void TooLateCheck()
         {

@@ -952,120 +952,120 @@ namespace MajdataPlay.Scenes.Game
         #region GameUpdate
         internal void OnPreUpdate()
         {
-            Profiler.BeginSample("GamePlayManager.OnPreUpdate");
-            Profiler.BeginSample("GamePlayManager.AudioTimeUpdate");
-            AudioTimeUpdate();
-            Profiler.EndSample();
-            ComponentPreUpdate();
-            Profiler.EndSample();
+            using (UnityProfiler.Create("GamePlayManager.OnPreUpdate"))
+            {
+                AudioTimeUpdate();
+                ComponentPreUpdate();
+            }
         }
         internal void OnUpdate()
         {
-            Profiler.BeginSample("GamePlayManager.OnUpdate");
-            NoteManagerUpdate();
-            Profiler.BeginSample("GamePlayManager.GameControlUpdate");
-            GameControlUpdate();
-            Profiler.EndSample();
-            Profiler.BeginSample("GamePlayManager.FnKeyStateUpdate");
-            FnKeyStateUpdate();
-            Profiler.EndSample();
-            Profiler.EndSample();
+            using (UnityProfiler.Create("GamePlayManager.OnUpdate"))
+            {
+                NoteManagerUpdate();
+                GameControlUpdate();
+                FnKeyStateUpdate();
+            }
         }
         internal void OnLateUpdate()
         {
-            Profiler.BeginSample("GamePlayManager.OnLateUpdate");
-            switch (State)
+            using (UnityProfiler.Create("GamePlayManager.OnLateUpdate"))
             {
-                case GamePlayStatus.WaitForEnd:
-                case GamePlayStatus.Blocking:
-                case GamePlayStatus.Running:
-                    _noteAudioManager.OnLateUpdate();
-                    _noteManager.OnLateUpdate();
-                    _objectCounter.OnLateUpdate();
-                    break;
+                switch (State)
+                {
+                    case GamePlayStatus.WaitForEnd:
+                    case GamePlayStatus.Blocking:
+                    case GamePlayStatus.Running:
+                        _noteAudioManager.OnLateUpdate();
+                        _noteManager.OnLateUpdate();
+                        _objectCounter.OnLateUpdate();
+                        break;
+                }
+                _noteEffectPool.OnLateUpdate();
+                _recorderStateDisplayer.OnLateUpdate();
+                if (_bgManager.CurrentSec > _bgManager.MediaLength.TotalSeconds)
+                {
+                    _bgManager.SetBackgroundDim(1.0f);
+                }
+                else
+                {
+                    _bgManager.OnLateUpdate();
+                }
             }
-            _noteEffectPool.OnLateUpdate();
-            _recorderStateDisplayer.OnLateUpdate();
-            if(_bgManager.CurrentSec > _bgManager.MediaLength.TotalSeconds)
-            {
-                _bgManager.SetBackgroundDim(1.0f);
-            }
-            else
-            {
-                _bgManager.OnLateUpdate();
-            }
-            Profiler.EndSample();
         }
         void GameControlUpdate()
         {
-            if (_audioSample is null)
+            using (UnityProfiler.Create("GamePlayManager.GameControlUpdate"))
             {
-                return;
-            }
-            else if (State < GamePlayStatus.Running)
-            {
-                return;
-            }
-            else if (!_objectCounter.AllFinished)
-            {
-                return;
-            }
-            if (_allNotesFinishedTiming is null)
-            {
-                _allNotesFinishedTiming = _thisFrameSec;
-                return;
-            }
-            else
-            {
-                if (_thisFrameSec - (float)_allNotesFinishedTiming < 0.1)
+                if (_audioSample is null)
                 {
                     return;
                 }
-            }
-            var remainingTime = _thisFrameSec - (_audioSample.Length.TotalSeconds / PlaybackSpeed);
-            switch (State)
-            {
-                case GamePlayStatus.Running:
+                else if (State < GamePlayStatus.Running)
+                {
+                    return;
+                }
+                else if (!_objectCounter.AllFinished)
+                {
+                    return;
+                }
+                if (_allNotesFinishedTiming is null)
+                {
+                    _allNotesFinishedTiming = _thisFrameSec;
+                    return;
+                }
+                else
+                {
+                    if (_thisFrameSec - (float)_allNotesFinishedTiming < 0.1)
                     {
-                        var result = CalculateScore();
+                        return;
+                    }
+                }
+                var remainingTime = _thisFrameSec - (_audioSample.Length.TotalSeconds / PlaybackSpeed);
+                switch (State)
+                {
+                    case GamePlayStatus.Running:
+                        {
+                            var result = CalculateScore();
 
-                        switch (result.ComboState)
+                            switch (result.ComboState)
+                            {
+                                case ComboState.APPlus:
+                                case ComboState.AP:
+                                case ComboState.FCPlus:
+                                case ComboState.FC:
+                                    if (IsPracticeMode)
+                                    {
+                                        NextRound4Practice(2000).Forget();
+                                    }
+                                    else
+                                    {
+                                        EndGame(5000).Forget();
+                                    }
+                                    return;
+                            }
+                            if (remainingTime < -7 && !IsPracticeMode)
+                            {
+                                _skipBtn.SetActive(true);
+                            }
+                            State = GamePlayStatus.WaitForEnd;
+                        }
+                        break;
+                    case GamePlayStatus.WaitForEnd:
                         {
-                            case ComboState.APPlus:
-                            case ComboState.AP:
-                            case ComboState.FCPlus:
-                            case ComboState.FC:
-                                if (IsPracticeMode)
-                                {
-                                    NextRound4Practice(2000).Forget();
-                                }
-                                else
-                                {
-                                    EndGame(5000).Forget();
-                                }
+                            if (IsPracticeMode)
+                            {
+                                NextRound4Practice().Forget();
                                 return;
+                            }
+                            else if (remainingTime >= 0)
+                            {
+                                _skipBtn.SetActive(false);
+                                EndGame(2000).Forget();
+                            }
                         }
-                        if (remainingTime < -7 && !IsPracticeMode)
-                        {
-                            _skipBtn.SetActive(true);
-                        }
-                        State = GamePlayStatus.WaitForEnd;
-                    }
-                    break;
-                case GamePlayStatus.WaitForEnd:
-                    {
-                        if (IsPracticeMode)
-                        {
-                            NextRound4Practice().Forget();
-                            return;
-                        }
-                        else if (remainingTime >= 0)
-                        {
-                            _skipBtn.SetActive(false);
-                            EndGame(2000).Forget();
-                        }
-                    }
-                    break;
+                        break;
+                }
             }
         }
         void ComponentPreUpdate()
@@ -1097,147 +1097,153 @@ namespace MajdataPlay.Scenes.Game
         }
         void FnKeyStateUpdate()
         {
-            if (State != GamePlayStatus.Ended)
+            using (UnityProfiler.Create("GamePlayManager.FnKeyStateUpdate"))
             {
-                var _inner_2367 =   InputManager.CheckSensorStatus(SensorArea.A2, SwitchStatus.On) &&
-                                    InputManager.CheckSensorStatus(SensorArea.A3, SwitchStatus.On) &&
-                                    InputManager.CheckSensorStatus(SensorArea.A6, SwitchStatus.On) &&
-                                    InputManager.CheckSensorStatus(SensorArea.A7, SwitchStatus.On);
-                var _inner_3456 =   InputManager.CheckSensorStatus(SensorArea.A3, SwitchStatus.On) &&
-                                    InputManager.CheckSensorStatus(SensorArea.A4, SwitchStatus.On) &&
-                                    InputManager.CheckSensorStatus(SensorArea.A5, SwitchStatus.On) &&
-                                    InputManager.CheckSensorStatus(SensorArea.A6, SwitchStatus.On);
+                if (State != GamePlayStatus.Ended)
+                {
+                    var _inner_2367 = InputManager.CheckSensorStatus(SensorArea.A2, SwitchStatus.On) &&
+                                        InputManager.CheckSensorStatus(SensorArea.A3, SwitchStatus.On) &&
+                                        InputManager.CheckSensorStatus(SensorArea.A6, SwitchStatus.On) &&
+                                        InputManager.CheckSensorStatus(SensorArea.A7, SwitchStatus.On);
+                    var _inner_3456 = InputManager.CheckSensorStatus(SensorArea.A3, SwitchStatus.On) &&
+                                        InputManager.CheckSensorStatus(SensorArea.A4, SwitchStatus.On) &&
+                                        InputManager.CheckSensorStatus(SensorArea.A5, SwitchStatus.On) &&
+                                        InputManager.CheckSensorStatus(SensorArea.A6, SwitchStatus.On);
 
-                var _outter_2367 =  InputManager.CheckButtonStatus(ButtonZone.A2, SwitchStatus.On) &&
-                                    InputManager.CheckButtonStatus(ButtonZone.A3, SwitchStatus.On) &&
-                                    InputManager.CheckButtonStatus(ButtonZone.A6, SwitchStatus.On) &&
-                                    InputManager.CheckButtonStatus(ButtonZone.A7, SwitchStatus.On);
-                var _outter_3456 =  InputManager.CheckButtonStatus(ButtonZone.A3, SwitchStatus.On) &&
-                                    InputManager.CheckButtonStatus(ButtonZone.A4, SwitchStatus.On) &&
-                                    InputManager.CheckButtonStatus(ButtonZone.A5, SwitchStatus.On) &&
-                                    InputManager.CheckButtonStatus(ButtonZone.A6, SwitchStatus.On);
+                    var _outter_2367 = InputManager.CheckButtonStatus(ButtonZone.A2, SwitchStatus.On) &&
+                                        InputManager.CheckButtonStatus(ButtonZone.A3, SwitchStatus.On) &&
+                                        InputManager.CheckButtonStatus(ButtonZone.A6, SwitchStatus.On) &&
+                                        InputManager.CheckButtonStatus(ButtonZone.A7, SwitchStatus.On);
+                    var _outter_3456 = InputManager.CheckButtonStatus(ButtonZone.A3, SwitchStatus.On) &&
+                                        InputManager.CheckButtonStatus(ButtonZone.A4, SwitchStatus.On) &&
+                                        InputManager.CheckButtonStatus(ButtonZone.A5, SwitchStatus.On) &&
+                                        InputManager.CheckButtonStatus(ButtonZone.A6, SwitchStatus.On);
 #if UNITY_ANDROID || UNITY_IOS
-                var _2367 = (_inner_2367||_outter_2367) && _isTrackSkipAvailable;
-                var _3456 = (_inner_3456||_outter_3456) && _isFastRetryAvailable;
+                    var _2367 = (_inner_2367 || _outter_2367) && _isTrackSkipAvailable;
+                    var _3456 = (_inner_3456 || _outter_3456) && _isFastRetryAvailable;
 #else
-                var _2367 = _outter_2367 && _isTrackSkipAvailable;
-                var _3456 = _outter_3456 && _isFastRetryAvailable;
+                    var _2367 = _outter_2367 && _isTrackSkipAvailable;
+                    var _3456 = _outter_3456 && _isFastRetryAvailable;
 #endif
-                var _p1Skip = InputManager.CheckButtonStatus(ButtonZone.P1, SwitchStatus.On);
-                if (_p1Skip)
-                {
-                    _p1SkipTime += MajTimeline.DeltaTime;
-                }
-                else if (_2367)
-                {
-                    _2367PressTime += MajTimeline.DeltaTime;
-                    _3456PressTime = 0;
-                }
-                else if (_3456)
-                {
-                    _3456PressTime += MajTimeline.DeltaTime;
-                    _2367PressTime = 0;
+                    var _p1Skip = InputManager.CheckButtonStatus(ButtonZone.P1, SwitchStatus.On);
+                    if (_p1Skip)
+                    {
+                        _p1SkipTime += MajTimeline.DeltaTime;
+                    }
+                    else if (_2367)
+                    {
+                        _2367PressTime += MajTimeline.DeltaTime;
+                        _3456PressTime = 0;
+                    }
+                    else if (_3456)
+                    {
+                        _3456PressTime += MajTimeline.DeltaTime;
+                        _2367PressTime = 0;
+                    }
+                    else
+                    {
+                        _3456PressTime = 0;
+                        _2367PressTime = 0;
+                        _p1SkipTime = 0;
+                    }
+
+#if UNITY_ANDROID || UNITY_IOS
+                    var p1timeout = 0.5f;
+#else
+                var p1timeout = 0f;
+#endif
+                    if (_p1SkipTime > p1timeout)
+                    {
+                        if (IsPracticeMode)
+                        {
+                            var info = new GameInfo(GameMode.Practice, _gameInfo.Charts, _gameInfo.Levels, 114514);
+                            info.TimeRange = _gameInfo.TimeRange;
+                            Majdata<GameInfo>.Instance = info;
+                            ReturnTo("Practice").Forget();
+                        }
+                        else
+                        {
+                            ReturnTo().Forget();
+                        }
+                    }
+                    else if (_2367PressTime >= 0.5f && _isTrackSkipAvailable)
+                    {
+                        if (IsPracticeMode)
+                        {
+                            var info = new GameInfo(GameMode.Practice, _gameInfo.Charts, _gameInfo.Levels, 114514);
+                            info.TimeRange = _gameInfo.TimeRange;
+                            Majdata<GameInfo>.Instance = info;
+                            ReturnTo("Practice").Forget();
+                        }
+                        else
+                        {
+                            ReturnTo().Forget();
+                        }
+                    }
+                    else if (_3456PressTime >= 0.5f && _isFastRetryAvailable)
+                    {
+                        FastRetry().Forget();
+                    }
                 }
                 else
                 {
                     _3456PressTime = 0;
                     _2367PressTime = 0;
                     _p1SkipTime = 0;
+                    return;
                 }
-
-#if UNITY_ANDROID || UNITY_IOS
-                var p1timeout = 0.5f;
-#else
-                var p1timeout = 0f;
-#endif
-                if (_p1SkipTime > p1timeout)
-                {
-                    if(IsPracticeMode)
-                    {
-                        var info = new GameInfo(GameMode.Practice, _gameInfo.Charts, _gameInfo.Levels, 114514);
-                        info.TimeRange = _gameInfo.TimeRange;
-                        Majdata<GameInfo>.Instance = info;
-                        ReturnTo("Practice").Forget();
-                    }
-                    else
-                    {
-                        ReturnTo().Forget();
-                    }
-                }
-                else if (_2367PressTime >= 0.5f && _isTrackSkipAvailable)
-                {
-                    if (IsPracticeMode)
-                    {
-                        var info = new GameInfo(GameMode.Practice, _gameInfo.Charts, _gameInfo.Levels, 114514);
-                        info.TimeRange = _gameInfo.TimeRange;
-                        Majdata<GameInfo>.Instance = info;
-                        ReturnTo("Practice").Forget();
-                    }
-                    else
-                    {
-                        ReturnTo().Forget();
-                    }
-                }
-                else if (_3456PressTime >= 0.5f && _isFastRetryAvailable)
-                {
-                    FastRetry().Forget();
-                }
-            }
-            else
-            {
-                _3456PressTime = 0;
-                _2367PressTime = 0;
-                _p1SkipTime = 0;
-                return;
-            }
+            } 
         }
         void AudioTimeUpdate()
         {
-            if (_audioSample is null)
+            using (UnityProfiler.Create("GamePlayManager.AudioTimeUpdate"))
             {
-                return;
-            }
-            else if (AudioStartTime == -114514f)
-            {
-                return;
-            }
+                if (_audioSample is null)
+                {
+                    return;
+                }
+                else if (AudioStartTime == -114514f)
+                {
+                    return;
+                }
 
-            switch (State)
-            {
-                case GamePlayStatus.Running:
-                case GamePlayStatus.Blocking:
-                case GamePlayStatus.WaitForEnd:
-                    {
-                        //Do not use this!!!! This have connection with sample batch size
-                        //AudioTime = (float)audioSample.GetCurrentTime();
-                        var elapsedSeconds = _timer.ElapsedSecondsAsFloat;
-                        var playbackSpeed = PlaybackSpeed;
-                        var timeOffset = elapsedSeconds - _audioStartTime;
-                        var realTimeDifference = (float)_audioSample.CurrentSec - (elapsedSeconds - _audioStartTime) * playbackSpeed;
-                        var realTimeDifferenceb = (float)_bgManager.CurrentSec - (elapsedSeconds - _audioStartTime) * playbackSpeed;
-
-                        _thisFrameSec = timeOffset;
-#if UNITY_ANDROID || UNITY_IOS
-                        if (_thisFrameSec <= 2f && _thisFrameSec >= 0f)
+                switch (State)
+                {
+                    case GamePlayStatus.Running:
+                    case GamePlayStatus.Blocking:
+                    case GamePlayStatus.WaitForEnd:
                         {
-                            _devicePlaybackOffset = realTimeDifference;
-                        }
-                        _thisFrameSec += _devicePlaybackOffset;
+                            //Do not use this!!!! This have connection with sample batch size
+                            //AudioTime = (float)audioSample.GetCurrentTime();
+                            var elapsedSeconds = _timer.ElapsedSecondsAsFloat;
+                            var playbackSpeed = PlaybackSpeed;
+                            var timeOffset = elapsedSeconds - _audioStartTime;
+                            var realTimeDifference = (float)_audioSample.CurrentSec - (elapsedSeconds - _audioStartTime) * playbackSpeed;
+                            var realTimeDifferenceb = (float)_bgManager.CurrentSec - (elapsedSeconds - _audioStartTime) * playbackSpeed;
+
+                            _thisFrameSec = timeOffset;
+#if UNITY_ANDROID || UNITY_IOS
+                            if (_thisFrameSec <= 2f && _thisFrameSec >= 0f)
+                            {
+                                _devicePlaybackOffset = realTimeDifference;
+                            }
+                            _thisFrameSec += _devicePlaybackOffset;
 #endif
 
-                        var sb = ZString.CreateStringBuilder(true);
-                        try
-                        {
-                            ERROR_TEXT_FORMAT.FormatTo(ref sb, Math.Abs(realTimeDifference), Math.Abs(realTimeDifferenceb));
-                            var a = sb.AsArraySegment();
-                            _errText.SetCharArray(a.Array, a.Offset, a.Count);
+                            var sb = ZString.CreateStringBuilder(true);
+                            try
+                            {
+                                ERROR_TEXT_FORMAT.FormatTo(ref sb, Math.Abs(realTimeDifference), Math.Abs(realTimeDifferenceb));
+                                var a = sb.AsArraySegment();
+                                _errText.SetCharArray(a.Array, a.Offset, a.Count);
+                            }
+                            finally
+                            {
+                                sb.Dispose();
+                            }
                         }
-                        finally
-                        {
-                            sb.Dispose();
-                        }
-                    }           
-                    break;
+                        break;
+                }
             }
         }
 

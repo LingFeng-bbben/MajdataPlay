@@ -279,121 +279,123 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [OnPreUpdate]
         void OnPreUpdate()
         {
-            Profiler.BeginSample("SlideDrop.OnPreUpdate");
-            SlideBarFadeIn();
-            SlideCheck();
-            Profiler.EndSample();
+            using (UnityProfiler.Create("SlideDrop.OnPreUpdate"))
+            {
+                SlideBarFadeIn();
+                SlideCheck();
+            }
         }
         [OnUpdate]
         void OnUpdate()
         {
-            Profiler.BeginSample("SlideDrop.OnUpdate");
-//#if UNITY_EDITOR
-//            {
-//                var indexProcess = (_starPositions.Count - 1) * (1 - _runtimeSlideConst);
-//                var index = (int)indexProcess;
-//                var pos = indexProcess - index;
-
-//                var a = _starPositions[index + 1];
-//                var b = _starPositions[index];
-//                var ba = a - b;
-//                var newPos = ba * pos + b;
-//                _judgeFramePoint.position = newPos;
-//            }
-//#endif
-            // ConnSlide
-            //var star = _stars[0];
-            var starTransform = StarTransforms.Span[0];
-
-            Autoplay();
-            SensorCheck();
-
-            switch (State)
+            using (UnityProfiler.Create("SlideDrop.OnUpdate"))
             {
-                case NoteStatus.Inited:
-                    SetStarActive(false);
-                    if (ThisFrameSec - Timing > 0)
-                    {
-                        if (!(ConnectInfo.IsConnSlide && !ConnectInfo.IsGroupPartHead))
+                //#if UNITY_EDITOR
+                //            {
+                //                var indexProcess = (_starPositions.Count - 1) * (1 - _runtimeSlideConst);
+                //                var index = (int)indexProcess;
+                //                var pos = indexProcess - index;
+
+                //                var a = _starPositions[index + 1];
+                //                var b = _starPositions[index];
+                //                var ba = a - b;
+                //                var newPos = ba * pos + b;
+                //                _judgeFramePoint.position = newPos;
+                //            }
+                //#endif
+                // ConnSlide
+                //var star = _stars[0];
+                var starTransform = StarTransforms.Span[0];
+
+                Autoplay();
+                SensorCheck();
+
+                switch (State)
+                {
+                    case NoteStatus.Inited:
+                        SetStarActive(false);
+                        if (ThisFrameSec - Timing > 0)
                         {
+                            if (!(ConnectInfo.IsConnSlide && !ConnectInfo.IsGroupPartHead))
+                            {
+                                SetStarActive(true);
+                            }
+
+                            _starRenderer.color = new Color(1, 1, 1, 0);
+                            starTransform.localScale = new Vector3(0, 0, 1);
+                            starTransform.position = _starPositions[0];
+                            ApplyStarRotation(_starRotations[0]);
+                            State = NoteStatus.Scaling;
+                            goto case NoteStatus.Scaling;
+                        }
+                        break;
+                    case NoteStatus.Scaling:
+                        var timing = ThisFrameSec - StartTiming;
+                        if (timing > 0f)
+                        {
+                            _starRenderer.color = new Color(1, 1, 1, 1);
+                            if (!IsSlideNoHead)
+                            {
+                                starTransform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
+                            }
                             SetStarActive(true);
-                        }
 
-                        _starRenderer.color = new Color(1, 1, 1, 0);
-                        starTransform.localScale = new Vector3(0, 0, 1);
-                        starTransform.position = _starPositions[0];
-                        ApplyStarRotation(_starRotations[0]);
-                        State = NoteStatus.Scaling;
-                        goto case NoteStatus.Scaling;
-                    }
-                    break;
-                case NoteStatus.Scaling:
-                    var timing = ThisFrameSec - StartTiming;
-                    if (timing > 0f)
-                    {
-                        _starRenderer.color = new Color(1, 1, 1, 1);
-                        if (!IsSlideNoHead)
+                            State = NoteStatus.Running;
+                            goto case NoteStatus.Running;
+                        }
+                        if (ConnectInfo.IsConnSlide && !ConnectInfo.IsGroupPartHead)
                         {
-                            starTransform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
+                            return;
                         }
-                        SetStarActive(true);
-
-                        State = NoteStatus.Running;
-                        goto case NoteStatus.Running;
-                    }
-                    if (ConnectInfo.IsConnSlide && !ConnectInfo.IsGroupPartHead)
-                    {
-                        return;
-                    }
-                    else if (IsSlideNoHead)
-                    {
-                        return;
-                    }
-                    // 只有当它是一个起点Slide（而非Slide Group中的子部分）的时候，才会有开始的星星渐入动画
-                    var alpha = (1f - -timing / (StartTiming - Timing)).Clamp(0, 1);
-
-                    _starRenderer.color = new Color(1, 1, 1, alpha);
-                    starTransform.localScale = new Vector3(alpha + 0.5f, alpha + 0.5f, alpha + 0.5f);
-
-                    break;
-                case NoteStatus.Running:
-                    if (GetRemainingTimeWithoutOffset() == 0)
-                    {
-                        starTransform.position = _starPositions[_starPositions.Count - 1];
-                        ApplyStarRotation(_starRotations[_starRotations.Count - 1]);
-                        if (ConnectInfo.IsConnSlide && !ConnectInfo.IsGroupPartEnd)
+                        else if (IsSlideNoHead)
                         {
-                            DestroyStars();
+                            return;
                         }
-                        State = NoteStatus.Arrived;
-                        goto case NoteStatus.Arrived;
-                    }
-                    var process = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
-                    var indexProcess = (_starPositions.Count - 1) * process;
-                    var index = (int)indexProcess;
-                    var pos = indexProcess - index;
+                        // 只有当它是一个起点Slide（而非Slide Group中的子部分）的时候，才会有开始的星星渐入动画
+                        var alpha = (1f - -timing / (StartTiming - Timing)).Clamp(0, 1);
 
-                    var a = _starPositions[index + 1];
-                    var b = _starPositions[index];
-                    var ba = a - b;
-                    var newPos = ba * pos + b;
+                        _starRenderer.color = new Color(1, 1, 1, alpha);
+                        starTransform.localScale = new Vector3(alpha + 0.5f, alpha + 0.5f, alpha + 0.5f);
 
-                    starTransform.position = newPos;
-                    if (index < _starRotations.Count - 1)
-                    {
-                        var _a = _starRotations[index + 1].eulerAngles.z;
-                        var _b = _starRotations[index].eulerAngles.z;
-                        var dAngle = Mathf.DeltaAngle(_b, _a) * pos;
-                        dAngle = Mathf.Abs(dAngle);
-                        var newRotation = Quaternion.Euler(0f, 0f,
-                                        Mathf.MoveTowardsAngle(_b, _a, dAngle));
-                        ApplyStarRotation(newRotation);
-                    }
-                    break;
-                case NoteStatus.Arrived:
-                    break;
+                        break;
+                    case NoteStatus.Running:
+                        if (GetRemainingTimeWithoutOffset() == 0)
+                        {
+                            starTransform.position = _starPositions[_starPositions.Count - 1];
+                            ApplyStarRotation(_starRotations[_starRotations.Count - 1]);
+                            if (ConnectInfo.IsConnSlide && !ConnectInfo.IsGroupPartEnd)
+                            {
+                                DestroyStars();
+                            }
+                            State = NoteStatus.Arrived;
+                            goto case NoteStatus.Arrived;
+                        }
+                        var process = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
+                        var indexProcess = (_starPositions.Count - 1) * process;
+                        var index = (int)indexProcess;
+                        var pos = indexProcess - index;
+
+                        var a = _starPositions[index + 1];
+                        var b = _starPositions[index];
+                        var ba = a - b;
+                        var newPos = ba * pos + b;
+
+                        starTransform.position = newPos;
+                        if (index < _starRotations.Count - 1)
+                        {
+                            var _a = _starRotations[index + 1].eulerAngles.z;
+                            var _b = _starRotations[index].eulerAngles.z;
+                            var dAngle = Mathf.DeltaAngle(_b, _a) * pos;
+                            dAngle = Mathf.Abs(dAngle);
+                            var newRotation = Quaternion.Euler(0f, 0f,
+                                            Mathf.MoveTowardsAngle(_b, _a, dAngle));
+                            ApplyStarRotation(newRotation);
+                        }
+                        break;
+                    case NoteStatus.Arrived:
+                        break;
+                }
             }
-            Profiler.EndSample();
         }
         /// <summary>
         /// 判定队列检查

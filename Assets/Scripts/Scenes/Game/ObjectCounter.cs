@@ -333,24 +333,27 @@ namespace MajdataPlay.Scenes.Game
 
         internal void OnLateUpdate()
         {
-            Profiler.BeginSample("ObjectCounter.OnLateUpdate");
-            Profiler.BeginSample("ObjectCounter.UpdateAccRate");
-            UpdateAccRate();
-            Profiler.EndSample();
-            Profiler.BeginSample("GamePlayManager.UpdateOutput");
-            UpdateOutput();
-            Profiler.EndSample();
-            if(_xxlbDanceRequest.IsRequested)
+            using (UnityProfiler.Create("ObjectCounter.OnLateUpdate"))
             {
-                _xxlbController.Dance(_xxlbDanceRequest.Grade);
-                _xxlbDanceRequest = new();
+                using (UnityProfiler.Create("ObjectCounter.UpdateAccRate"))
+                {
+                    UpdateAccRate();
+                }
+                using (UnityProfiler.Create("ObjectCounter.UpdateOutput"))
+                {
+                    UpdateOutput();
+                }
+                if (_xxlbDanceRequest.IsRequested)
+                {
+                    _xxlbController.Dance(_xxlbDanceRequest.Grade);
+                    _xxlbDanceRequest = new();
+                }
+                if (_isOutlinePlayRequested)
+                {
+                    _outline.Play();
+                    _isOutlinePlayRequested = false;
+                }
             }
-            if(_isOutlinePlayRequested)
-            {
-                _outline.Play();
-                _isOutlinePlayRequested = false;
-            }
-            Profiler.EndSample();
         }
         internal void Clear()
         {

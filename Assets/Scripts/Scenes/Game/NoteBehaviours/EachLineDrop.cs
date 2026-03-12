@@ -111,62 +111,63 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [OnLateUpdate]
         void OnLateUpdate()
         {
-            Profiler.BeginSample("EachLineDrop.OnLateUpdate");
-            if (State < NoteStatus.Inited || IsDestroyed)
+            using (UnityProfiler.Create("EachLineDrop.OnLateUpdate"))
             {
-                return;
-            }
-            var timing = _noteController.ThisFrameSec - this.timing;
-            var distance = DistanceProvider is not null ? DistanceProvider.Distance : timing * speed + 4.8f;
-            var scaleRate = _noteAppearRate;
-            var destScale = distance * scaleRate + (1 - scaleRate * 1.225f);
-            var lineScale = Mathf.Abs(distance / 4.8f);
-
-            switch (State)
-            {
-                case NoteStatus.Inited:
-                    if (destScale >= 0f)
-                    {
-                        RendererState = RendererStatus.Off;
-
-                        State = NoteStatus.Scaling;
-                        goto case NoteStatus.Scaling;
-                    }
+                if (State < NoteStatus.Inited || IsDestroyed)
+                {
                     return;
-                case NoteStatus.Scaling:
-                    if (destScale > 0.3f)
-                    {
-                        RendererState = RendererStatus.On;
-                        GameObject.layer = MajEnv.DEFAULT_LAYER;
-                    }
-                    if (distance < 1.225f)
-                    {
-                        Transform.localScale = new Vector3(1.225f / 4.8f, 1.225f / 4.8f, 1f);
-                    }
-                    else
-                    {
-                        State = NoteStatus.Running;
-                        goto case NoteStatus.Running;
-                    }
-                    break;
-                case NoteStatus.Running:
-                    Transform.localScale = new Vector3(lineScale, lineScale, 1f);
-                    if (NoteA is not null && NoteB is not null)
-                    {
-                        if (NoteA.State == NoteStatus.End || NoteB.State == NoteStatus.End)
+                }
+                var timing = _noteController.ThisFrameSec - this.timing;
+                var distance = DistanceProvider is not null ? DistanceProvider.Distance : timing * speed + 4.8f;
+                var scaleRate = _noteAppearRate;
+                var destScale = distance * scaleRate + (1 - scaleRate * 1.225f);
+                var lineScale = Mathf.Abs(distance / 4.8f);
+
+                switch (State)
+                {
+                    case NoteStatus.Inited:
+                        if (destScale >= 0f)
+                        {
+                            RendererState = RendererStatus.Off;
+
+                            State = NoteStatus.Scaling;
+                            goto case NoteStatus.Scaling;
+                        }
+                        return;
+                    case NoteStatus.Scaling:
+                        if (destScale > 0.3f)
+                        {
+                            RendererState = RendererStatus.On;
+                            GameObject.layer = MajEnv.DEFAULT_LAYER;
+                        }
+                        if (distance < 1.225f)
+                        {
+                            Transform.localScale = new Vector3(1.225f / 4.8f, 1.225f / 4.8f, 1f);
+                        }
+                        else
+                        {
+                            State = NoteStatus.Running;
+                            goto case NoteStatus.Running;
+                        }
+                        break;
+                    case NoteStatus.Running:
+                        Transform.localScale = new Vector3(lineScale, lineScale, 1f);
+                        if (NoteA is not null && NoteB is not null)
+                        {
+                            if (NoteA.State == NoteStatus.End || NoteB.State == NoteStatus.End)
+                            {
+                                End();
+                                return;
+                            }
+                        }
+                        else if (timing > 0)
                         {
                             End();
                             return;
                         }
-                    }
-                    else if (timing > 0)
-                    {
-                        End();
-                        return;
-                    }
-                    break;
+                        break;
+                }
             }
-            Profiler.EndSample();
         }
         void OnDestroy()
         {

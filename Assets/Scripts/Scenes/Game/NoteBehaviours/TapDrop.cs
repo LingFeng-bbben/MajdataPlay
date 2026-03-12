@@ -187,11 +187,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [OnPreUpdate]
         void OnPreUpdate()
         {
-            Profiler.BeginSample("TapDrop.OnPreUpdate");
-            TooLateCheck();
-            Check();
-            Autoplay();
-            Profiler.EndSample();
+            using (UnityProfiler.Create("TapDrop.OnPreUpdate"))
+            {
+                TooLateCheck();
+                Check();
+                Autoplay();
+            }
         }
         protected override void Autoplay()
         {
@@ -240,61 +241,62 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [OnUpdate]
         void OnUpdate()
         {
-            Profiler.BeginSample("TapDrop.OnUpdate");
-            var timing = GetTimeSpanToArriveTiming();
-            var distance = timing * Speed + 4.8f;
-            var scaleRate = _noteAppearRate;
-            var destScale = distance * scaleRate + (1 - scaleRate * 1.225f);
-
-            switch (State)
+            using (UnityProfiler.Create("TapDrop.OnUpdate"))
             {
-                case NoteStatus.Inited:
-                    if (destScale >= 0f)
-                    {
-                        Transform.position = _innerPos;
-                        _tapLineTransform.localScale = new Vector3(1.225f / 4.8f, 1.225f / 4.8f, 1f);
+                var timing = GetTimeSpanToArriveTiming();
+                var distance = timing * Speed + 4.8f;
+                var scaleRate = _noteAppearRate;
+                var destScale = distance * scaleRate + (1 - scaleRate * 1.225f);
 
-                        RendererState = RendererStatus.On;
-                        State = NoteStatus.Scaling;
-                        goto case NoteStatus.Scaling;
-                    }
-                    return;
-                case NoteStatus.Scaling:
-                    {
-                        if (destScale > 0.3f)
+                switch (State)
+                {
+                    case NoteStatus.Inited:
+                        if (destScale >= 0f)
                         {
-                            SetTapLineActive(true);
+                            Transform.position = _innerPos;
+                            _tapLineTransform.localScale = new Vector3(1.225f / 4.8f, 1.225f / 4.8f, 1f);
+
+                            RendererState = RendererStatus.On;
+                            State = NoteStatus.Scaling;
+                            goto case NoteStatus.Scaling;
                         }
-                        if (distance < 1.225f)
+                        return;
+                    case NoteStatus.Scaling:
+                        {
+                            if (destScale > 0.3f)
+                            {
+                                SetTapLineActive(true);
+                            }
+                            if (distance < 1.225f)
+                            {
+                                Distance = distance;
+                                Transform.localScale = new Vector3(destScale, destScale) * USERSETTING_TAP_SCALE;
+                            }
+                            else
+                            {
+                                Transform.localScale = new Vector3(1f, 1f) * USERSETTING_TAP_SCALE;
+                                State = NoteStatus.Running;
+                                goto case NoteStatus.Running;
+                            }
+                        }
+                        break;
+                    case NoteStatus.Running:
                         {
                             Distance = distance;
-                            Transform.localScale = new Vector3(destScale, destScale) * USERSETTING_TAP_SCALE;
+                            Transform.position = _outerPos * (distance / 4.8f);
+                            var lineScale = Mathf.Abs(distance / 4.8f);
+                            _tapLineTransform.localScale = new Vector3(lineScale, lineScale, 1f);
                         }
-                        else
-                        {
-                            Transform.localScale = new Vector3(1f, 1f) * USERSETTING_TAP_SCALE;
-                            State = NoteStatus.Running;
-                            goto case NoteStatus.Running;
-                        }
-                    }
-                    break;
-                case NoteStatus.Running:
-                    {
-                        Distance = distance;
-                        Transform.position = _outerPos * (distance / 4.8f);
-                        var lineScale = Mathf.Abs(distance / 4.8f);
-                        _tapLineTransform.localScale = new Vector3(lineScale, lineScale, 1f);
-                    }
-                    break;
-                default:
-                    return;
+                        break;
+                    default:
+                        return;
+                }
+                if (IsStar)
+                {
+                    if (NoteController.IsStart && _isStarRotation)
+                        Transform.Rotate(0f, 0f, RotateSpeed * MajTimeline.DeltaTime);
+                }
             }
-            if (IsStar)
-            {
-                if (NoteController.IsStart && _isStarRotation)
-                    Transform.Rotate(0f, 0f, RotateSpeed * MajTimeline.DeltaTime);
-            }
-            Profiler.EndSample();
         }
         void TooLateCheck()
         {

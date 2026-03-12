@@ -123,115 +123,119 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void OnPreUpdate()
         {
-            Profiler.BeginSample("NoteManager.OnPreUpdate");
-            for (var i = 0; i < 8; i++)
+            using (UnityProfiler.Create("NoteManager.OnPreUpdate"))
             {
+                for (var i = 0; i < 8; i++)
+                {
 #if UNITY_ANDROID || UNITY_IOS
-                _btnUsedCountInThisFrame[i] = 0;
-                _btnClickedCountInThisFrame[i] = 0;
+                    _btnUsedCountInThisFrame[i] = 0;
+                    _btnClickedCountInThisFrame[i] = 0;
 #else
                 _isBtnUsedInThisFrame[i] = false;
 #endif
-                _isBtnClickedInThisFrame[i] = false;
-            }
-            for (var i = 0; i < 33; i++)
-            {
+                    _isBtnClickedInThisFrame[i] = false;
+                }
+                for (var i = 0; i < 33; i++)
+                {
 #if UNITY_ANDROID || UNITY_IOS
-                _sensorUsedCountInThisFrame[i] = 0;
-                _sensorClickedCountInThisFrame[i] = 0;
+                    _sensorUsedCountInThisFrame[i] = 0;
+                    _sensorClickedCountInThisFrame[i] = 0;
 #else
                 _isSensorUsedInThisFrame[i] = false;
 #endif
-                _isSensorClickedInThisFrame[i] = false;
-            }
+                    _isSensorClickedInThisFrame[i] = false;
+                }
 
-            if(USERSETTING_IS_AUTOPLAY)
-            {
-                AutoplayIOUpdate();
-            }
-            else
-            {
-                GameIOUpdate();
-            }
-            _tapUpdater.OnPreUpdate();
-            _holdUpdater.OnPreUpdate();
-            _slideUpdater.OnPreUpdate();
-            _touchUpdater.OnPreUpdate();
-            _touchHoldUpdater.OnPreUpdate();
-            _eachLineUpdater.OnPreUpdate();
+                if (USERSETTING_IS_AUTOPLAY)
+                {
+                    AutoplayIOUpdate();
+                }
+                else
+                {
+                    GameIOUpdate();
+                }
+                _tapUpdater.OnPreUpdate();
+                _holdUpdater.OnPreUpdate();
+                _slideUpdater.OnPreUpdate();
+                _touchUpdater.OnPreUpdate();
+                _touchHoldUpdater.OnPreUpdate();
+                _eachLineUpdater.OnPreUpdate();
 #if UNITY_EDITOR || DEBUG
-            _preUpdateElapsedMs = 0;
-            _preUpdateElapsedMs += _tapUpdater.PreUpdateElapsedMs;
-            _preUpdateElapsedMs += _holdUpdater.PreUpdateElapsedMs;
-            _preUpdateElapsedMs += _slideUpdater.PreUpdateElapsedMs;
-            _preUpdateElapsedMs += _touchUpdater.PreUpdateElapsedMs;
-            _preUpdateElapsedMs += _touchHoldUpdater.PreUpdateElapsedMs;
-            _preUpdateElapsedMs += _eachLineUpdater.PreUpdateElapsedMs;
+                _preUpdateElapsedMs = 0;
+                _preUpdateElapsedMs += _tapUpdater.PreUpdateElapsedMs;
+                _preUpdateElapsedMs += _holdUpdater.PreUpdateElapsedMs;
+                _preUpdateElapsedMs += _slideUpdater.PreUpdateElapsedMs;
+                _preUpdateElapsedMs += _touchUpdater.PreUpdateElapsedMs;
+                _preUpdateElapsedMs += _touchHoldUpdater.PreUpdateElapsedMs;
+                _preUpdateElapsedMs += _eachLineUpdater.PreUpdateElapsedMs;
 #endif
-            Profiler.EndSample();
+            }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void OnUpdate()
         {
-            Profiler.BeginSample("NoteManager.OnUpdate");
-            _tapUpdater.OnUpdate();
-            _holdUpdater.OnUpdate();
-            _slideUpdater.OnUpdate();
-            _touchUpdater.OnUpdate();
-            _touchHoldUpdater.OnUpdate();
-            _eachLineUpdater.OnUpdate();
+            using (UnityProfiler.Create("NoteManager.OnUpdate"))
+            {
+                _tapUpdater.OnUpdate();
+                _holdUpdater.OnUpdate();
+                _slideUpdater.OnUpdate();
+                _touchUpdater.OnUpdate();
+                _touchHoldUpdater.OnUpdate();
+                _eachLineUpdater.OnUpdate();
 #if UNITY_EDITOR || DEBUG
-            _updateElapsedMs = 0;
-            _updateElapsedMs += _tapUpdater.UpdateElapsedMs;
-            _updateElapsedMs += _holdUpdater.UpdateElapsedMs;
-            _updateElapsedMs += _slideUpdater.UpdateElapsedMs;
-            _updateElapsedMs += _touchUpdater.UpdateElapsedMs;
-            _updateElapsedMs += _touchHoldUpdater.UpdateElapsedMs;
-            _updateElapsedMs += _eachLineUpdater.UpdateElapsedMs;
+                _updateElapsedMs = 0;
+                _updateElapsedMs += _tapUpdater.UpdateElapsedMs;
+                _updateElapsedMs += _holdUpdater.UpdateElapsedMs;
+                _updateElapsedMs += _slideUpdater.UpdateElapsedMs;
+                _updateElapsedMs += _touchUpdater.UpdateElapsedMs;
+                _updateElapsedMs += _touchHoldUpdater.UpdateElapsedMs;
+                _updateElapsedMs += _eachLineUpdater.UpdateElapsedMs;
 #endif
-            Profiler.EndSample();
+            }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void OnLateUpdate()
         {
-            Profiler.BeginSample("NoteManager.OnLateUpdate");
-            _tapUpdater.OnLateUpdate();
-            _holdUpdater.OnLateUpdate();
-            _slideUpdater.OnLateUpdate();
-            _touchUpdater.OnLateUpdate();
-            _touchHoldUpdater.OnLateUpdate();
-            _eachLineUpdater.OnLateUpdate();
+            using (UnityProfiler.Create("NoteManager.OnLateUpdate"))
+            {
+                _tapUpdater.OnLateUpdate();
+                _holdUpdater.OnLateUpdate();
+                _slideUpdater.OnLateUpdate();
+                _touchUpdater.OnLateUpdate();
+                _touchHoldUpdater.OnLateUpdate();
+                _eachLineUpdater.OnLateUpdate();
 #if UNITY_EDITOR || DEBUG
-            _lateUpdateElapsedMs = 0;
-            _lateUpdateElapsedMs += _tapUpdater.LateUpdateElapsedMs;
-            _lateUpdateElapsedMs += _holdUpdater.LateUpdateElapsedMs;
-            _lateUpdateElapsedMs += _slideUpdater.LateUpdateElapsedMs;
-            _lateUpdateElapsedMs += _touchUpdater.LateUpdateElapsedMs;
-            _lateUpdateElapsedMs += _touchHoldUpdater.LateUpdateElapsedMs;
-            _lateUpdateElapsedMs += _eachLineUpdater.LateUpdateElapsedMs;
+                _lateUpdateElapsedMs = 0;
+                _lateUpdateElapsedMs += _tapUpdater.LateUpdateElapsedMs;
+                _lateUpdateElapsedMs += _holdUpdater.LateUpdateElapsedMs;
+                _lateUpdateElapsedMs += _slideUpdater.LateUpdateElapsedMs;
+                _lateUpdateElapsedMs += _touchUpdater.LateUpdateElapsedMs;
+                _lateUpdateElapsedMs += _touchHoldUpdater.LateUpdateElapsedMs;
+                _lateUpdateElapsedMs += _eachLineUpdater.LateUpdateElapsedMs;
 #endif
-            Profiler.EndSample();
+            }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void OnFixedUpdate()
         {
-            Profiler.BeginSample("NoteManager.OnFixedUpdate");
-            _tapUpdater.OnFixedUpdate();
-            _holdUpdater.OnFixedUpdate();
-            _slideUpdater.OnFixedUpdate();
-            _touchUpdater.OnFixedUpdate();
-            _touchHoldUpdater.OnFixedUpdate();
-            _eachLineUpdater.OnFixedUpdate();
+            using (UnityProfiler.Create("NoteManager.OnFixedUpdate"))
+            {
+                _tapUpdater.OnFixedUpdate();
+                _holdUpdater.OnFixedUpdate();
+                _slideUpdater.OnFixedUpdate();
+                _touchUpdater.OnFixedUpdate();
+                _touchHoldUpdater.OnFixedUpdate();
+                _eachLineUpdater.OnFixedUpdate();
 #if UNITY_EDITOR || DEBUG
-            _fixedUpdateElapsedMs = 0;
-            _fixedUpdateElapsedMs += _tapUpdater.FixedUpdateElapsedMs;
-            _fixedUpdateElapsedMs += _holdUpdater.FixedUpdateElapsedMs;
-            _fixedUpdateElapsedMs += _slideUpdater.FixedUpdateElapsedMs;
-            _fixedUpdateElapsedMs += _touchUpdater.FixedUpdateElapsedMs;
-            _fixedUpdateElapsedMs += _touchHoldUpdater.FixedUpdateElapsedMs;
-            _fixedUpdateElapsedMs += _eachLineUpdater.FixedUpdateElapsedMs;
+                _fixedUpdateElapsedMs = 0;
+                _fixedUpdateElapsedMs += _tapUpdater.FixedUpdateElapsedMs;
+                _fixedUpdateElapsedMs += _holdUpdater.FixedUpdateElapsedMs;
+                _fixedUpdateElapsedMs += _slideUpdater.FixedUpdateElapsedMs;
+                _fixedUpdateElapsedMs += _touchUpdater.FixedUpdateElapsedMs;
+                _fixedUpdateElapsedMs += _touchHoldUpdater.FixedUpdateElapsedMs;
+                _fixedUpdateElapsedMs += _eachLineUpdater.FixedUpdateElapsedMs;
 #endif
-            Profiler.EndSample();
+            }
         }
         public async UniTask InitAsync()
         {

@@ -115,127 +115,129 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void OnPreUpdate()
         {
-            Profiler.BeginSample("NoteAudioManager.OnPreUpdate");
-            for (var i = 0; i < _noteSFXPlaybackRequests.Length; i++)
+            using (UnityProfiler.Create("NoteAudioManager.OnPreUpdate"))
             {
-                _noteSFXPlaybackRequests[i] = false;
+                for (var i = 0; i < _noteSFXPlaybackRequests.Length; i++)
+                {
+                    _noteSFXPlaybackRequests[i] = false;
+                }
             }
-            Profiler.EndSample();
         }
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void OnLateUpdate()
         {
-            if (!GameManager.IsAppOnFocus)
+            using (UnityProfiler.Create("NoteAudioManager.OnLateUpdate"))
             {
-                return;
-            }
-            Profiler.BeginSample("NoteAudioManager.OnLateUpdate");
-            AnswerSFXUpdate();
-            for (var i = 0; i < _noteSFXPlaybackRequests.Length; i++)
-            {
-                var isRequested = _noteSFXPlaybackRequests[i];
-                switch (i)
+                if (!GameManager.IsAppOnFocus)
                 {
-                    case TAP_PERFECT:
-                        if (isRequested)
-                        {
-                            _noteSFXs[TAP_PERFECT].PlayOneShot();
-                        }
-                        break;
-                    case TAP_GREAT:
-                        if (isRequested)
-                        {
-                            _noteSFXs[TAP_GREAT].PlayOneShot();
-                        }
-                        break;
-                    case TAP_GOOD:
-                        if (isRequested)
-                        {
-                            _noteSFXs[TAP_GOOD].PlayOneShot();
-                        }
-                        break;
-                    case TAP_EX:
-                        if (isRequested)
-                        {
-                            _noteSFXs[TAP_EX].PlayOneShot();
-                        }
-                        break;
-                    case BREAK_JUDGE:
-                        if (isRequested)
-                        {
-                            _noteSFXs[BREAK_JUDGE].PlayOneShot();
-                        }
-                        break;
-                    case BREAK_SFX:
-                        if (isRequested)
-                        {
-                            _noteSFXs[BREAK_SFX].PlayOneShot();
-                        }
-                        break;
-                    case SLIDE:
-                        if (isRequested)
-                        {
-                            _noteSFXs[SLIDE].PlayOneShot();
-                        }
-                        break;
-                    case BREAK_SLIDE:
-                        if (isRequested)
-                        {
-                            _noteSFXs[BREAK_SLIDE].PlayOneShot();
-                        }
-                        break;
-                    case BREAK_SLIDE_JUDGE:
-                        if (isRequested)
-                        {
-                            _noteSFXs[BREAK_SLIDE_JUDGE].PlayOneShot();
-                            _noteSFXs[BREAK_SFX].PlayOneShot();
-                        }
-                        break;
-                    case TOUCH:
-                        if (isRequested)
-                        {
-                            _noteSFXs[TOUCH].PlayOneShot();
-                        }
-                        break;
-                    case TOUCHHOLD:
-                        if (isRequested)
-                        {
-                            if (_isTouchHoldRiserPlaying)
-                                break;
-                            _isTouchHoldRiserPlaying = true;
-                            _noteSFXs[TOUCHHOLD].PlayOneShot();
-                        }
-                        else
-                        {
-                            if (!_isTouchHoldRiserPlaying)
-                                break;
-                            _isTouchHoldRiserPlaying = false;
-                            _noteSFXs[TOUCHHOLD].Stop();
-                        }
-                        break;
-                    case FIREWORK:
-                        if (isRequested)
-                        {
-                            _noteSFXs[FIREWORK].PlayOneShot();
-                        }
-                        break;
-                    case ANSWER:
-                        if (isRequested)
-                        {
-                            _noteSFXs[ANSWER].PlayOneShot();
-                        }
-                        break;
-                    case ANSWER_CLOCK:
-                        if (isRequested)
-                        {
-                            _noteSFXs[ANSWER_CLOCK].PlayOneShot();
-                        }
-                        break;
+                    return;
+                }
+                AnswerSFXUpdate();
+                for (var i = 0; i < _noteSFXPlaybackRequests.Length; i++)
+                {
+                    var isRequested = _noteSFXPlaybackRequests[i];
+                    switch (i)
+                    {
+                        case TAP_PERFECT:
+                            if (isRequested)
+                            {
+                                _noteSFXs[TAP_PERFECT].PlayOneShot();
+                            }
+                            break;
+                        case TAP_GREAT:
+                            if (isRequested)
+                            {
+                                _noteSFXs[TAP_GREAT].PlayOneShot();
+                            }
+                            break;
+                        case TAP_GOOD:
+                            if (isRequested)
+                            {
+                                _noteSFXs[TAP_GOOD].PlayOneShot();
+                            }
+                            break;
+                        case TAP_EX:
+                            if (isRequested)
+                            {
+                                _noteSFXs[TAP_EX].PlayOneShot();
+                            }
+                            break;
+                        case BREAK_JUDGE:
+                            if (isRequested)
+                            {
+                                _noteSFXs[BREAK_JUDGE].PlayOneShot();
+                            }
+                            break;
+                        case BREAK_SFX:
+                            if (isRequested)
+                            {
+                                _noteSFXs[BREAK_SFX].PlayOneShot();
+                            }
+                            break;
+                        case SLIDE:
+                            if (isRequested)
+                            {
+                                _noteSFXs[SLIDE].PlayOneShot();
+                            }
+                            break;
+                        case BREAK_SLIDE:
+                            if (isRequested)
+                            {
+                                _noteSFXs[BREAK_SLIDE].PlayOneShot();
+                            }
+                            break;
+                        case BREAK_SLIDE_JUDGE:
+                            if (isRequested)
+                            {
+                                _noteSFXs[BREAK_SLIDE_JUDGE].PlayOneShot();
+                                _noteSFXs[BREAK_SFX].PlayOneShot();
+                            }
+                            break;
+                        case TOUCH:
+                            if (isRequested)
+                            {
+                                _noteSFXs[TOUCH].PlayOneShot();
+                            }
+                            break;
+                        case TOUCHHOLD:
+                            if (isRequested)
+                            {
+                                if (_isTouchHoldRiserPlaying)
+                                    break;
+                                _isTouchHoldRiserPlaying = true;
+                                _noteSFXs[TOUCHHOLD].PlayOneShot();
+                            }
+                            else
+                            {
+                                if (!_isTouchHoldRiserPlaying)
+                                    break;
+                                _isTouchHoldRiserPlaying = false;
+                                _noteSFXs[TOUCHHOLD].Stop();
+                            }
+                            break;
+                        case FIREWORK:
+                            if (isRequested)
+                            {
+                                _noteSFXs[FIREWORK].PlayOneShot();
+                            }
+                            break;
+                        case ANSWER:
+                            if (isRequested)
+                            {
+                                _noteSFXs[ANSWER].PlayOneShot();
+                            }
+                            break;
+                        case ANSWER_CLOCK:
+                            if (isRequested)
+                            {
+                                _noteSFXs[ANSWER_CLOCK].PlayOneShot();
+                            }
+                            break;
+                    }
                 }
             }
-            Profiler.EndSample();
         }
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
