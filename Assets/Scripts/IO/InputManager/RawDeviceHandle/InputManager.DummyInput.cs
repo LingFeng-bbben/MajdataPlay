@@ -334,12 +334,12 @@ namespace MajdataPlay.IO
             var rayToCenter = cubeRay - new Vector3(0, 0, -10);
             var radToCenter = rayToCenter.magnitude;
             var edgeYPosition = Mathf.Max(5.08f + (1.5f + _lastMainScreenOffset * 2.7f), 5.4f);
-            var extraButton = -1;
+            var extraButtonStates = (stackalloc bool[12]);
             if (cubeRay.y > edgeYPosition)
             {
-                extraButton = 9;
+                extraButtonStates[9] = true;
             }
-            else if(radToCenter > _lastTouchButtonRingEdge)
+            if(radToCenter > _lastTouchButtonRingEdge)
             {
                 // out of the screen area to the button area
                 var degree = -Mathf.Atan2(rayToCenter.y, rayToCenter.x) * Mathf.Rad2Deg + 180;
@@ -347,13 +347,13 @@ namespace MajdataPlay.IO
                 switch (pos)
                 {
                     case 0:
-                        extraButton = 6;
+                        extraButtonStates[6] = true;
                         break;
                     case 1:
-                        extraButton = 7;
+                        extraButtonStates[7] = true;
                         break;
                     default:
-                        extraButton = (pos - 2);
+                        extraButtonStates[(pos - 2)] = true;
                         break;
                 }
             }
@@ -385,33 +385,31 @@ namespace MajdataPlay.IO
             {
                 sensorStates[i] |= (newP & (1UL << (i + 12))) != 0;
             }
-            if (extraButton != -1)
-            {
-                newP |= 1UL << extraButton;
-            }
-            rawPositionData = newP;
+
             if (UseOuterTouchAsSensor)
             {
-                if (extraButton != -1)
+                for (var i = 0; i < 8; i++)
                 {
-                    if(extraButton < 8)
-                    {
-                        sensorStates[extraButton] = true;
-                    }
-                    else
-                    {
-                        buttonStates[extraButton] = true;
-                    }
+                    sensorStates[i] |= extraButtonStates[i];
+                    newP |= 1UL << (i + 12);
+                }
+                for (var i = 8; i < 12; i++)
+                {
+                    buttonStates[i] |= extraButtonStates[i];
+                    newP |= 1UL << i;
                 }
             }
             else
             {
-                if(extraButton != -1)
+                newP = 0UL;
+                sensorStates.Clear();
+                for (var i = 0; i < extraButtonStates.Length; i++)
                 {
-                    sensorStates.Clear();
-                    buttonStates[extraButton] = true;
+                    buttonStates[i] |= extraButtonStates[i];
+                    newP |= 1UL << i;
                 }
             }
+            rawPositionData = newP;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
