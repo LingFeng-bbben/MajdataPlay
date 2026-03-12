@@ -127,7 +127,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void OnLateUpdate()
         {
-            if (GameManager.IsAppOnFocus)
+            if (!GameManager.IsAppOnFocus)
             {
                 return;
             }
