@@ -98,6 +98,19 @@ namespace MajdataPlay
             MajDebug.LogInfo($"Version: {MajInstances.GameVersion}");
 #if UNITY_ANDROID && !UNITY_EDITOR // Android Only (Sdk Version Log)
             MajDebug.LogInfo($"AndroidSdkVersion: {MajEnv.AndroidSdkVersion}");
+            using var packageManager = CurrentActivity.Call<AndroidJavaObject>("getPackageManager");
+            var packageName = CurrentActivity.Call<string>("getPackageName");
+            using var packageInfo = packageManager.Call<AndroidJavaObject>("getPackageInfo", packageName, 0);
+            var androidVersionCode = 0L;
+            if(MajEnv.AndroidSdkVersion >= 28)
+            {
+                androidVersionCode = packageInfo.Call<long>("getLongVersionCode");
+            }
+            else
+            {
+                androidVersionCode = packageInfo.Get<int>("versionCode");
+            }
+            MajDebug.LogInfo($"AndroidVerCode: {androidVersionCode}");
 #endif
             MajEnv.Init();
             if (!Directory.Exists(MajEnv.AssetsPath))

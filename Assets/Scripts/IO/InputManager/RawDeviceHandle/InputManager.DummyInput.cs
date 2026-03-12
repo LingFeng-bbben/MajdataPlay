@@ -335,9 +335,11 @@ namespace MajdataPlay.IO
             var radToCenter = rayToCenter.magnitude;
             var edgeYPosition = Mathf.Max(5.08f + (1.5f + _lastMainScreenOffset * 2.7f), 5.4f);
             var extraButtonStates = (stackalloc bool[12]);
+            var isAnyExtraButtonTriggered = false;
             if (cubeRay.y > edgeYPosition)
             {
                 extraButtonStates[9] = true;
+                isAnyExtraButtonTriggered = true;
             }
             if(radToCenter > _lastTouchButtonRingEdge)
             {
@@ -348,12 +350,15 @@ namespace MajdataPlay.IO
                 {
                     case 0:
                         extraButtonStates[6] = true;
+                        isAnyExtraButtonTriggered = true;
                         break;
                     case 1:
                         extraButtonStates[7] = true;
+                        isAnyExtraButtonTriggered = true;
                         break;
                     default:
                         extraButtonStates[(pos - 2)] = true;
+                        isAnyExtraButtonTriggered = true;
                         break;
                 }
             }
@@ -390,23 +395,38 @@ namespace MajdataPlay.IO
             {
                 for (var i = 0; i < 8; i++)
                 {
-                    sensorStates[i] |= extraButtonStates[i];
-                    newP |= 1UL << (i + 12);
+                    var state = extraButtonStates[i];
+                    sensorStates[i] |= state;
+                    if(state)
+                    {
+                        newP |= 1UL << (i + 12);
+                    }
                 }
                 for (var i = 8; i < 12; i++)
                 {
-                    buttonStates[i] |= extraButtonStates[i];
-                    newP |= 1UL << i;
+                    var state = extraButtonStates[i];
+                    buttonStates[i] |= state;
+                    if (state)
+                    {
+                        newP |= 1UL << i;
+                    }
                 }
             }
             else
             {
-                newP = 0UL;
-                sensorStates.Clear();
-                for (var i = 0; i < extraButtonStates.Length; i++)
+                if(isAnyExtraButtonTriggered)
                 {
-                    buttonStates[i] |= extraButtonStates[i];
-                    newP |= 1UL << i;
+                    newP = 0UL;
+                    sensorStates.Clear();
+                    for (var i = 0; i < extraButtonStates.Length; i++)
+                    {
+                        var state = extraButtonStates[i];
+                        buttonStates[i] |= extraButtonStates[i];
+                        if (state)
+                        {
+                            newP |= 1UL << i;
+                        }
+                    }
                 }
             }
             rawPositionData = newP;
