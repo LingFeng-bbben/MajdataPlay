@@ -40,8 +40,4 @@ public class MajdataPlayActivity extends UnityPlayerActivity
             onNewIntentCallbackProxy = callback;
         }
     }
-    public interface CSharpOnNewIntentCallback
-    {
-        void OnNewIntent(Object intent);
-    }
 }

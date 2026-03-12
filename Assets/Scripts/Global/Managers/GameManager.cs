@@ -31,7 +31,10 @@ namespace MajdataPlay
         public static event EventHandler<bool>? OnAppFocus;
         public static event EventHandler<bool>? OnAppPause;
 
-        public AndroidJavaObject CurrentActivity { get; private set; }
+        public static AndroidJavaClass UnityPlayerClass { get; private set; }
+        public static AndroidJavaClass MajdataPlayActivityClass { get; private set; }
+
+        public static AndroidJavaObject CurrentActivity { get; private set; }
 #endif
         public static Camera MainCamera { get; private set; }
 
@@ -53,17 +56,16 @@ namespace MajdataPlay
         readonly static ReadOnlyMemory<ITimeProvider> _builtInTimeProviders = MajTimeline.BuiltInTimeProviders;
 
 #if UNITY_ANDROID
-        public static readonly AndroidJavaClass UnityPlayerClass = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-        public static readonly AndroidJavaClass MajdataPlayActivityClass = new AndroidJavaClass("net.majdata.majdataplay.MajdataPlayActivity");
-
         OnNewIntentCallback _onNewIntentCallbackProxy;
 #endif
         protected override void Awake()
         {
             base.Awake();
 #if UNITY_ANDROID
-            //UnityEngine.Debug.Log("[Android]Get current activity");
-            //CurrentActivity = UnityPlayerClass.GetStatic<AndroidJavaObject>("currentActivity");
+            UnityPlayerClass = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+            MajdataPlayActivityClass = new AndroidJavaClass("net.majdata.majdataplay.MajdataPlayActivity");
+            UnityEngine.Debug.Log("[Android]Get current activity");
+            CurrentActivity = UnityPlayerClass.GetStatic<AndroidJavaObject>("currentActivity");
             UnityEngine.Debug.Log("[Android]Creating onNewIntent callback proxy");
             _onNewIntentCallbackProxy = new(this);
             UnityEngine.Debug.Log("[Android]Setting onNewIntent callback proxy");
