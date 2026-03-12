@@ -347,7 +347,7 @@ namespace MajdataPlay.Scenes.Game
         }
         void LoadGameMod()
         {
-            var modsetting = MajInstances.GameManager.Setting.Mod;
+            var modsetting = MajInstances.GameManager.Settings.Mod;
             ModInfo = modsetting;
             //AutoplayParam = mod5.Value ?? 7;
         }

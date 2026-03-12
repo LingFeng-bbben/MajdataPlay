@@ -184,7 +184,7 @@ namespace MajdataPlay.Scenes.Result
 
             MajInstances.AudioManager.PlaySFX("bgm_result.mp3", true);
             PlayVoice(result.Acc.DX, song,totalJudgeRecord.IsAllPerfect, totalJudgeRecord.IsFullCombo).Forget();
-            if (!MajInstances.GameManager.Setting.Mod.IsAnyModActive())
+            if (!MajInstances.GameManager.Settings.Mod.IsAnyModActive())
             {
                 var localScoreSaveTask = ScoreManager.SaveScore(result, result.Level);
                 if (song is OnlineSongDetail onlineSong && onlineSong.ServerInfo.RuntimeConfig.AuthMethod != NetAuthMethodOption.None)

@@ -950,7 +950,7 @@ namespace MajdataPlay.Scenes.Game
         /// </summary>
         void UpdateTopAcc()
         {
-            var isClassic = MajInstances.GameManager.Setting.Judge.Mode == JudgeModeOption.Classic;
+            var isClassic = MajInstances.GameManager.Settings.Judge.Mode == JudgeModeOption.Classic;
             var format = isClassic ? CLASSIC_ACC_RATE_FORMAT : DX_ACC_RATE_FORMAT;
             double value;
             if(isClassic)

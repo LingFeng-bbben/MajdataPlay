@@ -29,10 +29,8 @@ namespace MajdataPlay
     {
         public static event EventHandler<EventArgs?>? OnAppQuit;
         public static event EventHandler<EventArgs?>? OnSave;
-#if UNITY_ANDROID || UNITY_IOS
         public static event EventHandler<bool>? OnAppFocus;
         public static event EventHandler<bool>? OnAppPause;
-#endif
 #if UNITY_ANDROID
         public static event EventHandler<AndroidJavaObject?>? OnNewIntent;
         public static AndroidJavaClass UnityPlayerClass { get; private set; }
@@ -40,9 +38,12 @@ namespace MajdataPlay
 
         public static AndroidJavaObject CurrentActivity { get; private set; }
 #endif
-        public static Camera MainCamera { get; private set; }
+        public static Camera MainCamera
+        {
+            get => MajInstances.SceneSwitcher.MainCamera;
+        }
 
-        public GameSetting Setting
+        public GameSetting Settings
         {
             get => MajInstances.Settings;
         }
@@ -136,7 +137,7 @@ namespace MajdataPlay
                 if (arg == "--view-mode")
                 {
                     MajEnv.Mode = RunningMode.View;
-                    Setting.Mod.AutoPlay = AutoplayModeOption.Enable;
+                    Settings.Mod.AutoPlay = AutoplayModeOption.Enable;
                     break;
                 }
             }
@@ -149,7 +150,7 @@ namespace MajdataPlay
             else if (_isEnterView)
             {
                 MajEnv.Mode = RunningMode.View;
-                Setting.Mod.AutoPlay = AutoplayModeOption.Enable;
+                Settings.Mod.AutoPlay = AutoplayModeOption.Enable;
             }
 #endif
 
@@ -158,20 +159,20 @@ namespace MajdataPlay
             var availableLangs = Localization.Available;
             if (!availableLangs.IsEmpty())
             {
-                if(string.IsNullOrEmpty(Setting.Display.Language))
+                if(string.IsNullOrEmpty(Settings.Display.Language))
                 {
                     if(Localization.SetLangByCode(Application.systemLanguage.ToLocale()))
                     {
-                        Setting.Display.Language = Localization.Current.ToString();
+                        Settings.Display.Language = Localization.Current.ToString();
                     }
                 }
                 else
                 {
-                    var lang = availableLangs.Find(x => x.ToString() == Setting.Display.Language);
+                    var lang = availableLangs.Find(x => x.ToString() == Settings.Display.Language);
                     if (lang is null)
                     {
                         lang = availableLangs.First();
-                        Setting.Display.Language = lang.ToString();
+                        Settings.Display.Language = lang.ToString();
                     }
 
                     Localization.Current = lang;
@@ -188,11 +189,11 @@ namespace MajdataPlay
                 .SetValue(null, _defaultMaterial);
             envType.GetField("<HoldShineMaterial>k__BackingField", BindingFlags.Static | BindingFlags.NonPublic)
                 .SetValue(null, _holdShineMaterial);
-            QualitySettings.SetQualityLevel((int)Setting.Display.RenderQuality, true);
+            QualitySettings.SetQualityLevel((int)Settings.Display.RenderQuality, true);
 #if !(UNITY_ANDROID || UNITY_IOS)
-            QualitySettings.vSyncCount = Setting.Display.VSync ? 1 : 0;
+            QualitySettings.vSyncCount = Settings.Display.VSync ? 1 : 0;
 #endif
-            QualitySettings.maxQueuedFrames = Setting.Debug.MaxQueuedFrames;
+            QualitySettings.maxQueuedFrames = Settings.Debug.MaxQueuedFrames;
             DetectHWEncoder();
 #if (!UNITY_EDITOR && UNITY_STANDALONE_WIN)
             if (Setting.Display.Topmost)
@@ -300,25 +301,29 @@ namespace MajdataPlay
 #if UNITY_STANDALONE_WIN
             if (MajEnv.Mode != RunningMode.View)
             {
-                var fullScreen = Setting.Debug.FullScreen;
+                var fullScreen = Settings.Debug.FullScreen;
                 Screen.fullScreen = fullScreen;
                 Screen.fullScreenMode = FullScreenMode.ExclusiveFullScreen;
 
-                var resolution = Setting.Display.Resolution.ToLower();
+                var resolution = Settings.Display.Resolution.ToLower();
                 if (resolution is not "auto")
                 {
                     var param = resolution.Split("x");
                     int width, height;
 
                     if (param.Length != 2)
+                    {
                         return;
+                    }
                     else if (!int.TryParse(param[0], out width) || !int.TryParse(param[1], out height))
+                    {
                         return;
+                    }
                     Screen.SetResolution(width, height, fullScreen);
                 }
             }
 #endif
-            Application.targetFrameRate = Setting.Display.FPSLimit;
+            Application.targetFrameRate = Settings.Display.FPSLimit;
         }
 
         void Update()
@@ -356,17 +361,18 @@ namespace MajdataPlay
             OnAppQuit = null;
             OnSave = null;
         }
-#if UNITY_ANDROID || UNITY_IOS
         void OnApplicationFocus(bool focus)
         {
             if (OnAppFocus is not null)
             {
                 OnAppFocus(this, focus);
             }
+#if UNITY_ANDROID || UNITY_IOS
             if (!focus)
             {
                 RequestSave(this);
             }
+#endif
         }
 
         void OnApplicationPause(bool pause)
@@ -375,10 +381,12 @@ namespace MajdataPlay
             {
                 OnAppPause(this, pause);
             }
+#if UNITY_ANDROID || UNITY_IOS  
             if (pause)
             {
                 RequestSave(this);
             }
+#endif
         }
 #if UNITY_ANDROID
         [Preserve]
@@ -391,8 +399,6 @@ namespace MajdataPlay
             }
         }
 #endif
-#endif
-
         public void EnableGC()
         {
             GC.Collect();

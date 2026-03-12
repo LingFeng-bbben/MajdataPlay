@@ -10,7 +10,7 @@ namespace MajdataPlay.Scenes.List
         // Start is called before the first frame update
         void Start()
         {
-            gameObject.SetActive(MajInstances.GameManager.Setting.Mod.IsAnyModActive());
+            gameObject.SetActive(MajInstances.GameManager.Settings.Mod.IsAnyModActive());
         }
     }
 }
