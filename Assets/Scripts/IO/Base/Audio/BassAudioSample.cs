@@ -25,30 +25,24 @@ namespace MajdataPlay.IO
         {
             get
             {
-                using(Lock)
-                {
-                    ThrowIfDisposed();
-                    return Bass.ChannelHasFlag(_decode, BassFlags.Loop);
-                }
+                ThrowIfDisposed();
+                return Bass.ChannelHasFlag(_decode, BassFlags.Loop);
             }
             set
             {
-                using (Lock)
+                ThrowIfDisposed();
+                if (value)
                 {
-                    ThrowIfDisposed();
-                    if (value)
+                    if (!Bass.ChannelHasFlag(_decode, BassFlags.Loop))
                     {
-                        if (!Bass.ChannelHasFlag(_decode, BassFlags.Loop))
-                        {
-                            Bass.ChannelAddFlag(_decode, BassFlags.Loop);
-                        }
+                        Bass.ChannelAddFlag(_decode, BassFlags.Loop);
                     }
-                    else
+                }
+                else
+                {
+                    if (Bass.ChannelHasFlag(_decode, BassFlags.Loop))
                     {
-                        if (Bass.ChannelHasFlag(_decode, BassFlags.Loop))
-                        {
-                            Bass.ChannelRemoveFlag(_decode, BassFlags.Loop);
-                        }
+                        Bass.ChannelRemoveFlag(_decode, BassFlags.Loop);
                     }
                 }
             }
@@ -64,44 +58,32 @@ namespace MajdataPlay.IO
         {
             get
             {
-                using(Lock)
-                {
-                    ThrowIfDisposed();
-                    ThrowIfCanSeekNotSupported();
+                ThrowIfDisposed();
+                ThrowIfCanSeekNotSupported();
 
-                    return Bass.ChannelBytes2Seconds(_decode, Bass.ChannelGetPosition(_decode));
-                }
+                return Bass.ChannelBytes2Seconds(_decode, Bass.ChannelGetPosition(_decode));
             }
             set
             {
-                using(Lock)
-                {
-                    ThrowIfDisposed();
+                ThrowIfDisposed();
 
-                    Bass.ChannelSetPosition(_decode, Bass.ChannelSeconds2Bytes(_decode, value));
-                }
+                Bass.ChannelSetPosition(_decode, Bass.ChannelSeconds2Bytes(_decode, value));
             }
         }
         public override float Volume
         {
             get
             {
-                using(Lock)
-                {
-                    ThrowIfDisposed();
+                ThrowIfDisposed();
 
-                    return (float)Bass.ChannelGetAttribute(_decode, ChannelAttribute.Volume);
-                }
+                return (float)Bass.ChannelGetAttribute(_decode, ChannelAttribute.Volume);
             }
             set
             {
-                using(Lock)
-                {
-                    ThrowIfDisposed();
+                ThrowIfDisposed();
 
-                    var volume = value.Clamp(0, 2) * _gain * MajInstances.Settings.Audio.Volume.Global.Clamp(0, 1);
-                    Bass.ChannelSetAttribute(_decode, ChannelAttribute.Volume, volume);
-                }
+                var volume = value.Clamp(0, 2) * _gain * MajInstances.Settings.Audio.Volume.Global.Clamp(0, 1);
+                Bass.ChannelSetAttribute(_decode, ChannelAttribute.Volume, volume);
             }
         }
         public override float Speed 
@@ -109,32 +91,26 @@ namespace MajdataPlay.IO
             
             get
             {
-                using(Lock)
+                ThrowIfDisposed();
+                if (_isSpeedChangeSupported)
                 {
-                    ThrowIfDisposed();
-                    if (_isSpeedChangeSupported)
-                    {
-                        return (float)Bass.ChannelGetAttribute(_decode, ChannelAttribute.Tempo) / 100f + 1f;
-                    }
-                    else
-                    {
-                        return 1f;
-                    }
+                    return (float)Bass.ChannelGetAttribute(_decode, ChannelAttribute.Tempo) / 100f + 1f;
+                }
+                else
+                {
+                    return 1f;
                 }
             }
             set
             {
-                using(Lock)
+                ThrowIfDisposed();
+                if (_isSpeedChangeSupported)
                 {
-                    ThrowIfDisposed();
-                    if (_isSpeedChangeSupported)
-                    {
-                        Bass.ChannelSetAttribute(_decode, ChannelAttribute.Tempo, (value - 1) * 100f);
-                    }
-                    else
-                    {
-                        return;
-                    }
+                    Bass.ChannelSetAttribute(_decode, ChannelAttribute.Tempo, (value - 1) * 100f);
+                }
+                else
+                {
+                    return;
                 }
             }
         }
@@ -150,12 +126,9 @@ namespace MajdataPlay.IO
         {
             get
             {
-                using (Lock)
-                {
-                    ThrowIfDisposed();
-                    var state = Bass.ChannelIsActive(_decode);
-                    return state == PlaybackState.Playing && !BassMix.ChannelHasFlag(_decode, BassFlags.MixerChanPause);
-                }
+                ThrowIfDisposed();
+                var state = Bass.ChannelIsActive(_decode);
+                return state == PlaybackState.Playing && !BassMix.ChannelHasFlag(_decode, BassFlags.MixerChanPause);
             }
         }
         readonly GCHandle _dataHandle;
@@ -196,13 +169,10 @@ namespace MajdataPlay.IO
 
         public override void PlayOneShot()
         {
-            using(Lock)
-            {
-                ThrowIfDisposed();
-                BassMix.ChannelSetPosition(_decode, 0);
-                //Bass.ChannelPlay(_decode);
-                BassMix.ChannelRemoveFlag(_decode, BassFlags.MixerChanPause);
-            }
+            ThrowIfDisposed();
+            BassMix.ChannelSetPosition(_decode, 0);
+            //Bass.ChannelPlay(_decode);
+            BassMix.ChannelRemoveFlag(_decode, BassFlags.MixerChanPause);
         }
         public override void SetVolume(float volume)
         {
@@ -210,58 +180,46 @@ namespace MajdataPlay.IO
         }
         public override void Play()
         {
-            using (Lock)
-            {
-                ThrowIfDisposed();
-                BassMix.ChannelRemoveFlag(_decode, BassFlags.MixerChanPause);
-                //Bass.ChannelPlay(_decode);
-            }
+            ThrowIfDisposed();
+            BassMix.ChannelRemoveFlag(_decode, BassFlags.MixerChanPause);
+            //Bass.ChannelPlay(_decode);
         }
         public override void Pause()
         {
-            using (Lock)
-            {
-                ThrowIfDisposed();
-                BassMix.ChannelAddFlag(_decode, BassFlags.MixerChanPause);
-                //Bass.ChannelPause(_decode);
-            }
+            ThrowIfDisposed();
+            BassMix.ChannelAddFlag(_decode, BassFlags.MixerChanPause);
+            //Bass.ChannelPause(_decode);
         }
         public override void Stop()
         {
-            using (Lock)
-            {
-                ThrowIfDisposed();
-                BassMix.ChannelAddFlag(_decode, BassFlags.MixerChanPause);
-                Bass.ChannelSetPosition(_decode, 0);
-                //Bass.ChannelStop(_decode);
-            }
+            ThrowIfDisposed();
+            BassMix.ChannelAddFlag(_decode, BassFlags.MixerChanPause);
+            Bass.ChannelSetPosition(_decode, 0);
+            //Bass.ChannelStop(_decode);
         }
         public override void Dispose()
         {
-            using (Lock)
+            if (_isDisposed)
             {
-                if (_isDisposed)
-                {
-                    return;
-                }
-                _isDisposed = true;
+                return;
+            }
+            _isDisposed = true;
 
-                BassMix.ChannelAddFlag(_decode, BassFlags.MixerChanPause);
-                if (_resampler != -1)
-                {
-                    BassMix.MixerRemoveChannel(_resampler);
-                    Bass.ChannelStop(_resampler);
-                    Bass.StreamFree(_resampler);
-                }
+            BassMix.ChannelAddFlag(_decode, BassFlags.MixerChanPause);
+            if (_resampler != -1)
+            {
+                BassMix.MixerRemoveChannel(_resampler);
+                Bass.ChannelStop(_resampler);
+                Bass.StreamFree(_resampler);
+            }
 
-                if (_decode != -1)
-                {
-                    Bass.StreamFree(_decode);
-                }
-                if (_dataHandle.IsAllocated)
-                {
-                    _dataHandle.Free();
-                }
+            if (_decode != -1)
+            {
+                Bass.StreamFree(_decode);
+            }
+            if (_dataHandle.IsAllocated)
+            {
+                _dataHandle.Free();
             }
         }
         public override ValueTask DisposeAsync()

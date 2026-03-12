@@ -23,16 +23,7 @@ namespace MajdataPlay.IO
         public abstract bool IsLoop { get; set; }
         public bool CanSeek { get; protected init; }
 
-        protected LockDisposable Lock
-        {
-            get
-            {
-                return new LockDisposable(this);
-            }
-        }
-
         protected bool _isDisposed = false;
-        protected SpinLock _syncLock = new SpinLock();
 
         public abstract void Play();
         public abstract void Pause();
@@ -55,24 +46,6 @@ namespace MajdataPlay.IO
             if(!CanSeek)
             {
                 throw new NotSupportedException("\"Seek\" is not supported for this sample");
-            }
-        }
-        protected ref struct LockDisposable
-        {
-            bool _isLocked;
-            readonly AudioSampleWrap _wrap;
-            public LockDisposable(AudioSampleWrap wrap)
-            {
-                _wrap = wrap;
-                wrap._syncLock.Enter(ref _isLocked);
-            }
-            public void Dispose()
-            {
-                if (_isLocked)
-                {
-                    _wrap._syncLock.Exit();
-                    _isLocked = false;
-                }
             }
         }
         sealed class EmptyAudioSample : AudioSampleWrap
