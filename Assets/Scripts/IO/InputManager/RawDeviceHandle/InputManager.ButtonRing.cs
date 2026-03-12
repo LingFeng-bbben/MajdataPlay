@@ -12,7 +12,7 @@ using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine.InputSystem;
 using UnityEngine.Profiling;
 using System.IO.Pipes;
-#if UNITY_IOS
+#if UNITY_IOS || UNITY_EDITOR
 using MajdataPlay.Platform.iOS;
 #endif
 
@@ -307,9 +307,10 @@ namespace MajdataPlay.IO
 #if UNITY_ANDROID || UNITY_IOS
             static async UniTask KeyboardUpdateLoop()
             {
-#if UNITY_IOS
-                await UniTask.SwitchToThreadPool();
+#if UNITY_IOS || UNITY_EDITOR
+                MajDebug.LogError("[ButtonRing]enter iOS keyboard init");
                 var initResult = NativeKeyboard.Init();
+                MajDebug.LogError($"[ButtonRing]NativeKeyboard.Init result: {initResult}");
                 if(initResult != ErrorCode.NoError)
                 {
                     MajDebug.LogError($"[ButtonRing]Failed to initialize NativeKeyboard: {initResult}");
@@ -357,7 +358,7 @@ namespace MajdataPlay.IO
                                 })?.isPressed ?? false;
                                 _buttonRealTimeStates[i] = state;
                             }
-#elif UNITY_IOS
+#elif UNITY_IOS || UNITY_EDITOR
                             for (var i = 0; i < gameButtons.Length; i++)
                             {
                                 var button = gameButtons.Span[i];

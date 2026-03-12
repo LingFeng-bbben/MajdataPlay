@@ -1,23 +1,96 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MajdataPlay.Platform.iOS;
 public static class NativeKeyboard
 {
-    [DllImport("__Internal")]
-    public static extern ErrorCode Init();
-    [DllImport("__Internal")]
-    public static extern nint GetKeyboardHandle();
-    [DllImport("__Internal")]
-    public static extern ErrorCode IsPressed(GCKeyCode keyCode, ref bool isPressedPtr);
-    [DllImport("__Internal")]
-    public static extern ErrorCode IsPressed(nint keyboardHandle, GCKeyCode keyCode, ref bool isPressedPtr);
-    [DllImport("__Internal")]
-    public static extern ErrorCode Free();
+    const string IOSLibraryName = "__Internal";
+#if UNITY_EDITOR_OSX
+    const string MacEditorLibraryName = "NativeKeyboard";
+#endif
+
+#if UNITY_IOS && !UNITY_EDITOR
+    [DllImport(IOSLibraryName, EntryPoint = "Init")]
+    static extern ErrorCode InitInternal();
+
+    [DllImport(IOSLibraryName, EntryPoint = "GetKeyboardHandle")]
+    static extern nint GetKeyboardHandleInternal();
+
+    [DllImport(IOSLibraryName, EntryPoint = "IsPressed")]
+    static extern ErrorCode IsPressedInternal(uint keyCode, out byte isPressedOut);
+
+    [DllImport(IOSLibraryName, EntryPoint = "IsPressedWithHandle")]
+    static extern ErrorCode IsPressedWithHandleInternal(nint keyboardHandle, uint keyCode, out byte isPressedOut);
+
+    [DllImport(IOSLibraryName, EntryPoint = "Free")]
+    static extern ErrorCode FreeInternal();
+#elif UNITY_EDITOR_OSX
+    [DllImport(MacEditorLibraryName, EntryPoint = "Init")]
+    static extern ErrorCode InitInternal();
+
+    [DllImport(MacEditorLibraryName, EntryPoint = "GetKeyboardHandle")]
+    static extern nint GetKeyboardHandleInternal();
+
+    [DllImport(MacEditorLibraryName, EntryPoint = "IsPressed")]
+    static extern ErrorCode IsPressedInternal(uint keyCode, out byte isPressedOut);
+
+    [DllImport(MacEditorLibraryName, EntryPoint = "IsPressedWithHandle")]
+    static extern ErrorCode IsPressedWithHandleInternal(nint keyboardHandle, uint keyCode, out byte isPressedOut);
+
+    [DllImport(MacEditorLibraryName, EntryPoint = "Free")]
+    static extern ErrorCode FreeInternal();
+#endif
+
+    public static ErrorCode Init()
+    {
+#if (UNITY_IOS && !UNITY_EDITOR) || UNITY_EDITOR_OSX
+        return InitInternal();
+#else
+        return ErrorCode.NotSupported;
+#endif
+    }
+
+    public static nint GetKeyboardHandle()
+    {
+#if (UNITY_IOS && !UNITY_EDITOR) || UNITY_EDITOR_OSX
+        return GetKeyboardHandleInternal();
+#else
+        return 0;
+#endif
+    }
+
+    public static ErrorCode IsPressed(GCKeyCode keyCode, ref bool isPressed)
+    {
+#if (UNITY_IOS && !UNITY_EDITOR) || UNITY_EDITOR_OSX
+        var errorCode = IsPressedInternal((uint)keyCode, out var value);
+        isPressed = value != 0;
+        return errorCode;
+#else
+        isPressed = false;
+        return ErrorCode.NotSupported;
+#endif
+    }
+
+    public static ErrorCode IsPressed(nint keyboardHandle, GCKeyCode keyCode, ref bool isPressed)
+    {
+#if (UNITY_IOS && !UNITY_EDITOR) || UNITY_EDITOR_OSX
+        var errorCode = IsPressedWithHandleInternal(keyboardHandle, (uint)keyCode, out var value);
+        isPressed = value != 0;
+        return errorCode;
+#else
+        isPressed = false;
+        return ErrorCode.NotSupported;
+#endif
+    }
+
+    public static ErrorCode Free()
+    {
+#if (UNITY_IOS && !UNITY_EDITOR) || UNITY_EDITOR_OSX
+        return FreeInternal();
+#else
+        return ErrorCode.NotSupported;
+#endif
+    }
 }
 public enum ErrorCode
 {

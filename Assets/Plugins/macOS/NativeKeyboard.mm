@@ -116,51 +116,51 @@ namespace
             case 72: return GCKeyCodeF4;
             case 73: return GCKeyCodeF3;
             case 74:
-                if (@available(iOS 15.0, *))
+                if (@available(macOS 11.0, *))
                 {
                     return GCKeyCodeF20;
                 }
                 break;
             case 75: return GCKeyCodeF2;
             case 76:
-                if (@available(iOS 15.0, *))
+                if (@available(macOS 11.0, *))
                 {
                     return GCKeyCodeF19;
                 }
                 break;
             case 77:
-                if (@available(iOS 15.0, *))
+                if (@available(macOS 11.0, *))
                 {
                     return GCKeyCodeF18;
                 }
                 break;
             case 78:
-                if (@available(iOS 15.0, *))
+                if (@available(macOS 11.0, *))
                 {
                     return GCKeyCodeF17;
                 }
                 break;
             case 79:
-                if (@available(iOS 15.0, *))
+                if (@available(macOS 11.0, *))
                 {
                     return GCKeyCodeF16;
                 }
                 break;
             case 80:
-                if (@available(iOS 15.0, *))
+                if (@available(macOS 11.0, *))
                 {
                     return GCKeyCodeF15;
                 }
                 break;
             case 81:
-                if (@available(iOS 15.0, *))
+                if (@available(macOS 11.0, *))
                 {
                     return GCKeyCodeF14;
                 }
                 break;
             case 82: return GCKeyCodeF9;
             case 83:
-                if (@available(iOS 15.0, *))
+                if (@available(macOS 11.0, *))
                 {
                     return GCKeyCodeF13;
                 }
@@ -250,7 +250,6 @@ namespace
     static void SeedCurrentKeyStatesLocked()
     {
         ClearKeyStatesLocked();
-
         if (g_keyboardInput == nil)
         {
             return;
@@ -385,20 +384,18 @@ extern "C"
 {
     int32_t Init(void)
     {
-        NSLog(@"[NativeKeyboard] Init begin");
+        NSLog(@"[NativeKeyboard/macOS] Init begin");
         std::lock_guard<std::mutex> lock(g_stateMutex);
         if (g_initialized)
         {
-            NSLog(@"[NativeKeyboard] Init aborted: already initialized");
+            NSLog(@"[NativeKeyboard/macOS] Init aborted: already initialized");
             return NativeKeyboardErrorCodeInvalidOperation;
         }
 
         g_initialized = true;
-        NSLog(@"[NativeKeyboard] Installing observers");
         InstallObserversLocked();
-        NSLog(@"[NativeKeyboard] Refreshing keyboard");
         RefreshKeyboardLocked();
-        NSLog(@"[NativeKeyboard] Init completed, hasKeyboard=%d", g_hasKeyboard ? 1 : 0);
+        NSLog(@"[NativeKeyboard/macOS] Init completed, hasKeyboard=%d", g_hasKeyboard ? 1 : 0);
         return g_hasKeyboard ? NativeKeyboardErrorCodeNoError : NativeKeyboardErrorCodeNoDevice;
     }
 
@@ -416,7 +413,7 @@ extern "C"
         return NativeKeyboardErrorCodeNoError;
     }
 
-    int32_t GetKeyboardHandle(void)
+    intptr_t GetKeyboardHandle(void)
     {
         std::lock_guard<std::mutex> lock(g_stateMutex);
         if (!g_initialized)
@@ -472,12 +469,5 @@ extern "C"
         }
 
         return IsPressed(keyCodeIndex, isPressedOut);
-    }
-
-    uint8_t _IsPressedValue(uint32_t keyCodeIndex)
-    {
-        uint8_t isPressed = 0;
-        int32_t errorCode = IsPressed(keyCodeIndex, &isPressed);
-        return errorCode == NativeKeyboardErrorCodeNoError ? isPressed : 0;
     }
 }
