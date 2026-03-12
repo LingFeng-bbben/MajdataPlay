@@ -527,10 +527,11 @@ namespace MajdataPlay
             MajDebug.LogInfo($"Moved: {src} -> {dst}");
         }
 
+#if UNITY_ANDROID
         class OnNewIntentCallback : AndroidJavaProxy
         {
             readonly GameManager _gameManager;
-            public OnNewIntentCallback(GameManager gm) : base("net.majdata.majdataplay.CSharpOnNewIntentCallback") 
+            public OnNewIntentCallback(GameManager gm) : base("net.majdata.majdataplay.CSharpOnNewIntentCallback")
             {
                 _gameManager = gm;
             }
@@ -540,5 +541,6 @@ namespace MajdataPlay
                 _gameManager.Android_OnNewIntent(intent);
             }
         }
+#endif
     }
 }
