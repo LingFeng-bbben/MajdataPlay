@@ -15,6 +15,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -26,6 +27,8 @@ namespace MajdataPlay
 #nullable enable
     internal sealed class GameManager : MajSingleton
     {
+        public static event EventHandler<EventArgs?>? OnAppQuit;
+        public static event EventHandler<EventArgs?>? OnSave;
 #if UNITY_ANDROID
         public static event EventHandler<AndroidJavaObject?>? OnNewIntent;
         public static event EventHandler<bool>? OnAppFocus;
@@ -337,7 +340,20 @@ namespace MajdataPlay
         void OnApplicationQuit()
         {
             Screen.sleepTimeout = SleepTimeout.SystemSetting;
-            MajEnv.OnApplicationQuitRequested();
+            RequestSave(this);
+            try
+            {
+                if (OnAppQuit is not null)
+                {
+                    OnAppQuit(this, null);
+                }
+            }
+            catch (Exception ex)
+            {
+                MajDebug.LogException(ex);
+            }
+            OnAppQuit = null;
+            OnSave = null;
         }
 #if UNITY_ANDROID || UNITY_IOS
         void OnApplicationFocus(bool focus)
@@ -348,7 +364,7 @@ namespace MajdataPlay
             }
             if (!focus)
             {
-                MajEnv.RequestSave();
+                RequestSave(this);
             }
         }
 
@@ -360,7 +376,7 @@ namespace MajdataPlay
             }
             if (pause)
             {
-                MajEnv.RequestSave();
+                RequestSave(this);
             }
         }
         [Preserve]
@@ -391,7 +407,20 @@ namespace MajdataPlay
             MajDebug.LogWarning("GC has been disabled");
 #endif
         }
-
+        public static void RequestSave(object? sender)
+        {
+            try
+            {
+                if (OnSave is not null)
+                {
+                    OnSave(sender, null);
+                }
+            }
+            catch (Exception ex)
+            {
+                MajDebug.LogException(ex);
+            }
+        }
         private static void ExtractAssetsIos()
         {
             var extractRoot = Path.Combine(MajEnv.RootPath, "ExtStreamingAssets/");

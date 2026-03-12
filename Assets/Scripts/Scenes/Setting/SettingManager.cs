@@ -261,7 +261,7 @@ namespace MajdataPlay.Scenes.Setting
         {
             _isExited = true;
             InputManager.TouchButtonRingEdge = 5.4f;
-            MajEnv.RequestSave();
+            GameManager.RequestSave(this);
             GC.Collect();
         }
     }

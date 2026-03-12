@@ -56,9 +56,6 @@ namespace MajdataPlay
             ".mp4"
         };
 
-        public static event Action? OnApplicationQuit;
-        public static event Action? OnSave;
-
 #if UNITY_ANDROID // Android Only (User Agent)
         public static string HTTP_USER_AGENT { get; } = $"MajdataPlay Android/{MajInstances.GameVersion.ToString()}";
 #elif UNITY_IOS // iOS Only (User Agent)
@@ -149,6 +146,7 @@ namespace MajdataPlay
         {
             UnityWebRequestFactory.Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS);
             UnityWebRequestFactory.UserAgent = HTTP_USER_AGENT;
+            GameManager.OnAppQuit += OnApplicationQuit;
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -492,7 +490,7 @@ namespace MajdataPlay
                 MainThread.Name = "MajdataPlay MainThread";
             }
 #endif
-            OnSave += SaveConfig;
+            GameManager.OnSave += OnSave;
 #if UNITY_STANDALONE_WIN
             MajDebug.LogInfo("[VLC] init");
             if (VLCLibrary != null)
@@ -522,8 +520,10 @@ namespace MajdataPlay
             }
         }
 
-        internal static void OnApplicationQuitRequested()
+        static void OnApplicationQuit(object? sender, EventArgs? e)
         {
+            GameManager.OnAppQuit -= OnApplicationQuit;
+            GameManager.OnSave -= OnSave;
             SharedHttpClient.CancelPendingRequests();
             SharedHttpClient.Dispose();
 #if UNITY_STANDALONE_WIN
@@ -533,40 +533,13 @@ namespace MajdataPlay
             }
 #endif
             _globalCTS.Cancel();
-            RequestSave();
-            try
-            {
-                if (OnApplicationQuit is not null)
-                {
-                    OnApplicationQuit();
-                }
-            }
-            finally
-            {
 #if UNITY_STANDALONE_WIN
                 WinHidManager.QuitThisBs();
 #elif UNITY_STANDALONE_OSX
                 MacHidManager.QuitThisBs();
 #endif
-            }
         }
-
-        internal static void RequestSave()
-        {
-            try
-            {
-                if (OnSave is not null)
-                {
-                    OnSave();
-                }
-            }
-            catch (Exception ex)
-            {
-                MajDebug.LogException(ex);
-            }
-        }
-
-        static void SaveConfig()
+        static void OnSave(object? sender, EventArgs? e)
         {
             //var listConfig = RuntimeConfig.List;
             //listConfig.SelectedSongIndex = SongStorage.WorkingCollection.Index;

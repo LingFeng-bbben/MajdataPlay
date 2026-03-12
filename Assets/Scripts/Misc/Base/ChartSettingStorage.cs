@@ -8,7 +8,7 @@ using System.Security.Policy;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
+#nullable enable
 namespace MajdataPlay.Settings
 {
     internal static class ChartSettingStorage
@@ -33,7 +33,7 @@ namespace MajdataPlay.Settings
                     STORAGE_PATH = Path.Combine(MajEnv.RootPath, "ChartSetting.db");
                 }
                 await UniTask.SwitchToThreadPool();
-                MajEnv.OnSave += OnSave;
+                GameManager.OnSave += OnSave;
                 if (!File.Exists(STORAGE_PATH))
                 {
                     return;
@@ -156,7 +156,7 @@ namespace MajdataPlay.Settings
                 }
             }
         }
-        static void OnSave()
+        static void OnSave(object? sender, EventArgs? args)
         {
             if (!_isInited)
             {

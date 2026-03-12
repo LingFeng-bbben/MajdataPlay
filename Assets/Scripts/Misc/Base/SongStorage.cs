@@ -104,7 +104,7 @@ namespace MajdataPlay
             }
             finally
             {
-                MajEnv.OnSave += OnSave;
+                GameManager.OnSave += OnSave;
             }
         }
         internal static async Task RefreshAsync(IProgress<string>? progressReporter = null)
@@ -597,7 +597,7 @@ namespace MajdataPlay
                 };
             });
         }
-        static void OnSave()
+        static void OnSave(object? sender, EventArgs? args)
         {
             try
             {

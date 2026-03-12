@@ -356,7 +356,7 @@ namespace MajdataPlay.IO
             //{
             //    _touchRecords.Add((SensorArea)i, new(10));
             //}
-            MajEnv.OnApplicationQuit += OnApplicationQuit;
+            GameManager.OnAppQuit += OnApplicationQuit;
         }
         internal static void Init(IReadOnlyDictionary<int, int> instanceID2SensorIndexMappingTable)
         {
@@ -1270,13 +1270,13 @@ namespace MajdataPlay.IO
                 button.ClearSubscriber();
             OnAnyAreaTrigger = null;
         }
-        static void OnApplicationQuit()
+        static void OnApplicationQuit(object? sender, EventArgs? e)
         {
             if (_posData is not null)
             {
                 UnsafeHelper.Free(_posData);
             }
-            MajEnv.OnApplicationQuit -= OnApplicationQuit;
+            GameManager.OnAppQuit -= OnApplicationQuit;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void PushEvent(InputEventArgs args)

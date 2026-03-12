@@ -41,7 +41,7 @@ namespace MajdataPlay.Recording
         static RecordHelper()
         {
             _recorder = new OBSRecorder();
-            MajEnv.OnApplicationQuit += OnApplicationQuit;
+            GameManager.OnAppQuit += OnApplicationQuit;
         }
         public static void StartRecord(string filename)
         {
@@ -81,14 +81,14 @@ namespace MajdataPlay.Recording
         {
             _recorder.OnLateUpdate();
         }
-        private static void OnApplicationQuit()
+        private static void OnApplicationQuit(object? sender, EventArgs? e)
         {
             if (!IsEnabled || !_recorder.IsConnected)
             {
                 return;
             }
             _recorder.StopRecord();
-            MajEnv.OnApplicationQuit -= OnApplicationQuit;
+            GameManager.OnAppQuit -= OnApplicationQuit;
         }
     }
 }

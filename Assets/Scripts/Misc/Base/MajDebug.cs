@@ -49,8 +49,8 @@ namespace MajdataPlay
                 args.SetObserved();
             };
             StartLogWritebackTask();
-            MajEnv.OnApplicationQuit += OnApplicationQuit;
-            MajEnv.OnSave += OnSave;
+            GameManager.OnAppQuit += OnApplicationQuit;
+            GameManager.OnSave += OnSave;
             Application.logMessageReceivedThreaded += (string condition, string stackTrace, LogType type) =>
             {
                 var sb = ZString.CreateStringBuilder();
@@ -126,7 +126,7 @@ namespace MajdataPlay
             Log(obj, LogLevel.Error);
         }
         
-        static void OnApplicationQuit()
+        static void OnApplicationQuit(object? sender, EventArgs? e)
         {
             try
             {
@@ -147,10 +147,10 @@ namespace MajdataPlay
             }
             finally
             {
-                MajEnv.OnApplicationQuit -= OnApplicationQuit;
+                GameManager.OnAppQuit -= OnApplicationQuit;
             }
         }
-        static void OnSave()
+        static void OnSave(object? sender, EventArgs? args)
         {
             if (_fileStream is null)
             {
