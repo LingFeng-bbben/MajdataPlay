@@ -909,6 +909,7 @@ namespace MajdataPlay.Scenes.Game
             else
             {
                 token.ThrowIfCancellationRequested();
+                _lastAudioSampleVolume = _trackVolume;
                 _audioSample.Volume = _trackVolume;
                 await UniTask.Delay(3000);
                 token.ThrowIfCancellationRequested();

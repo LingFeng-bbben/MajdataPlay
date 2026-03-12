@@ -411,7 +411,7 @@ namespace MajdataPlay.IO
 
         void OnAppFocus(object? sender, bool isFocus)
         {
-#if !UNITY_ANDROID || UNITY_IOS
+#if UNITY_ANDROID || UNITY_IOS
             if (isFocus)
             {
                 ReadVolumeFromSettings();
