@@ -4,42 +4,26 @@ using System.Runtime.InteropServices;
 namespace MajdataPlay.Platform.iOS;
 public static class NativeKeyboard
 {
-    const string IOSLibraryName = "__Internal";
 #if UNITY_EDITOR_OSX
-    const string MacEditorLibraryName = "NativeKeyboard";
+    const string LibraryName = "NativeKeyboard";
+#else
+    const string LibraryName = "__Internal";
 #endif
 
-#if UNITY_IOS && !UNITY_EDITOR
-    [DllImport(IOSLibraryName, EntryPoint = "Init")]
+    [DllImport(LibraryName, EntryPoint = "Init")]
     static extern ErrorCode InitInternal();
 
-    [DllImport(IOSLibraryName, EntryPoint = "GetKeyboardHandle")]
+    [DllImport(LibraryName, EntryPoint = "GetKeyboardHandle")]
     static extern nint GetKeyboardHandleInternal();
 
-    [DllImport(IOSLibraryName, EntryPoint = "IsPressed")]
+    [DllImport(LibraryName, EntryPoint = "IsPressed")]
     static extern ErrorCode IsPressedInternal(uint keyCode, out byte isPressedOut);
 
-    [DllImport(IOSLibraryName, EntryPoint = "IsPressedWithHandle")]
+    [DllImport(LibraryName, EntryPoint = "IsPressedWithHandle")]
     static extern ErrorCode IsPressedWithHandleInternal(nint keyboardHandle, uint keyCode, out byte isPressedOut);
 
-    [DllImport(IOSLibraryName, EntryPoint = "Free")]
+    [DllImport(LibraryName, EntryPoint = "Free")]
     static extern ErrorCode FreeInternal();
-#elif UNITY_EDITOR_OSX
-    [DllImport(MacEditorLibraryName, EntryPoint = "Init")]
-    static extern ErrorCode InitInternal();
-
-    [DllImport(MacEditorLibraryName, EntryPoint = "GetKeyboardHandle")]
-    static extern nint GetKeyboardHandleInternal();
-
-    [DllImport(MacEditorLibraryName, EntryPoint = "IsPressed")]
-    static extern ErrorCode IsPressedInternal(uint keyCode, out byte isPressedOut);
-
-    [DllImport(MacEditorLibraryName, EntryPoint = "IsPressedWithHandle")]
-    static extern ErrorCode IsPressedWithHandleInternal(nint keyboardHandle, uint keyCode, out byte isPressedOut);
-
-    [DllImport(MacEditorLibraryName, EntryPoint = "Free")]
-    static extern ErrorCode FreeInternal();
-#endif
 
     public static ErrorCode Init()
     {
