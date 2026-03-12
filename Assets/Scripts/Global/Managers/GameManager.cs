@@ -29,11 +29,12 @@ namespace MajdataPlay
     {
         public static event EventHandler<EventArgs?>? OnAppQuit;
         public static event EventHandler<EventArgs?>? OnSave;
-#if UNITY_ANDROID
-        public static event EventHandler<AndroidJavaObject?>? OnNewIntent;
+#if UNITY_ANDROID || UNITY_IOS
         public static event EventHandler<bool>? OnAppFocus;
         public static event EventHandler<bool>? OnAppPause;
-
+#endif
+#if UNITY_ANDROID
+        public static event EventHandler<AndroidJavaObject?>? OnNewIntent;
         public static AndroidJavaClass UnityPlayerClass { get; private set; }
         public static AndroidJavaClass MajdataPlayActivityClass { get; private set; }
 
@@ -379,6 +380,7 @@ namespace MajdataPlay
                 RequestSave(this);
             }
         }
+#if UNITY_ANDROID
         [Preserve]
         void Android_OnNewIntent(AndroidJavaObject intent)
         {
@@ -388,6 +390,7 @@ namespace MajdataPlay
                 OnNewIntent(this, intent);
             }
         }
+#endif
 #endif
 
         public void EnableGC()
