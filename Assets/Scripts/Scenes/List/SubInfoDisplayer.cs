@@ -1,13 +1,8 @@
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Net;
-using MajdataPlay.Utils;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 using TMPro;
-using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine;
 using UnityEngine.UI;
 #nullable enable
@@ -38,45 +33,37 @@ namespace MajdataPlay.Scenes.List
                 {
                     id_text.text = "ID: " + onlineDetail.Id;
                     await UniTask.SwitchToThreadPool();
-                    using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(token, _cts.Token))
+                    using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(token, _cts.Token);
+                    token = linkedCts.Token;
+                    var (isSuccessfully1, interact) = await GetOnlineInteractionAsync(onlineDetail, token);
+
+                    await UniTask.SwitchToMainThread(token);
+                    if (isSuccessfully1)
                     {
-                        token = linkedCts.Token;
-                        var (isSuccessfully1, interact) = await GetOnlineInteractionAsync(onlineDetail, token);
+                        var totalLikes = interact.Likes.Length - interact.DisLikeCount;
+                        LikeCount.text = totalLikes.ToString();
+                        PlayCount.text = interact.Plays.ToString();
+                        CommentCount.text = interact.Comments.Length.ToString();
 
-                        await UniTask.SwitchToMainThread(token);
-                        if (isSuccessfully1)
+                        foreach (var icon in Icons)
+                            icon.SetActive(true);
+
+                        if (interact.IsLiked)
+                            ThumbUpImage.color = ThumbUpGreenColor;
+                        else if (totalLikes > 5)
+                            ThumbUpImage.color = ThumbUpGoldColor;
+                        else
+                            ThumbUpImage.color = Color.white;
+
+                        CommentBox.SetActive(true);
+                        foreach (var comment in interact.Comments)
                         {
-                            var totalLikes = (interact.Likes.Length - interact.DisLikeCount);
-                            LikeCount.text = totalLikes.ToString();
-                            PlayCount.text = interact.Plays.ToString();
-                            CommentCount.text = interact.Comments.Length.ToString();
-
-                            foreach (var icon in Icons)
-                            {
-                                icon.SetActive(true);
-                            }
-                            CommentBox.SetActive(true);
-                            foreach (var comment in interact.Comments)
-                            {
-                                var text = comment.Sender + "说:\n" + comment.Content + "\n";
-                                CommentText.text = text;
-                                await UniTask.Delay(5000, cancellationToken: token);
-                                token.ThrowIfCancellationRequested();
-                            }
-                            CommentBox.SetActive(false);
-                            if (interact.IsLiked)
-                            {
-                                ThumbUpImage.color = ThumbUpGreenColor;
-                            }
-                            else if (totalLikes > 5)
-                            {
-                                ThumbUpImage.color = ThumbUpGoldColor;
-                            }
-                            else
-                            {
-                                ThumbUpImage.color = Color.white;
-                            }
+                            var text = comment.Sender + $"{"MAJTEXT_SAY".i18n()}\n" + comment.Content + "\n";
+                            CommentText.text = text;
+                            await UniTask.Delay(5000, cancellationToken: token);
+                            token.ThrowIfCancellationRequested();
                         }
+                        CommentBox.SetActive(false);
                     }
                 }
             }
