@@ -383,7 +383,7 @@ namespace
 
 extern "C"
 {
-    int32_t NativeKeyboard_Init(void)
+    int32_t Init(void)
     {
         std::lock_guard<std::mutex> lock(g_stateMutex);
         if (g_initialized)
@@ -397,7 +397,7 @@ extern "C"
         return g_hasKeyboard ? NativeKeyboardErrorCodeNoError : NativeKeyboardErrorCodeNoDevice;
     }
 
-    int32_t NativeKeyboard_Free(void)
+    int32_t Free(void)
     {
         std::lock_guard<std::mutex> lock(g_stateMutex);
         if (!g_initialized)
@@ -411,7 +411,7 @@ extern "C"
         return NativeKeyboardErrorCodeNoError;
     }
 
-    int32_t NativeKeyboard_HasKeyboard(void)
+    int32_t GetKeyboardHandle(void)
     {
         std::lock_guard<std::mutex> lock(g_stateMutex);
         if (!g_initialized)
@@ -423,7 +423,7 @@ extern "C"
         return g_hasKeyboard ? 1 : 0;
     }
 
-    int32_t NativeKeyboard_IsPressed(uint32_t keyCodeIndex, uint8_t *isPressedOut)
+    int32_t IsPressed(uint32_t keyCodeIndex, uint8_t *isPressedOut)
     {
         if (isPressedOut == nullptr)
         {
@@ -455,10 +455,10 @@ extern "C"
         return NativeKeyboardErrorCodeNoError;
     }
 
-    uint8_t NativeKeyboard_IsPressedValue(uint32_t keyCodeIndex)
+    uint8_t _IsPressedValue(uint32_t keyCodeIndex)
     {
         uint8_t isPressed = 0;
-        int32_t errorCode = NativeKeyboard_IsPressed(keyCodeIndex, &isPressed);
+        int32_t errorCode = IsPressed(keyCodeIndex, &isPressed);
         return errorCode == NativeKeyboardErrorCodeNoError ? isPressed : 0;
     }
 }
