@@ -60,7 +60,7 @@ namespace MajdataPlay.Scenes.Practice
         readonly SwitchStatistic[] _buttonStatistics = new SwitchStatistic[12];
         readonly SwitchStatistic[] _sensorStatistics = new SwitchStatistic[33];
 
-         void Awake()
+        void Awake()
         {
             InputManager.TouchButtonRingEdge = 4.8f;
         }
@@ -413,6 +413,14 @@ namespace MajdataPlay.Scenes.Practice
             if (!_isInited || _isExited || _audioTrack is null)
             {
                 return;
+            }
+            if (GameManager.IsAppOnFocus)
+            {
+                _audioTrack.Volume = MajInstances.Settings.Audio.Volume.BGM;
+            }
+            else
+            {
+                _audioTrack.Volume = 0;
             }
             UpdateSBTextMeshProUGUI();
             ButtonStatisticUpdate();

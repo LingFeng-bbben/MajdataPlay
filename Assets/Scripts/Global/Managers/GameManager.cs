@@ -16,7 +16,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Unity.VisualScripting;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
@@ -27,6 +26,7 @@ namespace MajdataPlay
 #nullable enable
     internal sealed class GameManager : MajSingleton
     {
+        public static bool IsAppOnFocus { get; private set; } = true;
         public static event EventHandler<EventArgs?>? OnAppQuit;
         public static event EventHandler<EventArgs?>? OnSave;
         public static event EventHandler<bool>? OnAppFocus;
@@ -363,6 +363,7 @@ namespace MajdataPlay
         }
         void OnApplicationFocus(bool focus)
         {
+            IsAppOnFocus = focus;
             if (OnAppFocus is not null)
             {
                 OnAppFocus(this, focus);

@@ -127,6 +127,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void OnLateUpdate()
         {
+            if (GameManager.IsAppOnFocus)
+            {
+                return;
+            }
             Profiler.BeginSample("NoteAudioManager.OnLateUpdate");
             AnswerSFXUpdate();
             for (var i = 0; i < _noteSFXPlaybackRequests.Length; i++)

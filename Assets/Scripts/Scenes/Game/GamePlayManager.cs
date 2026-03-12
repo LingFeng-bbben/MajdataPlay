@@ -120,6 +120,7 @@ namespace MajdataPlay.Scenes.Game
         float _3456PressTime = 0;
         float _p1SkipTime = 0;
         float _devicePlaybackOffset = 0f;
+        float _lastAudioSampleVolume = 0f;
 
         // Offset
         float _chartOffset = 0f;
@@ -177,6 +178,7 @@ namespace MajdataPlay.Scenes.Game
             {
                 throw new ArgumentNullException(nameof(_gameInfo));
             }
+            GameManager.OnAppFocus += OnAppFocus;
             //print(MajInstances.GameManager.SelectedIndex);
             _songDetail = _gameInfo.Current;
             HistoryScore = ScoreManager.GetScore(_songDetail, _listConfig.SelectedDiff);
@@ -874,7 +876,15 @@ namespace MajdataPlay.Scenes.Game
                     while (elapsedSeconds < 3)
                     {
                         token.ThrowIfCancellationRequested();
-                        _audioSample.Volume = (elapsedSeconds / 3f) * originVol;
+                        _lastAudioSampleVolume = (elapsedSeconds / 3f) * originVol;
+                        if (GameManager.IsAppOnFocus)
+                        {
+                            _audioSample.Volume = _lastAudioSampleVolume;
+                        }
+                        else
+                        {
+                            _audioSample.Volume = 0;
+                        }
                         await UniTask.Yield();
                         elapsedSeconds += MajTimeline.DeltaTime;
                     }
@@ -885,7 +895,15 @@ namespace MajdataPlay.Scenes.Game
                 }
                 finally
                 {
-                    _audioSample.Volume = originVol;
+                    _lastAudioSampleVolume = originVol;
+                    if (GameManager.IsAppOnFocus)
+                    {
+                        _audioSample.Volume = _lastAudioSampleVolume;
+                    }
+                    else
+                    {
+                        _audioSample.Volume = 0;
+                    }
                 }
             }
             else
@@ -900,7 +918,9 @@ namespace MajdataPlay.Scenes.Game
         void BgHeaderFadeOut()
         {
             if (_gameInfo.IsDanMode)
+            {
                 return;
+            }
             switch (MajInstances.Settings.Game.BGInfo)
             {
                 case BGInfoOption.Achievement_101:
@@ -1361,6 +1381,24 @@ namespace MajdataPlay.Scenes.Game
 
         #endregion
 
+        #region Events
+        void OnAppFocus(object? sender, bool isFocus)
+        {
+            if (_audioSample is null)
+            {
+                return;
+            }
+            if (isFocus)
+            {
+                _audioSample.Volume = _lastAudioSampleVolume;
+            }
+            else
+            {
+                _audioSample.Volume = 0;
+            }
+        }
+        #endregion
+
         #region Clean Up
         void DisposeAudioTrack()
         {
@@ -1386,6 +1424,7 @@ namespace MajdataPlay.Scenes.Game
 
         void OnDestroy()
         {
+            GameManager.OnAppFocus -= OnAppFocus;
             try
             {
                 MajDebug.LogInfo("GPManagerDestroy");

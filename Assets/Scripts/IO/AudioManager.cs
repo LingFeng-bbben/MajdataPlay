@@ -299,6 +299,7 @@ namespace MajdataPlay.IO
                     InputManager.BindAnyArea(OnAnyAreaDown);
                 }
                 ReadVolumeFromSettings();
+                GameManager.OnAppFocus += OnAppFocus;
             }
             catch(Exception e)
             {
@@ -385,6 +386,7 @@ namespace MajdataPlay.IO
 
         private void OnDestroy()
         {
+            GameManager.OnAppFocus -= OnAppFocus;
             if(MajInstances.Settings.Audio.Backend == SoundBackendOption.Wasapi
                 || MajInstances.Settings.Audio.Backend == SoundBackendOption.Asio||
                 MajInstances.Settings.Audio.Backend == SoundBackendOption.BassSimple)
@@ -407,6 +409,26 @@ namespace MajdataPlay.IO
             }
         }
 
+        void OnAppFocus(object? sender, bool isFocus)
+        {
+#if !UNITY_ANDROID || UNITY_IOS
+            if (isFocus)
+            {
+                ReadVolumeFromSettings();
+            }
+            else
+            {
+                foreach (var sample in SFXSamples)
+                {
+                    if (sample is null || sample.IsEmpty)
+                    {
+                        continue;
+                    }
+                    sample.SetVolume(0);
+                }
+            }
+#endif
+        }
         public void ReadVolumeFromSettings()
         {
             var volume = MajInstances.Settings.Audio.Volume;
