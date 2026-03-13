@@ -16,6 +16,7 @@ using UnityEngine.InputSystem.EnhancedTouch;
 using UnityEngine.InputSystem.Utilities;
 using UnityEngine.Profiling;
 using UnityEngine.UI;
+using static UnityEngine.GraphicsBuffer;
 using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 using TouchPhase = UnityEngine.InputSystem.TouchPhase;
 
@@ -338,7 +339,9 @@ namespace MajdataPlay.IO
             var radToCenter = rayToCenter.magnitude;
             var edgeYPosition = Mathf.Max(5.08f + (1.5f + _lastMainScreenOffset * 2.7f), 5.4f);
             var extraButtonStates = (stackalloc bool[12]);
+            var extraSensorStates = (stackalloc bool[34]);
             var isAnyExtraButtonTriggered = false;
+            var isAnyExtraSensorTriggered = false;
             if (cubeRay.y > edgeYPosition)
             {
                 extraButtonStates[9] = true;
@@ -346,24 +349,361 @@ namespace MajdataPlay.IO
             }
             if(radToCenter > _lastTouchButtonRingEdge)
             {
+                const float SENSOR_GROUP_A_DEG = 14.5f;
+                const float SENSOR_GROUP_D_DEG = 8f;
+                
                 // out of the screen area to the button area
                 var degree = -Mathf.Atan2(rayToCenter.y, rayToCenter.x) * Mathf.Rad2Deg + 180;
-                var pos = (int)(degree / 45f);
-                switch (pos)
+                var pos = (int)(degree / 22.5f);
+                var degDiff = degree - 22.5f * pos;
+
+                var center = pos;
+                var left = (pos + 15) & 15;
+                var right = (pos + 1) & 15;
+
+                var isSensorCenter = (pos & 1) == 0;
+                var edge = isSensorCenter ? SENSOR_GROUP_D_DEG : SENSOR_GROUP_A_DEG;
+                var targetPos = 0;
+
+                if (Mathf.Abs(degDiff) <= edge)
                 {
-                    case 0:
-                        extraButtonStates[6] = true;
-                        isAnyExtraButtonTriggered = true;
-                        break;
-                    case 1:
-                        extraButtonStates[7] = true;
-                        isAnyExtraButtonTriggered = true;
-                        break;
-                    default:
-                        extraButtonStates[(pos - 2)] = true;
-                        isAnyExtraButtonTriggered = true;
-                        break;
+                    targetPos = center;
                 }
+                else
+                {
+                    targetPos = degDiff > 0 ? right : left;
+                }
+                var isSensor = (targetPos & 1) == 0;
+                var index = ((targetPos >> 1) + 6) & 7;
+
+                if (isSensor)
+                {
+                    extraSensorStates[(int)SensorArea.D1 + index] = true;
+                    isAnyExtraSensorTriggered = true;
+                }
+                else
+                {
+                    extraButtonStates[(int)ButtonZone.A1 + index] = true;
+                    isAnyExtraButtonTriggered = true;
+                }
+                //switch (pos)
+                //{
+                //    case 0: // A6 or D7 or A7
+                //        if (Mathf.Abs(degDiff) <= SENSOR_GROUP_D_DEG)
+                //        {
+                //            extraSensorStates[(int)SensorArea.D7] = true;
+                //            isAnyExtraSensorTriggered = true;
+                //        }
+                //        else
+                //        {
+                //            if (degDiff > 0)
+                //            {
+                //                extraButtonStates[(int)ButtonZone.A7] = true;
+                //            }
+                //            else
+                //            {
+                //                extraButtonStates[(int)ButtonZone.A6] = true;
+                //            }
+                //            isAnyExtraButtonTriggered = true;
+                //        }
+                //        break;
+                //    case 1: // D7 or A7 or D8
+                //        if (Mathf.Abs(degDiff) <= SENSOR_GROUP_A_DEG)
+                //        {
+                //            extraButtonStates[(int)ButtonZone.A7] = true;
+                //            isAnyExtraButtonTriggered = true;
+                //        }
+                //        else
+                //        {
+                //            if (degDiff > 0)
+                //            {
+                //                extraSensorStates[(int)SensorArea.D8] = true;
+                //            }
+                //            else
+                //            {
+                //                extraSensorStates[(int)SensorArea.D7] = true;
+                //            }
+                //            isAnyExtraSensorTriggered = true;
+                //        }
+                //        break;
+                //    case 2: // A7 or D8 or A8
+                //        if (Mathf.Abs(degDiff) <= SENSOR_GROUP_D_DEG)
+                //        {
+                //            extraSensorStates[(int)SensorArea.D8] = true;
+                //            isAnyExtraSensorTriggered = true;
+                //        }
+                //        else
+                //        {
+                //            if (degDiff > 0)
+                //            {
+                //                extraButtonStates[(int)ButtonZone.A8] = true;
+                //            }
+                //            else
+                //            {
+                //                extraButtonStates[(int)ButtonZone.A7] = true;
+                //            }
+                //            isAnyExtraButtonTriggered = true;
+                //        }
+                //        break;
+                //    case 3: // D8 or A8 or D1
+                //        if (Mathf.Abs(degDiff) <= SENSOR_GROUP_A_DEG)
+                //        {
+                //            extraButtonStates[(int)ButtonZone.A8] = true;
+                //            isAnyExtraButtonTriggered = true;
+                //        }
+                //        else
+                //        {
+                //            if (degDiff > 0)
+                //            {
+                //                extraSensorStates[(int)SensorArea.D1] = true;
+                //            }
+                //            else
+                //            {
+                //                extraSensorStates[(int)SensorArea.D8] = true;
+                //            }
+                //            isAnyExtraSensorTriggered = true;
+                //        }
+                //        break;
+                //    case 4: // A8 or D1 or A1
+                //        if (Mathf.Abs(degDiff) <= SENSOR_GROUP_D_DEG)
+                //        {
+                //            extraSensorStates[(int)SensorArea.D1] = true;
+                //            isAnyExtraSensorTriggered = true;
+                //        }
+                //        else
+                //        {
+                //            if (degDiff > 0)
+                //            {
+                //                extraButtonStates[(int)ButtonZone.A1] = true;
+                //            }
+                //            else
+                //            {
+                //                extraButtonStates[(int)ButtonZone.A8] = true;
+                //            }
+                //            isAnyExtraButtonTriggered = true;
+                //        }
+                //        break;
+
+                //    case 5: // D1 or A1 or D2
+                //        if (Mathf.Abs(degDiff) <= SENSOR_GROUP_A_DEG)
+                //        {
+                //            extraButtonStates[(int)ButtonZone.A1] = true;
+                //            isAnyExtraButtonTriggered = true;
+                //        }
+                //        else
+                //        {
+                //            if (degDiff > 0)
+                //            {
+                //                extraSensorStates[(int)SensorArea.D2] = true;
+                //            }
+                //            else
+                //            {
+                //                extraSensorStates[(int)SensorArea.D1] = true;
+                //            }
+                //            isAnyExtraSensorTriggered = true;
+                //        }
+                //        break;
+
+                //    case 6: // A1 or D2 or A2
+                //        if (Mathf.Abs(degDiff) <= SENSOR_GROUP_D_DEG)
+                //        {
+                //            extraSensorStates[(int)SensorArea.D2] = true;
+                //            isAnyExtraSensorTriggered = true;
+                //        }
+                //        else
+                //        {
+                //            if (degDiff > 0)
+                //            {
+                //                extraButtonStates[(int)ButtonZone.A2] = true;
+                //            }
+                //            else
+                //            {
+                //                extraButtonStates[(int)ButtonZone.A1] = true;
+                //            }
+                //            isAnyExtraButtonTriggered = true;
+                //        }
+                //        break;
+
+                //    case 7: // D2 or A2 or D3
+                //        if (Mathf.Abs(degDiff) <= SENSOR_GROUP_A_DEG)
+                //        {
+                //            extraButtonStates[(int)ButtonZone.A2] = true;
+                //            isAnyExtraButtonTriggered = true;
+                //        }
+                //        else
+                //        {
+                //            if (degDiff > 0)
+                //            {
+                //                extraSensorStates[(int)SensorArea.D3] = true;
+                //            }
+                //            else
+                //            {
+                //                extraSensorStates[(int)SensorArea.D2] = true;
+                //            }
+                //            isAnyExtraSensorTriggered = true;
+                //        }
+                //        break;
+
+                //    case 8: // A2 or D3 or A3
+                //        if (Mathf.Abs(degDiff) <= SENSOR_GROUP_D_DEG)
+                //        {
+                //            extraSensorStates[(int)SensorArea.D3] = true;
+                //            isAnyExtraSensorTriggered = true;
+                //        }
+                //        else
+                //        {
+                //            if (degDiff > 0)
+                //            {
+                //                extraButtonStates[(int)ButtonZone.A3] = true;
+                //            }
+                //            else
+                //            {
+                //                extraButtonStates[(int)ButtonZone.A2] = true;
+                //            }
+                //            isAnyExtraButtonTriggered = true;
+                //        }
+                //        break;
+
+                //    case 9: // D3 or A3 or D4
+                //        if (Mathf.Abs(degDiff) <= SENSOR_GROUP_A_DEG)
+                //        {
+                //            extraButtonStates[(int)ButtonZone.A3] = true;
+                //            isAnyExtraButtonTriggered = true;
+                //        }
+                //        else
+                //        {
+                //            if (degDiff > 0)
+                //            {
+                //                extraSensorStates[(int)SensorArea.D4] = true;
+                //            }
+                //            else
+                //            {
+                //                extraSensorStates[(int)SensorArea.D3] = true;
+                //            }
+                //            isAnyExtraSensorTriggered = true;
+                //        }
+                //        break;
+
+                //    case 10: // A3 or D4 or A4
+                //        if (Mathf.Abs(degDiff) <= SENSOR_GROUP_D_DEG)
+                //        {
+                //            extraSensorStates[(int)SensorArea.D4] = true;
+                //            isAnyExtraSensorTriggered = true;
+                //        }
+                //        else
+                //        {
+                //            if (degDiff > 0)
+                //            {
+                //                extraButtonStates[(int)ButtonZone.A4] = true;
+                //            }
+                //            else
+                //            {
+                //                extraButtonStates[(int)ButtonZone.A3] = true;
+                //            }
+                //            isAnyExtraButtonTriggered = true;
+                //        }
+                //        break;
+
+                //    case 11: // D4 or A4 or D5
+                //        if (Mathf.Abs(degDiff) <= SENSOR_GROUP_A_DEG)
+                //        {
+                //            extraButtonStates[(int)ButtonZone.A4] = true;
+                //            isAnyExtraButtonTriggered = true;
+                //        }
+                //        else
+                //        {
+                //            if (degDiff > 0)
+                //            {
+                //                extraSensorStates[(int)SensorArea.D5] = true;
+                //            }
+                //            else
+                //            {
+                //                extraSensorStates[(int)SensorArea.D4] = true;
+                //            }
+                //            isAnyExtraSensorTriggered = true;
+                //        }
+                //        break;
+
+                //    case 12: // A4 or D5 or A5
+                //        if (Mathf.Abs(degDiff) <= SENSOR_GROUP_D_DEG)
+                //        {
+                //            extraSensorStates[(int)SensorArea.D5] = true;
+                //            isAnyExtraSensorTriggered = true;
+                //        }
+                //        else
+                //        {
+                //            if (degDiff > 0)
+                //            {
+                //                extraButtonStates[(int)ButtonZone.A5] = true;
+                //            }
+                //            else
+                //            {
+                //                extraButtonStates[(int)ButtonZone.A4] = true;
+                //            }
+                //            isAnyExtraButtonTriggered = true;
+                //        }
+                //        break;
+
+                //    case 13: // D5 or A5 or D6
+                //        if (Mathf.Abs(degDiff) <= SENSOR_GROUP_A_DEG)
+                //        {
+                //            extraButtonStates[(int)ButtonZone.A5] = true;
+                //            isAnyExtraButtonTriggered = true;
+                //        }
+                //        else
+                //        {
+                //            if (degDiff > 0)
+                //            {
+                //                extraSensorStates[(int)SensorArea.D6] = true;
+                //            }
+                //            else
+                //            {
+                //                extraSensorStates[(int)SensorArea.D5] = true;
+                //            }
+                //            isAnyExtraSensorTriggered = true;
+                //        }
+                //        break;
+
+                //    case 14: // A5 or D6 or A6
+                //        if (Mathf.Abs(degDiff) <= SENSOR_GROUP_D_DEG)
+                //        {
+                //            extraSensorStates[(int)SensorArea.D6] = true;
+                //            isAnyExtraSensorTriggered = true;
+                //        }
+                //        else
+                //        {
+                //            if (degDiff > 0)
+                //            {
+                //                extraButtonStates[(int)ButtonZone.A6] = true;
+                //            }
+                //            else
+                //            {
+                //                extraButtonStates[(int)ButtonZone.A5] = true;
+                //            }
+                //            isAnyExtraButtonTriggered = true;
+                //        }
+                //        break;
+
+                //    case 15: // D6 or A6 or D7
+                //        if (Mathf.Abs(degDiff) <= SENSOR_GROUP_A_DEG)
+                //        {
+                //            extraButtonStates[(int)ButtonZone.A6] = true;
+                //            isAnyExtraButtonTriggered = true;
+                //        }
+                //        else
+                //        {
+                //            if (degDiff > 0)
+                //            {
+                //                extraSensorStates[(int)SensorArea.D7] = true;
+                //            }
+                //            else
+                //            {
+                //                extraSensorStates[(int)SensorArea.D6] = true;
+                //            }
+                //            isAnyExtraSensorTriggered = true;
+                //        }
+                //        break;
+                //}
             }
             var circleSamples = _unitCircle.Span;
             var userRad = _lastFingerRadius * (1 + touchRadius * _lastTouchRadiusAdjust);
@@ -412,6 +752,15 @@ namespace MajdataPlay.IO
                     if (state)
                     {
                         newP |= 1UL << i;
+                    }
+                }
+                for (var i = (int)SensorArea.D1; i < (int)SensorArea.E1; i++)
+                {
+                    var state = extraSensorStates[i];
+                    sensorStates[i + 1] |= state;
+                    if (state)
+                    {
+                        newP |= 1UL << (i + 1 + 12);
                     }
                 }
             }
