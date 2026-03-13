@@ -66,7 +66,7 @@ namespace MajdataPlay
         protected override void Awake()
         {
             base.Awake();
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
             UnityPlayerClass = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
             MajdataPlayActivityClass = new AndroidJavaClass("net.majdata.majdataplay.MajdataPlayActivity");
             UnityEngine.Debug.Log("[Android]Get current activity");
