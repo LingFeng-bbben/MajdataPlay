@@ -300,20 +300,6 @@ namespace MajdataPlay.Scenes.List
             ref var a8Statistic = ref _buttonPressTimes[(int)ButtonZone.A8];
             ref var p1Statistic = ref _buttonPressTimes[(int)ButtonZone.P1];
 
-            if (a8Statistic.IsClicked)
-            {
-                _coverListDisplayer.SlideDifficulty(-1);
-                var list = new string[] { "easy.wav", "basic.wav", "advanced.wav", "expert.wav", "master.wav", "remaster.wav", "original.wav" };
-                MajInstances.AudioManager.PlaySFX(list[(int)_listConfig.SelectedDiff]);
-            }
-            else if (a1Statistic.IsClicked)
-            {
-                _coverListDisplayer.SlideDifficulty(1);
-                var list = new string[] { "easy.wav", "basic.wav", "advanced.wav", "expert.wav", "master.wav", "remaster.wav", "original.wav" };
-                MajInstances.AudioManager.PlaySFX(list[(int)_listConfig.SelectedDiff]);
-            }
-            
-
             if (a3Statistic.IsPressed)
             {
                 _delta = 1;
@@ -481,6 +467,19 @@ namespace MajdataPlay.Scenes.List
                 MajInstances.SceneSwitcher.SwitchScene("Setting");
                 _isExited = true;
                 return;
+            }
+
+            if (a8Statistic.IsClicked)
+            {
+                _coverListDisplayer.SlideDifficulty(-1);
+                var list = new string[] { "easy.wav", "basic.wav", "advanced.wav", "expert.wav", "master.wav", "remaster.wav", "original.wav" };
+                MajInstances.AudioManager.PlaySFX(list[(int)_listConfig.SelectedDiff]);
+            }
+            else if (a1Statistic.IsClicked)
+            {
+                _coverListDisplayer.SlideDifficulty(1);
+                var list = new string[] { "easy.wav", "basic.wav", "advanced.wav", "expert.wav", "master.wav", "remaster.wav", "original.wav" };
+                MajInstances.AudioManager.PlaySFX(list[(int)_listConfig.SelectedDiff]);
             }
         }
         void EnterGame()
