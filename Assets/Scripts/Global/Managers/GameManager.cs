@@ -209,7 +209,7 @@ namespace MajdataPlay
             QualitySettings.maxQueuedFrames = Settings.Debug.MaxQueuedFrames;
             DetectHWEncoder();
 #if (!UNITY_EDITOR && UNITY_STANDALONE_WIN)
-            if (Setting.Display.Topmost)
+            if (Settings.Display.Topmost)
             {
                 SetWindowTopmost();
             }
