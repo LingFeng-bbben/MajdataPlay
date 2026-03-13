@@ -710,7 +710,8 @@ namespace MajdataPlay.IO
                     };
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(chCount));
+                    matrix = new float[chCount, 2];
+                    break;
             }
 
             if(chCount > 1)
