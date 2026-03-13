@@ -1137,7 +1137,7 @@ namespace MajdataPlay.Scenes.Game
                         }
                         //AddSlideToQueue(timing, result.SlideInstance);
                         UpdateStarRotateSpeed(result, (float)preprocessSubSlides[i].SlideTime, 20);
-                        sliObj.Initialize();
+                        sliObj.Init();
                     }
                     else
                     {
@@ -1194,7 +1194,7 @@ namespace MajdataPlay.Scenes.Game
                 }
                 foreach (var subSlide in subSlides)
                 {
-                    subSlide.Initialize();
+                    subSlide.Init();
                 }
                 if (slideResult is not null)
                 {

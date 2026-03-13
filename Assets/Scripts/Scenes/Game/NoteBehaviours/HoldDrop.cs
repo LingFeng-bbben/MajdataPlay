@@ -222,7 +222,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                     (USERSETTING_DJAUTO_POLICY == DJAutoPolicyOption.Permissive &&  _noteManager.SimulateButtonClick(_buttonPos));
             }
         }
-        public void Initialize(HoldPoolingInfo poolingInfo)
+        public void Init(HoldPoolingInfo poolingInfo)
         {
             if (State >= NoteStatus.Inited && State < NoteStatus.End)
             {
@@ -500,7 +500,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         void Check()
         {
-            if (IsEnded || !IsInitialized || _isJudged)
+            if (IsEnded || !IsInited || _isJudged)
             {
                 return;
             }
@@ -542,7 +542,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         void BodyCheck()
         {
-            if (!IsInitialized || IsEnded)
+            if (!IsInited || IsEnded)
             {
                 return;
             }

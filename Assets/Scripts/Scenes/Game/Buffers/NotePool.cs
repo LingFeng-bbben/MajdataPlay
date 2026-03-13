@@ -166,7 +166,7 @@ namespace MajdataPlay.Scenes.Game.Buffers
         void ActiveObject(IPoolableNote<TInfo, TMember> element, TInfo info)
         {
             info.Instance = element as NoteDrop;
-            element.Initialize(info);
+            element.Init(info);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual void Collect(in IPoolableNote<TInfo, TMember> endNote)

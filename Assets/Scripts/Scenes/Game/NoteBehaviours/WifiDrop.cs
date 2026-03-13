@@ -110,7 +110,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
             SlideLength = 20;
         }
-        public override void Initialize()
+        public override void Init()
         {
             if (State >= NoteStatus.Inited)
             {
@@ -199,7 +199,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 return;
             }
-            else if (IsEnded || !IsInitialized)
+            else if (IsEnded || !IsInited)
             {
                 return;
             }

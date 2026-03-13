@@ -221,7 +221,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
             _noteManager.SimulateSensorClick(_sensorPos);
         }
-        public void Initialize(TouchHoldPoolingInfo poolingInfo)
+        public void Init(TouchHoldPoolingInfo poolingInfo)
         {
             if (State >= NoteStatus.Inited && State < NoteStatus.End)
             {
@@ -536,7 +536,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         void Check()
         {
-            if (IsEnded || !IsInitialized || _isJudged || AutoplayMode == AutoplayModeOption.Enable)
+            if (IsEnded || !IsInited || _isJudged || AutoplayMode == AutoplayModeOption.Enable)
             {
                 return;
             }
@@ -579,7 +579,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         void BodyCheck()
         {
-            if (!IsInitialized || IsEnded)
+            if (!IsInited || IsEnded)
             {
                 return;
             }

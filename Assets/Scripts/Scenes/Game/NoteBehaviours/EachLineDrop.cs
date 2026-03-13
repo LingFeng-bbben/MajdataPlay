@@ -78,7 +78,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 _isCurvSpritesInited = true;
             }
         }
-        public void Initialize(EachLinePoolingInfo poolingInfo)
+        public void Init(EachLinePoolingInfo poolingInfo)
         {
             if (State >= NoteStatus.Inited && State < NoteStatus.End)
             {

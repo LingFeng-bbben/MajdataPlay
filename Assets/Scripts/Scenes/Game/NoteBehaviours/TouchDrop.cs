@@ -136,7 +136,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             Transform.localScale *= USERSETTING_TOUCH_SCALE;
         }
-        public void Initialize(TouchPoolingInfo poolingInfo)
+        public void Init(TouchPoolingInfo poolingInfo)
         {
             if (State >= NoteStatus.Inited && State < NoteStatus.End)
             {
@@ -282,7 +282,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         void Check()
         {
-            if (IsEnded || !IsInitialized)
+            if (IsEnded || !IsInited)
             {
                 return;
             }

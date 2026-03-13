@@ -137,7 +137,7 @@ namespace MajdataPlay.Scenes.Game.Buffers
             eachLine.DistanceProvider = distanceProvider;
             eachLine.NoteA = noteA;
             eachLine.NoteB = noteB;
-            eachLine.Initialize(info);
+            eachLine.Init(info);
 
             return true;
         }

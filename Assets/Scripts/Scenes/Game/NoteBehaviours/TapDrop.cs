@@ -106,7 +106,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             Active = false;
         }
-        public void Initialize(TapPoolingInfo poolingInfo)
+        public void Init(TapPoolingInfo poolingInfo)
         {
             if (State >= NoteStatus.Inited && State < NoteStatus.End)
             {
@@ -319,7 +319,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         void Check()
         {
-            if (IsEnded || !IsInitialized)
+            if (IsEnded || !IsInited)
             {
                 return;
             }

@@ -70,7 +70,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => _isEX = value;
         }
-        public bool IsInitialized
+        public bool IsInited
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => State >= NoteStatus.Inited;

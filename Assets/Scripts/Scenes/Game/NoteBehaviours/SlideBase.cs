@@ -217,7 +217,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         {
             Dispose();
         }
-        public abstract void Initialize();
+        public abstract void Init();
         [Il2CppSetOption(Option.NullChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected sealed override void Judge(float currentSec)

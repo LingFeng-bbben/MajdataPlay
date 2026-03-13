@@ -134,9 +134,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         /// <summary>
         /// Slide初始化
         /// </summary>
-        public override void Initialize()
+        public override void Init()
         {
-            if (IsInitialized)
+            if (IsInited)
             {
                 return;
             }
@@ -290,19 +290,19 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         {
             using (UnityProfiler.Create("SlideDrop.OnUpdate"))
             {
-                //#if UNITY_EDITOR
-                //            {
-                //                var indexProcess = (_starPositions.Count - 1) * (1 - _runtimeSlideConst);
-                //                var index = (int)indexProcess;
-                //                var pos = indexProcess - index;
+//#if UNITY_EDITOR
+//            {
+//                var indexProcess = (_starPositions.Count - 1) * (1 - _runtimeSlideConst);
+//                var index = (int)indexProcess;
+//                var pos = indexProcess - index;
 
-                //                var a = _starPositions[index + 1];
-                //                var b = _starPositions[index];
-                //                var ba = a - b;
-                //                var newPos = ba * pos + b;
-                //                _judgeFramePoint.position = newPos;
-                //            }
-                //#endif
+//                var a = _starPositions[index + 1];
+//                var b = _starPositions[index];
+//                var ba = a - b;
+//                var newPos = ba * pos + b;
+//                _judgeFramePoint.position = newPos;
+//            }
+//#endif
                 // ConnSlide
                 //var star = _stars[0];
                 var starTransform = StarTransforms.Span[0];
@@ -409,7 +409,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 return;
             }
-            else if (IsEnded || !IsInitialized)
+            else if (IsEnded || !IsInited)
             {
                 return;
             }
