@@ -940,7 +940,7 @@ namespace MajdataPlay.IO
                 if(i < 8)
                 {
                     var isClicked = _btnStatusInPreviousFrame[i] == SwitchStatus.Off &&
-                                    _btnStatusInThisFrame[i] == SwitchStatus.On;
+                                    (ButtonRing.IsOn(i) || ButtonRing.IsHadOn(i));
                     if(isClicked)
                     {
                         _btnClickedCountInThisFrame[i]++;

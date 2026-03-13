@@ -187,26 +187,29 @@ namespace MajdataPlay.IO
                 {
                     for (var i = 0; i < 8; i++)
                     {
-                        var lastState = false;
-                        var currentState = false;
+                        var lastState = (lastTouchPosData & (1UL << i)) != 0;
+                        var currentState = (touchPosData & (1UL << i)) != 0;
+                        var isPreviousFrameInSensor = (lastTouchPosData & (1UL << (i + 12))) != 0;
+                        var isClicked = (!lastState && currentState) && !isPreviousFrameInSensor;
 
-                        lastState = (lastTouchPosData & (1UL << i)) != 0;
-                        currentState = (touchPosData & (1UL << i)) != 0;
-
-                        if (!lastState && currentState)
+                        if (isClicked)
                         {
                             buttonClickedCount[i]++;
                         }
                     }
                     for (var i = 0; i < 34; i++)
                     {
-                        var lastState = false;
-                        var currentState = false;
+                        var lastState = (lastTouchPosData & (1UL << (i + 12))) != 0;
+                        var currentState = (touchPosData & (1UL << (i + 12))) != 0;
+                        var isClicked = !lastState && currentState;
 
-                        lastState = (lastTouchPosData & (1UL << (i + 12))) != 0;
-                        currentState = (touchPosData & (1UL << (i + 12))) != 0;
+                        if (i < 8)
+                        {
+                            var isPreviousFrameInButton = (lastTouchPosData & (1UL << i)) != 0;
+                            isClicked = isClicked && !isPreviousFrameInButton;
+                        }
 
-                        if (!lastState && currentState)
+                        if(isClicked)
                         {
                             sensorClickedCount[i]++;
                         }
@@ -399,7 +402,7 @@ namespace MajdataPlay.IO
                     sensorStates[i] |= state;
                     if(state)
                     {
-                        newP |= 1UL << (i + 12);
+                        newP |= 1UL << i;
                     }
                 }
                 for (var i = 8; i < 12; i++)
