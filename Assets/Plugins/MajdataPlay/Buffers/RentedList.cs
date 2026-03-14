@@ -366,13 +366,12 @@ namespace MajdataPlay.Buffers
             {
                 throw new ArgumentOutOfRangeException(nameof(index), "Index is out of range.");
             }
-            _size--;
             if (index != _size - 1)
             {
-                Array.Copy(_array, index + 1, _array, index, _size - index);
+                Array.Copy(_array, index + 1, _array, index, _size - index - 1);
             }
-
             _array[_size] = default!;
+            _size--;
             _version++;
         }
         public bool Contains(T item)
