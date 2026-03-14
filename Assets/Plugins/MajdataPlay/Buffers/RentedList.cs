@@ -189,9 +189,9 @@ namespace MajdataPlay.Buffers
                 {
                     throw new ArgumentOutOfRangeException(nameof(value), "Capacity cannot be less than the current size.");
                 }
-                if (value <= _rentedArray.Length && value > (_rentedArray.Length >> 1))
+                if(value == _rentedArray.Length)
                 {
-                    return; // No need to resize
+                    return;
                 }
                 var newRentedArray = RentedArray.Rent(value);
                 if (_size > 0)
@@ -270,17 +270,7 @@ namespace MajdataPlay.Buffers
         public void Add(T item)
         {
             ThrowIfDisposed();
-            if (_size >= _array.Length)
-            {
-                if (_array.Length != 0)
-                {
-                    Capacity = _array.Length << 1;
-                }
-                else
-                {
-                    Capacity = 1;
-                }
-            }
+            EnsureCapacity(_size + 1);
             _array[_size++] = item;
             _version++;
         }
@@ -307,17 +297,14 @@ namespace MajdataPlay.Buffers
         public void Insert(int index, T item)
         {
             ThrowIfDisposed();
-            if ((uint)index > (uint)_size)
+            if ((uint)index >= (uint)_size)
             {
                 throw new ArgumentOutOfRangeException(nameof(index), "Index is out of range.");
             }
-            if (_size >= _array.Length)
+            EnsureCapacity(_size + 1);
+            if (index < _size - 1)
             {
-                Capacity = _array.Length << 1;
-            }
-            if (index < _size)
-            {
-                Array.Copy(_array, index, _array, index + 1, _size - index);
+                Array.Copy(_array, index, _array, index + 1, _size - index - 1);
             }
             _array[index] = item;
             _size++;
@@ -370,8 +357,8 @@ namespace MajdataPlay.Buffers
             {
                 Array.Copy(_array, index + 1, _array, index, _size - index - 1);
             }
-            _array[_size] = default!;
             _size--;
+            _array[_size] = default!;
             _version++;
         }
         public bool Contains(T item)
@@ -444,6 +431,19 @@ namespace MajdataPlay.Buffers
             if (_isDisposed)
             {
                 throw new ObjectDisposedException(nameof(RentedList<T>), "This rented array has been disposed.");
+            }
+        }
+        void EnsureCapacity(int minCapacity)
+        {
+            if (_array.Length < minCapacity)
+            {
+                var newCapacity = ((_array.Length == 0) ? 16 : (_array.Length * 2));
+
+                if (newCapacity < minCapacity)
+                {
+                    newCapacity = minCapacity;
+                }
+                Capacity = newCapacity;
             }
         }
         public Enumerator GetEnumerator()
