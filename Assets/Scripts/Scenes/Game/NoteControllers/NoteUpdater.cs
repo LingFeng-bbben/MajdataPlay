@@ -13,16 +13,18 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
     internal class NoteUpdater : MonoBehaviour
     {
-        public double PreUpdateElapsedMs => _preUpdateElapsedMs;
-        public double UpdateElapsedMs => _updateElapsedMs;
-        public double FixedUpdateElapsedMs => _fixedUpdateElapsedMs;
-        public double LateUpdateElapsedMs => _lateUpdateElapsedMs;
+        public double PreUpdateElapsedMs => IntPreUpdateElapsedMs;
+        public double UpdateElapsedMs => IntUpdateElapsedMs;
+        public double FixedUpdateElapsedMs => IntFixedUpdateElapsedMs;
+        public double LateUpdateElapsedMs => IntLateUpdateElapsedMs;
 
-        ReadOnlyMemory<NoteInfo> _preUpdatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
-        ReadOnlyMemory<NoteInfo> _updatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
-        ReadOnlyMemory<NoteInfo> _fixedUpdatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
-        ReadOnlyMemory<NoteInfo> _lateUpdatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
+        protected ReadOnlyMemory<NoteInfo> Components = ReadOnlyMemory<NoteInfo>.Empty;
+        protected ReadOnlyMemory<NoteInfo> PreUpdatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
+        protected ReadOnlyMemory<NoteInfo> UpdatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
+        protected ReadOnlyMemory<NoteInfo> FixedUpdatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
+        protected ReadOnlyMemory<NoteInfo> LateUpdatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
 
+        NoteInfo[] _rentedArrayForComponents = Array.Empty<NoteInfo>();
         NoteInfo[] _rentedArrayForPreUpdatebleComponents = Array.Empty<NoteInfo>();
         NoteInfo[] _rentedArrayForUpdatebleComponents = Array.Empty<NoteInfo>();
         NoteInfo[] _rentedArrayForFixedUpdatebleComponents = Array.Empty<NoteInfo>();
@@ -30,23 +32,24 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
 
         [ReadOnlyField]
         [SerializeField]
-        double _preUpdateElapsedMs = 0;
+        protected double IntPreUpdateElapsedMs = 0;
         [ReadOnlyField]
         [SerializeField]
-        double _updateElapsedMs = 0;
+        protected double IntUpdateElapsedMs = 0;
         [ReadOnlyField]
         [SerializeField]
-        double _fixedUpdateElapsedMs = 0;
+        protected double IntFixedUpdateElapsedMs = 0;
         [ReadOnlyField]
         [SerializeField]
-        double _lateUpdateElapsedMs = 0;
+        protected double IntLateUpdateElapsedMs = 0;
 
         readonly static List<MonoBehaviour> SHARED_CACHE_LIST = new(64);
-        public async UniTask InitAsync()
+        public virtual async UniTask InitAsync()
         {
             await UniTask.SwitchToMainThread();
             var children = transform.GetChildren();
 
+            using RentedList<NoteInfo> noteComponents = new();
             using RentedList<NoteInfo> preUpdatableComponents = new();
             using RentedList<NoteInfo> updatableComponents = new();
             using RentedList<NoteInfo> fixedUpdatableComponents = new();
@@ -84,6 +87,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                     {
                         preUpdatableComponents.Add(noteInfo);
                     }
+                    noteComponents.Add(noteInfo);
                 }
                 else
                 {
@@ -91,20 +95,23 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 }
             }
             
+            _rentedArrayForComponents = Pool<NoteInfo>.RentArray(noteComponents.Count, true);
             _rentedArrayForPreUpdatebleComponents = Pool<NoteInfo>.RentArray(preUpdatableComponents.Count, true);
             _rentedArrayForUpdatebleComponents = Pool<NoteInfo>.RentArray(updatableComponents.Count, true);
             _rentedArrayForFixedUpdatebleComponents = Pool<NoteInfo>.RentArray(fixedUpdatableComponents.Count, true);
             _rentedArrayForLateUpdatebleComponents = Pool<NoteInfo>.RentArray(lateUpdatableComponents.Count, true);
 
+            noteComponents.CopyTo(_rentedArrayForComponents);
             preUpdatableComponents.CopyTo(_rentedArrayForPreUpdatebleComponents);
             updatableComponents.CopyTo(_rentedArrayForUpdatebleComponents);
             fixedUpdatableComponents.CopyTo(_rentedArrayForFixedUpdatebleComponents);
             lateUpdatableComponents.CopyTo(_rentedArrayForLateUpdatebleComponents);
 
-            _preUpdatebleComponents = _rentedArrayForPreUpdatebleComponents.AsMemory(0, preUpdatableComponents.Count);
-            _updatebleComponents = _rentedArrayForUpdatebleComponents.AsMemory(0, updatableComponents.Count);
-            _fixedUpdatebleComponents = _rentedArrayForFixedUpdatebleComponents.AsMemory(0, fixedUpdatableComponents.Count);
-            _lateUpdatebleComponents = _rentedArrayForLateUpdatebleComponents.AsMemory(0, lateUpdatableComponents.Count);
+            Components = _rentedArrayForComponents.AsMemory(0, noteComponents.Count);
+            PreUpdatebleComponents = _rentedArrayForPreUpdatebleComponents.AsMemory(0, preUpdatableComponents.Count);
+            UpdatebleComponents = _rentedArrayForUpdatebleComponents.AsMemory(0, updatableComponents.Count);
+            FixedUpdatebleComponents = _rentedArrayForFixedUpdatebleComponents.AsMemory(0, fixedUpdatableComponents.Count);
+            LateUpdatebleComponents = _rentedArrayForLateUpdatebleComponents.AsMemory(0, lateUpdatableComponents.Count);
         }
 
         protected virtual void OnDestroy()
@@ -114,32 +121,24 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
 
         internal virtual void Clear()
         {
-            foreach (var component in _preUpdatebleComponents.Span)
+            foreach (var component in Components.Span)
             {
                 component.Dispose();
             }
-            foreach (var component in _updatebleComponents.Span)
-            {
-                component.Dispose();
-            }
-            foreach (var component in _fixedUpdatebleComponents.Span)
-            {
-                component.Dispose();
-            }
-            foreach (var component in _lateUpdatebleComponents.Span)
-            {
-                component.Dispose();
-            }
-            _preUpdatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
-            _updatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
-            _fixedUpdatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
-            _lateUpdatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
 
+            Components = ReadOnlyMemory<NoteInfo>.Empty;
+            PreUpdatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
+            UpdatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
+            FixedUpdatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
+            LateUpdatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
+
+            Pool<NoteInfo>.ReturnArray(_rentedArrayForComponents, true);
             Pool<NoteInfo>.ReturnArray(_rentedArrayForPreUpdatebleComponents, true);
             Pool<NoteInfo>.ReturnArray(_rentedArrayForUpdatebleComponents, true);
             Pool<NoteInfo>.ReturnArray(_rentedArrayForFixedUpdatebleComponents, true);
             Pool<NoteInfo>.ReturnArray(_rentedArrayForLateUpdatebleComponents, true);
 
+            _rentedArrayForComponents = Array.Empty<NoteInfo>();
             _rentedArrayForPreUpdatebleComponents = Array.Empty<NoteInfo>();
             _rentedArrayForUpdatebleComponents = Array.Empty<NoteInfo>();
             _rentedArrayForFixedUpdatebleComponents = Array.Empty<NoteInfo>();
@@ -151,7 +150,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         internal virtual void OnPreUpdate()
         {
             var start = MajTimeline.UnscaledTime;
-            var preUpdatebleComponents = _preUpdatebleComponents.Span;
+            var preUpdatebleComponents = PreUpdatebleComponents.Span;
             var len = preUpdatebleComponents.Length;
             for (var i = 0; i < len; i++)
             {
@@ -168,7 +167,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
 
             var end = MajTimeline.UnscaledTime;
             var timeSpan = end - start;
-            _preUpdateElapsedMs = timeSpan.TotalMilliseconds;
+            IntPreUpdateElapsedMs = timeSpan.TotalMilliseconds;
         }
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
@@ -176,7 +175,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         internal virtual void OnUpdate()
         {
             var start = MajTimeline.UnscaledTime;
-            var updatebleComponents = _updatebleComponents.Span;
+            var updatebleComponents = UpdatebleComponents.Span;
             var len = updatebleComponents.Length;
             for (var i = 0; i < len; i++)
             {
@@ -193,7 +192,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
 
             var end = MajTimeline.UnscaledTime;
             var timeSpan = end - start;
-            _updateElapsedMs = timeSpan.TotalMilliseconds;
+            IntUpdateElapsedMs = timeSpan.TotalMilliseconds;
         }
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
@@ -201,7 +200,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         internal virtual void OnFixedUpdate()
         {
             var start = MajTimeline.UnscaledTime;
-            var fixedUpdatebleComponents = _fixedUpdatebleComponents.Span;
+            var fixedUpdatebleComponents = FixedUpdatebleComponents.Span;
             var len = fixedUpdatebleComponents.Length;
             for (var i = 0; i < len; i++)
             {
@@ -217,7 +216,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             }
             var end = MajTimeline.UnscaledTime;
             var timeSpan = end - start;
-            _fixedUpdateElapsedMs = timeSpan.TotalMilliseconds;
+            IntFixedUpdateElapsedMs = timeSpan.TotalMilliseconds;
         }
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
@@ -225,7 +224,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         internal virtual void OnLateUpdate()
         {
             var start = MajTimeline.UnscaledTime;
-            var lateUpdatebleComponents = _lateUpdatebleComponents.Span;
+            var lateUpdatebleComponents = LateUpdatebleComponents.Span;
             var len = lateUpdatebleComponents.Length;
             for (var i = 0; i < len; i++)
             {
@@ -242,7 +241,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
 
             var end = MajTimeline.UnscaledTime;
             var timeSpan = end - start;
-            _lateUpdateElapsedMs = timeSpan.TotalMilliseconds;
+            IntLateUpdateElapsedMs = timeSpan.TotalMilliseconds;
         }
     }
 }

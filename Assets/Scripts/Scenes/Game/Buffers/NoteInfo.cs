@@ -190,7 +190,14 @@ namespace MajdataPlay.Scenes.Game.Buffers
                 for (var i = 0; i < funcCount; i++)
                 {
                     var func = onPreUpdateFunctions[i];
-                    func();
+                    try
+                    {
+                        func();
+                    }
+                    catch (Exception e)
+                    {
+                        MajDebug.LogException(e);
+                    }
                 }
             }
         }
@@ -209,7 +216,14 @@ namespace MajdataPlay.Scenes.Game.Buffers
                 for (var i = 0; i < funcCount; i++)
                 {
                     var func = onUpdateFunctions[i];
-                    func();
+                    try
+                    {
+                        func();
+                    }
+                    catch (Exception e)
+                    {
+                        MajDebug.LogException(e);
+                    }
                 }
             }
         }
@@ -228,7 +242,14 @@ namespace MajdataPlay.Scenes.Game.Buffers
                 for (var i = 0; i < funcCount; i++)
                 {
                     var func = onLateUpdateFunctions[i];
-                    func();
+                    try
+                    {
+                        func();
+                    }
+                    catch (Exception e)
+                    {
+                        MajDebug.LogException(e);
+                    }
                 }
             }
         }
@@ -247,7 +268,14 @@ namespace MajdataPlay.Scenes.Game.Buffers
                 for (var i = 0; i < funcCount; i++)
                 {
                     var func = onFixedUpdateFunctions[i];
-                    func();
+                    try
+                    {
+                        func();
+                    }
+                    catch (Exception e)
+                    {
+                        MajDebug.LogException(e);
+                    }
                 }
             }
         }
