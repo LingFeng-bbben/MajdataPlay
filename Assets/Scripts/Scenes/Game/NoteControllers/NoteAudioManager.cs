@@ -130,10 +130,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         {
             using (UnityProfiler.Create("NoteAudioManager.OnLateUpdate"))
             {
+#if UNITY_ANDROID || UNITY_IOS
                 if (!GameManager.IsAppOnFocus)
                 {
                     return;
                 }
+#endif
                 AnswerSFXUpdate();
                 for (var i = 0; i < _noteSFXPlaybackRequests.Length; i++)
                 {

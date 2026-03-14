@@ -877,6 +877,7 @@ namespace MajdataPlay.Scenes.Game
                     {
                         token.ThrowIfCancellationRequested();
                         _lastAudioSampleVolume = (elapsedSeconds / 3f) * originVol;
+#if UNITY_ANDROID || UNITY_IOS
                         if (GameManager.IsAppOnFocus)
                         {
                             _audioSample.Volume = _lastAudioSampleVolume;
@@ -885,6 +886,7 @@ namespace MajdataPlay.Scenes.Game
                         {
                             _audioSample.Volume = 0;
                         }
+#endif
                         await UniTask.Yield();
                         elapsedSeconds += MajTimeline.DeltaTime;
                     }
@@ -896,6 +898,7 @@ namespace MajdataPlay.Scenes.Game
                 finally
                 {
                     _lastAudioSampleVolume = originVol;
+#if UNITY_ANDROID || UNITY_IOS
                     if (GameManager.IsAppOnFocus)
                     {
                         _audioSample.Volume = _lastAudioSampleVolume;
@@ -904,6 +907,7 @@ namespace MajdataPlay.Scenes.Game
                     {
                         _audioSample.Volume = 0;
                     }
+#endif
                 }
             }
             else
@@ -1391,6 +1395,7 @@ namespace MajdataPlay.Scenes.Game
         #region Events
         void OnAppFocus(object? sender, bool isFocus)
         {
+#if !UNITY_STANDALONE
             if (_audioSample is null)
             {
                 return;
@@ -1403,8 +1408,9 @@ namespace MajdataPlay.Scenes.Game
             {
                 _audioSample.Volume = 0;
             }
+#endif
         }
-        #endregion
+#endregion
 
         #region Clean Up
         void DisposeAudioTrack()

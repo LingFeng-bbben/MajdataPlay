@@ -182,6 +182,7 @@ namespace MajdataPlay.Scenes.List
         }
         float GetVolume()
         {
+#if UNITY_ANDROID || UNITY_IOS
             if (GameManager.IsAppOnFocus)
             {
                 return MajInstances.Settings.Audio.Volume.BGM;
@@ -190,6 +191,9 @@ namespace MajdataPlay.Scenes.List
             {
                 return 0;
             }
+#else
+            return MajInstances.Settings.Audio.Volume.BGM;
+#endif
         }
         private void OnDestroy()
         {
