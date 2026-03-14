@@ -154,7 +154,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 for (var i = 0; i < len; i++) 
                 {
                     var component = otherComponents[i];
-                    if (component.State == NoteStatus.End)
+                    if(component.State is NoteStatus.Start)
+                    {
+                        continue;
+                    }
+                    else if (component.State == NoteStatus.End)
                     {
                         otherComponents.RemoveAt(i);
                         i--;
@@ -197,7 +201,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 for (var i = 0; i < len; i++)
                 {
                     var component = otherComponents[i];
-                    if (component.State == NoteStatus.End)
+                    if (component.State is NoteStatus.Start)
+                    {
+                        continue;
+                    }
+                    else if (component.State == NoteStatus.End)
                     {
                         otherComponents.RemoveAt(i);
                         i--;
@@ -256,7 +264,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 for (var i = 0; i < len; i++)
                 {
                     var component = slideComponents[i];
-                    if (component.State == NoteStatus.End)
+                    if (component.State is NoteStatus.Start)
+                    {
+                        continue;
+                    }
+                    else if (component.State == NoteStatus.End)
                     {
                         slideComponents.RemoveAt(i);
                         i--;
