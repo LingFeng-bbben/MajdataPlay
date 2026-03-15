@@ -367,8 +367,8 @@ namespace MajdataPlay.Scenes.Game
                 {
                     var progress = new NetProgress();
                     var lastPercent = 0f;
-                    _sceneSwitcher.SetLoadingText($"{"Downloading".i18n()}...");
-                    _sceneSwitcher.SetLoadingText($"{"Downloading Audio Track".i18n()}...");
+                    _sceneSwitcher.SetLoadingText($"{"MAJTEXT_DOWNLOADING".i18n()}...");
+                    _sceneSwitcher.SetLoadingText($"{"MAJTEXT_DOWNLOADING_AUDIO_TRACK".i18n()}...");
                     var task1 = _songDetail.GetAudioTrackAsync(progress, token: _cts.Token);
                     while (!task1.IsCompleted)
                     {
@@ -376,12 +376,12 @@ namespace MajdataPlay.Scenes.Game
                         var percent = progress.Percent.Clamp(0, 1);
                         LedRingLoadingUpdate(percent, lastPercent);
                         lastPercent = percent;
-                        _sceneSwitcher.SetLoadingText($"{"Downloading Audio Track".i18n()}...\n{percent * 100:F2}%");
+                        _sceneSwitcher.SetLoadingText($"{"MAJTEXT_DOWNLOADING_AUDIO_TRACK".i18n()}...\n{percent * 100:F2}%");
                     }
                     lastPercent = 0;
                     progress.Reset();
                     token.ThrowIfCancellationRequested();
-                    _sceneSwitcher.SetLoadingText($"{"Downloading Maidata".i18n()}...");
+                    _sceneSwitcher.SetLoadingText($"{"MAJTEXT_DOWNLOADING_MAIDATA".i18n()}...");
                     var task2 = _songDetail.GetMaidataAsync(false, progress, token: _cts.Token);
                     while (!task2.IsCompleted)
                     {
@@ -389,12 +389,12 @@ namespace MajdataPlay.Scenes.Game
                         var percent = progress.Percent.Clamp(0, 1);
                         LedRingLoadingUpdate(percent, lastPercent);
                         lastPercent = percent;
-                        _sceneSwitcher.SetLoadingText($"{"Downloading Maidata".i18n()}...\n{percent * 100:F2}%");
+                        _sceneSwitcher.SetLoadingText($"{"MAJTEXT_DOWNLOADING_MAIDATA".i18n()}...\n{percent * 100:F2}%");
                     }
                     lastPercent = 0;
                     progress.Reset();
                     token.ThrowIfCancellationRequested();
-                    _sceneSwitcher.SetLoadingText($"{"Downloading Picture".i18n()}...");
+                    _sceneSwitcher.SetLoadingText($"{"MAJTEXT_DOWNLOADING_PICTURE".i18n()}...");
                     var task3 = _songDetail.GetCoverAsync(false, progress, token: _cts.Token);
                     while (!task3.IsCompleted)
                     {
@@ -402,12 +402,12 @@ namespace MajdataPlay.Scenes.Game
                         var percent = progress.Percent.Clamp(0, 1);
                         LedRingLoadingUpdate(percent, lastPercent);
                         lastPercent = percent;
-                        _sceneSwitcher.SetLoadingText($"{"Downloading Picture".i18n()}...\n{percent * 100:F2}%");
+                        _sceneSwitcher.SetLoadingText($"{"MAJTEXT_DOWNLOADING_PICTURE".i18n()}...\n{percent * 100:F2}%");
                     }
                     lastPercent = 0;
                     progress.Reset();
                     token.ThrowIfCancellationRequested();
-                    _sceneSwitcher.SetLoadingText($"{"Downloading Video".i18n()}...");
+                    _sceneSwitcher.SetLoadingText($"{"MAJTEXT_DOWNLOADING_VIDEO".i18n()}...");
                     var task4 = _songDetail.GetVideoPathAsync(progress, token: _cts.Token);
                     while (!task4.IsCompleted)
                     {
@@ -415,7 +415,7 @@ namespace MajdataPlay.Scenes.Game
                         var percent = progress.Percent.Clamp(0, 1);
                         LedRingLoadingUpdate(percent, lastPercent);
                         lastPercent = percent;
-                        _sceneSwitcher.SetLoadingText($"{"Downloading Video".i18n()}...\n{percent * 100:F2}%");
+                        _sceneSwitcher.SetLoadingText($"{"MAJTEXT_DOWNLOADING_VIDEO".i18n()}...\n{percent * 100:F2}%");
                     }
                     _sceneSwitcher.SetLoadingText(string.Empty);
                 }
@@ -434,7 +434,7 @@ namespace MajdataPlay.Scenes.Game
             {
                 await UniTask.SwitchToMainThread();
                 InputManager.ClearAllSubscriber();
-                MajInstances.SceneSwitcher.SetLoadingText("Empty Chart".i18n(), Color.red);
+                MajInstances.SceneSwitcher.SetLoadingText("MAJTEXT_ERR_EMPTY_CHART".i18n(), Color.red);
                 await UniTask.Delay(1000);
                 ReturnTo().Forget();
             }
@@ -442,7 +442,7 @@ namespace MajdataPlay.Scenes.Game
             {
                 await UniTask.SwitchToMainThread();
                 InputManager.ClearAllSubscriber();
-                MajInstances.SceneSwitcher.SetLoadingText("OBSError".i18n(), Color.red);
+                MajInstances.SceneSwitcher.SetLoadingText("MAJTEXT_ERR_OBSERROR".i18n(), Color.red);
                 await UniTask.Delay(1000);
                 ReturnTo().Forget();
             }
@@ -456,14 +456,14 @@ namespace MajdataPlay.Scenes.Game
             catch(HttpException httpEx)
             {
                 await UniTask.SwitchToMainThread();
-                MajInstances.SceneSwitcher.SetLoadingText("Failed to download chart".i18n(), Color.red);
+                MajInstances.SceneSwitcher.SetLoadingText("MAJTEXT_ERR_DOWNLOAD_FAILED".i18n(), Color.red);
                 MajDebug.LogError(httpEx);
                 return;
             }
             catch(InvalidAudioTrackException audioEx)
             {
                 await UniTask.SwitchToMainThread();
-                MajInstances.SceneSwitcher.SetLoadingText($"{"Failed to load chart".i18n()}\n{audioEx.Message}", Color.red);
+                MajInstances.SceneSwitcher.SetLoadingText($"{"MAJTEXT_ERR_LOAD_CHART_FAILED".i18n()}\n{audioEx.Message}", Color.red);
                 MajDebug.LogError(audioEx);
                 return;
             }
@@ -480,7 +480,7 @@ namespace MajdataPlay.Scenes.Game
             catch(Exception e)
             {
                 await UniTask.SwitchToMainThread();
-                MajInstances.SceneSwitcher.SetLoadingText($"{"Unknown error".i18n()}\n{e.Message}", Color.red);
+                MajInstances.SceneSwitcher.SetLoadingText($"{"MAJTEXT_ERR_UNKNOWN".i18n()}\n{e.Message}", Color.red);
                 MajDebug.LogError(e);
                 throw;
             }
@@ -558,7 +558,7 @@ namespace MajdataPlay.Scenes.Game
                     return;
                 chartContent = SimaiMirror.NoteMirrorHandle(chartContent, mirrorType);
             }
-            MajInstances.SceneSwitcher.SetLoadingText($"{"Deserialization".i18n()}...");
+            MajInstances.SceneSwitcher.SetLoadingText($"{"MAJTEXT_DESERIALIZATION".i18n()}...");
 
             _simaiFile = await _songDetail.GetMaidataAsync(true);
             _chartOffset = _simaiFile.Offset;
@@ -712,7 +712,7 @@ namespace MajdataPlay.Scenes.Game
             while (!loaderTask.Status.IsCompleted())
             {
                 var percent = (float)_noteLoader.Progress.Clamp(0, 1);
-                MajInstances.SceneSwitcher.SetLoadingText($"{"Loading Chart".i18n()}...\n{_noteLoader.Progress * 100:F2}%");
+                MajInstances.SceneSwitcher.SetLoadingText($"{"MAJTEXT_LOADING_CHART".i18n()}...\n{_noteLoader.Progress * 100:F2}%");
                 LedRingLoadingUpdate(percent, lastPercent);
                 lastPercent = percent;
                 await UniTask.Yield();
@@ -727,13 +727,13 @@ namespace MajdataPlay.Scenes.Game
                 var task = loaderTask.AsTask();
                 var e = task.Exception.InnerException;
 
-                MajInstances.SceneSwitcher.SetLoadingText($"{"Failed to load chart".i18n()}\n{e.Message}%", Color.red);
+                MajInstances.SceneSwitcher.SetLoadingText($"{"MAJTEXT_ERR_LOAD_CHART_FAILED".i18n()}\n{e.Message}%", Color.red);
                 LedRing.SetAllLight(Color.red);
                 MajDebug.LogException(task.Exception);
                 StopAllCoroutines();
                 throw e;
             }
-            MajInstances.SceneSwitcher.SetLoadingText($"{"Loading Chart".i18n()}...\n100.00%");
+            MajInstances.SceneSwitcher.SetLoadingText($"{"MAJTEXT_LOADING_CHART".i18n()}...\n100.00%");
 
             _noteEffectPool.Init();
             await UniTask.Yield();

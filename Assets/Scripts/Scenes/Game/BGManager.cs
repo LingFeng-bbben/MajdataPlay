@@ -248,7 +248,7 @@ namespace MajdataPlay.Scenes.Game
                     var remainingTime = timeout - (MajTimeline.UnscaledTime - startAt);
                     if (remainingTime.TotalSeconds < 0)
                     {
-                        MajDebug.LogError("Video loading timeout, fall back to default cover".i18n());
+                        MajDebug.LogError("MAJTEXT_ERR_VIDEO_PLAYER_PREPARE_TIMEOUT".i18n());
                         SetBackgroundPic(fallback);
                         return;
                     }
