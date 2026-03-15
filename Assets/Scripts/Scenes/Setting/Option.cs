@@ -258,19 +258,20 @@ namespace MajdataPlay.Scenes.Setting
                 case "InnerJudgeDistance":
                     if(value is 0f)
                     {
-                        localizedText = "OFF".i18n();
+                        localizedText = "OFF";
                     }
                     else
                     {
-                        localizedText = origin.i18n();
+                        localizedText = origin;
                     }
                     break;
                 default:
                     if(!_isNum)
                     {
-                        if (!$"MAJSETTING_PROPERTY_{PropertyInfo.Name}_OPTION_{origin}".Tryi18n(out localizedText))
+                        if(!$"MAJSETTING_PROPERTY_{PropertyInfo.Name}_OPTION_{origin}".Tryi18n(out localizedText) &&
+                           !$"MAJSETTING_GENERAL_OPTION_{origin}".Tryi18n(out localizedText))
                         {
-                            localizedText = origin.i18n();
+                            localizedText = origin;
                         }
                     }
                     else
