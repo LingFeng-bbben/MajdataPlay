@@ -644,7 +644,21 @@ namespace MajdataPlay.Scenes.List
             {
                 return Task.CompletedTask;
             }
-            return Task.WhenAll(AllBackgroundTasks);
+            var isAnyRunning = false;
+            using var tasks = new RentedList<Task>();
+            foreach(var task in AllBackgroundTasks)
+            {
+                if (!task.IsCompleted)
+                {
+                    isAnyRunning |= true;
+                    tasks.Add(task);
+                }
+            }
+            if (!isAnyRunning)
+            {
+                return Task.CompletedTask;
+            }
+            return Task.WhenAll(tasks);
         }
     }
 }
