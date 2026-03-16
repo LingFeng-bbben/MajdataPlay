@@ -96,6 +96,7 @@ public readonly struct ArrayOwner<T> : IDisposable
     /// The caller is responsible for ensuring that the index is within bounds.
     /// Accessing an invalid index may lead to undefined behavior.
     /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref T ReadUsafe(int index)
     {
         return ref Unsafe.Add(ref MemoryMarshal.GetReference(Array), index);
@@ -118,31 +119,37 @@ public readonly struct ArrayOwner<T> : IDisposable
     {
         return Array.AsSpan();
     }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<T> AsSpan(int start)
     {
         return Array.AsSpan(start);
     }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<T> AsSpan(int start, int length)
     {
         return Array.AsSpan(start, length);
     }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Memory<T> AsMemory()
     {
         return Array.AsMemory();
     }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Memory<T> AsMemory(int start)
     {
         return Array.AsMemory(start);
     }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Memory<T> AsMemory(int start, int length)
     {
         return Array.AsMemory(start, length);
     }
-
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static explicit operator Span<T>(ArrayOwner<T> arrayOwner)
     {
         return arrayOwner.Array;
     }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static explicit operator Memory<T>(ArrayOwner<T> arrayOwner)
     {
         return arrayOwner.Array;
