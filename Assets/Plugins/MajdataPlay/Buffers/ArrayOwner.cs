@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Buffers;
+using System.Collections;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -19,7 +21,7 @@ namespace MajdataPlay.Buffers;
 /// To avoid this, ensure the instance is not copied and that
 /// <see cref="Dispose"/> is called only once.
 /// </remarks>
-public readonly struct ArrayOwner<T> : IDisposable
+public readonly struct ArrayOwner<T> : IEnumerable<T>, IDisposable
 {
     public ref T this[int index]
     {
@@ -97,7 +99,7 @@ public readonly struct ArrayOwner<T> : IDisposable
     /// Accessing an invalid index may lead to undefined behavior.
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ref T ReadUsafe(int index)
+    public ref T ReadUnsafe(int index)
     {
         return ref Unsafe.Add(ref MemoryMarshal.GetReference(Array), index);
     }
@@ -115,6 +117,12 @@ public readonly struct ArrayOwner<T> : IDisposable
 
         _pool.Return(Array, true);
     }
+    public ArrayOwnerEnumerator GetEnumerator()
+    {
+        return new ArrayOwnerEnumerator(this);
+    }
+    IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     public Span<T> AsSpan()
     {
         return Array.AsSpan();
@@ -153,5 +161,64 @@ public readonly struct ArrayOwner<T> : IDisposable
     public static explicit operator Memory<T>(ArrayOwner<T> arrayOwner)
     {
         return arrayOwner.Array;
+    }
+
+    public struct ArrayOwnerEnumerator : IEnumerator<T>, IDisposable, IEnumerator
+    {
+        int _index;
+        T? _current;
+
+        ArrayOwner<T> _array;
+
+        public ref T Current
+        {
+            get
+            {
+                return ref _array.ReadUnsafe(_index - 1);
+            }
+        }
+        T IEnumerator<T>.Current
+        {
+            get
+            {
+                return _current!;
+            }
+        }
+
+        object IEnumerator.Current
+        {
+            get
+            {
+                return _current!;
+            }
+        }
+
+        public ArrayOwnerEnumerator(ArrayOwner<T> array)
+        {
+            this._array = array;
+            _index = 0;
+            _current = default;
+        }
+
+        public void Dispose()
+        {
+
+        }
+        public bool MoveNext()
+        {
+            if (_index < _array.Length)
+            {
+                _current = _array.ReadUnsafe(_index);
+                _index++;
+                return true;
+            }
+            return false;
+        }
+
+        void IEnumerator.Reset()
+        {
+            _index = 0;
+            _current = default!;
+        }
     }
 }
