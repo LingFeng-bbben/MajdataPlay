@@ -101,7 +101,7 @@ public readonly struct ArrayOwner<T> : IEnumerable<T>, IDisposable
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ref T ReadUnsafe(int index)
     {
-        return ref Unsafe.Add(ref MemoryMarshal.GetReference(Array), index);
+        return ref Unsafe.Add(ref MemoryMarshal.GetReference(Array.AsSpan()), index);
     }
 
     /// <summary>
