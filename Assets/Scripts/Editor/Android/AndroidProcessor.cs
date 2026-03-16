@@ -1,23 +1,23 @@
-//https://stackoverflow.com/questions/43657461/how-to-find-list-of-files-in-streamingassets-folder-in-android
-#if UNITY_EDITOR
-
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using UnityEditor.Build;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
 
-class BuildProcessor : IPreprocessBuildWithReport
+namespace MajdataPlay.Editor.Android;
+internal static class AndroidProcessor
 {
-    public int callbackOrder { get { return 0; } }
-    public void OnPreprocessBuild(BuildReport report)
+    public static void OnPreprocessBuild(BuildReport report)
     {
         Debug.LogWarning("OnPreprocessBuild");
 
         SaveStreamingAssetPaths();
     }
 
-    private void SaveStreamingAssetPaths(string directory = "", string file_name = "StreamingAssetPaths")
+    static void SaveStreamingAssetPaths(string directory = "", string file_name = "StreamingAssetPaths")
     {
         List<string> paths = StreamingAssetsExtension.GetPathsRecursively(directory); // Gets list of files from StreamingAssets/directory
 
@@ -37,5 +37,3 @@ class BuildProcessor : IPreprocessBuildWithReport
 
     }
 }
-
-#endif

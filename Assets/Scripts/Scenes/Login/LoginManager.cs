@@ -433,7 +433,7 @@ namespace MajdataPlay.Scenes.Login
             }
             if (!task.IsCompletedSuccessfully)
             {
-                sceneSwitcher.SetLoadingText("MAJTEXT_SCAN_CHARTS_FAILED".i18n(), Color.red);
+                sceneSwitcher.SetLoadingText("MAJTEXT_ERR_SCAN_CHARTS_FAILED".i18n(), Color.red);
             }
             else
             {

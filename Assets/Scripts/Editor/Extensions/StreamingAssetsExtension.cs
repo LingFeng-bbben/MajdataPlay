@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
+namespace MajdataPlay.Editor;
 public static class StreamingAssetsExtension
 {
     /// <summary>

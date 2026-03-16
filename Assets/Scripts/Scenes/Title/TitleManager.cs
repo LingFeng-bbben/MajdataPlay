@@ -81,13 +81,13 @@ namespace MajdataPlay.Scenes.Title
                     {
                         if (task3.IsFaulted)
                         {
-                            echoText.text = "MAJTEXT_SCAN_CHARTS_FAILED".i18n();
+                            echoText.text = "MAJTEXT_ERR_SCAN_CHARTS_FAILED".i18n();
                             MajDebug.LogException(task3.Exception);
                         }
                         else if (SongStorage.IsEmpty)
                         {
                             isEmpty = true;
-                            echoText.text = "MAJTEXT_NO_CHART".i18n();
+                            echoText.text = "MAJTEXT_ERR_NO_CHART".i18n();
                         }
                         else
                         {
