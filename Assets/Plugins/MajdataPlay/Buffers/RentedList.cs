@@ -3,89 +3,13 @@ using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using static UnityEditor.Experimental.GraphView.Port;
 #nullable enable
 namespace MajdataPlay.Buffers
 {
     public class RentedList<T> : IList<T>, ICollection<T>, IReadOnlyList<T>, IDisposable
     {
-
-        struct RentedArray : IMemoryOwner<T>, IDisposable
-        {
-            public T[] Array
-            {
-                get
-                {
-                    ThrowIfDisposed();
-                    return _array;
-                }
-            }
-            public Memory<T> Memory
-            {
-                get
-                {
-                    ThrowIfDisposed();
-                    return _array;
-                }
-            }
-            public int Length
-            {
-                get
-                {
-                    ThrowIfDisposed();
-                    return _length;
-                }
-            }
-            public bool IsEmpty
-            {
-                get
-                {
-                    ThrowIfDisposed();
-                    return _length == 0;
-                }
-            }
-
-            bool _isDisposed = false;
-            T[] _array = System.Array.Empty<T>();
-            int _length = 0;
-            ArrayPool<T> _arrayPool = _sharedArrayPool;
-
-
-            public RentedArray()
-            {
-
-            }
-            public void Dispose()
-            {
-                if (_isDisposed || _array.Length == 0)
-                {
-                    return;
-                }
-                _isDisposed = true;
-                _arrayPool.Return(_array, true);
-            }
-            public static RentedArray Rent(int arraySize)
-            {
-                if (arraySize < 0)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(arraySize), "Array size must be greater than zero.");
-                }
-                var array = _sharedArrayPool.Rent(arraySize);
-                var rentedArray = new RentedArray
-                {
-                    _array = array,
-                    _length = arraySize,
-                    _isDisposed = false,
-                };
-                return rentedArray;
-            }
-            void ThrowIfDisposed()
-            {
-                if (_isDisposed)
-                {
-                    throw new ObjectDisposedException(nameof(RentedArray), "This rented array has been disposed.");
-                }
-            }
-        }
         public struct Enumerator : IEnumerator<T>, IDisposable, IEnumerator
         {
             int _index;
@@ -193,7 +117,7 @@ namespace MajdataPlay.Buffers
                 {
                     return;
                 }
-                var newRentedArray = RentedArray.Rent(value);
+                var newRentedArray = new ArrayOwner<T>(_sharedPool.Rent(value), _sharedPool);
                 if (_size > 0)
                 {
                     Array.Copy(_rentedArray.Array, newRentedArray.Array, _size);
@@ -239,9 +163,9 @@ namespace MajdataPlay.Buffers
         uint _version = 0;
         T[] _array;
         bool _isDisposed = false;
-        RentedArray _rentedArray;
+        ArrayOwner<T> _rentedArray;
 
-        readonly static ArrayPool<T> _sharedArrayPool = Pool<T>.ArrayPool;
+        readonly static ArrayPool<T> _sharedPool = Pool<T>.ArrayPool;
         ~RentedList()
         {
             Dispose();
@@ -249,7 +173,7 @@ namespace MajdataPlay.Buffers
         public RentedList()
         {
             //List
-            _rentedArray = RentedArray.Rent(0);
+            _rentedArray = ArrayOwner<T>.Empty;
             _array = _rentedArray.Array;
         }
         public RentedList(IEnumerable<T> items)
@@ -258,13 +182,13 @@ namespace MajdataPlay.Buffers
             {
                 throw new ArgumentNullException(nameof(items), "Items cannot be null.");
             }
-            _rentedArray = RentedArray.Rent(0);
+            _rentedArray = ArrayOwner<T>.Empty;
             _array = _rentedArray.Array;
             AddRange(items);
         }
         public RentedList(int capacity)
         {
-            _rentedArray = RentedArray.Rent(capacity);
+            _rentedArray = new ArrayOwner<T>(_sharedPool.Rent(capacity), _sharedPool);
             _array = _rentedArray.Array;
         }
         public void Add(T item)
@@ -309,6 +233,11 @@ namespace MajdataPlay.Buffers
             _array[index] = item;
             _size++;
             _version++;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public T ReadUnsafe(int index)
+        {
+            return Unsafe.Add(ref MemoryMarshal.GetReference(_array.AsSpan()), index);
         }
         public void Clear()
         {

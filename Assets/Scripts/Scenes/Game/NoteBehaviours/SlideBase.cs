@@ -329,7 +329,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             for (; LastHiddenSlideBarIndex <= endIndex; LastHiddenSlideBarIndex++)
             {
                 //_slideBarRenderers[i].forceRenderingOff = true;
-                SlideBars[LastHiddenSlideBarIndex].layer = MajEnv.HIDDEN_LAYER;
+                SlideBars.ReadUnsafe(LastHiddenSlideBarIndex).layer = MajEnv.HIDDEN_LAYER;
             }
         }
         [Il2CppSetOption(Option.NullChecks, false)]
@@ -354,10 +354,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void SetSlideBarAlpha(float alpha)
         {
-            for (var i = 0; i < SlideBarRenderers.Count; i++)
+            var count = SlideBarRenderers.Count;
+            for (var i = 0; i < count; i++)
             {
-                var sr = SlideBarRenderers[i];
-                var obj = SlideBars[i];
+                var sr = SlideBarRenderers.ReadUnsafe(i);
+                var obj = SlideBars.ReadUnsafe(i);
                 if (alpha <= 0f)
                 {
                     obj.layer = MajEnv.HIDDEN_LAYER;
