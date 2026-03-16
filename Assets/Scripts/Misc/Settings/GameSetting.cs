@@ -613,7 +613,11 @@ namespace MajdataPlay.Settings
         // Rear (LR / RR)
         // Side (LS / RS) (rear center)
         // CenterAndLFE (LFE / Center)
-        public string Main { get; set; } = "Front";
+        public float FrontVolume { get; set; } = 1f;
+        public float CenterAndLFEVolume { get; set; } = 1f;
+        public float SideVolume { get; set; } = 1f;
+        public float RearVolume { get; set; } = 1f;
+
     }
     public class AsioOptions
     {
