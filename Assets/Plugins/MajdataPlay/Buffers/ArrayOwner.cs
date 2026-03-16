@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Buffers;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
 #nullable enable
 namespace MajdataPlay.Buffers;
 /// <summary>
@@ -22,6 +21,14 @@ namespace MajdataPlay.Buffers;
 /// </remarks>
 public readonly struct ArrayOwner<T> : IDisposable
 {
+    public ref T this[int index]
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get
+        {
+            return ref this[index];
+        }
+    }
     /// <summary>
     /// The rented array instance.
     /// </summary>
@@ -37,9 +44,9 @@ public readonly struct ArrayOwner<T> : IDisposable
     /// </summary>
     public readonly bool IsEmpty;
 
-    readonly ArrayPool<T> _pool;
-
     public static readonly ArrayOwner<T> Empty = new ArrayOwner<T>();
+
+    readonly ArrayPool<T> _pool;
 
     /// <summary>
     /// Initializes an empty <see cref="ArrayOwner{T}"/> instance.
@@ -79,6 +86,20 @@ public readonly struct ArrayOwner<T> : IDisposable
         IsEmpty = array.Length == 0;
         _pool = pool;
     }
+    /// <summary>
+    /// Returns a reference to the element at the specified index without
+    /// performing bounds checking.
+    /// </summary>
+    /// <param name="index">The zero-based index of the element.</param>
+    /// <returns>A reference to the element at the specified index.</returns>
+    /// <remarks>
+    /// The caller is responsible for ensuring that the index is within bounds.
+    /// Accessing an invalid index may lead to undefined behavior.
+    /// </remarks>
+    public ref T ReadUsafe(int index)
+    {
+        return ref Unsafe.Add(ref MemoryMarshal.GetReference(Array), index);
+    }
 
     /// <summary>
     /// Returns the rented array to the originating <see cref="ArrayPool{T}"/>.
@@ -92,5 +113,38 @@ public readonly struct ArrayOwner<T> : IDisposable
         }
 
         _pool.Return(Array, true);
+    }
+    public Span<T> AsSpan()
+    {
+        return Array.AsSpan();
+    }
+    public Span<T> AsSpan(int start)
+    {
+        return Array.AsSpan(start);
+    }
+    public Span<T> AsSpan(int start, int length)
+    {
+        return Array.AsSpan(start, length);
+    }
+    public Memory<T> AsMemory()
+    {
+        return Array.AsMemory();
+    }
+    public Memory<T> AsMemory(int start)
+    {
+        return Array.AsMemory(start);
+    }
+    public Memory<T> AsMemory(int start, int length)
+    {
+        return Array.AsMemory(start, length);
+    }
+
+    public static explicit operator Span<T>(ArrayOwner<T> arrayOwner)
+    {
+        return arrayOwner.Array;
+    }
+    public static explicit operator Memory<T>(ArrayOwner<T> arrayOwner)
+    {
+        return arrayOwner.Array;
     }
 }
