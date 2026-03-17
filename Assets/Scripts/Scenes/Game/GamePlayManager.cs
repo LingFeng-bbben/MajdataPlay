@@ -120,7 +120,6 @@ namespace MajdataPlay.Scenes.Game
         float _3456PressTime = 0;
         float _p1SkipTime = 0;
         float _devicePlaybackOffset = 0f;
-        float _lastAudioSampleVolume = 0f;
 
         // Offset
         float _chartOffset = 0f;
@@ -178,7 +177,6 @@ namespace MajdataPlay.Scenes.Game
             {
                 throw new ArgumentNullException(nameof(_gameInfo));
             }
-            GameManager.OnAppFocus += OnAppFocus;
             //print(MajInstances.GameManager.SelectedIndex);
             _songDetail = _gameInfo.Current;
             HistoryScore = ScoreManager.GetScore(_songDetail, _listConfig.SelectedDiff);
@@ -876,17 +874,7 @@ namespace MajdataPlay.Scenes.Game
                     while (elapsedSeconds < 3)
                     {
                         token.ThrowIfCancellationRequested();
-                        _lastAudioSampleVolume = (elapsedSeconds / 3f) * originVol;
-#if UNITY_ANDROID || UNITY_IOS
-                        if (GameManager.IsAppOnFocus)
-                        {
-                            _audioSample.Volume = _lastAudioSampleVolume;
-                        }
-                        else
-                        {
-                            _audioSample.Volume = 0;
-                        }
-#endif
+                        _audioSample.Volume = (elapsedSeconds / 3f) * originVol;
                         await UniTask.Yield();
                         elapsedSeconds += MajTimeline.DeltaTime;
                     }
@@ -895,25 +883,10 @@ namespace MajdataPlay.Scenes.Game
                 {
                     MajDebug.LogException(e);
                 }
-                finally
-                {
-                    _lastAudioSampleVolume = originVol;
-#if UNITY_ANDROID || UNITY_IOS
-                    if (GameManager.IsAppOnFocus)
-                    {
-                        _audioSample.Volume = _lastAudioSampleVolume;
-                    }
-                    else
-                    {
-                        _audioSample.Volume = 0;
-                    }
-#endif
-                }
             }
             else
             {
                 token.ThrowIfCancellationRequested();
-                _lastAudioSampleVolume = _trackVolume;
                 _audioSample.Volume = _trackVolume;
                 await UniTask.Delay(3000);
                 token.ThrowIfCancellationRequested();
@@ -1393,24 +1366,8 @@ namespace MajdataPlay.Scenes.Game
         #endregion
 
         #region Events
-        void OnAppFocus(object? sender, bool isFocus)
-        {
-#if !UNITY_STANDALONE
-            if (_audioSample is null)
-            {
-                return;
-            }
-            if (isFocus)
-            {
-                _audioSample.Volume = _lastAudioSampleVolume;
-            }
-            else
-            {
-                _audioSample.Volume = 0;
-            }
-#endif
-        }
-#endregion
+
+        #endregion
 
         #region Clean Up
         void DisposeAudioTrack()
@@ -1437,7 +1394,6 @@ namespace MajdataPlay.Scenes.Game
 
         void OnDestroy()
         {
-            GameManager.OnAppFocus -= OnAppFocus;
             try
             {
                 MajDebug.LogInfo("GPManagerDestroy");

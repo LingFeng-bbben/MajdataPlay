@@ -414,14 +414,6 @@ namespace MajdataPlay.Scenes.Practice
             {
                 return;
             }
-            if (GameManager.IsAppOnFocus)
-            {
-                _audioTrack.Volume = MajInstances.Settings.Audio.Volume.BGM;
-            }
-            else
-            {
-                _audioTrack.Volume = 0;
-            }
             UpdateSBTextMeshProUGUI();
             ButtonStatisticUpdate();
             SensorStatisticUpdate();

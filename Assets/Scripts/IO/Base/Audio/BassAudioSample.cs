@@ -16,11 +16,6 @@ namespace MajdataPlay.IO
 {
     public class BassAudioSample : AudioSampleWrap
     {
-        private int _decode = -1;
-        private double _length = 0;
-        private int _resampler = -1;
-        private double _gain = 1f;
-        private bool _isSpeedChangeSupported = false;
         public override bool IsLoop
         {
             get
@@ -131,6 +126,12 @@ namespace MajdataPlay.IO
                 return state == PlaybackState.Playing && !BassMix.ChannelHasFlag(_decode, BassFlags.MixerChanPause);
             }
         }
+
+        private int _decode = -1;
+        private double _length = 0;
+        private int _resampler = -1;
+        private double _gain = 1f;
+        private bool _isSpeedChangeSupported = false;
         readonly GCHandle _dataHandle;
 
         BassAudioSample(int decode, int globalMixer, double gain, GCHandle dataHandle, bool speedChange = false)

@@ -400,20 +400,21 @@ namespace MajdataPlay.IO
         void OnAppFocus(object? sender, bool isFocus)
         {
 #if UNITY_ANDROID || UNITY_IOS
+            if(BassGlobalMixer == -114514)
+            {
+                return;
+            }
             if (isFocus)
             {
-                ReadVolumeFromSettings();
+                MajDebug.LogDebug("Application regained focus, attempting to restore mixer volume");
+                Bass.ChannelSetAttribute(BassGlobalMixer, ChannelAttribute.Volume, 1f);
+                MajDebug.LogDebug($"[Bass] {Bass.LastError}");
             }
             else
             {
-                foreach (var sample in SFXSamples)
-                {
-                    if (sample is null || sample.IsEmpty)
-                    {
-                        continue;
-                    }
-                    sample.SetVolume(0);
-                }
+                MajDebug.LogDebug("Application lost focus, attempting to mute the mixer");
+                Bass.ChannelSetAttribute(BassGlobalMixer, ChannelAttribute.Volume, 0f);
+                MajDebug.LogDebug($"[Bass] {Bass.LastError}");
             }
 #endif
         }
