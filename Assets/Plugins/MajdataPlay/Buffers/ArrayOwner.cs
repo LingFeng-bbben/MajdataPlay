@@ -123,6 +123,7 @@ public readonly struct ArrayOwner<T> : IEnumerable<T>, IDisposable
     }
     IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<T> AsSpan()
     {
         return Array.AsSpan();
