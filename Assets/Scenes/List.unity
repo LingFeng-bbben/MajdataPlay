@@ -631,7 +631,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: MAJTEXT_SCENE_LIST_INPUT_HINT
+  m_text: MAJTEXT_LIST_INPUT_HINT
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 05efa2e3d6891424ea2b70283145ceb3, type: 2}
   m_sharedMaterial: {fileID: 2098280800310027963, guid: 05efa2e3d6891424ea2b70283145ceb3, type: 2}
@@ -720,7 +720,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f44ef1e05d923c540945f6ab6c06d325, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  local_key: MAJTEXT_SCENE_LIST_INPUT_HINT
+  local_key: MAJTEXT_LIST_INPUT_HINT
 --- !u!1 &99268655
 GameObject:
   m_ObjectHideFlags: 0
