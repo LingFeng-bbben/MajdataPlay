@@ -359,7 +359,7 @@ namespace MajdataPlay.Settings
         
         [Step("0.05")]
         [Range("-5", "5", HasMax = true, HasMin = true)]
-        public float TouchCAreaExtraRadius { get; set; } = 0.23f;
+        public float TouchCAreaExtraRadius { get; set; } = 0.25f;
         
         [Step("0.05")]
         [Range("-5", "5", HasMax = true, HasMin = true)]
