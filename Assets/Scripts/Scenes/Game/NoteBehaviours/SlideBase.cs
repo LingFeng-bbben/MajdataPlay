@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -354,11 +355,14 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void SetSlideBarAlpha(float alpha)
         {
-            var count = SlideBarRenderers.Count;
+            ref var slideBarRef = ref MemoryMarshal.GetReference(SlideBars.AsSpan());
+            ref var rendererRef = ref MemoryMarshal.GetReference(SlideBarRenderers.AsSpan());
+            var count = SlideBars.Count;
+            var newColor = new Color(1f, 1f, 1f, alpha);
             for (var i = 0; i < count; i++)
             {
-                var sr = SlideBarRenderers.ReadUnsafe(i);
-                var obj = SlideBars.ReadUnsafe(i);
+                ref var sr = ref Unsafe.Add(ref rendererRef, i);
+                ref var obj = ref Unsafe.Add(ref slideBarRef, i);
                 if (alpha <= 0f)
                 {
                     obj.layer = MajEnv.HIDDEN_LAYER;
@@ -366,7 +370,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 else
                 {
                     obj.layer = MajEnv.DEFAULT_LAYER;
-                    sr.color = new Color(1f, 1f, 1f, alpha);
+                    sr.color = newColor;
                 }
             }
         }
