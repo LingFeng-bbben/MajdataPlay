@@ -9,4 +9,9 @@ namespace MajdataPlay.Utils;
 public class Flag<T>
 {
     public T? Value = default(T);
+
+    public static explicit operator T?(Flag<T> flag)
+    {
+        return flag.Value;
+    }
 }
