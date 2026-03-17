@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using LibVLCSharp;
 using MajdataPlay.Buffers;
 using MajdataPlay.Collections;
 using MajdataPlay.Editor;
@@ -23,6 +24,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
     internal abstract class SlideBase : NoteLongDrop
     {
+        const int SLIDE_BAR_MODE_SET_ALPHA = 1;
+        const int SLIDE_BAR_MODE_SET_MATERIAL = 2;
+        const int SLIDE_BAR_MODE_SET_ALPHA_AND_MATERIAL = 3;
         public IConnectableSlide? Parent => ConnectInfo.Parent;
         public ConnSlideInfo ConnectInfo
         {
@@ -90,20 +94,6 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             get => _isJustR;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => _isJustR = value;
-        }
-        public float FadeInTiming
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _fadeInTiming;
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => _fadeInTiming = value;
-        }
-        public float FullFadeInTiming
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _fullFadeInTiming;
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => _fullFadeInTiming = value;
         }
         public int EndPos
         {
@@ -192,7 +182,18 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
         protected float LastWaitTimeSec;
 
-        protected float MaxFadeInAlpha = 0.5f; // 淡入时最大不透明度
+        [ReadOnlyField, SerializeField]
+        protected float FadeInTiming = 0f;
+        [ReadOnlyField, SerializeField]
+        protected float FadeInCutoffTiming = 0f;
+        [ReadOnlyField, SerializeField]
+        protected float FadeInCompletedTiming = 0f;
+        [ReadOnlyField, SerializeField]
+        protected float FadeInDurationTimeSec = 0.2f;
+        [ReadOnlyField, SerializeField]
+        protected float FadeInMaxAlpha = 0.5f; // 淡入时最大不透明度
+
+
         protected float DJAutoplayProgress = 0;
 
         protected int LastHiddenSlideBarIndex = 0;
@@ -327,10 +328,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 return;
             }
+            ref var slideBarRef = ref MemoryMarshal.GetReference(SlideBars.AsSpan());
             for (; LastHiddenSlideBarIndex <= endIndex; LastHiddenSlideBarIndex++)
             {
+                ref var slideBar = ref Unsafe.Add(ref slideBarRef, LastHiddenSlideBarIndex);
                 //_slideBarRenderers[i].forceRenderingOff = true;
-                SlideBars.ReadUnsafe(LastHiddenSlideBarIndex).layer = MajEnv.HIDDEN_LAYER;
+                slideBar.layer = MajEnv.HIDDEN_LAYER;
             }
         }
         [Il2CppSetOption(Option.NullChecks, false)]
@@ -355,6 +358,27 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void SetSlideBarAlpha(float alpha)
         {
+            SetSlideBarRender(alpha, null, SLIDE_BAR_MODE_SET_ALPHA);
+        }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected void SetSlideBarMaterial(Material material)
+        {
+            SetSlideBarRender(0, material, SLIDE_BAR_MODE_SET_MATERIAL);
+        }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected void SetSlideBarAlphaAndMaterial(float alpha, Material material)
+        {
+            SetSlideBarRender(alpha, material, SLIDE_BAR_MODE_SET_ALPHA_AND_MATERIAL);
+        }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        void SetSlideBarRender(float alpha, Material? material, int setMode)
+        {
             ref var slideBarRef = ref MemoryMarshal.GetReference(SlideBars.AsSpan());
             ref var rendererRef = ref MemoryMarshal.GetReference(SlideBarRenderers.AsSpan());
             var count = SlideBars.Count;
@@ -363,14 +387,34 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 ref var sr = ref Unsafe.Add(ref rendererRef, i);
                 ref var obj = ref Unsafe.Add(ref slideBarRef, i);
-                if (alpha <= 0f)
+                switch(setMode)
                 {
-                    obj.layer = MajEnv.HIDDEN_LAYER;
-                }
-                else
-                {
-                    obj.layer = MajEnv.DEFAULT_LAYER;
-                    sr.color = newColor;
+                    case SLIDE_BAR_MODE_SET_ALPHA:
+                        if (alpha <= 0f)
+                        {
+                            obj.layer = MajEnv.HIDDEN_LAYER;
+                        }
+                        else
+                        {
+                            obj.layer = MajEnv.DEFAULT_LAYER;
+                            sr.color = newColor;
+                        }
+                        break;
+                    case SLIDE_BAR_MODE_SET_MATERIAL:
+                        sr.sharedMaterial = material;
+                        break;
+                    case SLIDE_BAR_MODE_SET_ALPHA_AND_MATERIAL:
+                        if (alpha <= 0f)
+                        {
+                            obj.layer = MajEnv.HIDDEN_LAYER;
+                        }
+                        else
+                        {
+                            obj.layer = MajEnv.DEFAULT_LAYER;
+                            sr.color = newColor;
+                        }
+                        sr.sharedMaterial = material;
+                        break;
                 }
             }
         }
@@ -380,21 +424,17 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         public sealed override void SetActive(bool state)
         {
             base.SetActive(state);
+            ref var slideBarRef = ref MemoryMarshal.GetReference(SlideBars.AsSpan());
+            var count = SlideBars.Count;
+            var layer = MajEnv.HIDDEN_LAYER;
             if (state)
             {
-                for (var i = 0; i < SlideBars.Count; i++)
-                {
-                    var slideBar = SlideBars[i];
-                    slideBar.layer = MajEnv.DEFAULT_LAYER;
-                }
+                layer = MajEnv.DEFAULT_LAYER;
             }
-            else
+            for (var i = 0; i < count; i++)
             {
-                for (var i = 0; i < SlideBars.Count; i++)
-                {
-                    var slideBar = SlideBars[i];
-                    slideBar.layer = MajEnv.HIDDEN_LAYER;
-                }
+                ref var slideBar = ref Unsafe.Add(ref slideBarRef, i);
+                slideBar.layer = layer;
             }
             SetStarActive(state);
         }
@@ -510,49 +550,40 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void SlideBarFadeIn()
         {
-            if (SlideBarFadeInFlag == 1 || IsEnded || IsSlideNoTrack)
+            if (SlideBarFadeInFlag == 1 || IsSlideNoTrack || !IsInited || IsEnded)
+            {
+                return;
+            }
+            var thisFrameSec = ThisFrameSec;
+            if(thisFrameSec < FadeInTiming)
             {
                 return;
             }
 
-            var num = Timing - 0.05f;
-            var interval = (num - _fadeInTiming).Clamp(0, 0.2f);
-            var fullFadeInTiming = _fadeInTiming + interval;//淡入到maxFadeInAlpha的时间点
-
-            if (ThisFrameSec > num)
+            if (thisFrameSec > FadeInCompletedTiming)
             {
                 SlideBarFadeInFlag = 1;
-                SetSlideBarAlpha(1f);
-                if (IsBreak)
+                var breakMaterial = BreakMaterial;
+                if (IsBreak && breakMaterial is not null)
                 {
-                    var breakMaterial = BreakMaterial;
-                    if(breakMaterial is not null)
-                    {
-                        for (var i = 0; i < SlideBarRenderers.Count; i++)
-                        {
-                            var renderer = SlideBarRenderers[i];
-                            renderer.sharedMaterial = breakMaterial;
-                        }
-                    }
+                    SetSlideBarRender(1f, breakMaterial, SLIDE_BAR_MODE_SET_ALPHA_AND_MATERIAL);
                 }
-                return;
+                else
+                {
+                    SetSlideBarRender(1f, null, SLIDE_BAR_MODE_SET_ALPHA);
+                }
             }
-            else if (ThisFrameSec > fullFadeInTiming)
+            else if (thisFrameSec > FadeInCutoffTiming)
             {
-                SetSlideBarAlpha(MaxFadeInAlpha);
-                return;
+                SetSlideBarRender(FadeInMaxAlpha, null, SLIDE_BAR_MODE_SET_ALPHA);
             }
-            else if (ThisFrameSec < fullFadeInTiming)
+            else
             {
-                var diff = (fullFadeInTiming - ThisFrameSec).Clamp(0, interval);
-                float alpha = 0;
+                var diff = FadeInCutoffTiming - thisFrameSec;
+                var alpha = 1 - diff / FadeInDurationTimeSec;
 
-                if (interval != 0)
-                {
-                    alpha = 1 - diff / interval;
-                }
-                alpha *= MaxFadeInAlpha;
-                SetSlideBarAlpha(alpha);
+                alpha *= FadeInMaxAlpha;
+                SetSlideBarRender(alpha, null, SLIDE_BAR_MODE_SET_ALPHA);
             }
         }
         protected virtual void OnDestroy()
@@ -597,10 +628,6 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         float _startTiming;
         [ReadOnlyField, SerializeField]
         bool _isJustR = false;
-        [ReadOnlyField, SerializeField]
-        float _fadeInTiming = 0;
-        [ReadOnlyField, SerializeField]
-        float _fullFadeInTiming = 0.2f;
         [ReadOnlyField, SerializeField]
         int _endPos = 1;
         [SerializeField]

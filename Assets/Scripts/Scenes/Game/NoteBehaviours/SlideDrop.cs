@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Unity.IL2CPP.CompilerServices;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Profiling;
 
@@ -176,9 +177,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
             FadeInTiming += fadeInOffset;
             FadeInTiming += Timing;
+            FadeInCompletedTiming = Timing - 0.05f;
             // Slide完全淡入时机
             // 正常情况下应为负值；速度过高将忽略淡入
-            FullFadeInTiming = FadeInTiming + 0.2f;
+            FadeInDurationTimeSec = (FadeInCompletedTiming - FadeInTiming).Clamp(0, 0.2f);
+            FadeInCutoffTiming = FadeInTiming + FadeInDurationTimeSec;
             //var interval = fullFadeInTiming - fadeInTiming;
             //fadeInAnimator = GetComponent<Animator>();
             //Destroy(GetComponent<Animator>());

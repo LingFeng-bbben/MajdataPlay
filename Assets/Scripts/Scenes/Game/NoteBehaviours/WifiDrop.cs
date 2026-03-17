@@ -139,14 +139,14 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 fadeInOffset = _settings.Game.SlideFadeInOffset * MajEnv.FRAME_LENGTH_SEC;
             }
+            FadeInMaxAlpha = 1f;
             FadeInTiming += fadeInOffset;
             FadeInTiming += Timing;
+            FadeInCompletedTiming = Timing - 0.05f;
             // Slide完全淡入时机
             // 正常情况下应为负值；速度过高将忽略淡入
-            FullFadeInTiming = FadeInTiming + 0.2f;
-            //var interval = fullFadeInTiming - fadeInTiming;
-            //Destroy(GetComponent<Animator>());
-            MaxFadeInAlpha = 1f;
+            FadeInDurationTimeSec = (FadeInCompletedTiming - FadeInTiming).Clamp(0, 0.2f);
+            FadeInCutoffTiming = FadeInTiming + FadeInDurationTimeSec;
             //淡入时机与正解帧间隔小于200ms时，加快淡入动画的播放速度
             //fadeInAnimator.speed = 0.2f / interval;
             //fadeInAnimator.SetTrigger("wifi");
