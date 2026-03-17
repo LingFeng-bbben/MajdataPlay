@@ -642,7 +642,17 @@ namespace MajdataPlay.IO
             float[,] matrix;
 
             var isForceMono = MajInstances.Settings.Audio.ForceMono;
+#if UNITY_ANDROID || UNITY_IOS
+            var volumeSettings = new
+            {
+                FrontVolume = 1f,
+                CenterAndLFEVolume = 1f,
+                SideVolume = 1f,
+                RearVolume = 1f
+            };
+#else
             var volumeSettings = MajInstances.Settings.Audio.Channel;
+#endif
             if (isForceMono)
             {
                 switch (chCount)
@@ -650,61 +660,61 @@ namespace MajdataPlay.IO
                     case 1:// Mono
                         matrix = new float[1, 2]
                         {
-                        { 0.5f, 0.5f }
+                            { 0.5f, 0.5f }
                         };
                         break;
                     case 2: // 2.0
                         matrix = new float[2, 2]
                         {
-                        { 0.5f, 0.5f },
-                        { 0.5f, 0.5f }
+                            { 0.5f, 0.5f },
+                            { 0.5f, 0.5f }
                         };
                         break;
                     case 3: // 3.0
                         matrix = new float[3, 2]
                         {
-                        { 0.5f, 0.5f },
-                        { 0.5f, 0.5f },
-                        { 0.5f, 0.5f },
+                            { 0.5f, 0.5f },
+                            { 0.5f, 0.5f },
+                            { 0.5f, 0.5f },
                         };
                         break;
                     case 4: // 4.0
                         matrix = new float[4, 2]
                         {
-                        { 0.5f, 0.5f },
-                        { 0.5f, 0.5f },
-                        { 0.5f, 0.5f },
-                        { 0.5f, 0.5f },
+                            { 0.5f, 0.5f },
+                            { 0.5f, 0.5f },
+                            { 0.5f, 0.5f },
+                            { 0.5f, 0.5f },
                         };
                         break;
                     case 6: // 5.1
                         matrix = new float[6, 2]
                         {
-                        { 0.5f, 0.5f },
-                        { 0.5f, 0.5f },
-                        { 0.5f, 0.5f },
-                        { 0.5f, 0.5f },
-                        { 0.5f, 0.5f },
-                        { 0.5f, 0.5f },
+                            { 0.5f, 0.5f },
+                            { 0.5f, 0.5f },
+                            { 0.5f, 0.5f },
+                            { 0.5f, 0.5f },
+                            { 0.5f, 0.5f },
+                            { 0.5f, 0.5f },
                         };
                         break;
                     case 8: // 7.1
                         matrix = new float[8, 2]
                         {
-                        { 0.5f, 0.5f },
-                        { 0.5f, 0.5f },
-                        { 0.5f, 0.5f },
-                        { 0.5f, 0.5f },
-                        { 0.5f, 0.5f },
-                        { 0.5f, 0.5f },
-                        { 0.5f, 0.5f },
-                        { 0.5f, 0.5f },
+                            { 0.5f, 0.5f },
+                            { 0.5f, 0.5f },
+                            { 0.5f, 0.5f },
+                            { 0.5f, 0.5f },
+                            { 0.5f, 0.5f },
+                            { 0.5f, 0.5f },
+                            { 0.5f, 0.5f },
+                            { 0.5f, 0.5f },
                         };
                         break;
                     default:
                         matrix = new float[1, 2]
                         {
-                        { 0.5f, 0.5f }
+                            { 0.5f, 0.5f }
                         };
                         break;
                 }
@@ -716,61 +726,61 @@ namespace MajdataPlay.IO
                     case 1:// Mono
                         matrix = new float[1, 2]
                         {
-                        { 0.5f, 0.5f }
+                            { 0.5f, 0.5f }
                         };
                         break;
                     case 2: // 2.0
                         matrix = new float[2, 2]
                         {
-                        { volumeSettings.FrontVolume, 0f },
-                        { 0f, volumeSettings.FrontVolume }
+                            { volumeSettings.FrontVolume, 0f },
+                            { 0f, volumeSettings.FrontVolume }
                         };
                         break;
                     case 3: // 3.0
                         matrix = new float[3, 2]
                         {
-                        { volumeSettings.FrontVolume, 0f },
-                        { volumeSettings.CenterAndLFEVolume/2f, volumeSettings.CenterAndLFEVolume/2f },
-                        { 0f, volumeSettings.FrontVolume },
+                            { volumeSettings.FrontVolume, 0f },
+                            { volumeSettings.CenterAndLFEVolume/2f, volumeSettings.CenterAndLFEVolume/2f },
+                            { 0f, volumeSettings.FrontVolume },
                         };
                         break;
                     case 4: // 4.0
                         matrix = new float[4, 2]
                         {
-                        { volumeSettings.FrontVolume, 0f },
-                        { 0f, volumeSettings.FrontVolume },
-                        { volumeSettings.RearVolume, 0f },
-                        { 0f, volumeSettings.RearVolume },
+                            { volumeSettings.FrontVolume, 0f },
+                            { 0f, volumeSettings.FrontVolume },
+                            { volumeSettings.RearVolume, 0f },
+                            { 0f, volumeSettings.RearVolume },
                         };
                         break;
                     case 6: // 5.1
                         matrix = new float[6, 2]
                         {
-                        { volumeSettings.FrontVolume, 0f },
-                        { 0f, volumeSettings.FrontVolume },
-                        { volumeSettings.CenterAndLFEVolume, 0f },
-                        { 0f, volumeSettings.CenterAndLFEVolume },
-                        { volumeSettings.SideVolume, 0f },
-                        { 0f, volumeSettings.SideVolume }
+                            { volumeSettings.FrontVolume, 0f },
+                            { 0f, volumeSettings.FrontVolume },
+                            { volumeSettings.CenterAndLFEVolume, 0f },
+                            { 0f, volumeSettings.CenterAndLFEVolume },
+                            { volumeSettings.SideVolume, 0f },
+                            { 0f, volumeSettings.SideVolume }
                         };
                         break;
                     case 8: // 7.1
                         matrix = new float[8, 2]
                         {
-                        { volumeSettings.FrontVolume, 0f },
-                        { 0f, volumeSettings.FrontVolume },
-                        { volumeSettings.CenterAndLFEVolume, 0f },
-                        { 0f, volumeSettings.CenterAndLFEVolume },
-                        { volumeSettings.SideVolume, 0f },
-                        { 0f, volumeSettings.SideVolume },
-                        { volumeSettings.RearVolume, 0f },
-                        { 0f, volumeSettings.RearVolume },
+                            { volumeSettings.FrontVolume, 0f },
+                            { 0f, volumeSettings.FrontVolume },
+                            { volumeSettings.CenterAndLFEVolume, 0f },
+                            { 0f, volumeSettings.CenterAndLFEVolume },
+                            { volumeSettings.SideVolume, 0f },
+                            { 0f, volumeSettings.SideVolume },
+                            { volumeSettings.RearVolume, 0f },
+                            { 0f, volumeSettings.RearVolume },
                         };
                         break;
                     default:
                         matrix = new float[1, 2]
                         {
-                        { 0.5f, 0.5f }
+                            { 0.5f, 0.5f }
                         };
                         break;
                 }
