@@ -354,6 +354,21 @@ namespace MajdataPlay.Buffers
 
             return array;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Span<T> AsSpan()
+        {
+            return _array.AsSpan(0, _size);
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Memory<T> AsMemory()
+        {
+            return _array.AsMemory(0, _size);
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ArraySegment<T> AsArraySegment()
+        {
+            return new ArraySegment<T>(_array, 0, _size);
+        }
         void ThrowIfDisposed()
         {
             if (_isDisposed)
