@@ -1,5 +1,4 @@
 using Cysharp.Threading.Tasks;
-using LibVLCSharp;
 using MajdataPlay.Buffers;
 using MajdataPlay.Collections;
 using MajdataPlay.Editor;
