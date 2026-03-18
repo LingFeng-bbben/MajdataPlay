@@ -308,9 +308,7 @@ namespace MajdataPlay.IO
             static async UniTask KeyboardUpdateLoop()
             {
 #if UNITY_IOS || UNITY_EDITOR
-                MajDebug.LogError("[ButtonRing]enter iOS keyboard init");
                 var initResult = NativeKeyboard.Init();
-                MajDebug.LogError($"[ButtonRing]NativeKeyboard.Init result: {initResult}");
                 if(initResult != ErrorCode.NoError)
                 {
                     MajDebug.LogError($"[ButtonRing]Failed to initialize NativeKeyboard: {initResult}");
