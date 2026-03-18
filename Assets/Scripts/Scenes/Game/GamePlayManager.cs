@@ -1200,7 +1200,8 @@ namespace MajdataPlay.Scenes.Game
 
                             _thisFrameSec = timeOffset;
 #if UNITY_ANDROID || UNITY_IOS
-                            if (_thisFrameSec <= 2f && _thisFrameSec >= 0f)
+                            var diff = _thisFrameSec - _audioTrackStartAt;
+                            if (diff <= 2f && diff >= 0f)
                             {
                                 _devicePlaybackOffset = realTimeDifference;
                             }
