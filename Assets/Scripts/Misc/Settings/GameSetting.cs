@@ -168,7 +168,7 @@ namespace MajdataPlay.Settings
         [Range("0.05", "1.5", HasMax = true, HasMin = true)]
         public float MainScreenScale { get; set; } = 1f;
         
-        [Step("0.1")]
+        [Step("0.01")]
         [Range("-1", "1", HasMax = true, HasMin = true)]
         public float MainScreenOffset { get; set; } = 1f;
         [HideInSettingUI]
@@ -388,7 +388,7 @@ namespace MajdataPlay.Settings
         
         [Step("0.05")]
         [Range("-5", "5", HasMax = true, HasMin = true)]
-        public float TouchCAreaExtraRadius { get; set; } = 0.23f;
+        public float TouchCAreaExtraRadius { get; set; } = 0.25f;
         
         [Step("0.05")]
         [Range("-5", "5", HasMax = true, HasMin = true)]
