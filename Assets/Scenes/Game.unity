@@ -3500,10 +3500,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce0ddcdbd25ba0c4b855fd87e6c4b99a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _preUpdateElapsedMs: 0
-  _updateElapsedMs: 0
-  _fixedUpdateElapsedMs: 0
-  _lateUpdateElapsedMs: 0
+  IntPreUpdateElapsedMs: 0
+  IntUpdateElapsedMs: 0
+  IntFixedUpdateElapsedMs: 0
+  IntLateUpdateElapsedMs: 0
 --- !u!1 &476117254
 GameObject:
   m_ObjectHideFlags: 0
@@ -4095,10 +4095,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0781b2d7d6ff9b44ab61de025154bbd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _preUpdateElapsedMs: 0
-  _updateElapsedMs: 0
-  _fixedUpdateElapsedMs: 0
-  _lateUpdateElapsedMs: 0
+  IntPreUpdateElapsedMs: 0
+  IntUpdateElapsedMs: 0
+  IntFixedUpdateElapsedMs: 0
+  IntLateUpdateElapsedMs: 0
 --- !u!1 &531542062
 GameObject:
   m_ObjectHideFlags: 0
@@ -4605,9 +4605,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c47eaae69381f904294a20c7553af634, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tapEffectPrefab: {fileID: 168526653925081510, guid: d7b45f83b7b4735418ff3170d6612a0c, type: 3}
-  touchEffectPrefab: {fileID: 4052947365030852655, guid: e983e32249b1ccd4194518cc44c0139d, type: 3}
-  holdEffectPrefab: {fileID: 692072832370815118, guid: 0bed8d7e7c63e184ab46c11a9653a6e2, type: 3}
+  _tapEffectPrefab: {fileID: 168526653925081510, guid: d7b45f83b7b4735418ff3170d6612a0c, type: 3}
+  _touchHoldEffectPrefab: {fileID: 168526653925081510, guid: 4c0ca91448f645249a6503e1ecb7d632, type: 3}
+  _touchEffectPrefab: {fileID: 4052947365030852655, guid: e983e32249b1ccd4194518cc44c0139d, type: 3}
+  _holdEffectPrefab: {fileID: 692072832370815118, guid: 0bed8d7e7c63e184ab46c11a9653a6e2, type: 3}
   _touchFeedbackEffectPrefab: {fileID: 6657294716856547335, guid: 21d85749a0900ed41bbc27ac0367710f, type: 3}
 --- !u!1 &620892873
 GameObject:
@@ -7185,10 +7186,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 137dc4cba530eba4285efbd65d13648e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _preUpdateElapsedMs: 0
-  _updateElapsedMs: 0
-  _fixedUpdateElapsedMs: 0
-  _lateUpdateElapsedMs: 0
+  IntPreUpdateElapsedMs: 0
+  IntUpdateElapsedMs: 0
+  IntFixedUpdateElapsedMs: 0
+  IntLateUpdateElapsedMs: 0
 --- !u!1 &1014382307
 GameObject:
   m_ObjectHideFlags: 1
@@ -8722,10 +8723,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e0f6661de20eaa448a1a8f072da1aef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _preUpdateElapsedMs: 0
-  _updateElapsedMs: 0
-  _fixedUpdateElapsedMs: 0
-  _lateUpdateElapsedMs: 0
+  IntPreUpdateElapsedMs: 0
+  IntUpdateElapsedMs: 0
+  IntFixedUpdateElapsedMs: 0
+  IntLateUpdateElapsedMs: 0
 --- !u!1 &1266538412
 GameObject:
   m_ObjectHideFlags: 0
@@ -9463,10 +9464,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d12c61ac0bf6b9e479f6395c4d5c9f13, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _preUpdateElapsedMs: 0
-  _updateElapsedMs: 0
-  _fixedUpdateElapsedMs: 0
-  _lateUpdateElapsedMs: 0
+  IntPreUpdateElapsedMs: 0
+  IntUpdateElapsedMs: 0
+  IntFixedUpdateElapsedMs: 0
+  IntLateUpdateElapsedMs: 0
 --- !u!1 &1439810585
 GameObject:
   m_ObjectHideFlags: 0
@@ -9901,10 +9902,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 734078c86aaf1064aaa15cfec13cda8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _preUpdateElapsedMs: 0
-  _updateElapsedMs: 0
-  _fixedUpdateElapsedMs: 0
-  _lateUpdateElapsedMs: 0
+  IntPreUpdateElapsedMs: 0
+  IntUpdateElapsedMs: 0
+  IntFixedUpdateElapsedMs: 0
+  IntLateUpdateElapsedMs: 0
 --- !u!1 &1524208072
 GameObject:
   m_ObjectHideFlags: 0
