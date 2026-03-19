@@ -297,8 +297,13 @@ namespace MajdataPlay.Scenes.Login
                             break;
                         }
                         //login button
-                        else if (InputManager.IsSensorClickedUpInThisFrame(SensorArea.A4))
+                        else if (InputManager.IsSensorClickedUpInThisFrame(SensorArea.A4) 
+                            || (endpoint.AutoLogin == true
+                            && endpoint.IsLoggedOnce != true
+                            && !string.IsNullOrEmpty(endpoint.Username)
+                            && !string.IsNullOrEmpty(endpoint.Password)))
                         {
+                            endpoint.IsLoggedOnce = true;
                             _isReady = false;
                             _errText.text = string.Empty;
                             _usernameInput.readOnly = true;
