@@ -208,6 +208,7 @@
     "MAJTEXT_LOGIN_CONNECT_TIMEOUT": "Connection Timeout",
     "MAJTEXT_LOGIN_CONNECT_UNREACHABLE": "Unable to Connect to Server",
     "MAJTEXT_LOGIN_LOGIN_FAILED": "Login Failed",
+    "MAJTEXT_LOGIN_LOGIN_SUCCESS": "Login successful, fetching user data...",
     "MAJTEXT_LOGIN_SESSION_EXPIRED": "Login session expired",
     "MAJTEXT_LOGIN_UNKNOWN_ERROR": "Unknown Error, plz contact TeamMajdata",
     "MAJTEXT_ERR_NO_CHART": "No charts",

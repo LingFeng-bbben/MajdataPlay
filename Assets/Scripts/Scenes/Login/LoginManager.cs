@@ -45,9 +45,13 @@ namespace MajdataPlay.Scenes.Login
         [SerializeField]
         GameObject _loading;
         [SerializeField]
-        GameObject _errTextObject;
+        GameObject _hintTextObject;
         [SerializeField]
-        TextMeshProUGUI _errText;
+        TextMeshProUGUI _hintText;
+        [SerializeField]
+        Color ErrorColor;
+        [SerializeField]
+        Color SucceedColor;
 
         RawImage _qrCodeRawImage = null!;
         EventSystem _eventSystem = null!;
@@ -78,7 +82,7 @@ namespace MajdataPlay.Scenes.Login
                 return;
             }
             _loading.SetActive(false);
-            _errText.text = string.Empty;
+            _hintText.text = string.Empty;
             LoginProcessor().Forget();
         }
         void Update()
@@ -130,7 +134,7 @@ namespace MajdataPlay.Scenes.Login
             {
                 var endpoint = _enabledEndpoints[i];
                 _loading.SetActive(false);
-                _errText.text = string.Empty;
+                _hintText.text = string.Empty;
                 var siteName = endpoint.Name;
                 if(string.IsNullOrEmpty(siteName))
                 {
@@ -300,7 +304,7 @@ namespace MajdataPlay.Scenes.Login
                         else if (InputManager.IsSensorClickedUpInThisFrame(SensorArea.A4))
                         {
                             _isReady = false;
-                            _errText.text = string.Empty;
+                            _hintText.text = string.Empty;
                             _usernameInput.readOnly = true;
                             _passwordInput.readOnly = true;
 
@@ -323,7 +327,8 @@ namespace MajdataPlay.Scenes.Login
                             {
                                 var e = task.AsTask().Exception;
                                 MajDebug.LogException(e);
-                                _errText.text = e.ToString();
+                                _hintText.color = ErrorColor;
+                                _hintText.text = e.ToString();
                                 continue;
                             }
                             var rsp = task.Result;
@@ -360,12 +365,16 @@ namespace MajdataPlay.Scenes.Login
                                         errMsg = "MAJTEXT_LOGIN_UNKNOWN_ERROR";
                                         break;
                                 }
-                                _errText.text = $"{"MAJTEXT_LOGIN_LOGIN_FAILED".i18n()}:\n{errMsg.i18n()}";
+                                _hintText.color = ErrorColor;
+                                _hintText.text = $"{"MAJTEXT_LOGIN_LOGIN_FAILED".i18n()}:\n{errMsg.i18n()}";
                                 continue;
                             }
                             else
                             {
                                 MajDebug.LogInfo("Logged in");
+                                _hintText.color = SucceedColor;
+                                _hintText.text = "MAJTEXT_LOGIN_LOGIN_SUCCESS".i18n();
+                                _loading.SetActive(true);
                                 var getUserInfoTask = FetchUserInfomationAsync(endpoint);
                                 if (!string.IsNullOrEmpty(authRequestId))
                                 {
@@ -386,6 +395,8 @@ namespace MajdataPlay.Scenes.Login
                                     userScores = getUserInfoTask.Result.Scores;
                                 }
                                 ScoreManager.LoadOnlineScores(userScores);
+                                _hintText.text = string.Empty;
+                                _loading.SetActive(false);
                                 await UpdateApiEndpointRuntimeConfigAsync(endpoint, userInfo);
                                 break;
                             }

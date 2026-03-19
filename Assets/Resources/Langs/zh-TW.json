@@ -236,6 +236,7 @@
     "MAJTEXT_LOGIN_CONNECT_TIMEOUT": "連接超時",
     "MAJTEXT_LOGIN_CONNECT_UNREACHABLE": "無法連接到伺服器",
     "MAJTEXT_LOGIN_LOGIN_FAILED": "登入失敗",
+    "MAJTEXT_LOGIN_LOGIN_SUCCESS": "登入成功，正在取得使用者資料中...",
     "MAJTEXT_LOGIN_SESSION_EXPIRED": "帳號身分資訊已過期",
     "MAJTEXT_LOGIN_UNKNOWN_ERROR": "發生未知錯誤, 請聯絡開發團隊",
     "MAJTEXT_ERR_NO_CHART": "沒有可用的譜面",

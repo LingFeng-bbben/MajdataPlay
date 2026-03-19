@@ -227,6 +227,7 @@
     "MAJTEXT_LOGIN_CONNECT_TIMEOUT": "连接超时",
     "MAJTEXT_LOGIN_CONNECT_UNREACHABLE": "无法连接到服务器",
     "MAJTEXT_LOGIN_LOGIN_FAILED": "登录失败",
+    "MAJTEXT_LOGIN_LOGIN_SUCCESS": "登录成功, 获取用户数据中...",
     "MAJTEXT_LOGIN_SESSION_EXPIRED": "账号身份信息已过期",
     "MAJTEXT_LOGIN_UNKNOWN_ERROR": "发生未知错误, 请联系开发团队",
     "MAJTEXT_ONLINE_METHOD_NOT_ALLOWED": "405了, 可能是需要换源或挂梯子",
