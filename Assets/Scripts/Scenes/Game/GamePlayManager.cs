@@ -828,12 +828,14 @@ namespace MajdataPlay.Scenes.Game
             {
                 var userSettingBGDim = _setting.Game.BackgroundDim;
                 var dimDiff = 1 - userSettingBGDim;
+                var bgFadeStartTiming = MathF.Min(firstClockTiming, -BG_FADE_IN_LENGTH_SEC);
                 while (_timer.ElapsedSecondsAsFloat - _audioStartTime < 0)
                 {
                     var timeDiff = _timer.ElapsedSecondsAsFloat - _audioStartTime;
-                    if(timeDiff > -BG_FADE_IN_LENGTH_SEC)
+                    if (timeDiff > bgFadeStartTiming)
                     {
-                        var dim = 1 - (((BG_FADE_IN_LENGTH_SEC + timeDiff) / BG_FADE_IN_LENGTH_SEC) * dimDiff);
+                        var fadeProgress = ((timeDiff - bgFadeStartTiming) / BG_FADE_IN_LENGTH_SEC).Clamp(0f, 1f);
+                        var dim = 1 - (fadeProgress * dimDiff);
                         _bgManager.SetBackgroundDim(dim);
                     }
                     await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
