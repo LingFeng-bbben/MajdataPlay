@@ -1196,24 +1196,23 @@ namespace MajdataPlay.Scenes.Game
                             //AudioTime = (float)audioSample.GetCurrentTime();
                             var elapsedSeconds = _timer.ElapsedSecondsAsFloat;
                             var playbackSpeed = PlaybackSpeed;
-                            var timeOffset = elapsedSeconds - _audioStartTime;
-                            var realTimeDifference = (float)_audioSample.CurrentSec - (elapsedSeconds - _audioStartTime) * playbackSpeed;
-                            var realTimeDifferenceb = (float)_bgManager.CurrentSec - (elapsedSeconds - _audioStartTime) * playbackSpeed;
+                            var timeOffset = elapsedSeconds - _audioStartTime + _devicePlaybackOffset;
+                            var realTimeDifference = (float)_audioSample.CurrentSec - timeOffset * playbackSpeed;
+                            var realTimeDifferenceb = (float)_bgManager.CurrentSec - timeOffset * playbackSpeed;
 
                             _thisFrameSec = timeOffset;
 #if UNITY_ANDROID || UNITY_IOS
                             var diff = _thisFrameSec - _audioTrackStartAt;
                             if (diff <= 2f && diff >= 0f)
                             {
-                                _devicePlaybackOffset = realTimeDifference;
+                                _devicePlaybackOffset += (realTimeDifference - _devicePlaybackOffset)*0.8f;
                             }
-                            _thisFrameSec += _devicePlaybackOffset;
 #endif
 
                             var sb = ZString.CreateStringBuilder(true);
                             try
                             {
-                                ERROR_TEXT_FORMAT.FormatTo(ref sb, Math.Abs(realTimeDifference), Math.Abs(realTimeDifferenceb));
+                                ERROR_TEXT_FORMAT.FormatTo(ref sb, realTimeDifference, realTimeDifferenceb);
                                 var a = sb.AsArraySegment();
                                 _errText.SetCharArray(a.Array, a.Offset, a.Count);
                             }
