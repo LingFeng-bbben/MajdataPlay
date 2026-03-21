@@ -563,8 +563,8 @@ namespace MajdataPlay
 
         private static void MoveSkins()
         {
-            var src = Path.Combine(MajEnv.RootPath, "ExtStreamingAssets", "Skins", "Light2");
-            var dst = Path.Combine(MajEnv.RootPath, "Skins", "Light2");
+            var src = Path.Combine(MajEnv.RootPath, "ExtStreamingAssets", "Skins", "default");
+            var dst = Path.Combine(MajEnv.RootPath, "Skins", "default");
 
             if (!Directory.Exists(src))
             {
