@@ -232,7 +232,7 @@
     "MAJSETTING_PROPERTY_SubDisplayScale_DESC": "サブ表示エリアのサイズを調整します\n数値を大きくすると表示が大きくなります",
     "MAJTEXT_LOADING_SCORE_STORAGE": "読み取りデータベース",
     "MAJTEXT_LOADING_SKIN": "スキンを読み込んでいます",
-    "MAJTEXT_LOGING_OUT": "ログアウト中...",
+    "MAJTEXT_LOGGING_OUT": "ログアウト中...",
     "MAJTEXT_LOGIN_CONNECT_TIMEOUT": "接続タイムアウト",
     "MAJTEXT_LOGIN_CONNECT_UNREACHABLE": "サーバーに接続できません",
     "MAJTEXT_LOGIN_DOWNLOADING_AVATAR": "アバターをダウンロード中...",

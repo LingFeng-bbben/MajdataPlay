@@ -300,7 +300,11 @@ namespace MajdataPlay.Scenes.Login
                             break;
                         }
                         //login button
-                        else if (InputManager.IsSensorClickedUpInThisFrame(SensorArea.A4))
+                        else if (InputManager.IsSensorClickedUpInThisFrame(SensorArea.A4) 
+                            || (endpoint.AutoLogin == true
+                            && SceneSwitcher.LastScene == MajScenes.Title
+                            && !string.IsNullOrEmpty(endpoint.Username)
+                            && !string.IsNullOrEmpty(endpoint.Password)))
                         {
                             _isReady = false;
                             Hint();
