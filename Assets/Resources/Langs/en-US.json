@@ -204,7 +204,7 @@
     "MAJSETTING_PROPERTY_Voice_DESC": "",
     "MAJTEXT_LOADING_SCORE_STORAGE": "Loading database",
     "MAJTEXT_LOADING_SKIN": "Loading skin",
-    "MAJTEXT_LOGING_OUT": "Logging Out...",
+    "MAJTEXT_LOGGING_OUT": "Logging Out...",
     "MAJTEXT_LOGIN_CONNECT_TIMEOUT": "Connection Timeout",
     "MAJTEXT_LOGIN_CONNECT_UNREACHABLE": "Unable to Connect to Server",
     "MAJTEXT_LOGIN_LOGIN_FAILED": "Login Failed",

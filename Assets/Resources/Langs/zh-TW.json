@@ -232,7 +232,7 @@
     "MAJSETTING_PROPERTY_Voice_DESC": "Nothing",
     "MAJTEXT_LOADING_SCORE_STORAGE": "正在讀取數據庫",
     "MAJTEXT_LOADING_SKIN": "正在載入皮膚",
-    "MAJTEXT_LOGING_OUT": "登出中...",
+    "MAJTEXT_LOGGING_OUT": "登出中...",
     "MAJTEXT_LOGIN_CONNECT_TIMEOUT": "連接超時",
     "MAJTEXT_LOGIN_CONNECT_UNREACHABLE": "無法連接到伺服器",
     "MAJTEXT_LOGIN_LOGIN_FAILED": "登入失敗",

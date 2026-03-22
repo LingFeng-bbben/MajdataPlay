@@ -299,11 +299,10 @@ namespace MajdataPlay.Scenes.Login
                         //login button
                         else if (InputManager.IsSensorClickedUpInThisFrame(SensorArea.A4) 
                             || (endpoint.AutoLogin == true
-                            && endpoint.IsLoggedOnce != true
+                            && SceneSwitcher.LastScene == MajScenes.Title
                             && !string.IsNullOrEmpty(endpoint.Username)
                             && !string.IsNullOrEmpty(endpoint.Password)))
                         {
-                            endpoint.IsLoggedOnce = true;
                             _isReady = false;
                             _errText.text = string.Empty;
                             _usernameInput.readOnly = true;

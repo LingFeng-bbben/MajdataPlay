@@ -16,10 +16,7 @@ namespace MajdataPlay.Net
         [Preserve]
         public string? Password { get; init; }
         [Preserve]
-        public bool? AutoLogin { get; init; } = false;
-        // 确保只自动登录一次，避免用户退出后继续自动登录
-        [Preserve, JsonIgnore]
-        public bool? IsLoggedOnce { get; set; } = false;
+        public bool AutoLogin { get; init; } = false;
         [Preserve, JsonIgnore]
         public ApiRuntimeConfig RuntimeConfig { get; init; } = new();
     }

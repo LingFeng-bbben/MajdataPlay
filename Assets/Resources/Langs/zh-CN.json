@@ -248,7 +248,7 @@
     "MAJTEXT_LIST_INPUT_HINT": "按Select(或触摸副屏)搜索和排序歌曲，长按刷新歌单。触摸歌曲封面随机选曲。长按4号键开启练习模式。\n按Alt+Enter切换全屏模式。长按5号键退出登录。按Alt+F4退出游戏。",
     "MAJTEXT_LOADING_CHART": "正在吃绝赞",
     "MAJTEXT_WAITING_FOR_BACKGROUND_TASKS_SUSPEND": "正在等待所有后台任务完成",
-    "MAJTEXT_LOGING_OUT": "登出中...",
+    "MAJTEXT_LOGGING_OUT": "登出中...",
     "MAJTEXT_LOADING_SCORE_STORAGE": "正在读取数据库",
     "MAJTEXT_LOADING_SKIN": "正在加载皮肤",
     "MAJTEXT_DESERIALIZATION": "正在加载谱面",
