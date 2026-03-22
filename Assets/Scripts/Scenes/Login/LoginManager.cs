@@ -2,12 +2,11 @@ using Cysharp.Threading.Tasks;
 using MajdataPlay.Buffers;
 using MajdataPlay.IO;
 using MajdataPlay.Net;
-using MajdataPlay.Utils;
 using QRCoder;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -45,9 +44,13 @@ namespace MajdataPlay.Scenes.Login
         [SerializeField]
         GameObject _loading;
         [SerializeField]
-        GameObject _errTextObject;
+        GameObject _hintTextObject;
         [SerializeField]
-        TextMeshProUGUI _errText;
+        TextMeshProUGUI _hintText;
+        [SerializeField]
+        Color ErrorColor;
+        [SerializeField]
+        Color SucceedColor;
 
         RawImage _qrCodeRawImage = null!;
         EventSystem _eventSystem = null!;
@@ -78,7 +81,7 @@ namespace MajdataPlay.Scenes.Login
                 return;
             }
             _loading.SetActive(false);
-            _errText.text = string.Empty;
+            Hint();
             LoginProcessor().Forget();
         }
         void Update()
@@ -130,7 +133,7 @@ namespace MajdataPlay.Scenes.Login
             {
                 var endpoint = _enabledEndpoints[i];
                 _loading.SetActive(false);
-                _errText.text = string.Empty;
+                Hint();
                 var siteName = endpoint.Name;
                 if(string.IsNullOrEmpty(siteName))
                 {
@@ -300,7 +303,7 @@ namespace MajdataPlay.Scenes.Login
                         else if (InputManager.IsSensorClickedUpInThisFrame(SensorArea.A4))
                         {
                             _isReady = false;
-                            _errText.text = string.Empty;
+                            Hint();
                             _usernameInput.readOnly = true;
                             _passwordInput.readOnly = true;
 
@@ -323,7 +326,7 @@ namespace MajdataPlay.Scenes.Login
                             {
                                 var e = task.AsTask().Exception;
                                 MajDebug.LogException(e);
-                                _errText.text = e.ToString();
+                                Hint(e.ToString(), true);
                                 continue;
                             }
                             var rsp = task.Result;
@@ -360,12 +363,14 @@ namespace MajdataPlay.Scenes.Login
                                         errMsg = "MAJTEXT_LOGIN_UNKNOWN_ERROR";
                                         break;
                                 }
-                                _errText.text = $"{"MAJTEXT_LOGIN_LOGIN_FAILED".i18n()}:\n{errMsg.i18n()}";
+                                Hint($"{"MAJTEXT_LOGIN_LOGIN_FAILED".i18n()}:\n{errMsg.i18n()}", true);
                                 continue;
                             }
                             else
                             {
                                 MajDebug.LogInfo("Logged in");
+                                Hint("MAJTEXT_LOGIN_LOGIN_SUCCESS".i18n(), false);
+                                _loading.SetActive(true);
                                 var getUserInfoTask = FetchUserInfomationAsync(endpoint);
                                 if (!string.IsNullOrEmpty(authRequestId))
                                 {
@@ -386,6 +391,8 @@ namespace MajdataPlay.Scenes.Login
                                     userScores = getUserInfoTask.Result.Scores;
                                 }
                                 ScoreManager.LoadOnlineScores(userScores);
+                                Hint();
+                                _loading.SetActive(false);
                                 await UpdateApiEndpointRuntimeConfigAsync(endpoint, userInfo);
                                 break;
                             }
@@ -461,18 +468,23 @@ namespace MajdataPlay.Scenes.Login
             {
                 MajDebug.LogInfo("Downloading user avatar...");
                 var result = (UserSummary)userInfo;
+                _loading.SetActive(true);
+                Hint("MAJTEXT_LOGIN_DOWNLOADING_AVATAR".i18n(), false);
                 var avatarTask = Online.GetUserIconAsync(endpoint, result.Username);
                 while (!avatarTask.IsCompleted)
                 {
                     await UniTask.Yield();
                 }
+                _loading.SetActive(false);
                 if (avatarTask.IsCompletedSuccessfully && avatarTask.Result is not null)
                 {
+                    Hint();
                     runtimeConfig.Avatar = avatarTask.Result;
                     MajDebug.LogInfo("User avatar has been downloaded");
                 }
                 else
                 {
+                    Hint("MAJTEXT_LOGIN_DOWNLOADING_AVATAR_FAILED".i18n(), true);
                     MajDebug.LogInfo("Failed to download user avatar");
                 }
                 runtimeConfig.Username = result.Username;
@@ -558,6 +570,15 @@ namespace MajdataPlay.Scenes.Login
             }
             return (location, (AuthRequestResponse)authRsp);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void Hint(string hintText = "", bool isError = false)
+        {
+            if (!string.IsNullOrEmpty(hintText)) 
+                _hintText.color = isError ? ErrorColor : SucceedColor;
+            _hintText.text = hintText;
+        }
+
         readonly struct AuthRequestResponse
         {
             public string RequestId { get; init; }

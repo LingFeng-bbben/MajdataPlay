@@ -770,8 +770,10 @@ MonoBehaviour:
   _passwordInput: {fileID: 1584912196}
   _button4: {fileID: 0}
   _loading: {fileID: 962216817}
-  _errTextObject: {fileID: 579125878}
-  _errText: {fileID: 579125880}
+  _hintTextObject: {fileID: 579125878}
+  _hintText: {fileID: 579125880}
+  ErrorColor: {r: 1, g: 0.23137255, b: 0.23137255, a: 1}
+  SucceedColor: {r: 0.39607844, g: 0.972549, b: 0, a: 1}
 --- !u!224 &388100773
 RectTransform:
   m_ObjectHideFlags: 0
@@ -818,7 +820,7 @@ GameObject:
   - component: {fileID: 579125881}
   - component: {fileID: 579125880}
   m_Layer: 0
-  m_Name: Error text
+  m_Name: Hint Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
