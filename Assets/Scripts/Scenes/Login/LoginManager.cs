@@ -368,6 +368,7 @@ namespace MajdataPlay.Scenes.Login
                                         break;
                                 }
                                 Hint($"{"MAJTEXT_LOGIN_LOGIN_FAILED".i18n()}:\n{errMsg.i18n()}", true);
+                                endpoint.AutoLogin = false;
                                 continue;
                             }
                             else

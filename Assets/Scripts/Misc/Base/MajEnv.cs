@@ -337,6 +337,7 @@ namespace MajdataPlay
                             Url = apiUri!,
                             Username = IOSNativeSettings.MajnetUsername,
                             Password = IOSNativeSettings.MajnetPassword,
+                            AutoLogin = IOSNativeSettings.MajnetAutoLogin,
                         });
                     }
                     else
@@ -357,6 +358,7 @@ namespace MajdataPlay
                             Url = apiUri!,
                             Username = IOSNativeSettings.CustomUsername,
                             Password = IOSNativeSettings.CustomPassword,
+                            AutoLogin = IOSNativeSettings.CustomAutoLogin,
                         });
                     }
                     else

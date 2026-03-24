@@ -16,7 +16,7 @@ namespace MajdataPlay.Net
         [Preserve]
         public string? Password { get; init; }
         [Preserve]
-        public bool AutoLogin { get; init; } = false;
+        public bool AutoLogin { get; set; }
         [Preserve, JsonIgnore]
         public ApiRuntimeConfig RuntimeConfig { get; init; } = new();
     }
