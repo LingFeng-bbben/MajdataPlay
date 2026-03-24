@@ -64,6 +64,17 @@
                 <key>IsSecure</key>
                 <true/>
             </dict>
+
+            <dict>
+                <key>Type</key>
+                <string>PSToggleSwitchSpecifier</string>
+                <key>Title</key>
+                <string>AutoLogin</string>
+                <key>Key</key>
+                <string>custom_auto_login</string>
+                <key>DefaultValue</key>
+                <false/>
+            </dict>
         </array>
 
     </dict>
