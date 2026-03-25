@@ -10,7 +10,13 @@ namespace MajdataPlay.Scenes.Title
         public Sprite XxlbDefault;
         public Sprite XxlbBlinks;
         public Image image;
-        // Start is called before the first frame update
+
+        void Awake()
+        {
+#if UNITY_IOS
+            gameObject.SetActive(false);
+#endif
+        }
         void Start()
         {
             image = GetComponent<Image>();
