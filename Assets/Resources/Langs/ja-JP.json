@@ -2,6 +2,7 @@
   "Code": "ja-JP",
   "Author": "Majdata",
   "Translations": {
+    "MAJTEXT_ONLINE_USERNAME_OR_PASSWORD_UNSET": "ユーザー名またはパスワードが設定されていません",
     "MAJSETTING_GENERAL_OPTION_All": "全部",
     "MAJSETTING_GENERAL_OPTION_BelowCP": "Critical以下",
     "MAJSETTING_GENERAL_OPTION_BelowGR": "Great以下",
