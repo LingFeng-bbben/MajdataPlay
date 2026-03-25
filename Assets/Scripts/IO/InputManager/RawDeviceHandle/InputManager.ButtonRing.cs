@@ -308,11 +308,17 @@ namespace MajdataPlay.IO
             static async UniTask KeyboardUpdateLoop()
             {
 #if UNITY_IOS || UNITY_EDITOR
-                var initResult = NativeKeyboard.Init();
-                if(initResult != ErrorCode.NoError)
+            IOS_NATIVE_KB_INIT:
+                while (true)
                 {
-                    MajDebug.LogError($"[ButtonRing]Failed to initialize NativeKeyboard: {initResult}");
-                    return;
+                    var initResult = NativeKeyboard.Init();
+                    if (initResult != ErrorCode.NoError)
+                    {
+                        MajDebug.LogError($"[ButtonRing]Failed to initialize NativeKeyboard: {initResult}");
+                        await UniTask.Delay(2000);
+                        continue;
+                    }
+                    break;
                 }
 #endif
                 await UniTask.Yield(PlayerLoopTiming.LastPreUpdate);
@@ -362,9 +368,10 @@ namespace MajdataPlay.IO
                                 var button = gameButtons.Span[i];
                                 var keyCode = KeyboardHelper.ToiOSGCKeyCode(button.BindingKey);
                                 var @return = NativeKeyboard.IsPressed(keyCode, ref _buttonRealTimeStates[i]);
-                                if(@return != ErrorCode.NoError)
+                                if(@return is not (ErrorCode.NoError or ErrorCode.NotSupported))
                                 {
                                     MajDebug.LogError($"[ButtonRing]Error occurred while reading key states from NativeKeyboard: {@return}");
+                                    goto IOS_NATIVE_KB_INIT;
                                 }
                             }
 #endif
