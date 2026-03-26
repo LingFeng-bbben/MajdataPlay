@@ -94,7 +94,8 @@ namespace MajdataPlay
 #if UNITY_IOS && !UNITY_EDITOR
             IOSNativeSettings.Init();
 #endif
-            await MajEnv.InitPathAsync();
+            await UniTask.CompletedTask;
+            MajEnv.InitPath();
             MajDebug.Init();
             var s = "\n";
             s += $"################ MajdataPlay Startup Check ################\n";
@@ -110,6 +111,7 @@ namespace MajdataPlay
             MajDebug.LogInfo($"Version: {MajInstances.GameVersion}");
 #if UNITY_ANDROID && !UNITY_EDITOR // Android Only (Sdk Version Log)
             MajDebug.LogInfo($"AndroidSdkVersion: {MajEnv.AndroidSdkVersion}");
+            MajDebug.LogInfo($"TargetSdkVersion: {MajEnv.TargetSdkVersion}");
             using var packageManager = CurrentActivity.Call<AndroidJavaObject>("getPackageManager");
             var packageName = CurrentActivity.Call<string>("getPackageName");
             using var packageInfo = packageManager.Call<AndroidJavaObject>("getPackageInfo", packageName, 0);

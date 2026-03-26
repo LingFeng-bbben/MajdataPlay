@@ -11,6 +11,7 @@ using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
 using MajdataPlay.Net;
 using MajdataPlay.Numerics;
+using MajdataPlay.Platform.Android.Runtime;
 using MajdataPlay.Settings;
 using MajdataPlay.Settings.Runtime;
 using MajdataPlay.Utils;
@@ -74,16 +75,18 @@ namespace MajdataPlay
 #if UNITY_STANDALONE_WIN
         public static LibVLC VLCLibrary { get; private set; }
 #endif
+#if UNITY_ANDROID // Android Only (Sdk Version Declare)
         public static int AndroidSdkVersion
         {
-#if UNITY_ANDROID && !UNITY_EDITOR // Android Only (Sdk Version Declare)
             get; 
             private set;
-#else
-            get { throw new NotSupportedException(); }
-            private set { throw new NotSupportedException(); }
-#endif
         }
+        public static int TargetSdkVersion
+        {
+            get;
+            private set;
+        }
+#endif
 
         public static string RootPath { get; private set; } = string.Empty;
         public static string AssetsPath { get; private set; } = string.Empty;
@@ -158,9 +161,9 @@ namespace MajdataPlay
 #endif
         }
 
-        internal static async UniTask InitPathAsync()
+        internal static void InitPath()
         {
-#if UNITY_STANDALONE || !UNITY_EDITOR
+#if UNITY_STANDALONE || UNITY_EDITOR
             RootPath = Path.Combine(Application.dataPath, "../");
             AssetsPath = Application.streamingAssetsPath;
             CachePath = Path.Combine(RootPath, "Cache");
@@ -168,8 +171,10 @@ namespace MajdataPlay
             var versionClass = AndroidJNI.FindClass("android/os/Build$VERSION");
             var fieldID = AndroidJNI.GetStaticFieldID(versionClass, "SDK_INT", "I");
             AndroidSdkVersion = AndroidJNI.GetStaticIntField(versionClass, fieldID);
+            var appInfo = GameManager.CurrentActivity.Call<AndroidJavaObject>("getApplicationInfo");
+            TargetSdkVersion = appInfo.Get<int>("targetSdkVersion");
 
-            if(AndroidSdkVersion < 30) // < Android 11
+            if (AndroidSdkVersion < 30 || TargetSdkVersion < 30) // < Android 11
             {
                 var androidStoragePermissions = new string[]
                 {
