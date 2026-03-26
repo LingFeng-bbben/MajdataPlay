@@ -26,6 +26,9 @@ namespace MajdataPlay
 #nullable enable
     internal sealed class GameManager : MajSingleton
     {
+#if UNITY_ANDROID
+        public delegate void OnActivityResultCallback(object? sender, int requestCode, int resultCode, AndroidJavaObject? intent);
+#endif
         public static bool IsAppOnFocus { get; private set; } = true;
         public static event EventHandler<EventArgs?>? OnAppQuit;
         public static event EventHandler<EventArgs?>? OnSave;
@@ -33,6 +36,7 @@ namespace MajdataPlay
         public static event EventHandler<bool>? OnAppPause;
 #if UNITY_ANDROID
         public static event EventHandler<AndroidJavaObject?>? OnNewIntent;
+        public static event OnActivityResultCallback? OnActivityResult;
         public static AndroidJavaClass UnityPlayerClass { get; private set; }
         public static AndroidJavaClass MajdataPlayActivityClass { get; private set; }
 
@@ -61,7 +65,8 @@ namespace MajdataPlay
         readonly static ReadOnlyMemory<ITimeProvider> _builtInTimeProviders = MajTimeline.BuiltInTimeProviders;
 
 #if UNITY_ANDROID
-        OnNewIntentCallback _onNewIntentCallbackProxy;
+        OnNewIntentCallbackProxy _onNewIntentCallbackProxy;
+        OnActivityResultCallbackProxy _onActivityResultCallbackProxy;
 #endif
         protected override void Awake()
         {
@@ -75,6 +80,9 @@ namespace MajdataPlay
             _onNewIntentCallbackProxy = new(this);
             UnityEngine.Debug.Log("[Android]Setting onNewIntent callback proxy");
             MajdataPlayActivityClass.CallStatic("registerOnNewIntentCallback", _onNewIntentCallbackProxy);
+            _onActivityResultCallbackProxy = new(this);
+            UnityEngine.Debug.Log("[Android]Setting onActivityResult callback proxy");
+            MajdataPlayActivityClass.CallStatic("registerOnActivityResultCallback", _onActivityResultCallbackProxy);
 #endif
         }
         void Start()
@@ -406,10 +414,17 @@ namespace MajdataPlay
         [Preserve]
         void Android_OnNewIntent(AndroidJavaObject intent)
         {
-            //var intentObject = CurrentActivity.Call<AndroidJavaObject>("getIntent");
             if (OnNewIntent is not null)
             {
                 OnNewIntent(this, intent);
+            }
+        }
+        [Preserve]
+        void Android_OnActivityResult(int requestCode, int resultCode, AndroidJavaObject? intent)
+        {
+            if (OnActivityResult is not null)
+            {
+                OnActivityResult(this, requestCode, resultCode, intent);
             }
         }
 #endif
@@ -580,10 +595,10 @@ namespace MajdataPlay
         }
 
 #if UNITY_ANDROID
-        class OnNewIntentCallback : AndroidJavaProxy
+        class OnNewIntentCallbackProxy : AndroidJavaProxy
         {
             readonly GameManager _gameManager;
-            public OnNewIntentCallback(GameManager gm) : base("net.majdata.majdataplay.CSharpOnNewIntentCallback")
+            public OnNewIntentCallbackProxy(GameManager gm) : base("net.majdata.majdataplay.CSharpOnNewIntentCallback")
             {
                 _gameManager = gm;
             }
@@ -591,6 +606,19 @@ namespace MajdataPlay
             public void OnNewIntent(AndroidJavaObject intent)
             {
                 _gameManager.Android_OnNewIntent(intent);
+            }
+        }
+        class OnActivityResultCallbackProxy : AndroidJavaProxy
+        {
+            readonly GameManager _gameManager;
+            public OnActivityResultCallbackProxy(GameManager gm) : base("net.majdata.majdataplay.CSharpOnActivityResultCallback")
+            {
+                _gameManager = gm;
+            }
+
+            public void OnActivityResult(int requestCode, int resultCode, AndroidJavaObject? intent)
+            {
+                _gameManager.Android_OnActivityResult(requestCode, resultCode, intent);
             }
         }
 #endif
