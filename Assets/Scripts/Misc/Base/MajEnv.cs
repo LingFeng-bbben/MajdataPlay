@@ -237,50 +237,6 @@ namespace MajdataPlay
             {
                 RootPath = Application.persistentDataPath;
                 AssetsPath = Path.Combine(Application.persistentDataPath, "ExtStreamingAssets/");
-                //const int SAF_REQUEST_CODE = 1145140001;
-                //using (AndroidJavaClass intentClass = new AndroidJavaClass(Intent.CLASS_NAME))
-                //using (AndroidJavaObject intent = new AndroidJavaObject(Intent.CLASS_NAME, Intent.ACTION_OPEN_DOCUMENT_TREE))
-                //{
-                //    intent.Call<AndroidJavaObject>("addFlags", Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                //    intent.Call<AndroidJavaObject>("addFlags", Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                //    intent.Call<AndroidJavaObject>("addFlags", Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
-
-                //    GameManager.OnActivityResultCallback callback = default!;
-                //    var completedFlag = new TaskCompletionSource<bool>();
-                //    var callbackIntent = default(AndroidJavaObject?);
-                //    callback = (object? sender, int requestCode, int responseCode, AndroidJavaObject? intent) =>
-                //    {
-                //        if (requestCode != SAF_REQUEST_CODE)
-                //        {
-                //            return;
-                //        }
-                //        try
-                //        {
-                //            if(responseCode != Activity.RESULT_OK)
-                //            {
-                //                completedFlag.TrySetResult(false);
-                //                return;
-                //            }
-                //            callbackIntent = intent;
-                //            completedFlag.TrySetResult(true);
-                //        }
-                //        catch
-                //        {
-                //            completedFlag.TrySetResult(false);
-                //        }
-                //        finally
-                //        {
-                //            GameManager.OnActivityResult -= callback;
-                //        }
-                //    };
-                //    GameManager.OnActivityResult += callback;
-                //    GameManager.CurrentActivity.Call("startActivityForResult", intent, SAF_REQUEST_CODE);
-                //    var isSuccess = await completedFlag.Task;
-                //    if (isSuccess)
-                //    {
-
-                //    }
-                //}
             }
                 
             CachePath = Application.temporaryCachePath;
