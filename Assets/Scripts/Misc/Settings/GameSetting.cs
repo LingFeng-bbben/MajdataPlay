@@ -224,6 +224,8 @@ namespace MajdataPlay.Settings
 #endif
         
         public SoundBackendOption Backend { get; set; } = DEFAULT_SOUND_BACKEND;
+        
+        public bool LoudnessNormalization { get; set; } = false;
     }
     
     public class SFXVolume

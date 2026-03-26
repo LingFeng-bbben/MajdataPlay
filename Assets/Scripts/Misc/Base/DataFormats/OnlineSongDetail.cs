@@ -534,7 +534,8 @@ namespace MajdataPlay
                         {
                             return AudioSampleWrap.Empty;
                         }
-                        var sampleWarp = await MajInstances.AudioManager.LoadMusicAsync(savePath, true, true);
+                        var cachedRmsDb = _chartSettings.MeasuredRmsDb;
+                        var sampleWarp = await MajInstances.AudioManager.LoadMusicAsync(savePath, true, true, cachedRmsDb);
                         if (sampleWarp.IsEmpty)
                         {
                             if (File.Exists(cacheFlagPath))
@@ -542,6 +543,10 @@ namespace MajdataPlay
                                 File.Delete(cacheFlagPath);
                             }
                             await DownloadFile(_trackUri, savePath, false, progress, token);
+                        }
+                        if (sampleWarp.MeasuredRmsDb.HasValue && sampleWarp.MeasuredRmsDb != cachedRmsDb)
+                        {
+                            _chartSettings.MeasuredRmsDb = sampleWarp.MeasuredRmsDb;
                         }
                         _audioTrackRef.SetTarget(sampleWarp);
 

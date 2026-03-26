@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,5 +21,7 @@ namespace MajdataPlay.Settings
         [Range("-2", "2", HasMax = true, HasMin = true)]
         public float TrackVolumeOffset { get; set; } = 0f;
         public bool DisableVideoBG { get; set; } = false;
+        [HideInSettingUI, Preserve]
+        public float? MeasuredRmsDb { get; set; } = null;
     }
 }
