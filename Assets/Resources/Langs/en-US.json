@@ -3,6 +3,7 @@
   "Author": "Community",
   "Translations": {
     "MAJSETTING_GENERAL_OPTION_All": "All",
+    "MAJTEXT_ONLINE_USERNAME_OR_PASSWORD_UNSET": "Username or password not set",
     "MAJSETTING_GENERAL_OPTION_BelowCP": "Below Critical",
     "MAJSETTING_GENERAL_OPTION_BelowGR": "Below Great",
     "MAJSETTING_GENERAL_OPTION_BelowP": "Below Perfect",

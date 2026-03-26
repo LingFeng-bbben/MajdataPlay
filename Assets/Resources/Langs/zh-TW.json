@@ -3,6 +3,7 @@
   "Author": "小向",
   "Translations": {
     "MAJSETTING_GENERAL_OPTION_All": "全部",
+    "MAJTEXT_ONLINE_USERNAME_OR_PASSWORD_UNSET": "使用者名稱或密碼未設定",
     "MAJSETTING_GENERAL_OPTION_BelowCP": "Critical以下",
     "MAJSETTING_GENERAL_OPTION_BelowGR": "Great以下",
     "MAJSETTING_GENERAL_OPTION_BelowP": "Perfect以下",
