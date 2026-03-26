@@ -11,6 +11,7 @@ import com.unity3d.player.UnityPlayerActivity;
 public class MajdataPlayActivity extends UnityPlayerActivity
 {
     static CSharpOnNewIntentCallback onNewIntentCallbackProxy;
+    static CSharpOnActivityResultCallback onActivityResultCallbackProxy;
     static Activity currentActivity;
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -29,6 +30,14 @@ public class MajdataPlayActivity extends UnityPlayerActivity
             onNewIntentCallbackProxy.OnNewIntent(intent);
         }
     }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        if (onActivityResultCallbackProxy != null)
+        {
+            onActivityResultCallbackProxy.OnActivityResult(requestCode, resultCode, data);
+        }
+    }
     public static Activity getCurrentActivity()
     {
         return currentActivity;
@@ -38,6 +47,13 @@ public class MajdataPlayActivity extends UnityPlayerActivity
         if (onNewIntentCallbackProxy == null)
         {
             onNewIntentCallbackProxy = callback;
+        }
+    }
+    public static void registerOnActivityResultCallback(CSharpOnActivityResultCallback callback)
+    {
+        if (onActivityResultCallbackProxy == null)
+        {
+            onActivityResultCallbackProxy = callback;
         }
     }
 }

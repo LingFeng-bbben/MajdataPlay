@@ -11,6 +11,7 @@ using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
 using MajdataPlay.Net;
 using MajdataPlay.Numerics;
+using MajdataPlay.Platform.Android.Runtime;
 using MajdataPlay.Settings;
 using MajdataPlay.Settings.Runtime;
 using MajdataPlay.Utils;
@@ -25,6 +26,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Android;
 using UnityEngine.Scripting;
@@ -157,9 +159,9 @@ namespace MajdataPlay
 #endif
         }
 
-        internal static void InitPath()
+        internal static async UniTask InitPathAsync()
         {
-#if UNITY_STANDALONE || UNITY_EDITOR
+#if UNITY_STANDALONE || !UNITY_EDITOR
             RootPath = Path.Combine(Application.dataPath, "../");
             AssetsPath = Application.streamingAssetsPath;
             CachePath = Path.Combine(RootPath, "Cache");
@@ -168,66 +170,119 @@ namespace MajdataPlay
             var fieldID = AndroidJNI.GetStaticFieldID(versionClass, "SDK_INT", "I");
             AndroidSdkVersion = AndroidJNI.GetStaticIntField(versionClass, fieldID);
 
-            var androidStoragePermissions = new string[]
+            if(AndroidSdkVersion < 30) // < Android 11
             {
-                Permission.ExternalStorageRead,
-                Permission.ExternalStorageWrite,
-            };
-            var isGranted = true;
-            for (var i = 0; i < androidStoragePermissions.Length; i++)
-            {
-                var flag = 0;
-                var permission = androidStoragePermissions[i];
-            RECHECK_PERMISSION:
-                if (!Permission.HasUserAuthorizedPermission(permission))
+                var androidStoragePermissions = new string[]
                 {
-                    switch (flag)
+                    Permission.ExternalStorageRead,
+                    Permission.ExternalStorageWrite,
+                };
+                var isGranted = true;
+                for (var i = 0; i < androidStoragePermissions.Length; i++)
+                {
+                    var flag = 0;
+                    var permission = androidStoragePermissions[i];
+                RECHECK_PERMISSION:
+                    if (!Permission.HasUserAuthorizedPermission(permission))
                     {
-                        case 0:
-                            Permission.RequestUserPermission(permission);
-                            flag = 1;
-                            goto RECHECK_PERMISSION;
-                        case 1:
-                            isGranted = false;
-                            goto BREAK_LOOP;
+                        switch (flag)
+                        {
+                            case 0:
+                                Permission.RequestUserPermission(permission);
+                                flag = 1;
+                                goto RECHECK_PERMISSION;
+                            case 1:
+                                isGranted = false;
+                                goto BREAK_LOOP;
+                        }
+                        continue;
+                    BREAK_LOOP:
+                        break;
                     }
-                    continue;
-                BREAK_LOOP:
-                    break;
                 }
-            }
-            if (isGranted)
-            {
-                RootPath = "/sdcard/Documents/MajdataPlay";
-                if (!Directory.Exists(RootPath))
+                if (isGranted)
                 {
-                    Directory.CreateDirectory(RootPath);
-                }
-                var noMediaFlag = new FileInfo(Path.Combine(RootPath, ".nomedia"));
-                if(!noMediaFlag.Exists)
-                {
-                    try
+                    RootPath = "/sdcard/Documents/MajdataPlay";
+                    if (!Directory.Exists(RootPath))
                     {
-                        noMediaFlag.Create().Dispose();
-                        MajDebug.LogDebug("Created .nomedia flag file");
+                        Directory.CreateDirectory(RootPath);
                     }
-                    catch(Exception e)
+                    var noMediaFlag = new FileInfo(Path.Combine(RootPath, ".nomedia"));
+                    if (!noMediaFlag.Exists)
                     {
-                        MajDebug.LogError("Failed to create .nomedia flag file");
-                        MajDebug.LogException(e);
+                        try
+                        {
+                            noMediaFlag.Create().Dispose();
+                            MajDebug.LogDebug("Created .nomedia flag file");
+                        }
+                        catch (Exception e)
+                        {
+                            MajDebug.LogError("Failed to create .nomedia flag file");
+                            MajDebug.LogException(e);
+                        }
                     }
+                    else
+                    {
+                        MajDebug.LogDebug(".nomedia flag file exists");
+                    }
+                    AssetsPath = Path.Combine(RootPath, "ExtStreamingAssets/");
                 }
                 else
                 {
-                    MajDebug.LogDebug(".nomedia flag file exists");
+                    RootPath = Application.persistentDataPath;
+                    AssetsPath = Path.Combine(Application.persistentDataPath, "ExtStreamingAssets/");
                 }
-                AssetsPath = Path.Combine(RootPath, "ExtStreamingAssets/");
             }
-            else
+            else // >= Android 11
             {
                 RootPath = Application.persistentDataPath;
                 AssetsPath = Path.Combine(Application.persistentDataPath, "ExtStreamingAssets/");
+                //const int SAF_REQUEST_CODE = 1145140001;
+                //using (AndroidJavaClass intentClass = new AndroidJavaClass(Intent.CLASS_NAME))
+                //using (AndroidJavaObject intent = new AndroidJavaObject(Intent.CLASS_NAME, Intent.ACTION_OPEN_DOCUMENT_TREE))
+                //{
+                //    intent.Call<AndroidJavaObject>("addFlags", Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                //    intent.Call<AndroidJavaObject>("addFlags", Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                //    intent.Call<AndroidJavaObject>("addFlags", Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+
+                //    GameManager.OnActivityResultCallback callback = default!;
+                //    var completedFlag = new TaskCompletionSource<bool>();
+                //    var callbackIntent = default(AndroidJavaObject?);
+                //    callback = (object? sender, int requestCode, int responseCode, AndroidJavaObject? intent) =>
+                //    {
+                //        if (requestCode != SAF_REQUEST_CODE)
+                //        {
+                //            return;
+                //        }
+                //        try
+                //        {
+                //            if(responseCode != Activity.RESULT_OK)
+                //            {
+                //                completedFlag.TrySetResult(false);
+                //                return;
+                //            }
+                //            callbackIntent = intent;
+                //            completedFlag.TrySetResult(true);
+                //        }
+                //        catch
+                //        {
+                //            completedFlag.TrySetResult(false);
+                //        }
+                //        finally
+                //        {
+                //            GameManager.OnActivityResult -= callback;
+                //        }
+                //    };
+                //    GameManager.OnActivityResult += callback;
+                //    GameManager.CurrentActivity.Call("startActivityForResult", intent, SAF_REQUEST_CODE);
+                //    var isSuccess = await completedFlag.Task;
+                //    if (isSuccess)
+                //    {
+
+                //    }
+                //}
             }
+                
             CachePath = Application.temporaryCachePath;
 #elif UNITY_IOS
             RootPath = Application.persistentDataPath;
