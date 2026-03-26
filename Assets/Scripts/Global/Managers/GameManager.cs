@@ -87,10 +87,14 @@ namespace MajdataPlay
         }
         void Start()
         {
+            StartInternal().Forget();
+        }
+        async UniTask StartInternal()
+        {
 #if UNITY_IOS && !UNITY_EDITOR
             IOSNativeSettings.Init();
 #endif
-            MajEnv.InitPath();
+            await MajEnv.InitPathAsync();
             MajDebug.Init();
             var s = "\n";
             s += $"################ MajdataPlay Startup Check ################\n";
