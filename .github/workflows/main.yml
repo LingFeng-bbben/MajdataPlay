@@ -22,14 +22,14 @@ env:
 
 jobs:
   build:
-    name: Build (Windows/Linux/Android)
+    name: Build (Windows/Linux)
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' }}
     strategy:
       fail-fast: false
       matrix:
         configuration: [Release]
-        platform: [StandaloneWindows64, StandaloneLinux64, Android]
+        platform: [StandaloneWindows64, StandaloneLinux64]
 
     env:
       CONFIGURATION: ${{ matrix.configuration }}
@@ -64,7 +64,7 @@ jobs:
       - name: List files in build directory
         run: ls -R ${{ env.CONFIGURATION }} || true
 
-      - name: Package output (non-Android) as zip
+      - name: Package output as zip
         if: ${{ env.TARGET_PLATFORM != 'Android' }}
         run: |
           set -euo pipefail
@@ -73,8 +73,68 @@ jobs:
           (cd "${{ env.CONFIGURATION }}" && zip -qry "../out/${ZIP_NAME}" .)
           ls -la out
 
+      - name: Upload build outputs as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: out-${{ env.TARGET_PLATFORM }}
+          path: out/*
+          if-no-files-found: error
+          retention-days: 7
+
+  build-android:
+    name: Build (Android)
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration: [Release]
+        platform: [Android]
+
+    env:
+      CONFIGURATION: ${{ matrix.configuration }}
+      TARGET_PLATFORM: ${{ matrix.platform }}
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      
+      - name: Cache Unity Library
+        uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-${{ runner.os }}-${{ env.TARGET_PLATFORM }}-${{ hashFiles('ProjectSettings/ProjectVersion.txt', 'ProjectSettings/**', 'Packages/manifest.json', 'Packages/packages-lock.json') }}
+          restore-keys: |
+            Library-${{ runner.os }}-${{ env.TARGET_PLATFORM }}-
+    
+      - name: List files in project directory
+        run: ls -laR || true
+
+      - name: Export Android Project (Release)
+        uses: game-ci/unity-builder@v4
+        with:
+          unityVersion: ${{ env.UNITY_VERSION }}
+          targetPlatform: ${{ env.TARGET_PLATFORM }}
+          exportProject: true
+          androidExportProject: true
+          versioning: Semantic
+          buildName: MajdataPlay
+          buildsPath: ${{ env.CONFIGURATION }}
+
+      - name: List files in project directory
+        run: ls -laR || true
+      
+      - name: Build Gradle APKs
+        working-directory: Library/Bee/Android/Prj/IL2CPP/Gradle
+        run: |
+          gradle assembleRelease
+
+      - name: List files in project directory
+        run: ls -laR || true
+
       - name: Collect Android APKs
-        if: ${{ env.TARGET_PLATFORM == 'Android' }}
         run: |
           set -euo pipefail
           mkdir -p out
@@ -202,7 +262,7 @@ jobs:
     name: Publish nightly release (replace only after all builds succeed)
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' }}
-    needs: [build, build-apple]
+    needs: [build, build-android, build-apple]
 
     steps:
       - name: Checkout (for tagging)
