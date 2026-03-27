@@ -123,6 +123,11 @@ jobs:
           versioning: Semantic
           buildName: MajdataPlay
           buildsPath: ${{ env.CONFIGURATION }}
+          androidKeystoreName: android-publish.keystore
+          androidKeystoreBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }} 
+          androidKeystorePass: ${{ secrets.ANDROID_KEYSTORE_PASS }} 
+          androidKeyaliasName: ${{ secrets.ANDROID_KEYALIAS_NAME }} 
+          androidKeyaliasPass: ${{ secrets.ANDROID_KEYALIAS_PASS }}
 
       - name: Build AAB (Release)
         if: ${{ env.TARGET_CHANNEL == 'play' }}
