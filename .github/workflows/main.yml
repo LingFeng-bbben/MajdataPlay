@@ -175,6 +175,14 @@ jobs:
           cp "${{ env.CONFIGURATION }}/Android/MajdataPlay.aab" "out/MajdataPlay-Android-nightly.aab"
           ls -la out
           
+      - name: Upload build outputs as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: out-${{ env.TARGET_PLATFORM }}-${{ env.TARGET_CHANNEL }}
+          path: out/*
+          if-no-files-found: error
+          retention-days: 7
+          
       - name: Upload to Google Play
         uses: r0adkll/upload-google-play@v1
         if: ${{ env.TARGET_CHANNEL == 'play' }}
@@ -184,14 +192,6 @@ jobs:
           releaseFiles: ${{ env.CONFIGURATION }}/Android/MajdataPlay.aab
           track: qa
           status: completed
-          
-      - name: Upload build outputs as workflow artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: out-${{ env.TARGET_PLATFORM }}-${{ env.TARGET_CHANNEL }}
-          path: out/*
-          if-no-files-found: error
-          retention-days: 7
 
   build-apple:
     name: Build (macOS/iOS)
