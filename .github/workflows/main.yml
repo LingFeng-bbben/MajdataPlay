@@ -103,6 +103,13 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Calculate Android version code
+        id: calc
+        run: |
+          COMMIT_COUNT=$(git rev-list HEAD --count)
+          CODE=$((COMMIT_COUNT + 100000))
+          echo "VersionCode=$CODE" >> $GITHUB_OUTPUT
+
       - name: Cache Unity Library
         uses: actions/cache@v4
         with:
@@ -121,6 +128,7 @@ jobs:
           unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: ${{ env.TARGET_PLATFORM }}
           versioning: Semantic
+          androidVersionCode: ${{ steps.calc.outputs.VersionCode }}
           buildName: MajdataPlay
           buildsPath: ${{ env.CONFIGURATION }}
           androidKeystoreName: android-publish.keystore
@@ -136,6 +144,7 @@ jobs:
           unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: ${{ env.TARGET_PLATFORM }}
           versioning: Semantic
+          androidVersionCode: ${{ steps.calc.outputs.VersionCode }}
           buildName: MajdataPlay
           buildsPath: ${{ env.CONFIGURATION }}
           androidExportType: 'androidAppBundle'
@@ -165,7 +174,17 @@ jobs:
           mkdir -p out
           cp "${{ env.CONFIGURATION }}/Android/MajdataPlay.aab" "out/MajdataPlay-Android-nightly.aab"
           ls -la out
-
+          
+      - name: Upload to Google Play
+        uses: r0adkll/upload-google-play@v1
+        if: ${{ env.TARGET_CHANNEL == 'play' }}
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_DEPLOY_ACCOUNT_JSON }}
+          packageName: net.majdata.majdataplay
+          releaseFiles: ${{ env.CONFIGURATION }}/Android/MajdataPlay.aab
+          track: qa
+          status: completed
+          
       - name: Upload build outputs as workflow artifact
         uses: actions/upload-artifact@v4
         with:
