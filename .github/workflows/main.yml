@@ -169,7 +169,7 @@ jobs:
       - name: Upload build outputs as workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: out-${{ env.TARGET_PLATFORM }}
+          name: out-${{ env.TARGET_PLATFORM }}-${{ env.TARGET_CHANNEL }}
           path: out/*
           if-no-files-found: error
           retention-days: 7
