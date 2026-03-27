@@ -90,17 +90,19 @@ jobs:
       matrix:
         configuration: [Release]
         platform: [Android]
+        channel: [foss,play]
 
     env:
       CONFIGURATION: ${{ matrix.configuration }}
       TARGET_PLATFORM: ${{ matrix.platform }}
+      TARGET_CHANNEL: ${{ matrix.channel }}
 
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v4
         with:
           submodules: recursive
-      
+
       - name: Cache Unity Library
         uses: actions/cache@v4
         with:
@@ -108,38 +110,55 @@ jobs:
           key: Library-${{ runner.os }}-${{ env.TARGET_PLATFORM }}-${{ hashFiles('ProjectSettings/ProjectVersion.txt', 'ProjectSettings/**', 'Packages/manifest.json', 'Packages/packages-lock.json') }}
           restore-keys: |
             Library-${{ runner.os }}-${{ env.TARGET_PLATFORM }}-
-    
+
       - name: List files in project directory
         run: ls -laR || true
 
-      - name: Export Android Project (Release)
+      - name: Build APKs (Release)
+        if: ${{ env.TARGET_CHANNEL == 'foss' }}
         uses: game-ci/unity-builder@v4
         with:
           unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: ${{ env.TARGET_PLATFORM }}
-          exportProject: true
-          androidExportProject: true
           versioning: Semantic
           buildName: MajdataPlay
           buildsPath: ${{ env.CONFIGURATION }}
 
-      - name: List files in project directory
-        run: ls -laR || true
-      
-      - name: Build Gradle APKs
-        working-directory: Library/Bee/Android/Prj/IL2CPP/Gradle
-        run: |
-          gradle assembleRelease
+      - name: Build AAB (Release)
+        if: ${{ env.TARGET_CHANNEL == 'play' }}
+        uses: game-ci/unity-builder@v4
+        with:
+          unityVersion: ${{ env.UNITY_VERSION }}
+          targetPlatform: ${{ env.TARGET_PLATFORM }}
+          versioning: Semantic
+          buildName: MajdataPlay
+          buildsPath: ${{ env.CONFIGURATION }}
+          androidExportType: 'androidAppBundle'
+          androidTargetSdkVersion: android-36
+          androidKeystoreName: android-publish.keystore
+          androidKeystoreBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }} 
+          androidKeystorePass: ${{ secrets.ANDROID_KEYSTORE_PASS }} 
+          androidKeyaliasName: ${{ secrets.ANDROID_KEYALIAS_NAME }} 
+          androidKeyaliasPass: ${{ secrets.ANDROID_KEYALIAS_PASS }}
 
       - name: List files in project directory
         run: ls -laR || true
 
       - name: Collect Android APKs
+        if: ${{ env.TARGET_CHANNEL == 'foss' }}
         run: |
           set -euo pipefail
           mkdir -p out
           cp "${{ env.CONFIGURATION }}/Android/MajdataPlay.apk/MajdataPlay.armeabi-v7a.apk" "out/MajdataPlay-Android-nightly.armeabi-v7a.apk"
           cp "${{ env.CONFIGURATION }}/Android/MajdataPlay.apk/MajdataPlay.arm64-v8a.apk" "out/MajdataPlay-Android-nightly.arm64-v8a.apk"
+          ls -la out
+          
+      - name: Collect Android AAB
+        if: ${{ env.TARGET_CHANNEL == 'play' }}
+        run: |
+          set -euo pipefail
+          mkdir -p out
+          cp "${{ env.CONFIGURATION }}/Android/MajdataPlay.aab" "out/MajdataPlay-Android-nightly.aab"
           ls -la out
 
       - name: Upload build outputs as workflow artifact
