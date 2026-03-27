@@ -109,6 +109,7 @@ jobs:
           COMMIT_COUNT=$(git rev-list HEAD --count)
           CODE=$((COMMIT_COUNT + 100000))
           echo "VersionCode=$CODE" >> $GITHUB_OUTPUT
+          echo $CODE
 
       - name: Cache Unity Library
         uses: actions/cache@v4
