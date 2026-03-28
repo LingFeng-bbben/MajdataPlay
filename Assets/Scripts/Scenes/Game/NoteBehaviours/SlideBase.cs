@@ -273,7 +273,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         [Il2CppSetOption(Option.NullChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void ClassicJudge(float currentSec)
+        protected void JudgeClassic(float currentSec)
         {
             if (!ConnectInfo.IsGroupPartEnd && ConnectInfo.IsConnSlide)
             {

@@ -528,7 +528,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                         HideAllBar();
                         if (IsClassic)
                         {
-                            ClassicJudge(thisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
+                            JudgeClassic(thisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
                         }
                         else
                         {
