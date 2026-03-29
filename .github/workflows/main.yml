@@ -303,7 +303,7 @@ jobs:
                 issuer_id: ENV["APPSTORE_ISSUER_ID"],
                 key_content: ENV["APPSTORE_PRIVATE_KEY"]
               )
-        
+          
               update_code_signing_settings(
                 use_automatic_signing: false,
                 path: ENV["IOS_PROJECT_PATH"],
@@ -312,7 +312,7 @@ jobs:
                 profile_name: ENV["APPSTORE_PROFILE_NAME"],
                 code_sign_identity: "Apple Distribution"
               )
-        
+          
               update_code_signing_settings(
                 use_automatic_signing: false,
                 path: ENV["IOS_PROJECT_PATH"],
@@ -320,7 +320,30 @@ jobs:
                 targets: ["UnityFramework"],
                 code_sign_identity: "Apple Distribution"
               )
-        
+          
+              version_number = get_version_number(
+                xcodeproj: ENV["IOS_PROJECT_PATH"],
+                target: "Unity-iPhone"
+              )
+          
+              latest_build_number = latest_testflight_build_number(
+                api_key: api_key,
+                app_identifier: "net.majdata.majdataplay",
+                version: version_number,
+                initial_build_number: 1
+              )
+          
+              new_build_number = (latest_build_number + 1).to_s
+          
+              increment_build_number(
+                xcodeproj: ENV["IOS_PROJECT_PATH"],
+                build_number: new_build_number
+              )
+          
+              UI.message("Version: #{version_number}")
+              UI.message("Latest TestFlight build: #{latest_build_number}")
+              UI.message("New build number: #{new_build_number}")
+          
               gym(
                 project: ENV["IOS_PROJECT_PATH"],
                 scheme: "Unity-iPhone",
@@ -337,20 +360,20 @@ jobs:
                   }
                 }
               )
-        
+          
               upload_to_testflight(
                 api_key: api_key,
                 ipa: File.join(ENV["IOS_EXPORT_DIR"], "MajdataPlay.ipa"),
                 distribute_external: true,
                 groups: ["beta"],
-                changelog: "Automated CI build\nCommit: #{ENV["GITHUB_SHA"]}\nBuild at: #{ENV["BUILD_AT"]} (UTC+8)",
+                changelog: "Automated CI build\nCommit: #{ENV["GITHUB_SHA"]}\nBuild: #{new_build_number}\nBuild at: #{ENV["BUILD_AT"]} (UTC+8)",
                 submit_beta_review: true,
                 skip_waiting_for_build_processing: false
               )
             end
           end
           EOF
-        
+          
           fastlane ios ci
 
       - name: Package macOS output as zip
