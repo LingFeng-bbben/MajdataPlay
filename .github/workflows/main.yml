@@ -308,7 +308,6 @@ jobs:
                 xcargs: %Q[
                   CODE_SIGN_STYLE=Manual
                   DEVELOPMENT_TEAM=#{ENV["APPLE_TEAM_ID"]}
-                  PROVISIONING_PROFILE_SPECIFIER="#{ENV["APPSTORE_PROFILE_NAME"]}"
                   CODE_SIGN_IDENTITY="Apple Distribution"
                 ].strip.gsub(/\s+/, " "),
                 export_options: {
