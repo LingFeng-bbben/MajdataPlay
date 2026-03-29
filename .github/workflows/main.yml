@@ -108,7 +108,7 @@ jobs:
         id: calc
         run: |
           COMMIT_COUNT=$(git rev-list HEAD --count)
-          COUNT=$COMMIT_COUNT + 100000
+          COUNT=$((COMMIT_COUNT + 100000))
           echo "VersionCode=$COUNT" >> $GITHUB_OUTPUT
           echo $COUNT
 
