@@ -270,16 +270,18 @@ jobs:
 
       - name: Install fastlane
         if: ${{ env.TARGET_PLATFORM == 'iOS' }}
-        run: gem install fastlane
-
+        run: |
+          gem install fastlane
+          gem install xcodeproj
+    
       - name: Build & Upload TestFlight
         if: ${{ env.TARGET_PLATFORM == 'iOS' }}
         env:
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          APPSTORE_PROFILE_NAME: ${{ secrets.APPSTORE_PROFILE_NAME }}
           APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
           APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
           APPSTORE_PRIVATE_KEY: ${{ secrets.APPSTORE_PRIVATE_KEY }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPSTORE_PROFILE_NAME: ${{ secrets.APPSTORE_PROFILE_NAME }}
           CONFIGURATION: ${{ env.CONFIGURATION }}
           IOS_PROJECT_PATH: ${{ env.CONFIGURATION }}/iOS/MajdataPlay/Unity-iPhone.xcodeproj
           IOS_EXPORT_DIR: ${{ env.CONFIGURATION }}/iOS/export
@@ -288,7 +290,7 @@ jobs:
           mkdir -p fastlane
           cat > fastlane/Fastfile <<'EOF'
           default_platform(:ios)
-        
+      
           platform :ios do
             lane :ci do
               api_key = app_store_connect_api_key(
@@ -296,7 +298,24 @@ jobs:
                 issuer_id: ENV["APPSTORE_ISSUER_ID"],
                 key_content: ENV["APPSTORE_PRIVATE_KEY"]
               )
-        
+      
+              update_code_signing_settings(
+                use_automatic_signing: false,
+                path: ENV["IOS_PROJECT_PATH"],
+                team_id: ENV["APPLE_TEAM_ID"],
+                targets: ["Unity-iPhone"],
+                profile_name: ENV["APPSTORE_PROFILE_NAME"],
+                code_sign_identity: "Apple Distribution"
+              )
+      
+              update_code_signing_settings(
+                use_automatic_signing: false,
+                path: ENV["IOS_PROJECT_PATH"],
+                team_id: ENV["APPLE_TEAM_ID"],
+                targets: ["UnityFramework"],
+                code_sign_identity: "Apple Distribution"
+              )
+      
               gym(
                 project: ENV["IOS_PROJECT_PATH"],
                 scheme: "Unity-iPhone",
@@ -305,11 +324,6 @@ jobs:
                 output_directory: ENV["IOS_EXPORT_DIR"],
                 output_name: "MajdataPlay.ipa",
                 clean: true,
-                xcargs: %Q[
-                  CODE_SIGN_STYLE=Manual
-                  DEVELOPMENT_TEAM=#{ENV["APPLE_TEAM_ID"]}
-                  CODE_SIGN_IDENTITY="Apple Distribution"
-                ].strip.gsub(/\s+/, " "),
                 export_options: {
                   method: "app-store",
                   signingStyle: "manual",
@@ -318,7 +332,7 @@ jobs:
                   }
                 }
               )
-        
+      
               upload_to_testflight(
                 api_key: api_key,
                 ipa: File.join(ENV["IOS_EXPORT_DIR"], "MajdataPlay.ipa"),
@@ -330,7 +344,6 @@ jobs:
             end
           end
           EOF
-        
           fastlane ios ci
 
       - name: Package macOS output as zip
