@@ -251,6 +251,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             if (ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide)
             {
                 var percent = _table.Const;
+                if (IsClassic)
+                {
+                    percent = _table.ClassicConst;
+                }
                 _judgeTiming = StartTiming + Length * (1 - percent);
                 LastWaitTimeSec = Length * percent;
             }
