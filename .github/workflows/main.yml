@@ -3,7 +3,7 @@ run-name: MajdataPlay build
 
 on:
   push:
-    branches: [ "dev", "main", "xcode_build", "test_workflow", "github-ci"]
+    branches: [ "dev", "main", "fastlane-ios", "test_workflow", "github-ci"]
   pull_request:
     branches: [ "main" ]
 
@@ -237,47 +237,134 @@ jobs:
       - name: List files in build directory
         run: ls -R ${{ env.CONFIGURATION }} || true
 
-      - name: Archive iOS (xcarchive)
+      - name: Import Apple certificate
         if: ${{ env.TARGET_PLATFORM == 'iOS' }}
-        run: |
-          set -e
-          PROJECT_PATH="${{ env.CONFIGURATION }}/iOS/MajdataPlay/Unity-iPhone.xcodeproj"
-          ARCHIVE_PATH="${{ env.CONFIGURATION }}/iOS/MajdataPlay/Unity-iPhone.xcarchive"
+        uses: apple-actions/import-codesign-certs@v3
+        with:
+          p12-file-base64: ${{ secrets.APPSTORE_CERTIFICATES_FILE_BASE64 }}
+          p12-password: ${{ secrets.APPSTORE_CERTIFICATES_PASSWORD }}
 
-          xcodebuild \
-            -project "$PROJECT_PATH" \
-            -scheme "Unity-iPhone" \
-            -configuration "${{ env.CONFIGURATION }}" \
-            -sdk iphoneos \
-            -destination "generic/platform=iOS" \
-            -archivePath "$ARCHIVE_PATH" \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_IDENTITY="" \
-            archive
-
-      - name: Package IPA from xcarchive
+      - name: Install provisioning profile
         if: ${{ env.TARGET_PLATFORM == 'iOS' }}
         run: |
           set -euo pipefail
-          ARCHIVE_PATH="${{ env.CONFIGURATION }}/iOS/MajdataPlay/Unity-iPhone.xcarchive"
-          EXPORT_DIR="${{ env.CONFIGURATION }}/iOS/MajdataPlay/export-ipa"
-          mkdir -p "$EXPORT_DIR"
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          echo "${{ secrets.APPSTORE_PROFILE_BASE64 }}" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/appstore.mobileprovision
+          ls -la ~/Library/MobileDevice/Provisioning\ Profiles
 
-          APP_PATH="$(find "$ARCHIVE_PATH/Products/Applications" -maxdepth 1 -name "*.app" -print -quit)"
-          if [ -z "$APP_PATH" ]; then
-            echo "No .app found in $ARCHIVE_PATH/Products/Applications"
-            ls -la "$ARCHIVE_PATH/Products/Applications" || true
-            exit 1
-          fi
+      - name: Setup Ruby
+        if: ${{ env.TARGET_PLATFORM == 'iOS' }}
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
 
-          rm -rf "$EXPORT_DIR/Payload"
-          mkdir -p "$EXPORT_DIR/Payload"
-          cp -R "$APP_PATH" "$EXPORT_DIR/Payload/"
-
-          IPA_PATH="$EXPORT_DIR/MajdataPlay-iOS-nightly.ipa"
-          (cd "$EXPORT_DIR" && /usr/bin/zip -qry "$(basename "$IPA_PATH")" Payload)
-          ls -la "$EXPORT_DIR"
+      - name: Install fastlane
+        if: ${{ env.TARGET_PLATFORM == 'iOS' }}
+        run: |
+          gem install fastlane
+          gem install xcodeproj
+    
+      - name: Build & Upload TestFlight
+        if: ${{ env.TARGET_PLATFORM == 'iOS' }}
+        env:
+          APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+          APPSTORE_PRIVATE_KEY: ${{ secrets.APPSTORE_PRIVATE_KEY }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPSTORE_PROFILE_NAME: ${{ secrets.APPSTORE_PROFILE_NAME }}
+          CONFIGURATION: ${{ env.CONFIGURATION }}
+          IOS_PROJECT_PATH: ${{ env.CONFIGURATION }}/iOS/MajdataPlay/Unity-iPhone.xcodeproj
+          IOS_EXPORT_DIR: ${{ env.CONFIGURATION }}/iOS/export
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+        
+          BUILD_AT="$(TZ=Asia/Shanghai date '+%Y-%m-%d %H:%M:%S')"
+          export BUILD_AT
+        
+          mkdir -p fastlane
+          cat > fastlane/Fastfile <<'EOF'
+          default_platform(:ios)
+        
+          platform :ios do
+            lane :ci do
+              api_key = app_store_connect_api_key(
+                key_id: ENV["APPSTORE_KEY_ID"],
+                issuer_id: ENV["APPSTORE_ISSUER_ID"],
+                key_content: ENV["APPSTORE_PRIVATE_KEY"]
+              )
+          
+              update_code_signing_settings(
+                use_automatic_signing: false,
+                path: ENV["IOS_PROJECT_PATH"],
+                team_id: ENV["APPLE_TEAM_ID"],
+                targets: ["Unity-iPhone"],
+                profile_name: ENV["APPSTORE_PROFILE_NAME"],
+                code_sign_identity: "Apple Distribution"
+              )
+          
+              update_code_signing_settings(
+                use_automatic_signing: false,
+                path: ENV["IOS_PROJECT_PATH"],
+                team_id: ENV["APPLE_TEAM_ID"],
+                targets: ["UnityFramework"],
+                code_sign_identity: "Apple Distribution"
+              )
+          
+              version_number = get_version_number(
+                xcodeproj: ENV["IOS_PROJECT_PATH"],
+                target: "Unity-iPhone"
+              )
+          
+              latest_build_number = latest_testflight_build_number(
+                api_key: api_key,
+                app_identifier: "net.majdata.majdataplay",
+                version: version_number,
+                initial_build_number: 1
+              )
+          
+              new_build_number = (latest_build_number + 1).to_s
+          
+              increment_build_number(
+                xcodeproj: ENV["IOS_PROJECT_PATH"],
+                build_number: new_build_number
+              )
+          
+              UI.message("Version: #{version_number}")
+              UI.message("Latest TestFlight build: #{latest_build_number}")
+              UI.message("New build number: #{new_build_number}")
+          
+              gym(
+                project: ENV["IOS_PROJECT_PATH"],
+                scheme: "Unity-iPhone",
+                configuration: ENV["CONFIGURATION"],
+                export_method: "app-store",
+                output_directory: ENV["IOS_EXPORT_DIR"],
+                output_name: "MajdataPlay.ipa",
+                clean: true,
+                export_options: {
+                  method: "app-store",
+                  signingStyle: "manual",
+                  provisioningProfiles: {
+                    "net.majdata.majdataplay" => ENV["APPSTORE_PROFILE_NAME"]
+                  }
+                }
+              )
+          
+              upload_to_testflight(
+                api_key: api_key,
+                ipa: File.join(ENV["IOS_EXPORT_DIR"], "MajdataPlay.ipa"),
+                distribute_external: true,
+                groups: ["beta"],
+                changelog: "Automated CI build\nCommit: #{ENV["GITHUB_SHA"]}\nBuild: #{new_build_number}\nBuild at: #{ENV["BUILD_AT"]} (UTC+8)",
+                submit_beta_review: true,
+                skip_waiting_for_build_processing: false
+              )
+            end
+          end
+          EOF
+          
+          fastlane ios ci
 
       - name: Package macOS output as zip
         if: ${{ env.TARGET_PLATFORM == 'StandaloneOSX' }}
@@ -293,7 +380,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p out
-          cp "${{ env.CONFIGURATION }}/iOS/MajdataPlay/export-ipa/MajdataPlay-iOS-nightly.ipa" out/
+          cp "${{ env.CONFIGURATION }}/iOS/export/MajdataPlay.ipa" out/
           ls -la out
 
       - name: Upload build outputs as workflow artifact
@@ -348,15 +435,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-
           BUILD_AT="$(TZ=Asia/Shanghai date '+%Y-%m-%d %H:%M:%S')"
           NOTES_FILE="$(mktemp)"
-
           printf "Automated nightly build.\nCommit: %s\nBuild at: %s (UTC+8)\n" \
             "${GITHUB_SHA}" \
             "${BUILD_AT}" \
             > "${NOTES_FILE}"
-
           gh release create nightly \
             --title "Nightly" \
             --notes-file "${NOTES_FILE}" \
@@ -367,5 +451,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          # collected/<artifact-name>/<files...>
           gh release upload nightly collected/**/* --clobber
