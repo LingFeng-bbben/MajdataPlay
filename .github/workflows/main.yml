@@ -191,7 +191,7 @@ jobs:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_DEPLOY_ACCOUNT_JSON }}
           packageName: net.majdata.majdataplay
           releaseFiles: ${{ env.CONFIGURATION }}/Android/MajdataPlay.aab
-          track: qa
+          track: internal
           status: completed
 
   build-apple:
