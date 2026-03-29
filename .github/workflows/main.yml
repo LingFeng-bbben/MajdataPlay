@@ -244,15 +244,23 @@ jobs:
           p12-file-base64: ${{ secrets.APPSTORE_CERTIFICATES_FILE_BASE64 }}
           p12-password: ${{ secrets.APPSTORE_CERTIFICATES_PASSWORD }}
 
-      - name: Download provisioning profile
+      # - name: Download provisioning profile
+      #   if: ${{ env.TARGET_PLATFORM == 'iOS' }}
+      #   uses: apple-actions/download-provisioning-profiles@v1
+      #   with:
+      #     bundle-id: net.majdata.majdataplay
+      #     profile-type: IOS_APP_STORE
+      #     issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+      #     api-key-id: ${{ secrets.APPSTORE_KEY_ID }}
+      #     api-private-key: ${{ secrets.APPSTORE_PRIVATE_KEY }}
+
+      - name: Install provisioning profile
         if: ${{ env.TARGET_PLATFORM == 'iOS' }}
-        uses: apple-actions/download-provisioning-profiles@v1
-        with:
-          bundle-id: net.majdata.majdataplay
-          profile-type: IOS_APP_STORE
-          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
-          api-key-id: ${{ secrets.APPSTORE_KEY_ID }}
-          api-private-key: ${{ secrets.APPSTORE_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          echo "${{ secrets.APPSTORE_PROFILE_BASE64 }}" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/appstore.mobileprovision
+          ls -la ~/Library/MobileDevice/Provisioning\ Profiles
 
       - name: Setup Ruby
         if: ${{ env.TARGET_PLATFORM == 'iOS' }}
@@ -267,6 +275,8 @@ jobs:
       - name: Build & Upload TestFlight
         if: ${{ env.TARGET_PLATFORM == 'iOS' }}
         env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPSTORE_PROFILE_NAME: ${{ secrets.APPSTORE_PROFILE_NAME }}
           APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
           APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
           APPSTORE_PRIVATE_KEY: ${{ secrets.APPSTORE_PRIVATE_KEY }}
@@ -278,6 +288,7 @@ jobs:
           mkdir -p fastlane
           cat > fastlane/Fastfile <<'EOF'
           default_platform(:ios)
+        
           platform :ios do
             lane :ci do
               api_key = app_store_connect_api_key(
@@ -285,19 +296,30 @@ jobs:
                 issuer_id: ENV["APPSTORE_ISSUER_ID"],
                 key_content: ENV["APPSTORE_PRIVATE_KEY"]
               )
+        
               gym(
-                  project: ENV["IOS_PROJECT_PATH"],
-                  scheme: "Unity-iPhone",
-                  configuration: ENV["CONFIGURATION"],
-                  export_method: "app-store",
-                  output_directory: ENV["IOS_EXPORT_DIR"],
-                  output_name: "MajdataPlay.ipa",
-                  clean: true,
-                  export_options: {
-                    signingStyle: "automatic"
-                  },
-                  xcargs: "-allowProvisioningUpdates"
-                )
+                project: ENV["IOS_PROJECT_PATH"],
+                scheme: "Unity-iPhone",
+                configuration: ENV["CONFIGURATION"],
+                export_method: "app-store",
+                output_directory: ENV["IOS_EXPORT_DIR"],
+                output_name: "MajdataPlay.ipa",
+                clean: true,
+                xcargs: %Q[
+                  CODE_SIGN_STYLE=Manual
+                  DEVELOPMENT_TEAM=#{ENV["APPLE_TEAM_ID"]}
+                  PROVISIONING_PROFILE_SPECIFIER="#{ENV["APPSTORE_PROFILE_NAME"]}"
+                  CODE_SIGN_IDENTITY="Apple Distribution"
+                ].strip.gsub(/\s+/, " "),
+                export_options: {
+                  method: "app-store",
+                  signingStyle: "manual",
+                  provisioningProfiles: {
+                    "net.majdata.majdataplay" => ENV["APPSTORE_PROFILE_NAME"]
+                  }
+                }
+              )
+        
               upload_to_testflight(
                 api_key: api_key,
                 ipa: File.join(ENV["IOS_EXPORT_DIR"], "MajdataPlay.ipa"),
@@ -309,6 +331,7 @@ jobs:
             end
           end
           EOF
+        
           fastlane ios ci
 
       - name: Package macOS output as zip
