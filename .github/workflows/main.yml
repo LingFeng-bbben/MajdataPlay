@@ -244,16 +244,6 @@ jobs:
           p12-file-base64: ${{ secrets.APPSTORE_CERTIFICATES_FILE_BASE64 }}
           p12-password: ${{ secrets.APPSTORE_CERTIFICATES_PASSWORD }}
 
-      # - name: Download provisioning profile
-      #   if: ${{ env.TARGET_PLATFORM == 'iOS' }}
-      #   uses: apple-actions/download-provisioning-profiles@v1
-      #   with:
-      #     bundle-id: net.majdata.majdataplay
-      #     profile-type: IOS_APP_STORE
-      #     issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
-      #     api-key-id: ${{ secrets.APPSTORE_KEY_ID }}
-      #     api-private-key: ${{ secrets.APPSTORE_PRIVATE_KEY }}
-
       - name: Install provisioning profile
         if: ${{ env.TARGET_PLATFORM == 'iOS' }}
         run: |
