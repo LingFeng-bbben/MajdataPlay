@@ -285,12 +285,17 @@ jobs:
           CONFIGURATION: ${{ env.CONFIGURATION }}
           IOS_PROJECT_PATH: ${{ env.CONFIGURATION }}/iOS/MajdataPlay/Unity-iPhone.xcodeproj
           IOS_EXPORT_DIR: ${{ env.CONFIGURATION }}/iOS/export
+          GITHUB_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
+        
+          BUILD_AT="$(TZ=Asia/Shanghai date '+%Y-%m-%d %H:%M:%S')"
+          export BUILD_AT
+        
           mkdir -p fastlane
           cat > fastlane/Fastfile <<'EOF'
           default_platform(:ios)
-      
+        
           platform :ios do
             lane :ci do
               api_key = app_store_connect_api_key(
@@ -298,7 +303,7 @@ jobs:
                 issuer_id: ENV["APPSTORE_ISSUER_ID"],
                 key_content: ENV["APPSTORE_PRIVATE_KEY"]
               )
-      
+        
               update_code_signing_settings(
                 use_automatic_signing: false,
                 path: ENV["IOS_PROJECT_PATH"],
@@ -307,7 +312,7 @@ jobs:
                 profile_name: ENV["APPSTORE_PROFILE_NAME"],
                 code_sign_identity: "Apple Distribution"
               )
-      
+        
               update_code_signing_settings(
                 use_automatic_signing: false,
                 path: ENV["IOS_PROJECT_PATH"],
@@ -315,7 +320,7 @@ jobs:
                 targets: ["UnityFramework"],
                 code_sign_identity: "Apple Distribution"
               )
-      
+        
               gym(
                 project: ENV["IOS_PROJECT_PATH"],
                 scheme: "Unity-iPhone",
@@ -332,18 +337,20 @@ jobs:
                   }
                 }
               )
-      
+        
               upload_to_testflight(
                 api_key: api_key,
                 ipa: File.join(ENV["IOS_EXPORT_DIR"], "MajdataPlay.ipa"),
                 distribute_external: true,
                 groups: ["beta"],
+                changelog: "Automated CI build\nCommit: #{ENV["GITHUB_SHA"]}\nBuild at: #{ENV["BUILD_AT"]} (UTC+8)",
                 submit_beta_review: true,
                 skip_waiting_for_build_processing: false
               )
             end
           end
           EOF
+        
           fastlane ios ci
 
       - name: Package macOS output as zip
