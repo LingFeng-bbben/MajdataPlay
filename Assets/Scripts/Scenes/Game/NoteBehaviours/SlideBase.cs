@@ -324,10 +324,6 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 LastWaitTimeSec = MathF.Abs(remainingStartTime) / 2;
             }
-            else if (diffMSec >= SLIDE_JUDGE_GOOD_AREA_MSEC && !isFast)
-            {
-                LastWaitTimeSec = 0.05f;
-            }
         }
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
