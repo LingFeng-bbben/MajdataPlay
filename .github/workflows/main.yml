@@ -108,8 +108,9 @@ jobs:
         id: calc
         run: |
           COMMIT_COUNT=$(git rev-list HEAD --count)
-          echo "VersionCode=$COMMIT_COUNT" >> $GITHUB_OUTPUT
-          echo $COMMIT_COUNT
+          COUNT=$COMMIT_COUNT + 100000
+          echo "VersionCode=$COUNT" >> $GITHUB_OUTPUT
+          echo $COUNT
 
       - name: Cache Unity Library
         uses: actions/cache@v4
@@ -128,7 +129,7 @@ jobs:
         with:
           unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: ${{ env.TARGET_PLATFORM }}
-          versioning: Semantic
+          versioning: None
           androidVersionCode: ${{ steps.calc.outputs.VersionCode }}
           buildName: MajdataPlay
           buildsPath: ${{ env.CONFIGURATION }}
@@ -144,7 +145,7 @@ jobs:
         with:
           unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: ${{ env.TARGET_PLATFORM }}
-          versioning: Semantic
+          versioning: None
           androidVersionCode: ${{ steps.calc.outputs.VersionCode }}
           buildName: MajdataPlay
           buildsPath: ${{ env.CONFIGURATION }}
