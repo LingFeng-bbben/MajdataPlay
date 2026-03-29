@@ -358,8 +358,15 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                         var alpha = (1f - -timing / (StartTiming - Timing)).Clamp(0, 1);
 
                         _starRenderer.color = new Color(1, 1, 1, alpha);
-                        starTransform.localScale = new Vector3(alpha + 0.5f, alpha + 0.5f, alpha + 0.5f);
-
+                        if (IsClassic)
+                        {
+                            var scale = 1 + alpha / 2;
+                            starTransform.localScale = new Vector3(scale, scale, scale);
+                        }
+                        else
+                        {
+                            starTransform.localScale = new Vector3(alpha + 0.5f, alpha + 0.5f, alpha + 0.5f);
+                        }
                         break;
                     case NoteStatus.Running:
                         if (GetRemainingTimeWithoutOffset() == 0)
