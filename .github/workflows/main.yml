@@ -110,6 +110,7 @@ jobs:
           COMMIT_COUNT=$(git rev-list HEAD --count)
           COUNT=$((COMMIT_COUNT + 100000))
           echo "VersionCode=$COUNT" >> $GITHUB_OUTPUT
+          echo "VersionCode4Apk=$COMMIT_COUNT" >> $GITHUB_OUTPUT
           echo $COUNT
 
       - name: Cache Unity Library
@@ -130,7 +131,7 @@ jobs:
           unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: ${{ env.TARGET_PLATFORM }}
           versioning: None
-          androidVersionCode: ${{ steps.calc.outputs.VersionCode }}
+          androidVersionCode: ${{ steps.calc.outputs.VersionCode4Apk }}
           buildName: MajdataPlay
           buildsPath: ${{ env.CONFIGURATION }}
           androidKeystoreName: android-publish.keystore
