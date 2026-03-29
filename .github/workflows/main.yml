@@ -286,14 +286,18 @@ jobs:
                 key_content: ENV["APPSTORE_PRIVATE_KEY"]
               )
               gym(
-                project: ENV["IOS_PROJECT_PATH"],
-                scheme: "Unity-iPhone",
-                configuration: ENV["CONFIGURATION"],
-                export_method: "app-store",
-                output_directory: ENV["IOS_EXPORT_DIR"],
-                output_name: "MajdataPlay.ipa",
-                clean: true
-              )
+                  project: ENV["IOS_PROJECT_PATH"],
+                  scheme: "Unity-iPhone",
+                  configuration: ENV["CONFIGURATION"],
+                  export_method: "app-store",
+                  output_directory: ENV["IOS_EXPORT_DIR"],
+                  output_name: "MajdataPlay.ipa",
+                  clean: true,
+                  export_options: {
+                    signingStyle: "automatic"
+                  },
+                  xcargs: "-allowProvisioningUpdates"
+                )
               upload_to_testflight(
                 api_key: api_key,
                 ipa: File.join(ENV["IOS_EXPORT_DIR"], "MajdataPlay.ipa"),
