@@ -204,18 +204,18 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         protected const float SLIDE_JUDGE_SEG_2ND_GREAT_MSEC = 25 * FRAME_LENGTH_MSEC;
         protected const float SLIDE_JUDGE_SEG_3RD_GREAT_MSEC = 29 * FRAME_LENGTH_MSEC;
 
-        protected const float SLIDE_JUDGE_CLASSIC_FAST_SEG_1ST_PERFECT_MSEC = 3 * FRAME_LENGTH_MSEC;  // 4f
-        protected const float SLIDE_JUDGE_CLASSIC_FAST_SEG_2ND_PERFECT_MSEC = 6 * FRAME_LENGTH_MSEC;  // 8f
-        protected const float SLIDE_JUDGE_CLASSIC_FAST_SEG_3RD_PERFECT_MSEC = 9 * FRAME_LENGTH_MSEC; // 12f
-        protected const float SLIDE_JUDGE_CLASSIC_FAST_SEG_1ST_GREAT_MSEC = 13 * FRAME_LENGTH_MSEC;   // 15f
-        protected const float SLIDE_JUDGE_CLASSIC_FAST_SEG_2ND_GREAT_MSEC = 17 * FRAME_LENGTH_MSEC;   // 18f
+        protected const float SLIDE_JUDGE_CLASSIC_FAST_SEG_1ST_PERFECT_MSEC = 3 * FRAME_LENGTH_MSEC;  // 3f
+        protected const float SLIDE_JUDGE_CLASSIC_FAST_SEG_2ND_PERFECT_MSEC = 6 * FRAME_LENGTH_MSEC;  // 6f
+        protected const float SLIDE_JUDGE_CLASSIC_FAST_SEG_3RD_PERFECT_MSEC = 9 * FRAME_LENGTH_MSEC; // 9f
+        protected const float SLIDE_JUDGE_CLASSIC_FAST_SEG_1ST_GREAT_MSEC = 13 * FRAME_LENGTH_MSEC;   // 13f
+        protected const float SLIDE_JUDGE_CLASSIC_FAST_SEG_2ND_GREAT_MSEC = 17 * FRAME_LENGTH_MSEC;   // 17f
         protected const float SLIDE_JUDGE_CLASSIC_FAST_SEG_3RD_GREAT_MSEC = 21 * FRAME_LENGTH_MSEC;   // 21f
 
-        protected const float SLIDE_JUDGE_CLASSIC_LATE_SEG_1ST_PERFECT_MSEC = 3 * FRAME_LENGTH_MSEC; // 2f
-        protected const float SLIDE_JUDGE_CLASSIC_LATE_SEG_2ND_PERFECT_MSEC = 6 * FRAME_LENGTH_MSEC; // 4f
-        protected const float SLIDE_JUDGE_CLASSIC_LATE_SEG_3RD_PERFECT_MSEC = 9 * FRAME_LENGTH_MSEC; // 6f
-        protected const float SLIDE_JUDGE_CLASSIC_LATE_SEG_1ST_GREAT_MSEC = 13 * FRAME_LENGTH_MSEC;  // 11f
-        protected const float SLIDE_JUDGE_CLASSIC_LATE_SEG_2ND_GREAT_MSEC = 17 * FRAME_LENGTH_MSEC;  // 16f
+        protected const float SLIDE_JUDGE_CLASSIC_LATE_SEG_1ST_PERFECT_MSEC = 3 * FRAME_LENGTH_MSEC; // 3f
+        protected const float SLIDE_JUDGE_CLASSIC_LATE_SEG_2ND_PERFECT_MSEC = 6 * FRAME_LENGTH_MSEC; // 6f
+        protected const float SLIDE_JUDGE_CLASSIC_LATE_SEG_3RD_PERFECT_MSEC = 9 * FRAME_LENGTH_MSEC; // 9f
+        protected const float SLIDE_JUDGE_CLASSIC_LATE_SEG_1ST_GREAT_MSEC = 13 * FRAME_LENGTH_MSEC;  // 13f
+        protected const float SLIDE_JUDGE_CLASSIC_LATE_SEG_2ND_GREAT_MSEC = 17 * FRAME_LENGTH_MSEC;  // 17f
         protected const float SLIDE_JUDGE_CLASSIC_LATE_SEG_3RD_GREAT_MSEC = 21 * FRAME_LENGTH_MSEC;  // 21f
 
         protected const float SLIDE_JUDGE_CLASSIC_SEG_1ST_PERFECT_MSEC = 3 * FRAME_LENGTH_MSEC; // 3f
