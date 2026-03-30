@@ -140,7 +140,7 @@ namespace MajdataPlay
             MajDebug.LogInfo($"AndroidVerCode: {androidVersionCode}");
 #endif
             MajEnv.Init();
-            ImportManager.OnStart();
+            await ChartImporter.OnStartAsync();
             if (!Directory.Exists(MajEnv.AssetsPath))
             {
 #if UNITY_ANDROID
@@ -247,16 +247,16 @@ namespace MajdataPlay
             if (MajEnv.Mode == RunningMode.Test)
             {
                 EnterTestMode();
-                return;
             }
-
-            if (MajEnv.Mode == RunningMode.View)
+            else if (MajEnv.Mode == RunningMode.View)
             {
                 EnterView();
-                return;
             }
-
-            EnterTitle();
+            else
+            {
+                EnterTitle();
+            }
+            await MajInstances.SceneSwitcher.FadeOutAsync();
         }
 
         void DetectHWEncoder()
@@ -370,7 +370,7 @@ namespace MajdataPlay
         void Update()
         {
             ChangeTimerIfRequested();
-            ImportManager.OnUpdate();
+            ChartImporter.OnUpdate();
         }
 
         [Conditional("DEBUG")]
@@ -387,7 +387,7 @@ namespace MajdataPlay
         [Conditional("UNITY_EDITOR")]
         public void DebugImportChartArchive(string path)
         {
-            ImportManager.AddImportTask(path);
+            ChartImporter.AddImportTask(path);
         }
         protected override void OnDestroy()
         {
@@ -654,7 +654,7 @@ namespace MajdataPlay
             }
         }
 #endif
-        static class ImportManager
+        static class ChartImporter
         {
             public readonly static NativePlugin.OnFileOpenCallback IOS_OnFileOpenCallback;
 
@@ -662,13 +662,19 @@ namespace MajdataPlay
             static ValueTask _importTask = UniTask.CompletedTask;
             static readonly ConcurrentQueue<string> _pendingImportTasks = new ConcurrentQueue<string>();
             
-            static ImportManager()
+            static ChartImporter()
             {
                 IOS_OnFileOpenCallback = IOS_OnFileOpen;
             }
-            public static void OnStart()
+            public static ValueTask OnStartAsync()
             {
                 _importRoot = Path.Combine(MajEnv.ChartPath, "Import");
+                if (_pendingImportTasks.Count != 0)
+                {
+                    _importTask = Import();
+                    return _importTask;
+                }
+                return UniTask.CompletedTask;
             }
             public static void AddImportTask(string tempFilePath)
             {
@@ -686,8 +692,22 @@ namespace MajdataPlay
             }
             static async ValueTask Import()
             {
-                MajInstances.SceneSwitcher.SwitchScene("Empty", false);
-                await UniTask.Delay(300);
+                var nextScene = (MajScenes?)MajScenes.List;
+                if(SceneSwitcher.CurrentScene == MajScenes.Init)
+                {
+                    await MajInstances.SceneSwitcher.FadeInAsync();
+                    nextScene = null;
+                }
+                else
+                {
+                    while (SceneSwitcher.CurrentScene == MajScenes.List)
+                    {
+                        nextScene = MajScenes.Login;
+                        await UniTask.Yield();
+                    }
+                    MajInstances.SceneSwitcher.SwitchScene("Empty", false);
+                    await UniTask.Delay(300);
+                }
                 Directory.CreateDirectory(_importRoot);
                 while (_pendingImportTasks.TryDequeue(out var tempFilePath))
                 {
@@ -757,12 +777,12 @@ namespace MajdataPlay
                         Parallel.For(0, subDirs.Length, j =>
                         {
                             var dir = subDirs[j];
-                            if (dir.Attributes.HasFlag(FileAttributes.Hidden) || dir.Attributes.HasFlag(FileAttributes.System))
+                            if (dir.Attributes.HasFlag(FileAttributes.Hidden) || dir.Attributes.HasFlag(FileAttributes.System) || dir.Name.StartsWith("."))
                             {
                                 return;
                             }
                             var subDirCount = dir.EnumerateDirectories()
-                                                 .Count(x => !(x.Attributes.HasFlag(FileAttributes.Hidden) || x.Attributes.HasFlag(FileAttributes.System)));
+                                                 .Count(x => !(x.Attributes.HasFlag(FileAttributes.Hidden) || x.Attributes.HasFlag(FileAttributes.System) || x.Name.StartsWith(".")));
 
                             if (subDirCount == 0)
                             {
@@ -813,7 +833,10 @@ namespace MajdataPlay
                     MajInstances.SceneSwitcher.SetLoadingText(string.Empty);
                 }
                 await UniTask.Delay(3000);
-                MajInstances.SceneSwitcher.SwitchScene("List");
+                if(nextScene is MajScenes scene)
+                {
+                    MajInstances.SceneSwitcher.SwitchScene(scene.ToString());
+                }
             }
             static void IOS_OnFileOpen(string tempFilePath)
             {
