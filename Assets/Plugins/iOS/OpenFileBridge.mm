@@ -6,6 +6,21 @@
 static void SendToUnity(const char* method, const char* msg) {
     UnitySendMessage("ZipImporter", method, msg);
 }
+typedef void (*OnFileOpenCallback)(const char* tempFilePath);
+static OnFileOpenCallback g_onFileOpenCallback = NULL;
+
+extern "C" 
+{
+    void RegisterOnFileOpenCallback(OnFileOpenCallback callback)
+    {
+        g_onFileOpenCallback = callback;
+    }
+
+    void UnregisterOnFileOpenCallback()
+    {
+        g_onFileOpenCallback = NULL;
+    }
+}
 
 @interface OpenFileBridge : UnityAppController
 @end
@@ -51,11 +66,19 @@ static void SendToUnity(const char* method, const char* msg) {
         return YES;
     }
 
-    if (needStop) {
+    if (needStop) 
+    {
         [url stopAccessingSecurityScopedResource];
     }
 
-    SendToUnity("OnIncomingPackageReady", destPath.UTF8String);
+    if (g_onFileOpenCallback != NULL)
+    {
+        g_onFileOpenCallback(destPath.UTF8String);
+    }
+    else
+    {
+        return NO;
+    }
     return YES;
 }
 

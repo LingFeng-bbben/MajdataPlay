@@ -3,18 +3,24 @@ using Cysharp.Threading.Tasks;
 using MajdataPlay.Collections;
 using MajdataPlay.i18n;
 using MajdataPlay.IO;
+using MajdataPlay.Platform.iOS;
 using MajdataPlay.Scenes.Test;
 using MajdataPlay.Settings;
 using MajdataPlay.Timer;
+using ShimSkiaSharp;
+
 #if UNITY_STANDALONE_WIN
 using MajdataPlay.Platform.Win32;
 #endif
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -24,7 +30,7 @@ using UnityEngine.Scripting; // DO NOT REMOVE IT !!!
 namespace MajdataPlay
 {
 #nullable enable
-    internal sealed class GameManager : MajSingleton
+    public sealed class GameManager : MajSingleton
     {
 #if UNITY_ANDROID
         public delegate void OnActivityResultCallback(object? sender, int requestCode, int resultCode, AndroidJavaObject? intent);
@@ -68,6 +74,13 @@ namespace MajdataPlay
         OnNewIntentCallbackProxy _onNewIntentCallbackProxy;
         OnActivityResultCallbackProxy _onActivityResultCallbackProxy;
 #endif
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void Init()
+        {
+#if UNITY_IOS
+            NativePlugin.RegisterOnFileOpenCallback(ImportManager.IOS_OnFileOpenCallback);
+#endif
+        }
         protected override void Awake()
         {
             base.Awake();
@@ -127,6 +140,7 @@ namespace MajdataPlay
             MajDebug.LogInfo($"AndroidVerCode: {androidVersionCode}");
 #endif
             MajEnv.Init();
+            ImportManager.OnStart();
             if (!Directory.Exists(MajEnv.AssetsPath))
             {
 #if UNITY_ANDROID
@@ -356,6 +370,7 @@ namespace MajdataPlay
         void Update()
         {
             ChangeTimerIfRequested();
+            ImportManager.OnUpdate();
         }
 
         [Conditional("DEBUG")]
@@ -369,7 +384,18 @@ namespace MajdataPlay
                 MajTimeline.TimeProvider = selectedTimer;
             }
         }
-
+        [Conditional("UNITY_EDITOR")]
+        public void DebugImportChartArchive(string path)
+        {
+            ImportManager.AddImportTask(path);
+        }
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+#if UNITY_IOS
+            NativePlugin.UnregisterOnFileOpenCallback();
+#endif
+        }
         void OnApplicationQuit()
         {
             Screen.sleepTimeout = SleepTimeout.SystemSetting;
@@ -628,5 +654,172 @@ namespace MajdataPlay
             }
         }
 #endif
+        static class ImportManager
+        {
+            public readonly static NativePlugin.OnFileOpenCallback IOS_OnFileOpenCallback;
+
+            static string _importRoot = string.Empty;
+            static ValueTask _importTask = UniTask.CompletedTask;
+            static readonly ConcurrentQueue<string> _pendingImportTasks = new ConcurrentQueue<string>();
+            
+            static ImportManager()
+            {
+                IOS_OnFileOpenCallback = IOS_OnFileOpen;
+            }
+            public static void OnStart()
+            {
+                _importRoot = Path.Combine(MajEnv.ChartPath, "Import");
+            }
+            public static void AddImportTask(string tempFilePath)
+            {
+                _pendingImportTasks.Enqueue(tempFilePath);
+            }
+            public static void OnUpdate()
+            {
+                if (SceneSwitcher.CurrentScene == MajScenes.Empty || 
+                    _pendingImportTasks.Count == 0 ||
+                    !_importTask.IsCompleted)
+                {
+                    return;
+                }
+                _importTask = Import();
+            }
+            static async ValueTask Import()
+            {
+                MajInstances.SceneSwitcher.SwitchScene("Empty", false);
+                await UniTask.Delay(300);
+                Directory.CreateDirectory(_importRoot);
+                while (_pendingImportTasks.TryDequeue(out var tempFilePath))
+                {
+                    MajDebug.LogDebug("[ZipImporter] Got file: " + tempFilePath);
+
+                    if (!File.Exists(tempFilePath))
+                    {
+                        MajDebug.LogError("[ZipImporter] File not found: " + tempFilePath);
+                        continue;
+                    }
+
+                    var ext = Path.GetExtension(tempFilePath).ToLowerInvariant();
+                    if (ext != ".zip" && ext != ".adx")
+                    {
+                        MajDebug.LogError("[ZipImporter] Unsupported extension: " + ext);
+                        continue;
+                    }
+                    var tempOutDir = Path.Combine(MajEnv.TempPath, Guid.NewGuid().ToString());
+                    
+                    try
+                    {
+                        var dirInfo = Directory.CreateDirectory(tempOutDir);
+                        using var archive = ZipFile.OpenRead(tempFilePath);
+                        var totalSize = archive.Entries.Sum(x => x.Length);
+                        var decompressedSize = 0L;
+                        var destRootFull = Path.GetFullPath(tempOutDir);
+                        if (!destRootFull.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal))
+                        {
+                            destRootFull += Path.DirectorySeparatorChar;
+                        }
+                        foreach (var entry in archive.Entries)
+                        {
+                            if (string.IsNullOrEmpty(entry.Name))
+                            {
+                                continue;
+                            }
+
+                            var combinedPath = Path.Combine(tempOutDir, entry.FullName);
+                            var fullPath = Path.GetFullPath(combinedPath);
+
+                            if (!fullPath.StartsWith(destRootFull, StringComparison.Ordinal))
+                            {
+                                throw new IOException("Zip entry escapes destination: " + entry.FullName);
+                            }
+
+                            var dir = Path.GetDirectoryName(fullPath);
+                            if (!string.IsNullOrEmpty(dir))
+                            {
+                                Directory.CreateDirectory(dir);
+                            }
+
+                            if (File.Exists(fullPath))
+                            {
+                                File.Delete(fullPath);
+                            }
+
+                            entry.ExtractToFile(fullPath);
+                            decompressedSize += entry.Length;
+                            MajInstances.SceneSwitcher.SetLoadingText($"Extracting...\n{decompressedSize * 100 / (double)totalSize:F2}%");
+                            await UniTask.Yield();
+                        }
+                        var subDirs = dirInfo.GetDirectories();
+                        if (subDirs.Length == 0)
+                        {
+                            continue;
+                        }
+                        Parallel.For(0, subDirs.Length, j =>
+                        {
+                            var dir = subDirs[j];
+                            if (dir.Attributes.HasFlag(FileAttributes.Hidden) || dir.Attributes.HasFlag(FileAttributes.System))
+                            {
+                                return;
+                            }
+                            var subDirCount = dir.EnumerateDirectories()
+                                                 .Count(x => !(x.Attributes.HasFlag(FileAttributes.Hidden) || x.Attributes.HasFlag(FileAttributes.System)));
+
+                            if (subDirCount == 0)
+                            {
+                                var dirName = dir.Name;
+                                var dstPath = Path.Combine(_importRoot, dirName);
+                                for (var i = 0; Directory.Exists(dstPath); i++)
+                                {
+                                    dstPath = Path.Combine(_importRoot, $"{dirName} ({i + 1})");
+                                }
+                                Directory.Move(dir.FullName, dstPath);
+                            }
+                            else
+                            {
+                                var dirName = dir.Name;
+                                var dstPath = Path.Combine(MajEnv.ChartPath, dirName);
+                                for (var i = 0; Directory.Exists(dstPath); i++)
+                                {
+                                    dstPath = Path.Combine(MajEnv.ChartPath, $"{dirName} ({i + 1})");
+                                }
+                                Directory.Move(dir.FullName, dstPath);
+                            }
+                        });
+                    }
+                    catch (Exception e)
+                    {
+                        MajDebug.LogError("[ZipImporter] Extract FAILED: " + e);
+
+                        try { Directory.Delete(tempOutDir, true); } catch { /* ignore */ }
+                        return;
+                    }
+                }
+                var progress = new Progress<string>();
+                progress.ProgressChanged += (o, e) =>
+                {
+                    MajInstances.SceneSwitcher.SetLoadingText(e);
+                };
+                var task = SongStorage.RefreshLocalAsync(progress);
+                while (!task.IsCompleted)
+                {
+                    await UniTask.Yield();
+                }
+                if (!task.IsCompletedSuccessfully)
+                {
+                    MajInstances.SceneSwitcher.SetLoadingText("MAJTEXT_SCAN_CHARTS_FAILED".i18n(), Color.red);
+                }
+                else
+                {
+                    MajInstances.SceneSwitcher.SetLoadingText(string.Empty);
+                }
+                await UniTask.Delay(3000);
+                MajInstances.SceneSwitcher.SwitchScene("List");
+            }
+            static void IOS_OnFileOpen(string tempFilePath)
+            {
+                _pendingImportTasks.Enqueue(tempFilePath);
+            }
+            
+        }
     }
 }

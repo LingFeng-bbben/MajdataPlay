@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace MajdataPlay.Utils
 {
-#if UNITY_IOS //&& !UNITY_EDITOR
+#if false //&& !UNITY_EDITOR
     public sealed class ZipImporter : MonoBehaviour
     {
         private static ZipImporter _instance;

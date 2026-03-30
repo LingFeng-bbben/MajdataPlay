@@ -90,6 +90,7 @@ namespace MajdataPlay
         public static string RootPath { get; private set; } = string.Empty;
         public static string AssetsPath { get; private set; } = string.Empty;
         public static string CachePath { get; private set; } = string.Empty;
+        public static string TempPath { get; private set; } = string.Empty;
         public static string ChartPath { get; private set; } = string.Empty;
         public static string SettingsPath { get; private set; } = string.Empty;
         public static string SkinPath { get; private set; } = string.Empty;
@@ -269,10 +270,12 @@ namespace MajdataPlay
 
             var netCachePath = Path.Combine(CachePath, "Net");
             var runtimeCachePath = Path.Combine(CachePath, "Runtime");
+            TempPath = Path.Combine(CachePath, "Temp");
 
             CreateDirectoryIfNotExists(CachePath);
             CreateDirectoryIfNotExists(runtimeCachePath);
             CreateDirectoryIfNotExists(netCachePath);
+            CreateDirectoryIfNotExists(TempPath);
             CreateDirectoryIfNotExists(ChartPath);
             CreateDirectoryIfNotExists(RecordOutputsPath);
             SharedHttpClient.Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS);
