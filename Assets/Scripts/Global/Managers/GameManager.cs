@@ -3,7 +3,6 @@ using Cysharp.Threading.Tasks;
 using MajdataPlay.Collections;
 using MajdataPlay.i18n;
 using MajdataPlay.IO;
-using MajdataPlay.Platform.Android.Runtime;
 using MajdataPlay.Scenes.Test;
 using MajdataPlay.Settings;
 using MajdataPlay.Timer;
@@ -12,6 +11,8 @@ using ShimSkiaSharp;
 using MajdataPlay.Platform.Win32;
 #elif UNITY_IOS
 using MajdataPlay.Platform.iOS;
+#elif UNITY_ANDROID
+using MajdataPlay.Platform.Android.Runtime;
 #endif
 using System;
 using System.Collections.Concurrent;
