@@ -535,7 +535,6 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                         Diff = _judgeDiff
                     });
                 }
-                _effectManager.PlayHoldEffect(StartPos, _judgeResult);
                 _effectManager.ResetEffect(StartPos);
                 _noteManager.NextNote(QueueInfo);
             }
@@ -552,49 +551,53 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 _effectManager.ResetEffect(StartPos);
             }
 
-            
+            if (_lastHoldState == HOLD_STATE_HEAD_JUDGED_AND_NOT_FEEDBACK && GetRemainingTime() < Length)
+            {
+                _effectManager.PlayHoldEffect(StartPos, _judgeResult);
+                _effectManager.ResetEffect(StartPos);
+                _lastHoldState = HOLD_STATE_HEAD_JUDGED;
+            }
             if (!_bodyCheckRange.InRange(ThisFrameSec) || !NoteController.IsStart)
             {
-                if(_lastHoldState == HOLD_STATE_HEAD_JUDGED_AND_NOT_FEEDBACK && GetRemainingTime() < Length)
-                {
-                    _effectManager.PlayHoldEffect(StartPos, _judgeResult);
-                    _effectManager.ResetEffect(StartPos);
-                    _lastHoldState = HOLD_STATE_HEAD_JUDGED;
-                }
                 return;
             }
             var isButtonPressed = _noteManager.CheckButtonStatusInThisFrame(_buttonPos, SwitchStatus.On);
             var isSensorPressed = _noteManager.CheckSensorStatusInThisFrame(_sensorPos, SwitchStatus.On);
             var isPressed = isButtonPressed || isSensorPressed;
 
-            if (isPressed || AutoplayMode == AutoplayModeOption.Enable)
+            if(IsClassic)
             {
-                PlayHoldEffect();
-                _releaseTime = 0;
-                _lastHoldState = HOLD_STATE_PRESSED;
-            }
-            else
-            {
-                if (IsClassic)
+                if (!_isJudged)
                 {
-                    if(!_isJudged)
-                    {
-                        return;
-                    }
-                    var isButtonReleased = _noteManager.CheckSensorStatusInPreviousFrame(_sensorPos, SwitchStatus.On) && 
+                    return;
+                }
+                if (!isPressed)
+                {
+                    var isButtonReleased = _noteManager.CheckSensorStatusInPreviousFrame(_sensorPos, SwitchStatus.On) &&
                                            !isButtonPressed;
                     var offset = isButtonReleased ? 0 : USERSETTING_TOUCHPANEL_OFFSET_SEC;
                     End(offset);
-                    return;
                 }
-                else if (_releaseTime <= DELUXE_HOLD_RELEASE_IGNORE_TIME_SEC)
+            }
+            else
+            {
+                if (isPressed || AutoplayMode == AutoplayModeOption.Enable)
                 {
-                    _releaseTime += MajTimeline.DeltaTime;
-                    return;
+                    PlayHoldEffect();
+                    _releaseTime = 0;
+                    _lastHoldState = HOLD_STATE_PRESSED;
                 }
-                _playerReleaseTimeSec += MajTimeline.DeltaTime;
-                StopHoldEffect();
-                _lastHoldState = HOLD_STATE_RELEASED;
+                else
+                {
+                    if (_releaseTime <= DELUXE_HOLD_RELEASE_IGNORE_TIME_SEC)
+                    {
+                        _releaseTime += MajTimeline.DeltaTime;
+                        return;
+                    }
+                    _playerReleaseTimeSec += MajTimeline.DeltaTime;
+                    StopHoldEffect();
+                    _lastHoldState = HOLD_STATE_RELEASED;
+                }
             }
         }
         void ForceEndCheck()
