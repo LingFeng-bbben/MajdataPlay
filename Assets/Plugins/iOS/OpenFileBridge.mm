@@ -3,25 +3,6 @@
 #import "UnityAppController.h"
 #import "UnityInterface.h"
 
-static void SendToUnity(const char* method, const char* msg) {
-    UnitySendMessage("ZipImporter", method, msg);
-}
-typedef void (*OnFileOpenCallback)(const char* tempFilePath);
-static OnFileOpenCallback g_onFileOpenCallback = NULL;
-
-extern "C" 
-{
-    void RegisterOnFileOpenCallback(OnFileOpenCallback callback)
-    {
-        g_onFileOpenCallback = callback;
-    }
-
-    void UnregisterOnFileOpenCallback()
-    {
-        g_onFileOpenCallback = NULL;
-    }
-}
-
 @interface OpenFileBridge : UnityAppController
 @end
 
@@ -70,15 +51,7 @@ extern "C"
     {
         [url stopAccessingSecurityScopedResource];
     }
-
-    if (g_onFileOpenCallback != NULL)
-    {
-        g_onFileOpenCallback(destPath.UTF8String);
-    }
-    else
-    {
-        return NO;
-    }
+    UnitySendMessage("GameManager", "IOS_OnFileOpen", destPath.UTF8String);
     return YES;
 }
 

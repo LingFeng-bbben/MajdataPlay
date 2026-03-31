@@ -77,13 +77,6 @@ namespace MajdataPlay
         OnNewIntentCallbackProxy _onNewIntentCallbackProxy;
         OnActivityResultCallbackProxy _onActivityResultCallbackProxy;
 #endif
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void Init()
-        {
-#if UNITY_IOS
-            NativePlugin.RegisterOnFileOpenCallback(ChartImporter.IOS_OnFileOpenCallback);
-#endif
-        }
         protected override void Awake()
         {
             base.Awake();
@@ -143,24 +136,24 @@ namespace MajdataPlay
             MajDebug.LogInfo($"AndroidVerCode: {androidVersionCode}");
 #endif
             MajEnv.Init();
-#if UNITY_ANDROID && !UNITY_EDITOR
+#if !UNITY_EDITOR
+#if UNITY_ANDROID
             var intent = CurrentActivity.Call<AndroidJavaObject>("getIntent");
             ChartImporter.Android_OnNewIntent(this, intent);
             OnNewIntent += ChartImporter.Android_OnNewIntent;
+#elif UNITY_IOS
+            await UniTask.DelayFrame(2); // wait UnitySendMessage
+#endif
 #endif
             await ChartImporter.OnStartAsync();
+#if UNITY_ANDROID || UNITY_IOS
             if (!Directory.Exists(MajEnv.AssetsPath))
             {
-#if UNITY_ANDROID
-                ExtractAssetsAndroid();
+                ExtractAssets();
                 MoveCharts();
                 MoveSkins();
-#elif UNITY_IOS
-                ExtractAssetsIos();
-                MoveCharts();
-                MoveSkins();
-#endif
             }
+#endif
 
             MajInstances.FPSDisplayer.Init();
             MajInstances.AudioManager.Init();
@@ -397,6 +390,37 @@ namespace MajdataPlay
         {
             ChartImporter.AddImportTask(path);
         }
+        public void EnableGC()
+        {
+            GC.Collect();
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR //Android/iOS Only (GC Enable)
+            GarbageCollector.GCMode = GarbageCollector.Mode.Enabled;
+            MajDebug.LogWarning("GC has been enabled");
+#endif
+        }
+        public void DisableGC()
+        {
+            GC.Collect();
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR //Android/iOS Only (GC Disable)
+            GarbageCollector.GCMode = GarbageCollector.Mode.Disabled;
+            MajDebug.LogWarning("GC has been disabled");
+#endif
+        }
+        public static void RequestSave(object? sender)
+        {
+            try
+            {
+                if (OnSave is not null)
+                {
+                    OnSave(sender, null);
+                }
+            }
+            catch (Exception ex)
+            {
+                MajDebug.LogException(ex);
+            }
+        }
+        #region Events
         protected override void OnDestroy()
         {
             base.OnDestroy();
@@ -443,7 +467,7 @@ namespace MajdataPlay
             {
                 OnAppPause(this, pause);
             }
-#if UNITY_ANDROID || UNITY_IOS  
+#if UNITY_ANDROID || UNITY_IOS
             if (pause)
             {
                 RequestSave(this);
@@ -467,40 +491,19 @@ namespace MajdataPlay
                 OnActivityResult(this, requestCode, resultCode, intent);
             }
         }
-#endif
-        public void EnableGC()
+#elif UNITY_IOS
+        [Preserve]
+        public void IOS_OnFileOpen(string tempFilePath)
         {
-            GC.Collect();
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR //Android/iOS Only (GC Enable)
-            GarbageCollector.GCMode = GarbageCollector.Mode.Enabled;
-            MajDebug.LogWarning("GC has been enabled");
-#endif
+            ChartImporter.AddImportTask(tempFilePath);
         }
-
-        public void DisableGC()
-        {
-            GC.Collect();
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR //Android/iOS Only (GC Disable)
-            GarbageCollector.GCMode = GarbageCollector.Mode.Disabled;
-            MajDebug.LogWarning("GC has been disabled");
 #endif
-        }
-        public static void RequestSave(object? sender)
+#endregion
+        
+        #region Asset Extraction
+        private static void ExtractAssets()
         {
-            try
-            {
-                if (OnSave is not null)
-                {
-                    OnSave(sender, null);
-                }
-            }
-            catch (Exception ex)
-            {
-                MajDebug.LogException(ex);
-            }
-        }
-        private static void ExtractAssetsIos()
-        {
+#if UNITY_IOS
             var extractRoot = Path.Combine(MajEnv.RootPath, "ExtStreamingAssets/");
             Directory.CreateDirectory(extractRoot);
             var paths = Resources.Load<TextAsset>("StreamingAssetPaths");
@@ -532,10 +535,7 @@ namespace MajdataPlay
                     MajDebug.LogError($"Extract failed(iOS): {line}\nsrc={srcPath}\n{e}");
                 }
             }
-        }
-
-        private static void ExtractAssetsAndroid()
-        {
+#elif UNITY_ANDROID
             var extractRoot = Path.Combine(MajEnv.RootPath, "ExtStreamingAssets");
             Directory.CreateDirectory(extractRoot);
 
@@ -596,6 +596,7 @@ namespace MajdataPlay
                     MajDebug.LogError($"Extract failed(Android): {line}\nsrc={srcUrl}\n{e}");
                 }
             }
+#endif
         }
 
         private static void MoveCharts()
@@ -633,6 +634,7 @@ namespace MajdataPlay
             Directory.Move(sourceDirName: src, destDirName: dst);
             MajDebug.LogInfo($"Moved: {src} -> {dst}");
         }
+        #endregion
 
 #if UNITY_ANDROID
         class OnNewIntentCallbackProxy : AndroidJavaProxy
@@ -664,20 +666,10 @@ namespace MajdataPlay
 #endif
         static class ChartImporter
         {
-#if UNITY_IOS
-            public readonly static NativePlugin.OnFileOpenCallback IOS_OnFileOpenCallback;
-#endif
-
             static string _importRoot = string.Empty;
             static ValueTask _importTask = UniTask.CompletedTask;
             static readonly ConcurrentQueue<string> _pendingImportTasks = new ConcurrentQueue<string>();
             
-            static ChartImporter()
-            {
-#if UNITY_IOS
-                IOS_OnFileOpenCallback = IOS_OnFileOpen;
-#endif
-            }
             public static ValueTask OnStartAsync()
             {
                 _importRoot = Path.Combine(MajEnv.ChartPath, "Import");
