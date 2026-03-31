@@ -81,7 +81,7 @@ namespace MajdataPlay
         static void Init()
         {
 #if UNITY_IOS
-            NativePlugin.RegisterOnFileOpenCallback(ImportManager.IOS_OnFileOpenCallback);
+            NativePlugin.RegisterOnFileOpenCallback(ChartImporter.IOS_OnFileOpenCallback);
 #endif
         }
         protected override void Awake()
