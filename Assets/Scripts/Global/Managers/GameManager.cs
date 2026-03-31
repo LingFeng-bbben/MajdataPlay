@@ -3,14 +3,15 @@ using Cysharp.Threading.Tasks;
 using MajdataPlay.Collections;
 using MajdataPlay.i18n;
 using MajdataPlay.IO;
-using MajdataPlay.Platform.iOS;
+using MajdataPlay.Platform.Android.Runtime;
 using MajdataPlay.Scenes.Test;
 using MajdataPlay.Settings;
 using MajdataPlay.Timer;
 using ShimSkiaSharp;
-
 #if UNITY_STANDALONE_WIN
 using MajdataPlay.Platform.Win32;
+#elif UNITY_IOS
+using MajdataPlay.Platform.iOS;
 #endif
 using System;
 using System.Collections.Concurrent;
@@ -20,6 +21,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -140,6 +142,14 @@ namespace MajdataPlay
             MajDebug.LogInfo($"AndroidVerCode: {androidVersionCode}");
 #endif
             MajEnv.Init();
+#if UNITY_ANDROID && !UNITY_EDITOR
+            var intent = CurrentActivity.Call<AndroidJavaObject>("getIntent");
+            var uri = intent.Call<AndroidJavaObject>("getData");
+            if (uri != null)
+            {
+                ChartImporter.Android_AddImportTask(uri);
+            }
+#endif
             await ChartImporter.OnStartAsync();
             if (!Directory.Exists(MajEnv.AssetsPath))
             {
@@ -656,7 +666,9 @@ namespace MajdataPlay
 #endif
         static class ChartImporter
         {
+#if UNITY_IOS
             public readonly static NativePlugin.OnFileOpenCallback IOS_OnFileOpenCallback;
+#endif
 
             static string _importRoot = string.Empty;
             static ValueTask _importTask = UniTask.CompletedTask;
@@ -664,7 +676,9 @@ namespace MajdataPlay
             
             static ChartImporter()
             {
+#if UNITY_IOS
                 IOS_OnFileOpenCallback = IOS_OnFileOpen;
+#endif
             }
             public static ValueTask OnStartAsync()
             {
@@ -692,6 +706,30 @@ namespace MajdataPlay
             }
             static async ValueTask Import()
             {
+                static void CopyDirectory(string sourceDir, string destDir)
+                {
+                    var dirs = new Stack<(string src, string dst)>();
+                    dirs.Push((sourceDir, destDir));
+
+                    while (dirs.Count > 0)
+                    {
+                        var (currentSource, currentDest) = dirs.Pop();
+
+                        Directory.CreateDirectory(currentDest);
+
+                        foreach (var file in Directory.GetFiles(currentSource))
+                        {
+                            var destFile = Path.Combine(currentDest, Path.GetFileName(file));
+                            File.Copy(file, destFile, true);
+                        }
+
+                        foreach (var subDir in Directory.GetDirectories(currentSource))
+                        {
+                            var newDest = Path.Combine(currentDest, Path.GetFileName(subDir));
+                            dirs.Push((subDir, newDest));
+                        }
+                    }
+                }
                 var nextScene = (MajScenes?)MajScenes.List;
                 if(SceneSwitcher.CurrentScene == MajScenes.Init)
                 {
@@ -792,7 +830,7 @@ namespace MajdataPlay
                                 {
                                     dstPath = Path.Combine(_importRoot, $"{dirName} ({i + 1})");
                                 }
-                                Directory.Move(dir.FullName, dstPath);
+                                CopyDirectory(dir.FullName, dstPath);
                             }
                             else
                             {
@@ -802,8 +840,9 @@ namespace MajdataPlay
                                 {
                                     dstPath = Path.Combine(MajEnv.ChartPath, $"{dirName} ({i + 1})");
                                 }
-                                Directory.Move(dir.FullName, dstPath);
+                                CopyDirectory(dir.FullName, dstPath);
                             }
+                            Directory.Delete(dir.FullName, true);
                         });
                     }
                     catch (Exception e)
@@ -812,6 +851,12 @@ namespace MajdataPlay
 
                         try { Directory.Delete(tempOutDir, true); } catch { /* ignore */ }
                         return;
+                    }
+                    finally
+                    {
+#if UNITY_ANDROID
+                        File.Delete(tempFilePath);
+#endif
                     }
                 }
                 var progress = new Progress<string>();
@@ -842,7 +887,20 @@ namespace MajdataPlay
             {
                 _pendingImportTasks.Enqueue(tempFilePath);
             }
-            
+            public unsafe static void Android_AddImportTask(AndroidJavaObject intentUri)
+            {
+                using var fileIOKit = new AndroidJavaClass("net.majdata.majdataplay.FileIOKit");
+                var tempPath = Path.Combine(MajEnv.CachePath, "Runtime", $"{Guid.NewGuid()}.zip");
+                var returnCode = fileIOKit.CallStatic<int>("CopyContentToFile", intentUri, tempPath);
+
+                MajDebug.LogDebug($"[Android][FileIOKit] return {returnCode}");
+                if(returnCode != 0)
+                {
+                    return;
+                }
+
+                AddImportTask(tempPath);
+            }
         }
     }
 }

@@ -39,11 +39,13 @@ namespace MajdataPlay
             MajInstances.FPSDisplayer = this;
             _textDisplayer = GetComponent<TextMeshPro>();
             _lastUpdateTiming = MajTimeline.UnscaledTime;
+            GameObject.SetActive(false);
         }
         internal void Init()
         {
             _setting = MajInstances.Settings;
             _textDisplayer.enabled = _setting.Debug.DisplayFPS;
+            GameObject.SetActive(true);
         }
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
