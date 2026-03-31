@@ -145,11 +145,8 @@ namespace MajdataPlay
             MajEnv.Init();
 #if UNITY_ANDROID && !UNITY_EDITOR
             var intent = CurrentActivity.Call<AndroidJavaObject>("getIntent");
-            var uri = intent.Call<AndroidJavaObject>("getData");
-            if (uri != null)
-            {
-                ChartImporter.Android_AddImportTask(uri);
-            }
+            ChartImporter.Android_OnNewIntent(this, intent);
+            OnNewIntent += ChartImporter.Android_OnNewIntent;
 #endif
             await ChartImporter.OnStartAsync();
             if (!Directory.Exists(MajEnv.AssetsPath))
@@ -888,8 +885,13 @@ namespace MajdataPlay
             {
                 _pendingImportTasks.Enqueue(tempFilePath);
             }
-            public unsafe static void Android_AddImportTask(AndroidJavaObject intentUri)
+            public static void Android_OnNewIntent(object? sender, AndroidJavaObject? intent)
             {
+                var intentUri = intent?.Call<AndroidJavaObject>("getData");
+                if (intentUri is null)
+                {
+                    return;
+                }
                 using var fileIOKit = new AndroidJavaClass("net.majdata.majdataplay.FileIOKit");
                 var tempPath = Path.Combine(MajEnv.CachePath, "Runtime", $"{Guid.NewGuid()}.zip");
                 var returnCode = fileIOKit.CallStatic<int>("CopyContentToFile", intentUri, tempPath);
