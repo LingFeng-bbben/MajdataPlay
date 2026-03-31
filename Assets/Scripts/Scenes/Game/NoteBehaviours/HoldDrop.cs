@@ -571,7 +571,14 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 {
                     return;
                 }
-                if (!isPressed)
+                if (isPressed)
+                {
+                    if(GetRemainingTime() == 0)
+                    {
+                        _effectManager.ResetHoldEffect(StartPos);
+                    }
+                }
+                else
                 {
                     var isButtonReleased = _noteManager.CheckSensorStatusInPreviousFrame(_sensorPos, SwitchStatus.On) &&
                                            !isButtonPressed;
