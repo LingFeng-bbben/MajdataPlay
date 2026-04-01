@@ -556,6 +556,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 _effectManager.PlayHoldEffect(StartPos, _judgeResult);
                 _effectManager.ResetEffect(StartPos);
                 _lastHoldState = HOLD_STATE_HEAD_JUDGED;
+                if(IsClassic)
+                {
+                    _thisRenderer.sprite = _holdOnSprite;
+                    _thisRenderer.sharedMaterial = HoldShineMaterial;
+                }
             }
             if (!_bodyCheckRange.InRange(ThisFrameSec) || !NoteController.IsStart)
             {
