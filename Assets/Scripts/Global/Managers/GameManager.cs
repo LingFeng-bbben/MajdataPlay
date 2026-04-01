@@ -424,9 +424,6 @@ namespace MajdataPlay
         protected override void OnDestroy()
         {
             base.OnDestroy();
-#if UNITY_IOS
-            NativePlugin.UnregisterOnFileOpenCallback();
-#endif
         }
         void OnApplicationQuit()
         {
