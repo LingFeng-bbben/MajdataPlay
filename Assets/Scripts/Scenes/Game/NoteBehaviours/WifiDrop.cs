@@ -537,24 +537,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                         rad = 0.15f;
                     }
                     var pos = (_starEndPositions[j] - startPos) * DJAutoplayProgress.Clamp(0, 1) + startPos;
-                    pos.z = -10;
-                    for (int i = 0; i < 9; i++)
-                    {
-                        
-                        var circular = new Vector3(rad * Mathf.Sin(45f * i), rad * Mathf.Cos(45f * i));
-                        if (i == 8)
-                        {
-                            circular = Vector3.zero;
-                        }
-                        var ray = new Ray(pos + circular, Vector3.forward);
-                        var ishit = Physics.Raycast(ray, out var hitInfom);
-                        if (ishit)
-                        {
-                            var id = hitInfom.colliderInstanceID;
-                            var area = InputManager.GetSensorAreaFromInstanceID(id);
-                            _noteManager.SimulateSensorPress(area);
-                        }
-                    }
+                    SlideDJAutoSimulateSensorPress(pos, rad);
                 }
                 if(DJAutoplayProgress >= currentProgress)
                 {

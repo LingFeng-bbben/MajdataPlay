@@ -707,6 +707,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         void DJAutoplay()
         {
+            const float DJAUTO_SIMULATE_RAD = 0.3f;
             if (IsFinished)
             {
                 return;
@@ -716,24 +717,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             var delta = 0f;
             for(; ; )
             {
-                var pos = GetPositionFromProgress(DJAutoplayProgress);
-                pos.z = -10;
-                for (int i = 0; i < 9; i++)
-                {
-                    const float rad = 0.3f;
-                    var circular = new Vector3(rad * Mathf.Sin(45f * i), rad * Mathf.Cos(45f * i));
-                    if (i == 8) 
-                        circular = Vector3.zero;
-                    var ray = new Ray(pos + circular, Vector3.forward);
-                    var ishit = Physics.Raycast(ray, out var hitInfom);
-                    if (ishit)
-                    {
-                        var id = hitInfom.colliderInstanceID;
-                        var area = InputManager.GetSensorAreaFromInstanceID(id);
-                        _noteManager.SimulateSensorPress(area);
-                    }
-                }
-                if(delta > 0.2f || 
+                var cubeRay = GetPositionFromProgress(DJAutoplayProgress);
+                SlideDJAutoSimulateSensorPress(cubeRay, DJAUTO_SIMULATE_RAD);
+
+                if (delta > 0.2f || 
                    delta + step > 0.2f ||
                    DJAutoplayProgress >= currentProgress)
                 {

@@ -105,6 +105,22 @@ namespace MajdataPlay.IO
                 return _sensorStates.Span;
             }
         }
+        public static ReadOnlySpan<Vector4> UnitCircle
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                return _unitCircle.Span;
+            }
+        }
+        public static ReadOnlySpan<ulong> TouchPanelPositionSamples
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                return new ReadOnlySpan<ulong>(_posData, 1280 * 1280);
+            }
+        }
 
         public static event EventHandler<InputEventArgs>? OnAnyAreaTrigger;
 

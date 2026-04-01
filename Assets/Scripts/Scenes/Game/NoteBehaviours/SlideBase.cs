@@ -594,6 +594,50 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 SetSlideBarRender(alpha, null, SLIDE_BAR_MODE_SET_ALPHA);
             }
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected void SlideDJAutoSimulateSensorPress(Vector3 cubeRay, float rad)
+        {
+            var p = 0UL;
+            unsafe
+            {
+                fixed (ulong* samplePtr = &InputManager.TouchPanelPositionSamples.GetPinnableReference())
+                fixed (Vector4* circleSamplesPtr = &InputManager.UnitCircle.GetPinnableReference())
+                {
+                    MobileTouchPanelHelper.PositionHandle(cubeRay,
+                        rad,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        InputManager.FINGER_RADIUS_SEGMENT_LENGTH,
+                        InputManager.TOUCH_ANGLE_SMAPLE_COUNT,
+                        samplePtr,
+                        circleSamplesPtr,
+                        ref p);
+                }
+                for (var i = 0; i < (int)SensorArea.C; i++)
+                {
+                    if ((p & (1UL << (i + 12))) != 0)
+                    {
+                        _noteManager.SimulateSensorPress((SensorArea)i);
+                    }
+                }
+                if ((p & (0b11 << (16 + 12))) != 0)
+                {
+                    _noteManager.SimulateSensorPress(SensorArea.C);
+                }
+                for (var i = 18; i < 34; i++)
+                {
+                    if ((p & (1UL << (i + 12))) != 0)
+                    {
+                        _noteManager.SimulateSensorPress((SensorArea)(i - 1));
+                    }
+                }
+            }
+        }
         protected virtual void OnDestroy()
         {
             Dispose();
