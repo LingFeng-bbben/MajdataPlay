@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,6 +22,7 @@ namespace MajdataPlay.IO
         public abstract TimeSpan Length { get; }
         public abstract bool IsLoop { get; set; }
         public bool CanSeek { get; protected init; }
+        public float? MeasuredRmsDb { get; set; } = null;
 
         protected bool _isDisposed = false;
 

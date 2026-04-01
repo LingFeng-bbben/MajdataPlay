@@ -216,7 +216,11 @@ namespace MajdataPlay.IO
             }
 #endif
         }
-        static BassSimpleAudioSample Create(byte[] data, bool normalize, bool speedChange)
+        const double TARGET_RMS_DB = -14.0;
+        const double GAIN_MIN = 0.1;
+        const double GAIN_MAX = 4.0;
+
+        static BassSimpleAudioSample Create(byte[] data, bool normalize, bool speedChange, float? cachedRmsDb = null)
         {
             var handle = GCHandle.Alloc(data, GCHandleType.Pinned);
             var addr = handle.AddrOfPinnedObject();
@@ -227,10 +231,45 @@ namespace MajdataPlay.IO
                 stream = BassFx.TempoCreate(decode, BassFlags.Default);
                 Bass.LastError.EnsureSuccessStatusCode();
                 Bass.ChannelSetAttribute(stream, ChannelAttribute.Buffer, 0);
-                //scan the peak here
+
                 var bytelength = Bass.ChannelGetLength(decode);
                 var gain = 1d;
-                if (normalize)
+                float? measuredRmsDb = null;
+                var useLoudnessNorm = MajInstances.Settings.Audio.LoudnessNormalization;
+
+                if (normalize && useLoudnessNorm && cachedRmsDb.HasValue)
+                {
+                    var rmsDb = (double)cachedRmsDb.Value;
+                    gain = Math.Pow(10, (TARGET_RMS_DB - rmsDb) / 20.0);
+                    gain = Math.Clamp(gain, GAIN_MIN, GAIN_MAX);
+                    measuredRmsDb = cachedRmsDb.Value;
+                    MajDebug.LogInfo($"[LoudnessNorm] Using cached RMS: {rmsDb:F2} dB, gain: {gain:F4}");
+                }
+                else if (normalize && useLoudnessNorm)
+                {
+                    double sumSquares = 0;
+                    int windowCount = 0;
+                    while (Bass.ChannelGetPosition(decode, PositionFlags.Decode | PositionFlags.Bytes) < bytelength)
+                    {
+                        var levels = Bass.ChannelGetLevel(decode, 1.0f, LevelRetrievalFlags.RMS | LevelRetrievalFlags.Mono);
+                        if (levels is not null && levels.Length > 0)
+                        {
+                            double rms = levels[0];
+                            sumSquares += rms * rms;
+                            windowCount++;
+                        }
+                    }
+                    if (windowCount > 0)
+                    {
+                        var avgRms = Math.Sqrt(sumSquares / windowCount);
+                        var rmsDb = 20.0 * Math.Log10(Math.Max(avgRms, 1e-10));
+                        gain = Math.Pow(10, (TARGET_RMS_DB - rmsDb) / 20.0);
+                        gain = Math.Clamp(gain, GAIN_MIN, GAIN_MAX);
+                        measuredRmsDb = (float)rmsDb;
+                        MajDebug.LogInfo($"[LoudnessNorm] Measured RMS: {rmsDb:F2} dB, target: {TARGET_RMS_DB:F2} dB, gain: {gain:F4}");
+                    }
+                }
+                else if (normalize)
                 {
                     double channelmax = 0;
                     while (Bass.ChannelGetPosition(decode, PositionFlags.Decode | PositionFlags.Bytes) < bytelength)
@@ -247,6 +286,7 @@ namespace MajdataPlay.IO
                 var sample = new BassSimpleAudioSample(stream, gain, handle, speedChange)
                 {
                     CanSeek = true,
+                    MeasuredRmsDb = measuredRmsDb,
                 };
                 sample.Volume = 1;
                 sample._decode = decode;
@@ -262,17 +302,17 @@ namespace MajdataPlay.IO
                 throw;
             }
         }
-        public static BassSimpleAudioSample Create(string path, bool normalize = true, bool speedChange = false)
+        public static BassSimpleAudioSample Create(string path, bool normalize = true, bool speedChange = false, float? cachedRmsDb = null)
         {
             var buf = File.ReadAllBytes(path);
 
-            return Create(buf, normalize, speedChange);
+            return Create(buf, normalize, speedChange, cachedRmsDb);
         }
-        public static async ValueTask<BassSimpleAudioSample> CreateAsync(string path, bool normalize = true, bool speedChange = false)
+        public static async ValueTask<BassSimpleAudioSample> CreateAsync(string path, bool normalize = true, bool speedChange = false, float? cachedRmsDb = null)
         {
             var buf = await File.ReadAllBytesAsync(path);
 
-            return Create(buf, normalize, speedChange);
+            return Create(buf, normalize, speedChange, cachedRmsDb);
         }
         public static BassSimpleAudioSample CreateFromUri(Uri uri)
         {

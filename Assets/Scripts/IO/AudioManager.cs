@@ -442,7 +442,7 @@ namespace MajdataPlay.IO
             }
         }
 
-        public AudioSampleWrap LoadMusic(string path, bool normalize = true, bool speedChange = false)
+        public AudioSampleWrap LoadMusic(string path, bool normalize = true, bool speedChange = false, float? cachedRmsDb = null)
         {
             MajDebug.LogInfo($"Try creating channel from file: {path}");
             var backend = MajInstances.Settings.Audio.Backend;
@@ -456,10 +456,10 @@ namespace MajdataPlay.IO
                         break;
                     case SoundBackendOption.Asio:
                     case SoundBackendOption.Wasapi:
-                        sample = BassAudioSample.Create(path, BassGlobalMixer, normalize, speedChange);
+                        sample = BassAudioSample.Create(path, BassGlobalMixer, normalize, speedChange, cachedRmsDb);
                         break;
                     case SoundBackendOption.BassSimple:
-                        sample = BassSimpleAudioSample.Create(path, normalize, speedChange);
+                        sample = BassSimpleAudioSample.Create(path, normalize, speedChange, cachedRmsDb);
                         break;
                     default:
                         MajDebug.LogError("Backend not supported");
@@ -498,7 +498,7 @@ namespace MajdataPlay.IO
             MajDebug.LogInfo("Channel created");
             return sample;
         }
-        public async UniTask<AudioSampleWrap> LoadMusicAsync(string path, bool normalize = true, bool speedChange = false)
+        public async UniTask<AudioSampleWrap> LoadMusicAsync(string path, bool normalize = true, bool speedChange = false, float? cachedRmsDb = null)
         {
             MajDebug.LogInfo($"Try creating channel from file: {path}");
             await UniTask.SwitchToThreadPool();
@@ -514,10 +514,10 @@ namespace MajdataPlay.IO
                         break;
                     case SoundBackendOption.Asio:
                     case SoundBackendOption.Wasapi:
-                        sample = await BassAudioSample.CreateAsync(path, BassGlobalMixer, normalize, speedChange);
+                        sample = await BassAudioSample.CreateAsync(path, BassGlobalMixer, normalize, speedChange, cachedRmsDb);
                         break;
                     case SoundBackendOption.BassSimple:
-                        sample = await BassSimpleAudioSample.CreateAsync(path, normalize, speedChange);
+                        sample = await BassSimpleAudioSample.CreateAsync(path, normalize, speedChange, cachedRmsDb);
                         break;
                     default:
                         MajDebug.LogError("Backend not supported");

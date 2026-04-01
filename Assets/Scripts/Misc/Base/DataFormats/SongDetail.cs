@@ -187,7 +187,12 @@ namespace MajdataPlay
                         return audioTrack;
                     }
                     progress?.Report(1);
-                    audioTrack = await MajInstances.AudioManager.LoadMusicAsync(_trackPath, true, true);
+                    var cachedRmsDb = _chartSettings.MeasuredRmsDb;
+                    audioTrack = await MajInstances.AudioManager.LoadMusicAsync(_trackPath, true, true, cachedRmsDb);
+                    if (audioTrack.MeasuredRmsDb.HasValue && audioTrack.MeasuredRmsDb != cachedRmsDb)
+                    {
+                        _chartSettings.MeasuredRmsDb = audioTrack.MeasuredRmsDb;
+                    }
                     _audioTrackRef.SetTarget(audioTrack);
                     return audioTrack;
                 }
