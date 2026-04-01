@@ -78,7 +78,10 @@ namespace MajdataPlay
         {
             SwitchSceneInternal(sceneName,autoFadeOut).Forget();
         }
-
+        public UniTask SwitchSceneAsync(string sceneName, bool autoFadeOut = true)
+        {
+            return SwitchSceneInternal(sceneName, autoFadeOut);
+        }
         public void PauseMV()
         {
             _videoPlayer.Pause();

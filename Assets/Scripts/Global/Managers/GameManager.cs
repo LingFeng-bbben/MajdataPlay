@@ -725,12 +725,12 @@ namespace MajdataPlay
                 }
                 else
                 {
-                    while (SceneSwitcher.CurrentScene == MajScenes.List)
+                    while (SceneSwitcher.CurrentScene == MajScenes.Title)
                     {
                         nextScene = MajScenes.Login;
                         await UniTask.Yield();
                     }
-                    MajInstances.SceneSwitcher.SwitchScene("Empty", false);
+                    await MajInstances.SceneSwitcher.SwitchSceneAsync("Empty", false);
                     await UniTask.Delay(300);
                 }
                 Directory.CreateDirectory(_importRoot);
@@ -867,13 +867,10 @@ namespace MajdataPlay
                 await UniTask.Delay(3000);
                 if(nextScene is MajScenes scene)
                 {
-                    MajInstances.SceneSwitcher.SwitchScene(scene.ToString());
+                    await MajInstances.SceneSwitcher.SwitchSceneAsync(scene.ToString());
                 }
             }
-            static void IOS_OnFileOpen(string tempFilePath)
-            {
-                _pendingImportTasks.Enqueue(tempFilePath);
-            }
+
             public static void Android_OnNewIntent(object? sender, AndroidJavaObject? intent)
             {
                 var intentUri = intent?.Call<AndroidJavaObject>("getData");
