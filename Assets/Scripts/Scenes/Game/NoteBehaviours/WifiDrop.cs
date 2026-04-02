@@ -189,6 +189,20 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 star.transform.localScale = new Vector3(0f, 0f, 1f);
             }
 
+            if(!USERSETTING_SLIDE_SKIPPING)
+            {
+                for (var i = 0; i < JudgeQueues.Length; i++)
+                {
+                    var queueMemory = JudgeQueues[i];
+                    var queue = queueMemory.Span;
+                    for (var j = 0; j < queue.Length; j++)
+                    {
+                        ref var area = ref queue[j];
+                        area.IsSkippable = false;
+                    }
+                }
+            }
+
             State = NoteStatus.Inited;
         }
         [Il2CppSetOption(Option.NullChecks, false)]

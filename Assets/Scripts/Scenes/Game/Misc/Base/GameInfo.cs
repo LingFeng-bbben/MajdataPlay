@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MajdataPlay.Settings;
 #nullable enable
 namespace MajdataPlay.Scenes.Game
 {
@@ -14,6 +15,7 @@ namespace MajdataPlay.Scenes.Game
         public GameMode Mode { get; init; }
         public ISongDetail? Current { get; private set; } = null;
         public ChartLevel CurrentLevel { get; private set; } = ChartLevel.Easy;
+        public ChartSetting ChartSettings { get; private set; }
         public bool IsDanMode => Mode == GameMode.Dan;
         public bool IsPracticeMode => Mode == GameMode.Practice;
 
@@ -59,6 +61,7 @@ namespace MajdataPlay.Scenes.Game
                 _chartQueue = Array.Empty<ISongDetail>();
                 Results = Array.Empty<GameResult>();
                 _levels = Array.Empty<ChartLevel>();
+                ChartSettings = new ChartSetting();
             }
             else
             {
@@ -66,7 +69,9 @@ namespace MajdataPlay.Scenes.Game
                 for (var i = 0; i < chartQueue.Length; i++)
                 {
                     if (chartQueue[i] is not null)
+                    {
                         count++;
+                    }
                 }
                 switch (mode)
                 {
@@ -92,6 +97,7 @@ namespace MajdataPlay.Scenes.Game
                         CurrentLevel = levels[0];
                         break;
                 }
+                ChartSettings = ChartSettingStorage.GetSetting(Current);
             }
         }
         public GameInfo(GameMode mode, ISongDetail[] chartQueue, ChartLevel[] levels) : this(mode, chartQueue, levels, 1)
@@ -123,7 +129,10 @@ namespace MajdataPlay.Scenes.Game
         {
             var canMoveNext = MoveNext();
             if (!canMoveNext)
+            {
                 return false;
+            }
+            ChartSettings = ChartSettingStorage.GetSetting(Current);
             switch (Mode)
             {
                 case GameMode.Dan:
@@ -139,12 +148,16 @@ namespace MajdataPlay.Scenes.Game
             {
                 case GameMode.Practice:
                     if (_index >= PracticeCount - 1)
+                    {
                         return false;
+                    }
                     _index++;
                     return true;
                 default:
                     if (_index >= _chartQueue.Length)
+                    {
                         return false;
+                    }
 
                     _index++;
                     for (; _index < _chartQueue.Length; _index++)

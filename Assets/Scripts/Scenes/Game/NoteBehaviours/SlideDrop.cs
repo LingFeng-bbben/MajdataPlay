@@ -245,8 +245,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                     var parent = Parent.GameObject.GetComponent<SlideDrop>();
                     StartTiming = parent.StartTiming + parent.Length;
                 }
-                UpdateJudgeQueue();
             }
+            UpdateJudgeQueue();
 
             if (ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide)
             {
@@ -262,26 +262,39 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         void UpdateJudgeQueue()
         {
             var judgeQueue = JudgeQueues[0].Span;
-            if (ConnectInfo.TotalJudgeQueueLen < 4)
+            if (!USERSETTING_SLIDE_SKIPPING)
             {
-                if (ConnectInfo.IsGroupPartHead)
+                foreach (ref var judgeArea in judgeQueue)
                 {
-                    judgeQueue[0].IsSkippable = true;
-                    judgeQueue[1].IsSkippable = false;
-                }
-                else if (ConnectInfo.IsGroupPartEnd)
-                {
-                    judgeQueue[0].IsSkippable = false;
-                    judgeQueue[1].IsSkippable = true;
+                    judgeArea.IsSkippable = false;
                 }
             }
             else
             {
-                foreach (ref var judgeArea in judgeQueue)
+                if (ConnectInfo.IsConnSlide)
                 {
-                    judgeArea.IsSkippable = true;
+                    if (ConnectInfo.TotalJudgeQueueLen < 4)
+                    {
+                        if (ConnectInfo.IsGroupPartHead)
+                        {
+                            judgeQueue[0].IsSkippable = true;
+                            judgeQueue[1].IsSkippable = false;
+                        }
+                        else if (ConnectInfo.IsGroupPartEnd)
+                        {
+                            judgeQueue[0].IsSkippable = false;
+                            judgeQueue[1].IsSkippable = true;
+                        }
+                    }
+                    else
+                    {
+                        foreach (ref var judgeArea in judgeQueue)
+                        {
+                            judgeArea.IsSkippable = true;
+                        }
+                    }
                 }
-            }
+            }     
         }
         [OnPreUpdate]
         void OnPreUpdate()

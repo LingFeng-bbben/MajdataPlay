@@ -134,7 +134,7 @@ namespace MajdataPlay
         }
         public ValueTask<string> GetVideoPathAsync(INetProgress? progress = null, CancellationToken token = default)
         {
-            if (_chartSettings.DisableVideoBG)
+            if (_chartSettings.DisableVideoBG ?? false)
             {
                 return UniTask.FromResult(string.Empty);
             }

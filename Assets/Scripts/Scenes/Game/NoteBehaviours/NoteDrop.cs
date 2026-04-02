@@ -159,22 +159,23 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
         protected SensorArea _sensorPos;
 
-        protected ObjectCounter _objectCounter = Majdata<ObjectCounter>.Instance!;
-        protected NoteManager _noteManager = Majdata<NoteManager>.Instance!;
-        protected NoteEffectManager _effectManager = Majdata<NoteEffectManager>.Instance!;
-        protected NoteAudioManager _audioEffMana = Majdata<NoteAudioManager>.Instance!;
-        protected readonly GameSetting _settings = MajInstances.Settings;
-        protected readonly Random _randomizer = new();
+        protected ObjectCounter _objectCounter;
+        protected NoteManager _noteManager;
+        protected NoteEffectManager _effectManager;
+        protected NoteAudioManager _audioEffMana;
+        protected GameSetting _settings;
+        protected Random _randomizer;
 
-        protected readonly float USERSETTING_JUDGE_OFFSET_SEC = ((MajInstances.Settings?.Judge.JudgeOffset ?? 0) + (MajInstances.Settings?.Debug.DisplayOffset ?? 0)) * ((MajInstances.Settings?.Debug.OffsetUnit ?? OffsetUnitOption.Second) == OffsetUnitOption.Second ? 1 : FRAME_LENGTH_SEC);
-        protected readonly float USERSETTING_TOUCHPANEL_OFFSET_SEC = (MajInstances.Settings?.Judge.TouchPanelOffset ?? 0) * ((MajInstances.Settings?.Debug.OffsetUnit ?? OffsetUnitOption.Second) == OffsetUnitOption.Second ? 1 : FRAME_LENGTH_SEC);
-        protected readonly float USERSETTING_TAP_SCALE = MajInstances.Settings?.Display.TapScale ?? 1;
-        protected readonly float USERSETTING_HOLD_SCALE = MajInstances.Settings?.Display.HoldScale ?? 1;
-        protected readonly float USERSETTING_TOUCH_SCALE = MajInstances.Settings?.Display.TouchScale ?? 1;
-        protected readonly float USERSETTING_SLIDE_SCALE = MajInstances.Settings?.Display.SlideScale ?? 1;
-        protected readonly bool USERSETTING_DISPLAY_HOLD_HEAD_JUDGE_RESULT = MajInstances.Settings?.Display.DisplayHoldHeadJudgeResult ?? false;
-        protected readonly JudgeModeOption USERSETTING_SLIDE_JUDGE_MODE = MajInstances.Settings?.Judge.Mode ?? JudgeModeOption.Modern;
-        protected readonly DJAutoPolicyOption USERSETTING_DJAUTO_POLICY = MajInstances.Settings?.Debug.DJAutoPolicy ?? DJAutoPolicyOption.Strict;
+        protected bool USERSETTING_SLIDE_SKIPPING = false;
+        protected float USERSETTING_JUDGE_OFFSET_SEC = 0f;
+        protected float USERSETTING_TOUCHPANEL_OFFSET_SEC = 0f;
+        protected float USERSETTING_TAP_SCALE = 1;
+        protected float USERSETTING_HOLD_SCALE = 1;
+        protected float USERSETTING_TOUCH_SCALE = 1;
+        protected float USERSETTING_SLIDE_SCALE = 1;
+        protected bool USERSETTING_DISPLAY_HOLD_HEAD_JUDGE_RESULT = false;
+        protected JudgeModeOption USERSETTING_SLIDE_JUDGE_MODE = JudgeModeOption.Modern;
+        protected DJAutoPolicyOption USERSETTING_DJAUTO_POLICY = DJAutoPolicyOption.Strict;
 
         protected const float FRAME_LENGTH_SEC = MajEnv.FRAME_LENGTH_SEC;
         protected const float FRAME_LENGTH_MSEC = MajEnv.FRAME_LENGTH_MSEC;
@@ -211,10 +212,24 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         {
             base.Awake();
 
+            var gameInfo = Majdata<GameInfo>.Instance;
+            _settings = MajEnv.Settings;
+            _randomizer = new();
             _objectCounter = Majdata<ObjectCounter>.Instance!;
             _noteManager = Majdata<NoteManager>.Instance!;
             _effectManager = Majdata<NoteEffectManager>.Instance!;
             _audioEffMana = Majdata<NoteAudioManager>.Instance!;
+
+            USERSETTING_SLIDE_SKIPPING = gameInfo?.ChartSettings.SlideSkipping ?? _settings.Game.SlideSkipping;
+            USERSETTING_JUDGE_OFFSET_SEC = ((MajInstances.Settings?.Judge.JudgeOffset ?? 0) + (MajInstances.Settings?.Debug.DisplayOffset ?? 0)) * ((MajInstances.Settings?.Debug.OffsetUnit ?? OffsetUnitOption.Second) == OffsetUnitOption.Second ? 1 : FRAME_LENGTH_SEC);
+            USERSETTING_TOUCHPANEL_OFFSET_SEC = (MajInstances.Settings?.Judge.TouchPanelOffset ?? 0) * ((MajInstances.Settings?.Debug.OffsetUnit ?? OffsetUnitOption.Second) == OffsetUnitOption.Second ? 1 : FRAME_LENGTH_SEC);
+            USERSETTING_TAP_SCALE = MajInstances.Settings?.Display.TapScale ?? 1;
+            USERSETTING_HOLD_SCALE = MajInstances.Settings?.Display.HoldScale ?? 1;
+            USERSETTING_TOUCH_SCALE = MajInstances.Settings?.Display.TouchScale ?? 1;
+            USERSETTING_SLIDE_SCALE = MajInstances.Settings?.Display.SlideScale ?? 1;
+            USERSETTING_DISPLAY_HOLD_HEAD_JUDGE_RESULT = MajInstances.Settings?.Display.DisplayHoldHeadJudgeResult ?? false;
+            USERSETTING_SLIDE_JUDGE_MODE = MajInstances.Settings?.Judge.Mode ?? JudgeModeOption.Modern;
+            USERSETTING_DJAUTO_POLICY = MajInstances.Settings?.Debug.DJAutoPolicy ?? DJAutoPolicyOption.Strict;
 
             _noteController = Majdata<INoteController>.Instance!;
             ModInfo = _noteController.ModInfo;

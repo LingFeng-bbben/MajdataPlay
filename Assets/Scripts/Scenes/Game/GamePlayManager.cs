@@ -139,7 +139,7 @@ namespace MajdataPlay.Scenes.Game
         MajTimer _timer = MajTimeline.CreateTimer();
         float _audioTrackStartAt = 0f;
 
-        GameInfo _gameInfo = Majdata<GameInfo>.Instance!;
+        GameInfo _gameInfo;
 
         SimaiFile _simaiFile;
         SimaiChart _chart;
@@ -173,6 +173,7 @@ namespace MajdataPlay.Scenes.Game
             Majdata<GamePlayManager>.Instance = this;
             Majdata<INoteController>.Instance = this;
             Majdata<INoteTimeProvider>.Instance = this;
+            _gameInfo = Majdata<GameInfo>.Instance!;
             if (_gameInfo is null || _gameInfo.Current is null)
             {
                 throw new ArgumentNullException(nameof(_gameInfo));
@@ -181,7 +182,7 @@ namespace MajdataPlay.Scenes.Game
             _songDetail = _gameInfo.Current;
             HistoryScore = ScoreManager.GetScore(_songDetail, _listConfig.SelectedDiff);
             _timer = MajTimeline.CreateTimer();
-            _chartSetting = ChartSettingStorage.GetSetting(_songDetail);
+            _chartSetting = _gameInfo.ChartSettings;
             if(_setting.Debug.OffsetUnit == OffsetUnitOption.Second)
             {
                 _audioTimeOffsetSec = _setting.Judge.AudioOffset;

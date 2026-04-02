@@ -61,7 +61,8 @@ namespace MajdataPlay.Settings
         [Step("1")]
         [Range("-7", "7", HasMax = true, HasMin = true)]
         public int Rotation { get; set; } = 0;
-        
+        public bool SlideSkipping { get; set; } = true;
+
         public RandomModeOption Random { get; set; } = RandomModeOption.Disabled;
 #if UNITY_ANDROID || UNITY_IOS
         

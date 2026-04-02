@@ -202,7 +202,7 @@ namespace MajdataPlay
             ThrowIfDisposed();
             try
             {
-                if (_chartSettings.DisableVideoBG)
+                if (_chartSettings.DisableVideoBG ?? false)
                 {
                     return string.Empty;
                 }
