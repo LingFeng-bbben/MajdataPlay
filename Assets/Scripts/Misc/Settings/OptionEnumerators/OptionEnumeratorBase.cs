@@ -1,9 +1,11 @@
-﻿using System;
+﻿using Cysharp.Text;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Unity.Collections.LowLevel.Unsafe;
 #nullable enable
 namespace MajdataPlay.Settings.OptionEnumerators;
 public abstract class OptionEnumeratorBase
@@ -11,6 +13,7 @@ public abstract class OptionEnumeratorBase
     protected const int FLAG_FIELD_MODE = 1;
     protected const int FLAG_PROPERTY_MODE = 2;
 
+    public string Name { get; private set; } = string.Empty;
     public object? Current 
     { 
         get
@@ -20,6 +23,20 @@ public abstract class OptionEnumeratorBase
                 return default;
             }
             return OptionValues[ValueIndex];
+        }
+    }
+    public string ValueText 
+    { 
+        get
+        {
+            return ValueTexts[ValueIndex];
+        }
+    }
+    public string LocalizedValueText 
+    { 
+        get
+        {
+            return LocalizedValueTexts[ValueIndex];
         }
     }
 
@@ -57,7 +74,6 @@ public abstract class OptionEnumeratorBase
 
     protected object Target = null!;
 
-    protected string Name { get; private set; } = string.Empty;
     protected Type Type
     {
         get
@@ -65,31 +81,21 @@ public abstract class OptionEnumeratorBase
             return _memberType;
         }
     }
-    protected bool IsIntType
-    {
-        get
-        {
-            return _memberType == typeof(int) || _memberType == typeof(long) ||
-                   _memberType == typeof(short) || _memberType == typeof(byte) ||
-                   _memberType == typeof(uint) || _memberType == typeof(ulong) ||
-                   _memberType == typeof(ushort) || _memberType == typeof(sbyte);
-        }
-    }
-    protected bool IsFloatType
-    {
-        get
-        {
-            return _memberType == typeof(float) || _memberType == typeof(double) ||
-                   _memberType == typeof(decimal);
-        }
-    }
-    protected bool IsReadOnly;
+    protected bool IsIntType { get; private set; }
+    protected bool IsFloatType { get; private set; }
+    protected bool IsOptional { get; private set; }
+    protected bool IsReadOnly { get; set; }
 
     protected object[] OptionValues = Array.Empty<object>();
+    protected string[] ValueTexts = Array.Empty<string>();
+    protected string[] LocalizedValueTexts = Array.Empty<string>();
     protected int ValueIndex = 0;
 
     protected FieldInfo? FieldInfo;
     protected PropertyInfo? PropertyInfo;
+
+    protected readonly Utf16PreparedFormat<string, object> ValueTextLocalizationTemplate = ZString.PrepareUtf16<string, object>("MAJSETTING_PROPERTY_{0}_OPTION_{1}");
+    protected readonly Utf16PreparedFormat<object> GeneralValueTextLocalizationTemplate = ZString.PrepareUtf16<object>("MAJSETTING_GENERAL_OPTION_{0}");
 
 
     Type _memberType = null!;
@@ -108,7 +114,14 @@ public abstract class OptionEnumeratorBase
         Target = field;
         ModeFlag = FLAG_FIELD_MODE;
         _memberType = fieldInfo.FieldType;
-        IsReadOnly = GetCustomAttribute<ReadOnlyOptionAttribute>() != null;
+        IsFloatType = _memberType == typeof(float) || _memberType == typeof(double) ||
+                      _memberType == typeof(decimal);
+        IsIntType = _memberType == typeof(int) || _memberType == typeof(long) ||
+                    _memberType == typeof(short) || _memberType == typeof(byte) ||
+                    _memberType == typeof(uint) || _memberType == typeof(ulong) ||
+                    _memberType == typeof(ushort) || _memberType == typeof(sbyte);
+        IsOptional = GetCustomAttribute<OptionalAttribute>() != null;
+        IsReadOnly = GetCustomAttribute<ReadOnlyOptionAttribute>() != null || FieldInfo.IsInitOnly;
         Name = fieldInfo.Name;
         InitInternal();
     }
@@ -126,7 +139,14 @@ public abstract class OptionEnumeratorBase
         Target = property;
         ModeFlag = FLAG_PROPERTY_MODE;
         _memberType = propertyInfo.PropertyType;
-        IsReadOnly = GetCustomAttribute<ReadOnlyOptionAttribute>() != null;
+        IsFloatType = _memberType == typeof(float) || _memberType == typeof(double) ||
+                      _memberType == typeof(decimal);
+        IsIntType = _memberType == typeof(int) || _memberType == typeof(long) ||
+                    _memberType == typeof(short) || _memberType == typeof(byte) ||
+                    _memberType == typeof(uint) || _memberType == typeof(ulong) ||
+                    _memberType == typeof(ushort) || _memberType == typeof(sbyte);
+        IsOptional = GetCustomAttribute<OptionalAttribute>() != null;
+        IsReadOnly = GetCustomAttribute<ReadOnlyOptionAttribute>() != null || !PropertyInfo.CanWrite;
         Name = propertyInfo.Name;
         InitInternal();
     }
@@ -143,7 +163,9 @@ public abstract class OptionEnumeratorBase
             nextIndex = 0;
         }
         ValueIndex = nextIndex;
-        Value = OptionValues[ValueIndex];
+        var newValue = OptionValues[ValueIndex];
+        Value = newValue;
+
         return true;
     }
     public virtual bool MovePrevious()
@@ -158,7 +180,9 @@ public abstract class OptionEnumeratorBase
             nextIndex = OptionValues.Length - 1;
         }
         ValueIndex = nextIndex;
-        Value = OptionValues[ValueIndex];
+        var newValue = OptionValues[ValueIndex];
+        Value = newValue;
+
         return true;
     }
     public virtual void OnUpdate()
@@ -167,6 +191,22 @@ public abstract class OptionEnumeratorBase
     }
 
     protected abstract void InitInternal();
+    protected virtual void InitValueTexts()
+    {
+        ValueTexts = new string[OptionValues.Length];
+        LocalizedValueTexts = new string[OptionValues.Length];
+        for (int i = 0; i < OptionValues.Length; i++)
+        {
+            ValueTexts[i] = OptionValues[i]?.ToString() ?? 
+                (IsOptional ? "UNSET" : "NULL");
+            if (!ValueTextLocalizationTemplate.Format(Name, ValueTexts[i]).Tryi18n(out var localizedText) &&
+                !GeneralValueTextLocalizationTemplate.Format(ValueTexts[i]).Tryi18n(out localizedText))
+            {
+                localizedText = ValueTexts[i];
+            }
+            LocalizedValueTexts[i] = localizedText;
+        }
+    }
     protected T? GetCustomAttribute<T>() where T : Attribute
     {
         switch(ModeFlag)

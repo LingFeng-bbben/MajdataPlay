@@ -147,7 +147,7 @@ namespace MajdataPlay.Scenes.Setting
                 {
                     _optionEnumerator = new DefaultEnumEnumerator();
                 }
-                else if (type == typeof(bool))
+                else if (type == typeof(bool) || type == typeof(bool?))
                 {
                     _optionEnumerator = new DefaultBooleanEnumerator();
                 }
@@ -249,38 +249,7 @@ namespace MajdataPlay.Scenes.Setting
         }
         void UpdateOption()
         {
-            var value = _optionEnumerator?.Current;
-            var origin = value?.ToString() ?? "undefined";
-            string localizedText;
-            switch (PropertyInfo.Name)
-            {
-                case "OuterJudgeDistance":
-                case "InnerJudgeDistance":
-                    if(value is 0f)
-                    {
-                        localizedText = "OFF";
-                    }
-                    else
-                    {
-                        localizedText = origin;
-                    }
-                    break;
-                default:
-                    if(!_isNum)
-                    {
-                        if(!$"MAJSETTING_PROPERTY_{PropertyInfo.Name}_OPTION_{origin}".Tryi18n(out localizedText) &&
-                           !$"MAJSETTING_GENERAL_OPTION_{origin}".Tryi18n(out localizedText))
-                        {
-                            localizedText = origin;
-                        }
-                    }
-                    else
-                    {
-                        localizedText = origin;
-                    }
-                    break;
-            }
-            valueText.text = localizedText;
+            valueText.text = _optionEnumerator.LocalizedValueText;
             nameText.text = $"MAJSETTING_PROPERTY_{PropertyInfo.Name}".i18n();
             descriptionText.text = $"MAJSETTING_PROPERTY_{PropertyInfo.Name}_DESC".i18n();
             switch (PropertyInfo.Name)
@@ -309,6 +278,10 @@ namespace MajdataPlay.Scenes.Setting
         {
             _isEnabled = false;
             Localization.OnLanguageChanged -= OnLangChanged;
+            if(_optionEnumerator is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
         }
         void OnDisable()
         {

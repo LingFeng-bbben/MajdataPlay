@@ -37,6 +37,7 @@ public sealed class LanguageEnumerator : OptionEnumeratorBase, IOptionEnumerator
             OptionValues = new object[] { "Unavailable" };
             IsReadOnly = true;
             Value = "Unavailable";
+            InitValueTexts();
             return;
         }
         var langNames = availableLangs.Select(x => x.ToString())
@@ -49,5 +50,6 @@ public sealed class LanguageEnumerator : OptionEnumeratorBase, IOptionEnumerator
             currentIndex = 0;
         }
         ValueIndex = currentIndex;
+        InitValueTexts();
     }
 }
