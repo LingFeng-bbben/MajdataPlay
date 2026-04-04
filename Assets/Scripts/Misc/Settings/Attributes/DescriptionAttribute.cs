@@ -9,10 +9,10 @@ namespace MajdataPlay.Settings;
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
 public class DescriptionAttribute : Attribute
 {
-    public string[] Paragraphs { get; }
+    public string Text { get; }
 
-    public DescriptionAttribute(string[] paragraphs)
+    public DescriptionAttribute(string text)
     {
-        Paragraphs = paragraphs ?? Array.Empty<string>();
+        Text = text ?? string.Empty;
     }
 }

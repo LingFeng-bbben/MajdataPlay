@@ -56,14 +56,14 @@ namespace MajdataPlay.Scenes.Setting
         {
             Localization.OnLanguageChanged += OnLangChanged;
             InitOptions();
-            _nameText.text = _optionName;
+            _nameText.text = _optionName.i18n();
             if(_isNoDescription)
             {
                 _descriptionText.text = string.Empty;
             }
             else
             {
-                _descriptionText.text = _optionDescription;
+                _descriptionText.text = _optionDescription.i18n();
                 switch (PropertyInfo.Name)
                 {
                     case "SlideFadeInOffset":
@@ -72,7 +72,7 @@ namespace MajdataPlay.Scenes.Setting
                     case "AnswerOffset":
                     case "TouchPanelOffset":
                     case "DisplayOffset":
-                        _descriptionText.text += $"\n{$"MAJTEXT_SETTING_OFFSETUNIT_{MajEnv.Settings.Debug.OffsetUnit}".i18n()}";
+                        _descriptionText.text = _optionDescription.i18n() + $"\n{$"MAJTEXT_SETTING_OFFSETUNIT_{MajEnv.Settings.Debug.OffsetUnit}".i18n()}";
                         break;
                 }
             }
@@ -91,7 +91,7 @@ namespace MajdataPlay.Scenes.Setting
                 case "AnswerOffset":
                 case "TouchPanelOffset":
                 case "DisplayOffset":
-                    _descriptionText.text += $"\n{$"MAJTEXT_SETTING_OFFSETUNIT_{MajEnv.Settings.Debug.OffsetUnit}".i18n()}";
+                    _descriptionText.text = _optionDescription.i18n() + $"\n{$"MAJTEXT_SETTING_OFFSETUNIT_{MajEnv.Settings.Debug.OffsetUnit}".i18n()}";
                     break;
             }
             UpdateOption();
@@ -109,18 +109,11 @@ namespace MajdataPlay.Scenes.Setting
 
             if(optionDescriptionAttr is not null)
             {
-                var paragraphs = optionDescriptionAttr.Paragraphs;
-                using var sb = ZString.CreateStringBuilder(true);
-
-                foreach(var paragraph in paragraphs)
-                {
-                    sb.Append(ZString.Format(paragraph, PropertyInfo.Name).i18n());
-                }
-                _optionDescription = sb.ToString();
+                _optionDescription = optionDescriptionAttr.Text;
             }
             else
             {
-                _optionDescription = $"MAJSETTING_PROPERTY_{PropertyInfo.Name}_DESC".i18n();
+                _optionDescription = $"MAJSETTING_PROPERTY_{PropertyInfo.Name}_DESC";
             }
 
             if(optionEnumeratorAttr is not null)
@@ -261,7 +254,7 @@ namespace MajdataPlay.Scenes.Setting
                 case "AnswerOffset":
                 case "TouchPanelOffset":
                 case "DisplayOffset":
-                    _descriptionText.text += $"\n{$"MAJTEXT_SETTING_OFFSETUNIT_{MajEnv.Settings.Debug.OffsetUnit}".i18n()}";
+                    _descriptionText.text = _optionDescription.i18n() + $"\n{$"MAJTEXT_SETTING_OFFSETUNIT_{MajEnv.Settings.Debug.OffsetUnit}".i18n()}";
                     break;
             }
         }
