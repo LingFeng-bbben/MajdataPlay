@@ -604,6 +604,7 @@ namespace MajdataPlay
                         }
                         catch (HttpException e)
                         {
+                            var @return = MajEnv.EmptySongCover;
                             if (e.ErrorCode is HttpErrorCode.Unsuccessful)
                             {
                                 using var _ = File.Create(cacheFlagPath);
@@ -611,9 +612,10 @@ namespace MajdataPlay
                                 if(_fullSizeCoverRef.TryGetTarget(out var fallback))
                                 {
                                     _coverRef.SetTarget(fallback);
+                                    @return = fallback;
                                 }
                             }
-                            return MajEnv.EmptySongCover;
+                            return @return;
                         }
                         finally
                         {
@@ -683,6 +685,7 @@ namespace MajdataPlay
                     }
                     catch (HttpException e)
                     {
+                        var @return = MajEnv.EmptySongCover;
                         if (e.ErrorCode is HttpErrorCode.Unsuccessful)
                         {
                             using var _ = File.Create(cacheFlagPath);
@@ -690,9 +693,10 @@ namespace MajdataPlay
                             if (_coverRef.TryGetTarget(out var fallback))
                             {
                                 _fullSizeCoverRef.SetTarget(fallback);
+                                @return = fallback;
                             }
                         }
-                        return MajEnv.EmptySongCover;
+                        return @return;
                     }
                     finally
                     {
