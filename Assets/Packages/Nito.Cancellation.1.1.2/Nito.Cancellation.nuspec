@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Nito.Cancellation</id>
+    <version>1.1.2</version>
+    <authors>Stephen Cleary</authors>
+    <license type="expression">MIT</license>
+    <licenseUrl>https://licenses.nuget.org/MIT</licenseUrl>
+    <icon>icon.png</icon>
+    <projectUrl>https://github.com/StephenCleary/Cancellation</projectUrl>
+    <description>Helper types for working with cancellation tokens and sources.</description>
+    <tags>cancellation cancellationtoken</tags>
+    <repository type="git" url="https://github.com/StephenCleary/Cancellation" commit="3f41c18da9f9bd71a17de6329aaea2bf7388d0d7" />
+    <dependencies>
+      <group targetFramework=".NETFramework4.6.1">
+        <dependency id="Nito.Disposables" version="2.2.1" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETStandard1.0">
+        <dependency id="NETStandard.Library" version="1.6.1" exclude="Build,Analyzers" />
+        <dependency id="Nito.Disposables" version="2.2.1" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="Nito.Disposables" version="2.2.1" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>
