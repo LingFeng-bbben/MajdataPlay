@@ -2,7 +2,7 @@ using Cysharp.Threading.Tasks;
 using MajdataPlay.IO;
 using MajdataPlay.Net;
 using MajdataPlay.Utils;
-using NeoSmart.AsyncLock;
+using Nito.AsyncEx;
 using System;
 using System.Collections;
 using System.Collections.Generic;
