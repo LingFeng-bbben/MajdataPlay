@@ -607,8 +607,12 @@ namespace MajdataPlay
                             if (e.ErrorCode is HttpErrorCode.Unsuccessful)
                             {
                                 using var _ = File.Create(cacheFlagPath);
+                                _coverRef.SetTarget(MajEnv.EmptySongCover);
+                                if(_fullSizeCoverRef.TryGetTarget(out var fallback))
+                                {
+                                    _coverRef.SetTarget(fallback);
+                                }
                             }
-                            _coverRef.SetTarget(MajEnv.EmptySongCover);
                             return MajEnv.EmptySongCover;
                         }
                         finally
@@ -682,8 +686,12 @@ namespace MajdataPlay
                         if (e.ErrorCode is HttpErrorCode.Unsuccessful)
                         {
                             using var _ = File.Create(cacheFlagPath);
+                            _fullSizeCoverRef.SetTarget(MajEnv.EmptySongCover);
+                            if (_coverRef.TryGetTarget(out var fallback))
+                            {
+                                _fullSizeCoverRef.SetTarget(fallback);
+                            }
                         }
-                        _fullSizeCoverRef.SetTarget(MajEnv.EmptySongCover);
                         return MajEnv.EmptySongCover;
                     }
                     finally
