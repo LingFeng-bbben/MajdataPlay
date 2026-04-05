@@ -604,16 +604,13 @@ namespace MajdataPlay
                         }
                         catch (HttpException e)
                         {
-                            var @return = MajEnv.EmptySongCover;
+                            var @return = default(Sprite);
+                            _fullSizeCoverRef.TryGetTarget(out @return);
+                            @return ??= MajEnv.EmptySongCover;
                             if (e.ErrorCode is HttpErrorCode.Unsuccessful)
                             {
                                 using var _ = File.Create(cacheFlagPath);
-                                _coverRef.SetTarget(MajEnv.EmptySongCover);
-                                if(_fullSizeCoverRef.TryGetTarget(out var fallback))
-                                {
-                                    _coverRef.SetTarget(fallback);
-                                    @return = fallback;
-                                }
+                                _coverRef.SetTarget(@return);
                             }
                             return @return;
                         }
@@ -685,16 +682,13 @@ namespace MajdataPlay
                     }
                     catch (HttpException e)
                     {
-                        var @return = MajEnv.EmptySongCover;
+                        var @return = default(Sprite);
+                        _coverRef.TryGetTarget(out @return);
+                        @return ??= MajEnv.EmptySongCover;
                         if (e.ErrorCode is HttpErrorCode.Unsuccessful)
                         {
                             using var _ = File.Create(cacheFlagPath);
-                            _fullSizeCoverRef.SetTarget(MajEnv.EmptySongCover);
-                            if (_coverRef.TryGetTarget(out var fallback))
-                            {
-                                _fullSizeCoverRef.SetTarget(fallback);
-                                @return = fallback;
-                            }
+                            _fullSizeCoverRef.SetTarget(@return);
                         }
                         return @return;
                     }
