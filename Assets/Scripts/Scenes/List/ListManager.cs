@@ -236,7 +236,7 @@ namespace MajdataPlay.Scenes.List
             for (var i = 0; i < Input.touchCount; i++)
             {
                 var touch = Input.GetTouch(i);
-                if (touch.phase is not TouchPhase.Began)
+                if (touch.phase is not UnityEngine.TouchPhase.Began)
                 {
                     continue;
                 }
