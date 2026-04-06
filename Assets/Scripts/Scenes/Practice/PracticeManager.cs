@@ -56,13 +56,17 @@ namespace MajdataPlay.Scenes.Practice
 
         GameInfo _gameInfo;
         SimaiFile _simaiFile;
-        
+
+        float _touchSimulationRadius = 0f;
+
         readonly SwitchStatistic[] _buttonStatistics = new SwitchStatistic[12];
         readonly SwitchStatistic[] _sensorStatistics = new SwitchStatistic[33];
 
         void Awake()
         {
             InputManager.TouchButtonRingEdge = 4.8f;
+            _touchSimulationRadius = MajEnv.Settings.Debug.TouchSimulationRadius;
+            MajEnv.Settings.Debug.TouchSimulationRadius = 0;
         }
         private void Start()
         {
@@ -260,7 +264,7 @@ namespace MajdataPlay.Scenes.Practice
             // End Time "<"
             ref var b4Statistic = ref _sensorStatistics[(int)SensorArea.B4];
             // End Time ">"
-            ref var e4Statistic = ref _sensorStatistics[(int)SensorArea.A4];
+            ref var e4Statistic = ref _sensorStatistics[(int)SensorArea.A3];
             //Playback Speed "<"
             ref var e8Statistic = ref _sensorStatistics[(int)SensorArea.E8];
             ref var b7Statistic = ref _sensorStatistics[(int)SensorArea.B7];
@@ -453,6 +457,7 @@ namespace MajdataPlay.Scenes.Practice
             InputManager.TouchButtonRingEdge = 5.4f;
             _audioTrack?.Stop();
             _audioTrack = null;
+            MajEnv.Settings.Debug.TouchSimulationRadius = _touchSimulationRadius;
             _isExited = true;
         }
     }
