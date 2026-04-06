@@ -14,7 +14,9 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using MajdataPlay.Net;
+using MajdataPlay.Scenes.Login;
 using UnityEngine;
+using UnityEngine.InputSystem;
 #nullable enable
 namespace MajdataPlay.Scenes.List
 {
@@ -119,15 +121,30 @@ namespace MajdataPlay.Scenes.List
 
         void DisplayUserInfo()
         {
-            //TODO: display multiple endpoints
-            var apiendpoint = MajEnv.Settings.Online.ApiEndpoints.FirstOrDefault();
-            if (apiendpoint is not null)
+            var playerEndpoint = MajEnv.GetEndpointsByRole(EndpointRole.Player).FirstOrDefault();
+            if (playerEndpoint is not null && playerEndpoint.RuntimeConfig.AuthMethod != NetAuthMethodOption.None)
             {
-                _userInfoDisplayer.DisplayUserInfo(apiendpoint);
+                _userInfoDisplayer.DisplayUserInfo(playerEndpoint);
             }
             else
             {
-                _userInfoDisplayer.gameObject.SetActive(false);
+                var sharedEndpoint = MajEnv.GetEndpointsByRole(EndpointRole.Shared).FirstOrDefault();
+                if (sharedEndpoint is not null)
+                {
+                    _userInfoDisplayer.DisplayUserInfo(sharedEndpoint);
+                }
+                else
+                {
+                    var anyEndpoint = MajEnv.ApiEndpoints.FirstOrDefault();
+                    if (anyEndpoint is not null)
+                    {
+                        _userInfoDisplayer.DisplayUserInfo(anyEndpoint);
+                    }
+                    else
+                    {
+                        _userInfoDisplayer.gameObject.SetActive(false);
+                    }
+                }
             }
         }
 
@@ -168,6 +185,10 @@ namespace MajdataPlay.Scenes.List
             {
                 return;
             }
+            if (TryEnterLoginFromKeyboard())
+            {
+                return;
+            }
             if (TryEnterLoginFromLeftTouch())
             {
                 return;
@@ -185,6 +206,23 @@ namespace MajdataPlay.Scenes.List
         void OnAnyInput(object? sender, InputEventArgs args)
         {
             _inactiveTimeSec = 0;
+        }
+        bool TryEnterLoginFromKeyboard()
+        {
+            if (!_isOnlineEnabled || !_userInfoDisplayer.gameObject.activeInHierarchy || !_userInfoDisplayer.IsGuest)
+            {
+                return false;
+            }
+
+            var keyboard = Keyboard.current;
+            if (keyboard is null || !keyboard.mKey.wasPressedThisFrame)
+            {
+                return false;
+            }
+
+            _inactiveTimeSec = 0;
+            EnterPlayerLogin();
+            return true;
         }
         bool TryEnterLoginFromLeftTouch()
         {
@@ -209,7 +247,7 @@ namespace MajdataPlay.Scenes.List
                     continue;
                 }
 
-                EnterLogin();
+                EnterPlayerLogin();
                 return true;
             }
 
@@ -224,7 +262,7 @@ namespace MajdataPlay.Scenes.List
                 return false;
             }
 
-            EnterLogin();
+            EnterPlayerLogin();
             return true;
         }
         void SensorCheck()
@@ -665,9 +703,18 @@ namespace MajdataPlay.Scenes.List
             _isExited = true;
             MajInstances.AudioManager.StopSFX("bgm_select.mp3");
             ScoreManager.UnloadOnlineScores();
-            EnterLoginBackgroundAsync();
+            EnterLoginBackgroundAsync(null);
         }
-        async void EnterLoginBackgroundAsync()
+        void EnterPlayerLogin()
+        {
+            _cts.Cancel();
+            _pressTime = 0;
+            _isExited = true;
+            MajInstances.AudioManager.StopSFX("bgm_select.mp3");
+            ScoreManager.UnloadOnlineScores();
+            EnterLoginBackgroundAsync(EndpointRole.Player);
+        }
+        async void EnterLoginBackgroundAsync(EndpointRole? role)
         {
             var sceneSwitcher = MajInstances.SceneSwitcher;
             await sceneSwitcher.FadeInAsync();
@@ -682,11 +729,23 @@ namespace MajdataPlay.Scenes.List
             }
             await UniTask.Delay(100);
             sceneSwitcher.SetLoadingText("MAJTEXT_LOGGING_OUT".i18n() + "...");
-            var task = Online.LogoutAllAsync();
-            while (!task.IsCompleted)
+            if (role.HasValue)
             {
-                await UniTask.Yield();
+                var task = Online.LogoutByRoleAsync(role.Value);
+                while (!task.IsCompleted)
+                {
+                    await UniTask.Yield();
+                }
             }
+            else
+            {
+                var task = Online.LogoutAllAsync();
+                while (!task.IsCompleted)
+                {
+                    await UniTask.Yield();
+                }
+            }
+            LoginManager.TargetRole = role;
             sceneSwitcher.SetLoadingText(string.Empty);
             await UniTask.Delay(1000);
             sceneSwitcher.SwitchScene("Login");

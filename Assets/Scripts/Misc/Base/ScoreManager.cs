@@ -1,5 +1,6 @@
 ﻿using Cysharp.Threading.Tasks;
 using MajdataPlay.Json;
+using MajdataPlay.Net;
 using MajdataPlay.Utils;
 using Newtonsoft.Json;
 using System;
@@ -18,7 +19,7 @@ namespace MajdataPlay
 
         static SpinLock _lock = new();
 
-        static Dictionary<string, SongScores>? _onlineBuckets = null;
+        static readonly Dictionary<string, Dictionary<string, SongScores>> _onlineBucketsByEndpoint = new();
 
         readonly static Dictionary<string, SongScores> _buckets = new();
 
@@ -229,14 +230,19 @@ namespace MajdataPlay
                 return false;
             }
         }
-        public static void LoadOnlineScores(ReadOnlySpan<MajNetAccountSongScore> scores)
+        public static void LoadOnlineScores(ReadOnlySpan<MajNetAccountSongScore> scores, string endpointName = "")
         {
             ref var @lock = ref _lock;
             var isLocked = false;
             try
             {
                 @lock.Enter(ref isLocked);
-                _onlineBuckets = new();
+                if (!_onlineBucketsByEndpoint.TryGetValue(endpointName, out var bucket))
+                {
+                    bucket = new();
+                    _onlineBucketsByEndpoint[endpointName] = bucket;
+                }
+                bucket.Clear();
                 if (scores.IsEmpty)
                 {
                     return;
@@ -244,10 +250,10 @@ namespace MajdataPlay
                 for (var i = 0; i < scores.Length; i++)
                 {
                     var score = scores[i];
-                    if(!_onlineBuckets.TryGetValue(score.Hash, out var scoreRecord))
+                    if(!bucket.TryGetValue(score.Hash, out var scoreRecord))
                     {
                         scoreRecord = SongScores.Create(score.Hash);
-                        _onlineBuckets.Add(score.Hash, scoreRecord);
+                        bucket.Add(score.Hash, scoreRecord);
                     }
                     var maiScore = default(MaiScore);
                     switch(score.ChartLevel)
@@ -298,7 +304,7 @@ namespace MajdataPlay
             try
             {
                 @lock.Enter(ref isLocked);
-                _onlineBuckets = null;
+                _onlineBucketsByEndpoint.Clear();
             }
             finally
             {
@@ -315,17 +321,26 @@ namespace MajdataPlay
             try
             {
                 @lock.Enter(ref isLocked);
-                var buckets = _buckets;
-                if (isOnline && _onlineBuckets is not null)
+                if (isOnline && _onlineBucketsByEndpoint.Count > 0)
                 {
-                    buckets = _onlineBuckets;
+                    foreach (var (_, bucket) in _onlineBucketsByEndpoint)
+                    {
+                        if (bucket.TryGetValue(hash, out var records))
+                        {
+                            return records;
+                        }
+                    }
+                    var firstBucket = _onlineBucketsByEndpoint.Values.First();
+                    var newRecords = SongScores.Create(hash);
+                    firstBucket.Add(hash, newRecords);
+                    return newRecords;
                 }
-                if (!buckets.TryGetValue(hash, out var records))
+                if (!_buckets.TryGetValue(hash, out var localRecords))
                 {
-                    records = SongScores.Create(hash);
-                    buckets.Add(hash, records);
+                    localRecords = SongScores.Create(hash);
+                    _buckets.Add(hash, localRecords);
                 }
-                return records;
+                return localRecords;
             }
             finally
             {

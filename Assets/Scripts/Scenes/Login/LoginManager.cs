@@ -62,16 +62,23 @@ namespace MajdataPlay.Scenes.Login
         readonly static QRCodeGenerator _qrGenerator = new ();
         readonly static Exception _exception = new();
 
+        public static EndpointRole? TargetRole { get; set; } = null;
+
         void Awake()
         {
             _apiEndpoints = MajEnv.ApiEndpoints;
             _qrCodeRawImage = _qrCodeComponent.GetComponent<RawImage>();
             _eventSystem = GetComponent<EventSystem>();
             using var rentedApiEndpoints = new RentedList<ApiEndpoint>();
+            var roleFilter = TargetRole;
+            TargetRole = null;
             for (var i = 0; i < _apiEndpoints.Length; i++)
             {
                 var endpoint = _apiEndpoints[i];
-
+                if (roleFilter.HasValue && endpoint.Role != roleFilter.Value)
+                {
+                    continue;
+                }
                 rentedApiEndpoints.Add(endpoint);
             }
             _enabledEndpoints = rentedApiEndpoints.ToArray();
@@ -232,7 +239,7 @@ namespace MajdataPlay.Scenes.Login
                                             userInfo = getUserInfoTask.Result.Summary;
                                             userScores = getUserInfoTask.Result.Scores;
                                         }
-                                        ScoreManager.LoadOnlineScores(userScores);
+                                        ScoreManager.LoadOnlineScores(userScores, endpoint.Name);
                                         await UpdateApiEndpointRuntimeConfigAsync(endpoint, userInfo);
                                         break;
                                     }
@@ -395,7 +402,7 @@ namespace MajdataPlay.Scenes.Login
                                     userInfo = getUserInfoTask.Result.Summary;
                                     userScores = getUserInfoTask.Result.Scores;
                                 }
-                                ScoreManager.LoadOnlineScores(userScores);
+                                ScoreManager.LoadOnlineScores(userScores, endpoint.Name);
                                 Hint();
                                 _loading.SetActive(false);
                                 await UpdateApiEndpointRuntimeConfigAsync(endpoint, userInfo);

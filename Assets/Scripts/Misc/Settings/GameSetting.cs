@@ -344,7 +344,14 @@ namespace MajdataPlay.Settings
                 Name = "MajdataNET",
                 Url = new("https://majdata.net/api3/api/"),
                 Username = "YourUsername",
-                Password = "YourPassword"
+                Password = "YourPassword",
+                Role = EndpointRole.Shared
+            },
+            new ApiEndpoint()
+            {
+                Name = "GeoDanceClub",
+                Url = new("https://geometric.dance/api/"),
+                Role = EndpointRole.Player
             }
 #endif
         };

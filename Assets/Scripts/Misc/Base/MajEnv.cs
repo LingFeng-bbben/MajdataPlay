@@ -129,6 +129,16 @@ namespace MajdataPlay
         public static RuntimeConfig RuntimeConfig { get; private set; }
         public static ApiEndpoint[] ApiEndpoints { get; private set; }
 
+        public static ApiEndpoint[] GetEndpointsByRole(EndpointRole role)
+        {
+            var endpoints = ApiEndpoints;
+            if (endpoints is null || endpoints.Length == 0)
+            {
+                return Array.Empty<ApiEndpoint>();
+            }
+            return endpoints.Where(x => x.Role == role).ToArray();
+        }
+
         public static CancellationToken GlobalCT
         {
             get { return _globalCTS.Token; }
@@ -408,6 +418,7 @@ namespace MajdataPlay
                             Url = new Uri(uri.OriginalString + "/"),
                             Username = apiEndpoint.Username,
                             Password = apiEndpoint.Password,
+                            Role = apiEndpoint.Role,
                         };
                     }
 

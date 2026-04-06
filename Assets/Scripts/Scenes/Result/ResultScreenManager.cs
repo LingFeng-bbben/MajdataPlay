@@ -18,6 +18,7 @@ using MajdataPlay.Settings;
 using System.Threading.Tasks;
 using MajdataPlay.Recording;
 using MajdataPlay.Net;
+using MajdataPlay.Utils;
 
 #nullable enable
 namespace MajdataPlay.Scenes.Result
@@ -191,15 +192,30 @@ namespace MajdataPlay.Scenes.Result
             if (!MajInstances.GameManager.Settings.Mod.IsAnyModActive())
             {
                 var localScoreSaveTask = ScoreManager.SaveScore(result, result.Level);
+                var uploadTasks = new List<Task> { localScoreSaveTask };
+
                 if (song is OnlineSongDetail onlineSong && onlineSong.ServerInfo.RuntimeConfig.AuthMethod != NetAuthMethodOption.None)
                 {
-                    var task = intractSender.SendScoreAsync();
-                    _scoreSaveTask = Task.WhenAll(localScoreSaveTask, task);
+                    uploadTasks.Add(intractSender.SendScoreAsync());
                 }
-                else
+
+                var allEndpoints = MajEnv.ApiEndpoints;
+                for (var i = 0; i < allEndpoints.Length; i++)
                 {
-                    _scoreSaveTask = localScoreSaveTask;
+                    var ep = allEndpoints[i];
+                    if (ep.RuntimeConfig.AuthMethod == NetAuthMethodOption.None)
+                    {
+                        continue;
+                    }
+                    if (song is OnlineSongDetail os && os.ServerInfo == ep)
+                    {
+                        continue;
+                    }
+                    var chartId = song is OnlineSongDetail od ? od.Id : Guid.Empty.ToString();
+                    uploadTasks.Add(PostScoreToOtherEndpointAsync(ep, chartId, score));
                 }
+
+                _scoreSaveTask = Task.WhenAll(uploadTasks);
             }
 
         }
@@ -209,6 +225,27 @@ namespace MajdataPlay.Scenes.Result
             var cover = await song.GetCoverAsync(true);
             await UniTask.SwitchToMainThread();
             coverImg.sprite = cover;
+        }
+
+        static async Task PostScoreToOtherEndpointAsync(ApiEndpoint endpoint, string chartId, MaiScore score)
+        {
+            try
+            {
+                var rsp = await Online.PostScoreToEndpointAsync(endpoint, chartId, score);
+                if (rsp.IsSuccessfully)
+                {
+                    MajDebug.LogInfo($"Score uploaded to {endpoint.Name}");
+                }
+                else
+                {
+                    MajDebug.LogError($"Score upload to {endpoint.Name} failed: {rsp.StatusCode} {rsp.ErrorCode}");
+                }
+            }
+            catch (Exception e)
+            {
+                MajDebug.LogError($"Score upload to {endpoint.Name} failed");
+                MajDebug.LogException(e);
+            }
         }
 
         async UniTask PlayVoice(double dxacc, ISongDetail song, bool isAP, bool isFC)

@@ -2,13 +2,14 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using MajdataPlay.Net;
+using System.Linq;
 
 namespace MajdataPlay
 {
     public class UserInfoDisplayer : MonoBehaviour
     {
         const string GUEST_TEXT = "Guest";
-        const string GUEST_LOGIN_TEXT = "Guest\nTouch to login";
+        const string GUEST_LOGIN_TEXT = "Guest\nPress M or touch to login";
 
         public TMP_Text username_text;
         public Image usericon;
@@ -35,10 +36,15 @@ namespace MajdataPlay
             Error_icon.SetActive(false);
 
             var runtimeConfig = apiEndpoint.RuntimeConfig;
-            IsGuest = runtimeConfig.AuthMethod == NetAuthMethodOption.None;
-            if(IsGuest)
+            var playerEndpoints = MajEnv.GetEndpointsByRole(EndpointRole.Player);
+            var hasPlayerEndpoint = playerEndpoints.Length > 0;
+            var isPlayerLoggedIn = playerEndpoints.Any(ep => ep.RuntimeConfig.AuthMethod != NetAuthMethodOption.None);
+
+            IsGuest = hasPlayerEndpoint && !isPlayerLoggedIn;
+
+            if(runtimeConfig.AuthMethod == NetAuthMethodOption.None)
             {
-                username_text.text = GUEST_LOGIN_TEXT;
+                username_text.text = hasPlayerEndpoint ? GUEST_LOGIN_TEXT : GUEST_TEXT;
                 usericon.sprite = null;
             }
             else

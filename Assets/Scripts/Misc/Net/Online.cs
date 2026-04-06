@@ -493,6 +493,55 @@ namespace MajdataPlay.Net
                 }
             }
         }
+        public static async ValueTask LogoutByRoleAsync(EndpointRole role, CancellationToken token = default)
+        {
+            using var rentedBuffer = new RentedList<ApiEndpointStatistics>();
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
+            {
+                await UniTask.SwitchToThreadPool();
+                GetAllApiEndpointStatistic(rentedBuffer);
+                foreach (var statistics in rentedBuffer)
+                {
+                    if (statistics.Endpoint.Role != role)
+                    {
+                        continue;
+                    }
+                    await statistics.LockAsync(token);
+                    try
+                    {
+                        var apiEndpoint = statistics.Endpoint;
+                        try
+                        {
+                            MajDebug.LogInfo($"Logout ({role})");
+                            var uri = apiEndpoint.Url.Combine(API_POST_USER_LOGOUT);
+                            var rsp = default(EndpointResponse);
+#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
+                            rsp = await PostAsync(uri, null, token);
+#else
+                            rsp = await PostAsync(uri, token);
+#endif
+                            MajDebug.LogInfo(rsp.Message + rsp.ErrorCode + rsp.StatusCode);
+                        }
+                        catch (Exception e)
+                        {
+                            MajDebug.LogException(e);
+                        }
+                        finally
+                        {
+                            apiEndpoint.RuntimeConfig.AuthMethod = NetAuthMethodOption.None;
+                            apiEndpoint.RuntimeConfig.Avatar = null;
+                            apiEndpoint.RuntimeConfig.Username = "???";
+                            apiEndpoint.RuntimeConfig.AuthUsername = apiEndpoint.Username;
+                            apiEndpoint.RuntimeConfig.AuthPassword = apiEndpoint.Password;
+                        }
+                    }
+                    finally
+                    {
+                        statistics.Unlock();
+                    }
+                }
+            }
+        }
         public static async ValueTask<MajNetSongInteract?> GetChartInteractAsync(OnlineSongDetail song, CancellationToken token = default)
         {
             await using (UniTask.ReturnToCurrentSynchronizationContext())
@@ -715,6 +764,51 @@ namespace MajdataPlay.Net
                     else if(rsp.StatusCode is HttpStatusCode.BadRequest 
                         or HttpStatusCode.NotFound 
                         or HttpStatusCode.Unauthorized 
+                        or HttpStatusCode.Forbidden)
+                    {
+                        break;
+                    }
+                    else if (!rsp.IsSuccessfully && rsp.StatusCode is not null)
+                    {
+                        break;
+                    }
+                }
+
+                return rsp;
+            }
+        }
+        public static async ValueTask<EndpointResponse> PostScoreToEndpointAsync(ApiEndpoint endpoint, string chartId, MaiScore score, CancellationToken token = default)
+        {
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
+            {
+                await UniTask.SwitchToThreadPool();
+                var scoreUrl = BuildMaiChartUri(endpoint, API_POST_MAICHART_SCORE, chartId);
+                var json = await Serializer.Json.SerializeAsync(score, DEFAULT_JSON_SERIALIZER);
+                var rsp = default(EndpointResponse);
+
+                for (var i = 0; i < MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
+                {
+#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
+                    rsp = await PostAsync(scoreUrl, json, "application/json", token);
+#else
+                    rsp = await PostAsync(scoreUrl, new StringContent(json, Encoding.UTF8, "application/json"), token);
+#endif
+                    if (rsp.IsSuccessfully)
+                    {
+                        MajDebug.LogDebug(rsp);
+                        return rsp;
+                    }
+                    else
+                    {
+                        MajDebug.LogError(rsp);
+                    }
+                    if (rsp.ErrorCode == HttpErrorCode.Canceled)
+                    {
+                        break;
+                    }
+                    else if (rsp.StatusCode is HttpStatusCode.BadRequest
+                        or HttpStatusCode.NotFound
+                        or HttpStatusCode.Unauthorized
                         or HttpStatusCode.Forbidden)
                     {
                         break;
