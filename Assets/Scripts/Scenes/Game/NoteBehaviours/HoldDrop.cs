@@ -572,7 +572,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             if(IsClassic)
             {
-                if (!_isJudged)
+                if (!_isJudged || IsAutoplay)
                 {
                     return;
                 }
