@@ -116,7 +116,7 @@ namespace MajdataPlay.Scenes.Result
             var dxScoreRank = new DXScoreRank(result.DXScore, result.TotalDXScore);
             if (dxScoreRank.Rank > 0)
             {
-                dxScore.text = $"*{dxScoreRank.Rank} {result.DXScore}/{result.TotalDXScore}";
+                dxScore.text = $"✧ {dxScoreRank.Rank} {result.DXScore}/{result.TotalDXScore}";
             }
             else
             {
