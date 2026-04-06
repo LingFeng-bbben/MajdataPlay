@@ -985,7 +985,7 @@ namespace MajdataPlay.Net
                         IsDeserializable = false,
                         ErrorCode = HttpErrorCode.Unsuccessful,
                         StatusCode = rsp.StatusCode,
-                        Headers = rsp.Headers.ToDictionary(kv => kv.Key, kv => kv.Value),
+                        Headers = rsp.Headers.ToDictionary(kv => kv.Key, kv => kv.Value, StringComparer.OrdinalIgnoreCase),
                         Message = ""
                     };
                 }
@@ -996,7 +996,7 @@ namespace MajdataPlay.Net
                     IsDeserializable = true,
                     ErrorCode = HttpErrorCode.NoError,
                     StatusCode = rsp.StatusCode,
-                    Headers = rsp.Headers.ToDictionary(kv => kv.Key, kv => kv.Value),
+                    Headers = rsp.Headers.ToDictionary(kv => kv.Key, kv => kv.Value, StringComparer.OrdinalIgnoreCase),
                     Message = "Ok"
                 };
             }
@@ -1198,7 +1198,7 @@ namespace MajdataPlay.Net
                     IsDeserializable = rsp.StatusCode == HttpStatusCode.OK,
                     ErrorCode = rsp.StatusCode == HttpStatusCode.OK ? HttpErrorCode.NoError : HttpErrorCode.Unsuccessful,
                     StatusCode = rsp.StatusCode,
-                    Headers = rsp.Headers.ToDictionary(kv => kv.Key, kv => kv.Value),
+                    Headers = rsp.Headers.ToDictionary(kv => kv.Key, kv => kv.Value, StringComparer.OrdinalIgnoreCase),
                     Message = rsp.StatusCode == HttpStatusCode.OK ? "Ok" : ""
                 };
             }
