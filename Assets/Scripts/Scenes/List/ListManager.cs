@@ -168,6 +168,10 @@ namespace MajdataPlay.Scenes.List
             {
                 return;
             }
+            if (TryEnterLoginFromLeftTouch())
+            {
+                return;
+            }
             ButtonStatisticsUpdate();
             SensorCheck();
             ButtonCheck();
@@ -181,6 +185,47 @@ namespace MajdataPlay.Scenes.List
         void OnAnyInput(object? sender, InputEventArgs args)
         {
             _inactiveTimeSec = 0;
+        }
+        bool TryEnterLoginFromLeftTouch()
+        {
+            if (!_isOnlineEnabled || !_userInfoDisplayer.gameObject.activeInHierarchy || !_userInfoDisplayer.IsGuest)
+            {
+                return false;
+            }
+
+            var mainCamera = Camera.main;
+
+            for (var i = 0; i < Input.touchCount; i++)
+            {
+                var touch = Input.GetTouch(i);
+                if (touch.phase is not TouchPhase.Began)
+                {
+                    continue;
+                }
+
+                _inactiveTimeSec = 0;
+                if (!_userInfoDisplayer.ContainsScreenPoint(touch.position, mainCamera))
+                {
+                    continue;
+                }
+
+                EnterLogin();
+                return true;
+            }
+
+            if (!Input.GetMouseButtonDown(0))
+            {
+                return false;
+            }
+
+            _inactiveTimeSec = 0;
+            if (!_userInfoDisplayer.ContainsScreenPoint(Input.mousePosition, mainCamera))
+            {
+                return false;
+            }
+
+            EnterLogin();
+            return true;
         }
         void SensorCheck()
         {
