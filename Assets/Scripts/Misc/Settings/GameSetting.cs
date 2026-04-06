@@ -238,17 +238,17 @@ namespace MajdataPlay.Settings
         [Step("0.05")]
         [Range("0", "1", HasMax = true, HasMin = true)]
         [OptionEnumerator(typeof(AudioVolumeEnumerator))]
-        public float Answer { get; set; } = 0.8f;
-        
-        [Step("0.05")]
-        [Range("0", "1", HasMax = true, HasMin = true)]
-        [OptionEnumerator(typeof(AudioVolumeEnumerator))]
         public float BGM { get; set; } = 1f;
         
         [Step("0.05")]
         [Range("0", "1", HasMax = true, HasMin = true)]
         [OptionEnumerator(typeof(AudioVolumeEnumerator))]
         public float Track { get; set; } = 1f;
+        
+        [Step("0.05")]
+        [Range("0", "1", HasMax = true, HasMin = true)]
+        [OptionEnumerator(typeof(AudioVolumeEnumerator))]
+        public float Answer { get; set; } = 0.8f;
         
         [Step("0.05")]
         [Range("0", "1", HasMax = true, HasMin = true)]
@@ -263,12 +263,12 @@ namespace MajdataPlay.Settings
         [Step("0.05")]
         [Range("0", "1", HasMax = true, HasMin = true)]
         [OptionEnumerator(typeof(AudioVolumeEnumerator))]
-        public float Slide { get; set; } = 0.3f;
+        public float Break { get; set; } = 0.3f;
         
         [Step("0.05")]
         [Range("0", "1", HasMax = true, HasMin = true)]
         [OptionEnumerator(typeof(AudioVolumeEnumerator))]
-        public float Break { get; set; } = 0.3f;
+        public float Slide { get; set; } = 0.3f;
         
         [Step("0.05")]
         [Range("0", "1", HasMax = true, HasMin = true)]
