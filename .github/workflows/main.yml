@@ -62,6 +62,7 @@ jobs:
           unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: ${{ env.TARGET_PLATFORM }}
           versioning: Semantic
+          allowDirtyBuild: true
           buildName: MajdataPlay
           buildsPath: ${{ env.CONFIGURATION }}
 
@@ -243,6 +244,7 @@ jobs:
           unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: ${{ env.TARGET_PLATFORM }}
           versioning: Semantic
+          allowDirtyBuild: true
           buildName: MajdataPlay
           buildsPath: ${{ env.CONFIGURATION }}
 
