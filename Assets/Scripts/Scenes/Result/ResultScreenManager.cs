@@ -70,6 +70,8 @@ namespace MajdataPlay.Scenes.Result
         bool _isInited = false;
         bool _isExited = false;
 
+        const string PERFECT_COUNT_TEXT_TEMPLATE = "<line-height=60%>{0}\n<size=24>(-{1})</size>";
+
         void Awake()
         {
             InputManager.TouchButtonRingEdge = 4.8f;
@@ -123,7 +125,9 @@ namespace MajdataPlay.Scenes.Result
                 dxScore.text = $"{result.DXScore}/{result.TotalDXScore}";
             }
 
-            perfectCount.text = $"{totalJudgeRecord.CriticalPerfect + totalJudgeRecord.Perfect}";
+            perfectCount.text = string.Format(PERFECT_COUNT_TEXT_TEMPLATE, 
+                                              totalJudgeRecord.CriticalPerfect + totalJudgeRecord.Perfect, 
+                                              totalJudgeRecord.Perfect);
             greatCount.text = $"{totalJudgeRecord.Great}";
             goodCount.text = $"{totalJudgeRecord.Good}";
             missCount.text = $"{totalJudgeRecord.Miss}";
