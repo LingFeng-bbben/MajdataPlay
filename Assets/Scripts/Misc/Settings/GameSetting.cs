@@ -350,7 +350,7 @@ namespace MajdataPlay.Settings
             new ApiEndpoint()
             {
                 Name = "GeoDanceClub",
-                Url = new("https://geometric.dance/api/"),
+                Url = new("https://geometric.dance/api/majplay/s/__GEODANCECLUB_API_TOKEN__/"),
                 Role = EndpointRole.Player
             }
 #endif

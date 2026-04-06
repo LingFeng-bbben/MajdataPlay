@@ -41,6 +41,10 @@ jobs:
         with:
           submodules: recursive
       
+      - name: Inject GeoDanceClub API token
+        run: |
+          sed -i 's/__GEODANCECLUB_API_TOKEN__/${{ secrets.GEODANCECLUB_API_TOKEN }}/g' Assets/Scripts/Misc/Settings/GameSetting.cs
+
       - name: Cache Unity Library
         uses: actions/cache@v4
         with:
@@ -112,6 +116,10 @@ jobs:
           echo "VersionCode=$COUNT" >> $GITHUB_OUTPUT
           echo "VersionCode4Apk=$COMMIT_COUNT" >> $GITHUB_OUTPUT
           echo $COUNT
+
+      - name: Inject GeoDanceClub API token
+        run: |
+          sed -i 's/__GEODANCECLUB_API_TOKEN__/${{ secrets.GEODANCECLUB_API_TOKEN }}/g' Assets/Scripts/Misc/Settings/GameSetting.cs
 
       - name: Cache Unity Library
         uses: actions/cache@v4
@@ -216,6 +224,10 @@ jobs:
         with:
           submodules: true
           fetch-depth: 0
+
+      - name: Inject GeoDanceClub API token
+        run: |
+          sed -i'' -e 's/__GEODANCECLUB_API_TOKEN__/${{ secrets.GEODANCECLUB_API_TOKEN }}/g' Assets/Scripts/Misc/Settings/GameSetting.cs
 
       - name: Cache Unity Library
         uses: actions/cache@v4
