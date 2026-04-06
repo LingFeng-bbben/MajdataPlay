@@ -345,6 +345,8 @@ namespace MajdataPlay.IO
                 sample.SampleType = filePath switch
                 {
                     var _ when rootPath == VoiceFilePath => SFXSampleType.Voice,
+                    "tap_ex.wav" => SFXSampleType.Ex,
+                    "touch_hanabi.wav" => SFXSampleType.Hanabi,
                     var p when p.StartsWith("bgm") => SFXSampleType.BGM,
                     var p when p.StartsWith("answer") => SFXSampleType.Answer,
                     var p when p.StartsWith("break") => SFXSampleType.Break,
@@ -431,8 +433,10 @@ namespace MajdataPlay.IO
                 {
                     SFXSampleType.Answer => volume.Answer,
                     SFXSampleType.Tap => volume.Tap,
+                    SFXSampleType.Ex => volume.Ex,
                     SFXSampleType.Break => volume.Break,
                     SFXSampleType.Touch => volume.Touch,
+                    SFXSampleType.Hanabi => volume.Hanabi,
                     SFXSampleType.BGM => volume.BGM,
                     SFXSampleType.Slide => volume.Slide,
                     SFXSampleType.Voice => volume.Voice,
