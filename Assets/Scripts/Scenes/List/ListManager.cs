@@ -447,10 +447,15 @@ namespace MajdataPlay.Scenes.List
             {
                 //const int MOD_PAGE_INDEX = 5;
                 //MajInstances.GameManager.LastSettingPage = MOD_PAGE_INDEX;
-                SettingManager.JmpToModPage();
+                MajEnv.RuntimeConfig.Setting.SelectedMenu = nameof(GameSetting.Mod);
+                MajEnv.RuntimeConfig.Setting.SelectedOption = string.Empty;
                 if (_coverListDisplayer.Mode == CoverListMode.Directory)
                 {
-                    SettingManager.IgnoreChartSettingPage();
+                    MajEnv.RuntimeConfig.Setting.IgnoreChartSettingPage = true;
+                }
+                else
+                {
+                    MajEnv.RuntimeConfig.Setting.IgnoreChartSettingPage = false;
                 }
                 MajInstances.SceneSwitcher.SwitchScene("Setting");
                 _isExited = true;
@@ -459,10 +464,13 @@ namespace MajdataPlay.Scenes.List
             else if (a7Statistic.IsClicked)
             {
                 //MajInstances.GameManager.LastSettingPage = 0;
-                SettingManager.JmpToDefaultPage();
-                if(_coverListDisplayer.Mode == CoverListMode.Directory)
+                if (_coverListDisplayer.Mode == CoverListMode.Directory)
                 {
-                    SettingManager.IgnoreChartSettingPage();
+                    MajEnv.RuntimeConfig.Setting.IgnoreChartSettingPage = true;
+                }
+                else
+                {
+                    MajEnv.RuntimeConfig.Setting.IgnoreChartSettingPage = false;
                 }
                 MajInstances.SceneSwitcher.SwitchScene("Setting");
                 _isExited = true;

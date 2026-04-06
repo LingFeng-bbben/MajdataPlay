@@ -11,7 +11,9 @@ namespace MajdataPlay.Settings.Runtime;
 public class SettingConfig
 {
     [JsonIgnore, Preserve]
-    public int SelectedPage { get; set; } = 0;
+    public string SelectedMenu { get; set; } = nameof(GameSetting.Game);
     [JsonIgnore, Preserve]
-    public int SelectedMenuIndex { get; set; } = 0;
+    public string SelectedOption { get; set; } = string.Empty;
+    [JsonIgnore, Preserve]
+    public bool IgnoreChartSettingPage { get; set; } = false;
 }
