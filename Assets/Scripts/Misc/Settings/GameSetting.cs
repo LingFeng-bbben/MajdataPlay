@@ -97,7 +97,7 @@ namespace MajdataPlay.Settings
     {
         
         [OptionEnumerator(typeof(LanguageEnumerator))]
-        public string Language { get; set; } = "zh-CN - Majdata";
+        public string Language { get; set; } = "";
         
         [OptionEnumerator(typeof(SkinEnumerator))]
         public string Skin { get; set; } = "default";
