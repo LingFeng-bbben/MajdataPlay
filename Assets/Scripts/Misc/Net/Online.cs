@@ -4,6 +4,7 @@ using MajdataPlay.Buffers;
 using MajdataPlay.Drawing;
 using MajdataPlay.Threading;
 using MajdataPlay.UnsafeKit;
+using MajdataPlay;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
@@ -447,6 +448,49 @@ namespace MajdataPlay.Net
                 }
                 return rsp;
             }
+        }
+        public static async ValueTask<bool> LoginFromStoredCredentialsAsync(ApiEndpoint apiEndpoint, CancellationToken token = default)
+        {
+            if (apiEndpoint is null)
+            {
+                throw new ArgumentNullException(nameof(apiEndpoint));
+            }
+            var username = apiEndpoint.Username ?? string.Empty;
+            var password = apiEndpoint.Password ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password) ||
+                username == "YourUsername" || password == "YourPassword")
+            {
+                return false;
+            }
+
+            var runtimeConfig = apiEndpoint.RuntimeConfig;
+            var loginRsp = await LoginAsync(apiEndpoint, username, password, token);
+            if (!loginRsp.IsSuccessfully)
+            {
+                runtimeConfig.AuthMethod = NetAuthMethodOption.None;
+                runtimeConfig.Avatar = null;
+                runtimeConfig.Username = string.Empty;
+                MajDebug.LogWarning($"Stored-credential login failed for endpoint {apiEndpoint.Name}: {loginRsp.StatusCode} {loginRsp.ErrorCode} {loginRsp.Message}");
+                return false;
+            }
+
+            runtimeConfig.AuthMethod = NetAuthMethodOption.Plain;
+            runtimeConfig.AuthUsername = username;
+            runtimeConfig.AuthPassword = password;
+            runtimeConfig.Username = username;
+
+            var userInfo = await GetUserInfoAsync(apiEndpoint, token);
+            var userScores = await GetUserScoresAsync(apiEndpoint, token);
+            ScoreManager.LoadOnlineScores(userScores, apiEndpoint.Name);
+            if (userInfo is null)
+            {
+                runtimeConfig.Avatar = null;
+                return true;
+            }
+
+            runtimeConfig.Username = userInfo.Username;
+            runtimeConfig.Avatar = await GetUserIconAsync(apiEndpoint, userInfo.Username, token);
+            return true;
         }
         public static async ValueTask LogoutAllAsync(CancellationToken token = default)
         {

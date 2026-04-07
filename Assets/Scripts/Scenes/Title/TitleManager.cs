@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using MajdataPlay.Settings;
 using MajdataPlay.Extensions;
 using MajdataPlay.IO;
+using MajdataPlay.Net;
 using MajdataPlay.Utils;
 using System;
 using System.Collections;
@@ -24,6 +25,7 @@ namespace MajdataPlay.Scenes.Title
         public Animator fadeInAnim;
 
         bool _flag = false;
+        bool _isTransitioning = false;
         float _pressTime = 0f;
         void Start()
         {
@@ -226,8 +228,13 @@ namespace MajdataPlay.Scenes.Title
             MajInstances.AudioManager.StopSFX("MajdataPlay.wav");
             MajInstances.SceneSwitcher.SwitchScene("SensorTest");
         }
-        void NextScene()
+        async void NextScene()
         {
+            if (_isTransitioning)
+            {
+                return;
+            }
+            _isTransitioning = true;
             InputManager.UnbindAnyArea(OnAreaDown);
             _pressTime = 0;
             _flag = false;
@@ -235,11 +242,31 @@ namespace MajdataPlay.Scenes.Title
             MajInstances.AudioManager.StopSFX("MajdataPlay.wav");
             if (MajInstances.Settings.Online.Enable)
             {
-                MajInstances.SceneSwitcher.SwitchScene("Login", false);
+                await LoginSharedEndpointsOnStartupAsync();
             }
-            else
+            MajInstances.SceneSwitcher.SwitchScene("List", false);
+        }
+        async UniTask LoginSharedEndpointsOnStartupAsync()
+        {
+            var endpoints = MajEnv.GetEndpointsByRole(EndpointRole.Shared);
+            if (endpoints.Length == 0)
             {
-                MajInstances.SceneSwitcher.SwitchScene("List", false);
+                return;
+            }
+            for (var i = 0; i < endpoints.Length; i++)
+            {
+                var endpoint = endpoints[i];
+                var siteName = string.IsNullOrWhiteSpace(endpoint.Name) ? endpoint.Url.Host : endpoint.Name;
+                echoText.text = $"Logging in {siteName}...";
+                try
+                {
+                    await Online.LoginFromStoredCredentialsAsync(endpoint);
+                }
+                catch (Exception e)
+                {
+                    MajDebug.LogError($"Startup login failed for {siteName}");
+                    MajDebug.LogException(e);
+                }
             }
         }
     }

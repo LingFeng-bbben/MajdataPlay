@@ -70,7 +70,7 @@ namespace MajdataPlay.Scenes.Login
             _qrCodeRawImage = _qrCodeComponent.GetComponent<RawImage>();
             _eventSystem = GetComponent<EventSystem>();
             using var rentedApiEndpoints = new RentedList<ApiEndpoint>();
-            var roleFilter = TargetRole;
+            EndpointRole? roleFilter = TargetRole ?? EndpointRole.Player;
             TargetRole = null;
             for (var i = 0; i < _apiEndpoints.Length; i++)
             {
