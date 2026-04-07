@@ -99,6 +99,8 @@ namespace MajdataPlay.Scenes.Game
         GameObject _skipBtn;
         [SerializeField]
         SpriteMask _noteMask;
+        [SerializeField]
+        RectTransform _mainDisplayer;
         [ReadOnlyField]
         [SerializeField]
         float _thisFrameSec = 0f;
@@ -148,6 +150,8 @@ namespace MajdataPlay.Scenes.Game
 
         float _trackVolume = 1f;
 
+        GameplayScreenRotationAngleOption _screenRotationAngle = GameplayScreenRotationAngleOption.Zero;
+
         AudioSampleWrap? _audioSample = null;
 
         BGManager _bgManager;
@@ -179,6 +183,7 @@ namespace MajdataPlay.Scenes.Game
                 throw new ArgumentNullException(nameof(_gameInfo));
             }
             //print(MajInstances.GameManager.SelectedIndex);
+            _screenRotationAngle = _setting.Display.GameplayScreenRotationAngle;
             _songDetail = _gameInfo.Current;
             HistoryScore = ScoreManager.GetScore(_songDetail, _listConfig.SelectedDiff);
             _timer = MajTimeline.CreateTimer();
@@ -194,6 +199,18 @@ namespace MajdataPlay.Scenes.Game
                 _audioTimeOffsetSec = _setting.Judge.AudioOffset * MajEnv.FRAME_LENGTH_SEC;
                 _audioTimeOffsetSec += _chartSetting.AudioOffset * MajEnv.FRAME_LENGTH_SEC;
                 _displayOffsetSec = _setting.Debug.DisplayOffset * MajEnv.FRAME_LENGTH_SEC;
+            }
+            switch(_screenRotationAngle)
+            {
+                case GameplayScreenRotationAngleOption._90:
+                    _mainDisplayer.rotation = Quaternion.Euler(0, 0, -90);
+                    break;
+                case GameplayScreenRotationAngleOption._180:
+                    _mainDisplayer.rotation = Quaternion.Euler(0, 0, -180);
+                    break;
+                case GameplayScreenRotationAngleOption._270:
+                    _mainDisplayer.rotation = Quaternion.Euler(0, 0, -270);
+                    break;
             }
             _trackVolume = (MajEnv.Settings.Audio.Volume.Track + _chartSetting.TrackVolumeOffset).Clamp(0, 2);
 #if !UNITY_EDITOR && UNITY_STANDALONE
@@ -703,7 +720,7 @@ namespace MajdataPlay.Scenes.Game
                 _noteLoader.NoteSpeed = ((float)(107.25 / (71.4184491 * Mathf.Pow(tapSpeed + 0.9975f, -0.985558604f))));
             }
             _noteLoader.TouchSpeed = _setting.Game.TouchSpeed;
-            _noteLoader.ChartRotation = _chartRotation;
+            _noteLoader.ChartRotation = _chartRotation + (2 * (int)_screenRotationAngle);
 
             //var loaderTask = noteLoader.LoadNotes(Chart);
             var loaderTask = _noteLoader.LoadNotesIntoPoolAsync(_chart, _cts.Token);

@@ -181,7 +181,8 @@ namespace MajdataPlay.Settings
         
         [Step("0.01")]
         public float SubDisplayScale { get; set; } = 1f;
-        
+        public GameplayScreenRotationAngleOption GameplayScreenRotationAngle { get; set; } = GameplayScreenRotationAngleOption.Zero;
+
         [OptionEnumerator(typeof(EngineEnumSettingEnumerator))]
         public RenderQualityOption RenderQuality { get; set; } = RenderQualityOption.Low;
 #if UNITY_STANDALONE

@@ -911,6 +911,7 @@ MonoBehaviour:
   _bgInfoHeaderAnim: {fileID: 663044731}
   _skipBtn: {fileID: 401781753}
   _noteMask: {fileID: 1383793877}
+  _mainDisplayer: {fileID: 1775716740}
   _thisFrameSec: 0
   _thisFixedUpdateSec: 0
   _firstNoteAppearTiming: 0
