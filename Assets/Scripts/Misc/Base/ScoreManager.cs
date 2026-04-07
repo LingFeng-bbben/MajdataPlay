@@ -314,6 +314,28 @@ namespace MajdataPlay
                 }
             }
         }
+        public static void UnloadOnlineScores(string endpointName)
+        {
+            if (string.IsNullOrEmpty(endpointName))
+            {
+                UnloadOnlineScores();
+                return;
+            }
+            ref var @lock = ref _lock;
+            var isLocked = false;
+            try
+            {
+                @lock.Enter(ref isLocked);
+                _onlineBucketsByEndpoint.Remove(endpointName);
+            }
+            finally
+            {
+                if (isLocked)
+                {
+                    @lock.Exit();
+                }
+            }
+        }
         static SongScores CheckAndGetSongScores(string hash, bool isOnline)
         {
             ref var @lock = ref _lock;

@@ -635,8 +635,12 @@ namespace MajdataPlay.Scenes.List
             _pressTime = 0;
             _isExited = true;
             MajInstances.AudioManager.StopSFX("bgm_select.mp3");
-            ScoreManager.UnloadOnlineScores();
-            EnterLoginBackgroundAsync(null);
+            var playerEndpoints = MajEnv.GetEndpointsByRole(EndpointRole.Player);
+            for (var i = 0; i < playerEndpoints.Length; i++)
+            {
+                ScoreManager.UnloadOnlineScores(playerEndpoints[i].Name);
+            }
+            EnterLoginBackgroundAsync(EndpointRole.Player);
         }
         async void EnterLoginBackgroundAsync(EndpointRole? role)
         {
