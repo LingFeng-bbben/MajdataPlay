@@ -3,6 +3,7 @@ using MajdataPlay.Settings;
 using MajdataPlay.Extensions;
 using MajdataPlay.IO;
 using MajdataPlay.Net;
+using MajdataPlay.Scenes.Login;
 using MajdataPlay.Utils;
 using System;
 using System.Collections;
@@ -243,6 +244,12 @@ namespace MajdataPlay.Scenes.Title
             if (MajInstances.Settings.Online.Enable)
             {
                 await LoginSharedEndpointsOnStartupAsync();
+                if (MajEnv.GetEndpointsByRole(EndpointRole.Player).Length != 0)
+                {
+                    LoginManager.TargetRole = EndpointRole.Player;
+                    MajInstances.SceneSwitcher.SwitchScene("Login", false);
+                    return;
+                }
             }
             MajInstances.SceneSwitcher.SwitchScene("List", false);
         }
