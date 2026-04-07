@@ -488,8 +488,9 @@ namespace MajdataPlay.Net
                 return true;
             }
 
-            runtimeConfig.Username = userInfo.Username;
-            runtimeConfig.Avatar = await GetUserIconAsync(apiEndpoint, userInfo.Username, token);
+            var resolvedUserInfo = userInfo.Value;
+            runtimeConfig.Username = resolvedUserInfo.Username;
+            runtimeConfig.Avatar = await GetUserIconAsync(apiEndpoint, resolvedUserInfo.Username, token);
             return true;
         }
         public static async ValueTask LogoutAllAsync(CancellationToken token = default)
