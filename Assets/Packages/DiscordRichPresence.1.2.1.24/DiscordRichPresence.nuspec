@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>DiscordRichPresence</id>
+    <version>1.2.1.24</version>
+    <title>Discord Rich Presence</title>
+    <authors>Lachee</authors>
+    <owners>Lachee</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <licenseUrl>https://licenses.nuget.org/MIT</licenseUrl>
+    <projectUrl>https://github.com/Lachee/discord-rpc-csharp</projectUrl>
+    <description>A .NET implementation of Discord's Rich Presence functionality. This library supports all features of the Rich Presence that the official C++ library supports, plus a few extra.
+
+"Players love to show off what they are playing with Discord’s status feature. With Rich Presence you can add beautiful art and detailed information to show off your game even more. This lets players know what their friends are doing, so they can decide to ask to join in and play together." 
+  - Discord
+
+This is an unoffical, non-discord supported library.</description>
+    <summary>Discord Rich Presence for your .NET project</summary>
+    <releaseNotes></releaseNotes>
+    <tags>Discord Rich Presence RPC Discord-RPC</tags>
+    <dependencies>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="Newtonsoft.Json" version="13.0.1" />
+        <dependency id="Microsoft.Win32.Registry" version="4.5.0" />
+      </group>
+      <group targetFramework=".NETFramework4.5">
+        <dependency id="Newtonsoft.Json" version="13.0.1" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>
