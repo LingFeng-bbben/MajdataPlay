@@ -16,7 +16,6 @@ using System.Threading.Tasks;
 using MajdataPlay.Net;
 using MajdataPlay.Scenes.Login;
 using UnityEngine;
-using UnityEngine.InputSystem;
 #nullable enable
 namespace MajdataPlay.Scenes.List
 {
@@ -185,14 +184,6 @@ namespace MajdataPlay.Scenes.List
             {
                 return;
             }
-            if (TryEnterLoginFromKeyboard())
-            {
-                return;
-            }
-            if (TryEnterLoginFromLeftTouch())
-            {
-                return;
-            }
             ButtonStatisticsUpdate();
             SensorCheck();
             ButtonCheck();
@@ -206,64 +197,6 @@ namespace MajdataPlay.Scenes.List
         void OnAnyInput(object? sender, InputEventArgs args)
         {
             _inactiveTimeSec = 0;
-        }
-        bool TryEnterLoginFromKeyboard()
-        {
-            if (!_isOnlineEnabled || !_userInfoDisplayer.gameObject.activeInHierarchy || !_userInfoDisplayer.IsGuest)
-            {
-                return false;
-            }
-
-            var keyboard = Keyboard.current;
-            if (keyboard is null || !keyboard.mKey.wasPressedThisFrame)
-            {
-                return false;
-            }
-
-            _inactiveTimeSec = 0;
-            EnterPlayerLogin();
-            return true;
-        }
-        bool TryEnterLoginFromLeftTouch()
-        {
-            if (!_isOnlineEnabled || !_userInfoDisplayer.gameObject.activeInHierarchy || !_userInfoDisplayer.IsGuest)
-            {
-                return false;
-            }
-
-            var mainCamera = Camera.main;
-
-            for (var i = 0; i < Input.touchCount; i++)
-            {
-                var touch = Input.GetTouch(i);
-                if (touch.phase is not UnityEngine.TouchPhase.Began)
-                {
-                    continue;
-                }
-
-                _inactiveTimeSec = 0;
-                if (!_userInfoDisplayer.ContainsScreenPoint(touch.position, mainCamera))
-                {
-                    continue;
-                }
-
-                EnterPlayerLogin();
-                return true;
-            }
-
-            if (!Input.GetMouseButtonDown(0))
-            {
-                return false;
-            }
-
-            _inactiveTimeSec = 0;
-            if (!_userInfoDisplayer.ContainsScreenPoint(Input.mousePosition, mainCamera))
-            {
-                return false;
-            }
-
-            EnterPlayerLogin();
-            return true;
         }
         void SensorCheck()
         {
@@ -704,15 +637,6 @@ namespace MajdataPlay.Scenes.List
             MajInstances.AudioManager.StopSFX("bgm_select.mp3");
             ScoreManager.UnloadOnlineScores();
             EnterLoginBackgroundAsync(null);
-        }
-        void EnterPlayerLogin()
-        {
-            _cts.Cancel();
-            _pressTime = 0;
-            _isExited = true;
-            MajInstances.AudioManager.StopSFX("bgm_select.mp3");
-            ScoreManager.UnloadOnlineScores();
-            EnterLoginBackgroundAsync(EndpointRole.Player);
         }
         async void EnterLoginBackgroundAsync(EndpointRole? role)
         {
