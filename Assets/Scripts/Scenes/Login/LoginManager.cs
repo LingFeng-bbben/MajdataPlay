@@ -59,6 +59,7 @@ namespace MajdataPlay.Scenes.Login
 
         bool _isReady = false;
         bool _isExited = false;
+        bool _requiresPlayerLogin = false;
         readonly static QRCodeGenerator _qrGenerator = new ();
         readonly static Exception _exception = new();
 
@@ -71,6 +72,7 @@ namespace MajdataPlay.Scenes.Login
             _eventSystem = GetComponent<EventSystem>();
             using var rentedApiEndpoints = new RentedList<ApiEndpoint>();
             EndpointRole? roleFilter = TargetRole ?? EndpointRole.Player;
+            _requiresPlayerLogin = roleFilter == EndpointRole.Player;
             TargetRole = null;
             for (var i = 0; i < _apiEndpoints.Length; i++)
             {
@@ -84,6 +86,16 @@ namespace MajdataPlay.Scenes.Login
             _enabledEndpoints = rentedApiEndpoints.ToArray();
             if (_enabledEndpoints.Length == 0)
             {
+                if (_requiresPlayerLogin)
+                {
+                    _loading.SetActive(false);
+                    _sceneTitle.text = "Login to\nGeoDanceClub";
+                    _qrCodeComponent.SetActive(false);
+                    _usernameComponent.SetActive(false);
+                    _passwordComponent.SetActive(false);
+                    Hint("GeoDance login is required, but no Player endpoint is configured.", true);
+                    return;
+                }
                 MajInstances.SceneSwitcher.SwitchScene("List");
                 return;
             }
@@ -136,6 +148,7 @@ namespace MajdataPlay.Scenes.Login
             const int AUTH_FLAG_ERROR = 2;
 
             var sceneSwitcher = MajInstances.SceneSwitcher;
+            var hasCompletedRequiredPlayerLogin = false;
             for (var i = 0; i < _enabledEndpoints.Length; i++)
             {
                 var endpoint = _enabledEndpoints[i];
@@ -241,6 +254,7 @@ namespace MajdataPlay.Scenes.Login
                                         }
                                         ScoreManager.LoadOnlineScores(userScores, endpoint.Name);
                                         await UpdateApiEndpointRuntimeConfigAsync(endpoint, userInfo);
+                                        hasCompletedRequiredPlayerLogin |= endpoint.Role == EndpointRole.Player;
                                         break;
                                     }
                                     else if (rsp.StatusCode is HttpStatusCode.Accepted)
@@ -295,6 +309,11 @@ namespace MajdataPlay.Scenes.Login
                         //cancel button
                         if (InputManager.IsSensorClickedUpInThisFrame(SensorArea.A5))
                         {
+                            if (_requiresPlayerLogin && endpoint.Role == EndpointRole.Player)
+                            {
+                                Hint($"{siteName} login is required.", true);
+                                continue;
+                            }
                             cts.Cancel();
                             if (!string.IsNullOrEmpty(authRequestId))
                             {
@@ -406,6 +425,7 @@ namespace MajdataPlay.Scenes.Login
                                 Hint();
                                 _loading.SetActive(false);
                                 await UpdateApiEndpointRuntimeConfigAsync(endpoint, userInfo);
+                                hasCompletedRequiredPlayerLogin |= endpoint.Role == EndpointRole.Player;
                                 break;
                             }
                         }
@@ -417,6 +437,12 @@ namespace MajdataPlay.Scenes.Login
                 }
                 await sceneSwitcher.FadeInAsync();
                 _isReady = false;
+            }
+            if (_requiresPlayerLogin && !hasCompletedRequiredPlayerLogin)
+            {
+                Hint("GeoDance login is required.", true);
+                _isReady = true;
+                return;
             }
             EnterList();
         }

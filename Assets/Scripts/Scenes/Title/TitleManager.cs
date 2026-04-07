@@ -244,12 +244,9 @@ namespace MajdataPlay.Scenes.Title
             if (MajInstances.Settings.Online.Enable)
             {
                 await LoginSharedEndpointsOnStartupAsync();
-                if (MajEnv.GetEndpointsByRole(EndpointRole.Player).Length != 0)
-                {
-                    LoginManager.TargetRole = EndpointRole.Player;
-                    MajInstances.SceneSwitcher.SwitchScene("Login", false);
-                    return;
-                }
+                LoginManager.TargetRole = EndpointRole.Player;
+                MajInstances.SceneSwitcher.SwitchScene("Login", false);
+                return;
             }
             MajInstances.SceneSwitcher.SwitchScene("List", false);
         }
