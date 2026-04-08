@@ -301,7 +301,7 @@ jobs:
           gem install fastlane
           gem install xcodeproj
     
-      - name: Build & Upload TestFlight
+      - name: Build IPK (Release)
         if: ${{ env.TARGET_PLATFORM == 'iOS' }}
         env:
           APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
