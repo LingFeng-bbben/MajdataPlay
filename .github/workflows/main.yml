@@ -387,6 +387,42 @@ jobs:
                   }
                 }
               )
+            end
+          end
+          EOF
+          
+          fastlane ios ci
+
+      - name: Upload to TestFlight
+        if: ${{ env.TARGET_PLATFORM == 'iOS' }}
+        continue-on-error: true
+        env:
+          APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
+          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
+          APPSTORE_PRIVATE_KEY: ${{ secrets.APPSTORE_PRIVATE_KEY }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPSTORE_PROFILE_NAME: ${{ secrets.APPSTORE_PROFILE_NAME }}
+          CONFIGURATION: ${{ env.CONFIGURATION }}
+          IOS_PROJECT_PATH: ${{ env.CONFIGURATION }}/iOS/MajdataPlay/Unity-iPhone.xcodeproj
+          IOS_EXPORT_DIR: ${{ env.CONFIGURATION }}/iOS/export
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+        
+          BUILD_AT="$(TZ=Asia/Shanghai date '+%Y-%m-%d %H:%M:%S')"
+          export BUILD_AT
+        
+          mkdir -p fastlane
+          cat > fastlane/Fastfile <<'EOF'
+          default_platform(:ios)
+        
+          platform :ios do
+            lane :ci do
+              api_key = app_store_connect_api_key(
+                key_id: ENV["APPSTORE_KEY_ID"],
+                issuer_id: ENV["APPSTORE_ISSUER_ID"],
+                key_content: ENV["APPSTORE_PRIVATE_KEY"]
+              )
           
               upload_to_testflight(
                 api_key: api_key,
