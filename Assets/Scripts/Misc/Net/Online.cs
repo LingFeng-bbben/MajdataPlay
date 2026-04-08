@@ -791,6 +791,11 @@ namespace MajdataPlay.Net
                     {
                         break;
                     }
+                    else if (rsp.StatusCode == HttpStatusCode.Unauthorized)
+                    {
+                        MajDebug.LogError($"Failed to get online dan list: user not logged in");
+                        break;
+                    }
                     else if (!rsp.IsSuccessfully && rsp.StatusCode is not HttpStatusCode.OK)
                     {
                         break;

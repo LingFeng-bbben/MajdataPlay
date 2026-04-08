@@ -443,6 +443,7 @@ namespace MajdataPlay.Scenes.Login
                 if (!task.IsCompletedSuccessfully)
                 {
                     sceneSwitcher.SetLoadingText("MAJTEXT_ERR_SCAN_CHARTS_FAILED".i18n(), Color.red);
+                    await UniTask.Delay(3000);
                 }
                 else
                 {
@@ -463,7 +464,7 @@ namespace MajdataPlay.Scenes.Login
                 sceneSwitcher.SetLoadingText(string.Empty);
             }
 
-            await UniTask.Delay(3000);
+            
             sceneSwitcher.SwitchScene("List");
         }
         async ValueTask<UserInfo> FetchUserInfomationAsync(ApiEndpoint endpoint, CancellationToken token = default)

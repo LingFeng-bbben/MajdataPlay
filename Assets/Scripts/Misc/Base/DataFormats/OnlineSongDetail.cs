@@ -140,11 +140,6 @@ namespace MajdataPlay
                 }
                 sb.Clear();
             }
-
-            if (!Directory.Exists(_cachePath))
-            {
-                Directory.CreateDirectory(_cachePath);
-            }
         }
 
         #region Public
@@ -184,7 +179,7 @@ namespace MajdataPlay
                     {
                         return audioTrack;
                     }
-                    var cacheFlagPath = Path.Combine(_cachePath, "track.cache");
+
                     var audioManager = MajInstances.AudioManager;
                     var sample = await audioManager.LoadMusicFromUriAsync(_trackUri);
 
@@ -720,10 +715,18 @@ namespace MajdataPlay
                 throw new ObjectDisposedException(nameof(OnlineSongDetail));
             }
         }
+        private void EnsureCachePath()
+        {
+            if (!Directory.Exists(_cachePath))
+            {
+                Directory.CreateDirectory(_cachePath);
+            }
+        }
 
 #if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
         async Task DownloadFile(Uri uri, string savePath, bool forceReDl = false, INetProgress? progress = null, CancellationToken token = default)
         {
+            EnsureCachePath();
             var fileInfo = new FileInfo(savePath);
             var cacheFlagPath = Path.Combine(fileInfo.Directory.FullName, $"{fileInfo.Name}.cache");
             var hashFlagPath = Path.Combine(fileInfo.Directory.FullName, $"{fileInfo.Name}.sha256");
@@ -853,6 +856,7 @@ namespace MajdataPlay
 #else
         async Task DownloadFile(Uri uri, string savePath, bool forceReDl = false, INetProgress? progress = null, CancellationToken token = default)
         {
+            EnsureCachePath();
             var bufferSize = MajEnv.HTTP_BUFFER_SIZE;
             var fileInfo = new FileInfo(savePath);
             var httpClient = MajEnv.SharedHttpClient;
