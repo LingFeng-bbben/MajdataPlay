@@ -40,6 +40,17 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
+
+      - name: Extract version from unity project
+        id: get_version
+        run: |
+          VERSION=$(grep -m1 'bundleVersion:' ProjectSettings/ProjectSettings.asset | awk '{print $2}')
+          VERSION_WITH_HASH="${VERSION}-${GITHUB_SHA::7}"
+          echo "Unity project version: $VERSION"
+          echo "Version with hash: $VERSION_WITH_HASH"
+          
+          echo "bundle_version=$VERSION" >> $GITHUB_OUTPUT
+          echo "bundle_version_with_hash=$VERSION_WITH_HASH" >> $GITHUB_OUTPUT
       
       - name: Cache Unity Library
         uses: actions/cache@v4
@@ -57,7 +68,8 @@ jobs:
         with:
           unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: ${{ env.TARGET_PLATFORM }}
-          versioning: Semantic
+          versioning: None
+          version: ${{ steps.get_version.outputs.bundle_version_with_hash }}
           buildName: MajdataPlay
           buildsPath: ${{ env.CONFIGURATION }}
 
@@ -103,7 +115,18 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
-
+          
+      - name: Extract version from unity project
+        id: get_version
+        run: |
+          VERSION=$(grep -m1 'bundleVersion:' ProjectSettings/ProjectSettings.asset | awk '{print $2}')
+          VERSION_WITH_HASH="${VERSION}-${GITHUB_SHA::7}"
+          echo "Unity project version: $VERSION"
+          echo "Version with hash: $VERSION_WITH_HASH"
+          
+          echo "bundle_version=$VERSION" >> $GITHUB_OUTPUT
+          echo "bundle_version_with_hash=$VERSION_WITH_HASH" >> $GITHUB_OUTPUT
+          
       - name: Calculate Android version code
         id: calc
         run: |
@@ -131,6 +154,7 @@ jobs:
           unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: ${{ env.TARGET_PLATFORM }}
           versioning: None
+          version: ${{ steps.get_version.outputs.bundle_version_with_hash }}
           androidVersionCode: ${{ steps.calc.outputs.VersionCode4Apk }}
           buildName: MajdataPlay
           buildsPath: ${{ env.CONFIGURATION }}
@@ -147,6 +171,7 @@ jobs:
           unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: ${{ env.TARGET_PLATFORM }}
           versioning: None
+          version: ${{ steps.get_version.outputs.bundle_version_with_hash }}
           androidVersionCode: ${{ steps.calc.outputs.VersionCode }}
           buildName: MajdataPlay
           buildsPath: ${{ env.CONFIGURATION }}
@@ -189,6 +214,7 @@ jobs:
       - name: Upload to Google Play
         uses: r0adkll/upload-google-play@v1
         if: ${{ env.TARGET_CHANNEL == 'play' }}
+        continue-on-error: true
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_DEPLOY_ACCOUNT_JSON }}
           packageName: net.majdata.majdataplay
