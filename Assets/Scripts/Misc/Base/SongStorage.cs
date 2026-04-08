@@ -75,7 +75,7 @@ namespace MajdataPlay
         readonly static string MY_FAVORITE_FILENAME = "MyFavorites.json";
         static string MY_FAVORITE_EXPORT_PATH = string.Empty;
         static string MY_FAVORITE_STORAGE_PATH = string.Empty;
-
+        //these method are called from the game
         internal static async Task InitAsync(IProgress<string>? progressReporter = null)
         {
             try
@@ -242,7 +242,7 @@ namespace MajdataPlay
                 }
                 tasks = null;
                 waitAllTask = null;
-                Collections = await FinalizeCollections(MajEnv.ChartPath, collections);
+                Collections = await AddAllFolderAndDans(MajEnv.ChartPath, collections);
                 MajDebug.LogInfo($"Loaded chart count: {TotalChartCount}");
                 Online.ClearResponseCache();
                 GC.Collect();
@@ -271,6 +271,48 @@ namespace MajdataPlay
                 throw;
             }
         }
+        
+        internal static async Task RefreshUserOnlineFav(IProgress<string>? progressReporter = null)
+        {
+            if (MajInstances.Settings.Online.Enable)
+            {
+                var collections = Collections.ToList();
+                foreach (var api in MajEnv.ApiEndpoints.OrderBy(x => x.Name))
+                {
+                    if (api is null)
+                    {
+                        continue;
+                    }
+                    if (string.IsNullOrEmpty(api.Name))
+                    {
+                        continue;
+                    }
+                    try
+                    {
+                        MajDebug.LogInfo($"[OnlineFav]Fetching fav list from {api.Url.OriginalString}");
+                        progressReporter?.Report(ZString.Format("MAJTEXT_SCANNING_FAVORITES_FROM_{0}".i18n(), api.Name));
+                        var daninfos = await Online.GetUserOnlineFavCollection(api);
+                        if (daninfos is not null && daninfos.Count() > 0)
+                        {
+                            foreach (var dan in daninfos)
+                            {
+                                //TODO: make this parallel
+                                var collection = await GetDanCollection(_allCharts, dan);
+                                if (collection is not null)
+                                    collections.Add(collection);
+                            }
+                        }
+                    }
+                    catch (Exception e) {
+                        MajDebug.LogError($"[OnlineFav]Fetching fav list from {api.Url.OriginalString} failed because of {e.Message}");
+                        MajDebug.LogException(e);
+                    }
+                }
+                //Potential bug: user may not return to the dir because this change after refresh.
+                Collections = collections.ToArray();
+            }
+        }
+        //get local song list and online song list
         static async Task<SongCollection[]> GetCollections(string rootPath, IProgress<string>? progressReporter)
         {
             var collections = await GetLocalCollections(rootPath, progressReporter);
@@ -300,8 +342,9 @@ namespace MajdataPlay
             {
                 MajDebug.LogInfo("[MaiChart Scanner]Online function was disabled, skipping.");
             }
-            return await FinalizeCollections(rootPath, collections);
+            return await AddAllFolderAndDans(rootPath, collections);
         }
+        //scan the local chart folders
         static async Task<List<SongCollection>> GetLocalCollections(string rootPath, IProgress<string>? progressReporter)
         {
             var dirs = new DirectoryInfo(rootPath).GetDirectories();
@@ -347,7 +390,8 @@ namespace MajdataPlay
             await Task.Delay(1000);
             return collections;
         }
-        static async Task<SongCollection[]> FinalizeCollections(string rootPath, List<SongCollection> collections)
+        //sort out the ALL folder, Dans and playlists
+        static async Task<SongCollection[]> AddAllFolderAndDans(string rootPath, List<SongCollection> collections)
         {
             //Add all songs to "All" folder
             foreach (var collection in collections)
@@ -358,6 +402,7 @@ namespace MajdataPlay
                 }
             }
             collections.Add(new SongCollection("All", _allCharts.ToArray()));
+
             MajDebug.LogInfo("MyFavorite");
             if (_userFavorites is not null)
             {
@@ -377,6 +422,7 @@ namespace MajdataPlay
             _myFavorite = new(favoriteSongs, new HashSet<string>(_storageFav));
             //The collections and _myFavorite share a same ref of original List<T>
             collections.Add(_myFavorite);
+
             MajDebug.LogInfo("Load Dans");
             var danFiles = new DirectoryInfo(rootPath).GetFiles("*.json");
             var loadDanTasks = new Task<SongCollection?>[danFiles.Length];
@@ -426,7 +472,8 @@ namespace MajdataPlay
             }
             return collections.ToArray();
         }
-        static async Task<SongCollection> GetCollection(string rootPath)
+        //scan one folder
+        private static async Task<SongCollection> GetCollection(string rootPath)
         {
             await UniTask.SwitchToThreadPool();
             var thisDir = new DirectoryInfo(rootPath);
@@ -505,7 +552,8 @@ namespace MajdataPlay
             MajDebug.LogDebug($"[MaiChart Scanner][{thisDir.Name}]Exit");
             return new SongCollection(rootPath, thisDir.Name, charts.ToArray());
         }
-        static async Task<SongCollection> GetOnlineCollection(ApiEndpoint api, IProgress<string>? progressReporter)
+        //scan one online api
+        private static async Task<SongCollection> GetOnlineCollection(ApiEndpoint api, IProgress<string>? progressReporter)
         {
             var name = api.Name;
             var cachePath = Path.Combine(MajEnv.CachePath, "Net", name);
@@ -573,7 +621,8 @@ namespace MajdataPlay
                 return collection;
             }
         }
-        static async Task<SongCollection?> GetDanCollection(IEnumerable<ISongDetail> allCharts, DanInfo danInfo)
+        //import one dan file
+        private static async Task<SongCollection?> GetDanCollection(IEnumerable<ISongDetail> allCharts, DanInfo danInfo)
         {
             return await Task.Run(() =>
             {

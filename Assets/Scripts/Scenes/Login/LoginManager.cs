@@ -420,14 +420,9 @@ namespace MajdataPlay.Scenes.Login
                 return;
             }
             _isExited = true;
-            if(SceneSwitcher.LastScene == MajScenes.Title)
-            {
-                MajInstances.SceneSwitcher.SwitchScene("List", false);
-                return;
-            }
-            RefreshListBackgroundAsync();
+            RefreshListBackgroundAsync(refreshWholeList:SceneSwitcher.LastScene != MajScenes.Title);
         }
-        static async void RefreshListBackgroundAsync()
+        static async void RefreshListBackgroundAsync(bool refreshWholeList = false)
         {
             var sceneSwitcher = MajInstances.SceneSwitcher;
             await sceneSwitcher.FadeInAsync();
@@ -438,19 +433,36 @@ namespace MajdataPlay.Scenes.Login
             {
                 MajInstances.SceneSwitcher.SetLoadingText(e);
             };
-            var task = SongStorage.RefreshAsync(progress);
-            while (!task.IsCompleted)
+            if (refreshWholeList)
+            {
+                var task = SongStorage.RefreshAsync(progress);
+                while (!task.IsCompleted)
+                {
+                    await UniTask.Yield();
+                }
+                if (!task.IsCompletedSuccessfully)
+                {
+                    sceneSwitcher.SetLoadingText("MAJTEXT_ERR_SCAN_CHARTS_FAILED".i18n(), Color.red);
+                }
+                else
+                {
+                    sceneSwitcher.SetLoadingText(string.Empty);
+                }
+            }
+            var task2 = SongStorage.RefreshUserOnlineFav(progress);
+            while (!task2.IsCompleted)
             {
                 await UniTask.Yield();
             }
-            if (!task.IsCompletedSuccessfully)
+            if (!task2.IsCompletedSuccessfully)
             {
-                sceneSwitcher.SetLoadingText("MAJTEXT_ERR_SCAN_CHARTS_FAILED".i18n(), Color.red);
+                sceneSwitcher.SetLoadingText("MAJTEXT_ERR_SCAN_ONLINEFAVS_FAILED".i18n(), Color.red);
             }
             else
             {
                 sceneSwitcher.SetLoadingText(string.Empty);
             }
+
             await UniTask.Delay(3000);
             sceneSwitcher.SwitchScene("List");
         }
