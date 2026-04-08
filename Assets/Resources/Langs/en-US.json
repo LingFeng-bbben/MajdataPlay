@@ -230,6 +230,7 @@
     "MAJTEXT_ERR_NO_CHART": "No charts",
     "MAJTEXT_ONLINE_METHOD_NOT_ALLOWED": "405, maybe you have to change your online source or use proxy",
     "MAJTEXT_ONLINE_USERNAME_OR_PASSWORD_INCORRECT": "Wrong Auth, check you username or password",
+    "MAJTEXT_ONLINE_ACCESS_FORBIDDEN": "Forbidden by Net, maybe you haven't verified your account by email",
     "MAJTEXT_PRESS_ANY_KEY": "TOUCH TO START",
     "MAJTEXT_SAY": " says:",
     "MAJTEXT_SCANNING_CHARTS": "Scanning charts",

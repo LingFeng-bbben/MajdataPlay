@@ -252,6 +252,7 @@
     "MAJTEXT_ERR_NO_CHART": "譜面がない",
     "MAJTEXT_ONLINE_METHOD_NOT_ALLOWED": "HTTP 405",
     "MAJTEXT_ONLINE_USERNAME_OR_PASSWORD_INCORRECT": "ユーザー名またはパスワードが間違っています",
+    "MAJTEXT_ONLINE_ACCESS_FORBIDDEN": "アクセスが禁止されました。メールでアカウントを確認していない可能性があります",
     "MAJTEXT_PRESS_ANY_KEY": "TOUCH TO START",
     "MAJTEXT_SAY": "：",
     "MAJTEXT_SCANNING_CHARTS": "Scanning Charts",
