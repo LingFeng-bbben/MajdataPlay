@@ -1,4 +1,5 @@
 using DiscordRPC;
+using MajdataPlay.Scenes.Game;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay
@@ -12,6 +13,8 @@ namespace MajdataPlay
 
         static readonly string _largeImageKey = "majdata";
         static readonly string _largeImageText = "MajdataPlay";
+
+        static readonly Button buttonViewChart = new() { Label = "View Chart" };
 
         public static void Initialize()
         {
@@ -57,15 +60,62 @@ namespace MajdataPlay
                 },
                 Timestamps = Timestamps.Now,
             };
+
+            if (scene is MajScenes.Game)
+            {
+                if (Majdata<GameInfo>.Instance is GameInfo info && info.Current is ISongDetail currentSong)
+                {
+                    UpdateState($"Playing {currentSong.Title} by {currentSong.Artist}");
+                    UpdateDetails($"Charted by {currentSong.Designers[(int)info.CurrentLevel]}");
+                    if (currentSong is OnlineSongDetail onlineSongDetail)
+                    {
+                        buttonViewChart.Url = $"https://majdata.net/song?id={onlineSongDetail.Id}";
+                        UpdateButtons(new[] { buttonViewChart });
+                    }
+                }
+            }
             _client.SetPresence(_presence);
+        }
+
+        public static void UpdateDetails(string details, bool setOnce = false)
+        {
+            if (_client is null)
+                return;
+            _presence.Details = details;
+            if (setOnce)
+                _client.SetPresence(_presence);
+        }
+
+        public static void UpdateState(string state, bool setOnce = false)
+        {
+            if (_client is null)
+                return;
+            _presence.State = state;
+            if (setOnce)
+                _client.SetPresence(_presence);
+        }
+
+        public static void UpdateButtons(Button[] buttons, bool setOnce = false)
+        {
+            if (_client is null)
+                return;
+            _presence.Buttons = buttons;
+            if (setOnce)
+                _client.SetPresence(_presence);
+        }
+
+        public static void UpdateParty(Party party, bool setOnce = false)
+        {
+            if (_client is null)
+                return;
+            _presence.Party = party;
+            if (setOnce)
+                _client.SetPresence(_presence);
         }
 
         public static void Dispose()
         {
-            if (_client is null)
-                return;
-
-            _client.Dispose();
+            _client?.Dispose();
             _client = null;
         }
 
@@ -73,17 +123,17 @@ namespace MajdataPlay
         {
             return scene switch
             {
-                MajScenes.Title => ("In Menu", "Title Screen", "menu", "Title"),
-                MajScenes.Login => ("In Menu", "Login", "menu", "Login"),
-                MajScenes.List => ("Browsing", "Song Select", "menu", "Song Select"),
-                MajScenes.Game => ("Playing", "In Game", "playing", "Playing"),
-                MajScenes.Result => ("Viewing Results", "Result Screen", "result", "Result"),
-                MajScenes.Setting => ("In Menu", "Settings", "menu", "Settings"),
-                MajScenes.SortFind => ("Browsing", "Sort & Find", "menu", "Sort & Find"),
-                MajScenes.TotalResult => ("Viewing Results", "Total Results", "result", "Total Result"),
-                MajScenes.Parctice => ("Playing", "Practice Mode", "playing", "Practice"),
-                MajScenes.View => ("Viewing", "Chart View", "menu", "View"),
-                _ => ("In Menu", "Idle", "menu", "Idle"),
+                MajScenes.Title         => ("Knocking the Door", "Title", "Idle", "Title"),
+                MajScenes.Login         => ("Fighting Network", "Login", "Idle", "Login"),
+                MajScenes.List          => ("What to Eat?", "Song Select", "Idle", "Song Select"),
+                MajScenes.Game          => ("Working Out", "In Game", "Playing", "Playing"),
+                MajScenes.Result        => ("Lying on the Cold Hard Ground", "Result", "Result", "Result"),
+                MajScenes.Setting       => ("Model Fine-tuning", "Settings", "Idle", "Settings"),
+                MajScenes.SortFind      => ("Yeah, What to Eat?", "Sort & Find", "Idle", "Sort & Find"),
+                MajScenes.TotalResult   => ("Lying on the Cold Hard Ground", "Results", "Result", "Total Result"),
+                MajScenes.Parctice      => ("Involuting", "Practice Mode", "Playing", "Practice"),
+                MajScenes.View          => ("Appreciating", "Chart View", "Idle", "View"),
+                _                       => ("Idle", "Idle", "Idle", "Idle"),
             };
         }
     }
