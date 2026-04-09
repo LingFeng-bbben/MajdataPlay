@@ -121,6 +121,10 @@ namespace MajdataPlay.IO
                 return new ReadOnlySpan<ulong>(_posData, 1280 * 1280);
             }
         }
+        /// <summary>
+        /// Left, Top, Right, Bottom edge
+        /// </summary>
+        public static Vector4 SubScreenEdge { get; set; } = new Vector4();
 
         public static event EventHandler<InputEventArgs>? OnAnyAreaTrigger;
 

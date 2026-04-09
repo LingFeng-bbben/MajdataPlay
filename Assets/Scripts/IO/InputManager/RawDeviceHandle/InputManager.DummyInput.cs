@@ -340,12 +340,15 @@ namespace MajdataPlay.IO
             var newP = ((ulong)_version) << (12 + 34);
             var rayToCenter = cubeRay - new Vector3(0, 0, -10);
             var radToCenter = rayToCenter.magnitude;
+            var subScreenEdge = SubScreenEdge;
             var edgeYPosition = Mathf.Max(5.08f + (1.5f + (_lastMainScreenOffset * 2.7f)), 5.4f);
             var extraButtonStates = (stackalloc bool[12]);
             var extraSensorStates = (stackalloc bool[34]);
             var isAnyExtraButtonTriggered = false;
             var isAnyExtraSensorTriggered = false;
-            if (cubeRay.y > edgeYPosition)
+            var isInSubScreenRect = (cubeRay.x > subScreenEdge.x && cubeRay.x < subScreenEdge.z) &&
+                                    (cubeRay.y > subScreenEdge.w && cubeRay.y < subScreenEdge.y);
+            if (isInSubScreenRect)
             {
                 extraButtonStates[9] = true;
                 isAnyExtraButtonTriggered = true;
