@@ -34,7 +34,7 @@ file_header_template = unset
 
 # this. 和 Me. 首选项
 dotnet_style_qualification_for_event = false:warning
-dotnet_style_qualification_for_field = false
+dotnet_style_qualification_for_field = false:warning
 dotnet_style_qualification_for_method = false:warning
 dotnet_style_qualification_for_property = false:warning
 
@@ -57,7 +57,7 @@ dotnet_style_coalesce_expression = true:warning
 dotnet_style_collection_initializer = true
 dotnet_style_explicit_tuple_names = true
 dotnet_style_namespace_match_folder = true
-dotnet_style_null_propagation = true:warning
+dotnet_style_null_propagation = true
 dotnet_style_object_initializer = true
 dotnet_style_operator_placement_when_wrapping = beginning_of_line
 dotnet_style_prefer_auto_properties = true:suggestion
@@ -118,7 +118,7 @@ csharp_style_conditional_delegate_call = true
 csharp_prefer_static_anonymous_function = true
 csharp_prefer_static_local_function = true
 csharp_preferred_modifier_order = public,private,protected,internal,file,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,required,volatile,async
-csharp_style_prefer_readonly_struct = true:warning
+csharp_style_prefer_readonly_struct = true
 csharp_style_prefer_readonly_struct_member = true
 
 # 代码块首选项
@@ -155,8 +155,8 @@ csharp_using_directive_placement = outside_namespace
 csharp_style_allow_blank_line_after_colon_in_constructor_initializer_experimental = true
 csharp_style_allow_blank_line_after_token_in_arrow_expression_clause_experimental = true
 csharp_style_allow_blank_line_after_token_in_conditional_expression_experimental = true
-csharp_style_allow_blank_lines_between_consecutive_braces_experimental = false:warning
-csharp_style_allow_embedded_statements_on_same_line_experimental = true:warning
+csharp_style_allow_blank_lines_between_consecutive_braces_experimental = false:suggestion
+csharp_style_allow_embedded_statements_on_same_line_experimental = true:suggestion
 
 #### C# 格式规则 ####
 
