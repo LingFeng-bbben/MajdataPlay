@@ -21,6 +21,7 @@ namespace MajdataPlay
             get; 
             private set; 
         }
+        public static event EventHandler<(MajScenes NewScene, MajScenes OldScene)>? OnSceneChanged;
         public static MajScenes CurrentScene { get; private set; } = MajScenes.Init;
         public static MajScenes LastScene { get; private set; } = MajScenes.Init;
 
@@ -57,11 +58,6 @@ namespace MajdataPlay
             animator = GetComponent<Animator>();
             loadingText.gameObject.SetActive(false);
             _bgObject = _videoPlayer.gameObject;
-            DiscordManager.Initialize();
-        }
-        void OnDestroy()
-        {
-            DiscordManager.Dispose();
         }
         void OnUnitySceneChanged(Scene current, Scene next)
         {
@@ -76,7 +72,10 @@ namespace MajdataPlay
                 CurrentScene = Enum.Parse<MajScenes>(SCENE_NAMES[index]);
             }
             LastScene = lastScene;
-            DiscordManager.UpdatePresence(CurrentScene);
+            if(OnSceneChanged is not null)
+            {
+                OnSceneChanged(this, (CurrentScene, LastScene));
+            }
             _canvas.worldCamera = MainCamera;
         }
 

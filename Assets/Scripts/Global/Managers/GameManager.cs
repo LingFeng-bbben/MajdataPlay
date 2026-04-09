@@ -154,7 +154,9 @@ namespace MajdataPlay
                 MoveSkins();
             }
 #endif
-
+#if UNITY_STANDALONE
+            DiscordManager.Init();
+#endif
             MajInstances.FPSDisplayer.Init();
             MajInstances.AudioManager.Init();
             Localization.Init();

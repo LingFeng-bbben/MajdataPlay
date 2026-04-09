@@ -1,10 +1,11 @@
 using DiscordRPC;
 using MajdataPlay.Scenes.Game;
+using System;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay
 {
-    internal sealed class DiscordManager
+    internal static class DiscordManager
     {
         const string APPLICATION_ID = "1491157666423378180";
 
@@ -14,9 +15,9 @@ namespace MajdataPlay
         static readonly string _largeImageKey = "majdata";
         static readonly string _largeImageText = "MajdataPlay";
 
-        static readonly Button buttonViewChart = new() { Label = "View Chart" };
+        static readonly Button _buttonViewChart = new() { Label = "View Chart" };
 
-        public static void Initialize()
+        public static void Init()
         {
             if (_client is not null)
                 return;
@@ -39,6 +40,8 @@ namespace MajdataPlay
             {
                 MajDebug.LogWarning("Discord Rich Presence connection failed (Discord may not be running)");
             };
+            SceneSwitcher.OnSceneChanged += OnSceneChanged;
+            GameManager.OnAppQuit += OnAppQuit;
         }
 
         public static void UpdatePresence(MajScenes scene)
@@ -69,8 +72,8 @@ namespace MajdataPlay
                     UpdateDetails($"Charted by {currentSong.Designers[(int)info.CurrentLevel]}");
                     if (currentSong is OnlineSongDetail onlineSongDetail)
                     {
-                        buttonViewChart.Url = $"https://majdata.net/song?id={onlineSongDetail.Id}";
-                        UpdateButtons(new[] { buttonViewChart });
+                        _buttonViewChart.Url = $"https://majdata.net/song?id={onlineSongDetail.Id}";
+                        UpdateButtons(new[] { _buttonViewChart });
                     }
                 }
             }
@@ -113,12 +116,17 @@ namespace MajdataPlay
                 _client.SetPresence(_presence);
         }
 
-        public static void Dispose()
+        static void OnAppQuit(object? sender, EventArgs? args)
         {
             _client?.Dispose();
             _client = null;
+            SceneSwitcher.OnSceneChanged -= OnSceneChanged;
+            GameManager.OnAppQuit -= OnAppQuit;
         }
-
+        static void OnSceneChanged(object? sender, (MajScenes NewScene, MajScenes OldScene) args)
+        {
+            UpdatePresence(args.NewScene);
+        }
         static (string details, string state, string smallImageKey, string smallImageText) GetSceneInfo(MajScenes scene)
         {
             return scene switch
