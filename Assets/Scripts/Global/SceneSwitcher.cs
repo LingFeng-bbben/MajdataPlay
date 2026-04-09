@@ -57,6 +57,11 @@ namespace MajdataPlay
             animator = GetComponent<Animator>();
             loadingText.gameObject.SetActive(false);
             _bgObject = _videoPlayer.gameObject;
+            DiscordManager.Initialize();
+        }
+        void OnDestroy()
+        {
+            DiscordManager.Dispose();
         }
         void OnUnitySceneChanged(Scene current, Scene next)
         {
@@ -71,6 +76,7 @@ namespace MajdataPlay
                 CurrentScene = Enum.Parse<MajScenes>(SCENE_NAMES[index]);
             }
             LastScene = lastScene;
+            DiscordManager.UpdatePresence(CurrentScene);
             _canvas.worldCamera = MainCamera;
         }
 
