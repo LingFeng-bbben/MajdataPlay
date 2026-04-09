@@ -44,7 +44,7 @@ jobs:
       - name: Extract version from unity project
         run: |
           VERSION=$(grep -m1 'bundleVersion:' ProjectSettings/ProjectSettings.asset | awk '{print $2}')
-          VERSION_WITH_HASH="${VERSION}-${date +%Y%m%d}-${GITHUB_SHA::7}"
+          VERSION_WITH_HASH="${VERSION}-$(date +%Y%m%d)-${GITHUB_SHA::7}"
           echo "Unity project version: $VERSION"
           echo "Version with hash: $VERSION_WITH_HASH"
           
@@ -118,7 +118,7 @@ jobs:
       - name: Extract version from unity project
         run: |
           VERSION=$(grep -m1 'bundleVersion:' ProjectSettings/ProjectSettings.asset | awk '{print $2}')
-          VERSION_WITH_HASH="${VERSION}-${date +%Y%m%d}-${GITHUB_SHA::7}"
+          VERSION_WITH_HASH="${VERSION}-$(date +%Y%m%d)-${GITHUB_SHA::7}"
           echo "Unity project version: $VERSION"
           echo "Version with hash: $VERSION_WITH_HASH"
           
