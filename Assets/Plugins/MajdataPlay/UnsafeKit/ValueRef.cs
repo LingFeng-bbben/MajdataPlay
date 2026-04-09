@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 #pragma warning disable CS8500
 namespace MajdataPlay.UnsafeKit
 {
-    using Unsafe = System.Runtime.CompilerServices.Unsafe;
     public unsafe readonly ref struct ValueRef<T> where T : unmanaged
     {
         public ref T Target

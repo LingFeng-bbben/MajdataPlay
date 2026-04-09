@@ -7,34 +7,36 @@ using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
 
-namespace MajdataPlay.Editor;
-class BuildProcessor : IPreprocessBuildWithReport, IPostprocessBuildWithReport
+namespace MajdataPlay.Editor
 {
-    public int callbackOrder { get { return 0; } }
-
-    static AndroidSdkVersions? _originSdkVersion;
-    public void OnPreprocessBuild(BuildReport report)
+    class BuildProcessor : IPreprocessBuildWithReport, IPostprocessBuildWithReport
     {
-        Debug.LogWarning("OnPreprocessBuild");
+        public int callbackOrder { get { return 0; } }
 
-        if (report.summary.platform == BuildTarget.Android && EditorUserBuildSettings.exportAsGoogleAndroidProject)
+        static AndroidSdkVersions? _originSdkVersion;
+        public void OnPreprocessBuild(BuildReport report)
         {
-            _originSdkVersion = PlayerSettings.Android.targetSdkVersion;
-            PlayerSettings.Android.targetSdkVersion = AndroidSdkVersions.AndroidApiLevel36;
+            Debug.LogWarning("OnPreprocessBuild");
+
+            if (report.summary.platform == BuildTarget.Android && EditorUserBuildSettings.exportAsGoogleAndroidProject)
+            {
+                _originSdkVersion = PlayerSettings.Android.targetSdkVersion;
+                PlayerSettings.Android.targetSdkVersion = AndroidSdkVersions.AndroidApiLevel36;
+            }
+
+            AndroidProcessor.OnPreprocessBuild(report);
         }
 
-        AndroidProcessor.OnPreprocessBuild(report);
-    }
-
-    public void OnPostprocessBuild(BuildReport report)
-    {
-        Debug.LogWarning("OnPostprocessBuild");
-
-        if (_originSdkVersion is AndroidSdkVersions originSdkVersion)
+        public void OnPostprocessBuild(BuildReport report)
         {
-            PlayerSettings.Android.targetSdkVersion = originSdkVersion;
-            _originSdkVersion = null;
-            AssetDatabase.SaveAssets();
+            Debug.LogWarning("OnPostprocessBuild");
+
+            if (_originSdkVersion is AndroidSdkVersions originSdkVersion)
+            {
+                PlayerSettings.Android.targetSdkVersion = originSdkVersion;
+                _originSdkVersion = null;
+                AssetDatabase.SaveAssets();
+            }
         }
     }
 }

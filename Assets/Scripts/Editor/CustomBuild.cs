@@ -54,13 +54,19 @@ namespace MajdataPlay.Editor
                         }
                         if (options.TryGetValue("androidKeystorePass", out var keystorePass) &&
                             !string.IsNullOrEmpty(keystorePass))
+                        {
                             PlayerSettings.Android.keystorePass = keystorePass;
+                        }
                         if (options.TryGetValue("androidKeyaliasName", out var keyaliasName) &&
                             !string.IsNullOrEmpty(keyaliasName))
+                        {
                             PlayerSettings.Android.keyaliasName = keyaliasName;
+                        }
                         if (options.TryGetValue("androidKeyaliasPass", out var keyaliasPass) &&
                             !string.IsNullOrEmpty(keyaliasPass))
+                        {
                             PlayerSettings.Android.keyaliasPass = keyaliasPass;
+                        }
                         if (options.TryGetValue("androidTargetSdkVersion", out var androidTargetSdkVersion) &&
                             !string.IsNullOrEmpty(androidTargetSdkVersion))
                         {

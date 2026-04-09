@@ -21,7 +21,6 @@ using UnityEngine.UI;
 namespace MajdataPlay.Scenes.Practice
 {
 #nullable enable
-    using Unsafe = System.Runtime.CompilerServices.Unsafe;
     public class PracticeManager : MonoBehaviour
     {
         public TextMeshProUGUI startTimeText;
