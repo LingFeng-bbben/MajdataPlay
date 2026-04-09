@@ -349,7 +349,12 @@ jobs:
                 targets: ["UnityFramework"],
                 code_sign_identity: "Apple Distribution"
               )
-                  
+              
+              increment_version_number(
+                xcodeproj: ENV["IOS_PROJECT_PATH"],
+                version_number: ENV["BUNDLE_VERSION"]
+              )
+
               increment_build_number(
                 xcodeproj: ENV["IOS_PROJECT_PATH"],
                 build_number: ENV["BUNDLE_VERSION_CODE"]
