@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using MajdataPlay.Buffers;
 using MajdataPlay.IO;
 using MajdataPlay.Net;
+using MajdataPlay.Settings;
 using QRCoder;
 using System;
 using System.Linq;
@@ -254,6 +255,7 @@ namespace MajdataPlay.Scenes.Login
                                         }
                                         ScoreManager.LoadOnlineScores(userScores, endpoint.Name);
                                         await UpdateApiEndpointRuntimeConfigAsync(endpoint, userInfo);
+                                        await SyncSettingsFromRemoteAsync(endpoint);
                                         hasCompletedRequiredPlayerLogin |= endpoint.Role == EndpointRole.Player;
                                         break;
                                     }
@@ -425,6 +427,7 @@ namespace MajdataPlay.Scenes.Login
                                 Hint();
                                 _loading.SetActive(false);
                                 await UpdateApiEndpointRuntimeConfigAsync(endpoint, userInfo);
+                                await SyncSettingsFromRemoteAsync(endpoint);
                                 hasCompletedRequiredPlayerLogin |= endpoint.Role == EndpointRole.Player;
                                 break;
                             }
@@ -486,6 +489,190 @@ namespace MajdataPlay.Scenes.Login
             }
             await UniTask.Delay(3000);
             sceneSwitcher.SwitchScene("List");
+        }
+        async UniTask SyncSettingsFromRemoteAsync(ApiEndpoint endpoint)
+        {
+            if (endpoint.Role != EndpointRole.Player)
+            {
+                return;
+            }
+            MajDebug.LogInfo("Syncing settings from remote...");
+            _loading.SetActive(true);
+            Hint("MAJTEXT_LOGIN_SYNCING_SETTINGS".i18n(), false);
+            var settingsTask = Online.GetSettingsAsync(endpoint);
+            while (!settingsTask.IsCompleted)
+            {
+                await UniTask.Yield();
+            }
+            _loading.SetActive(false);
+            if (!settingsTask.IsCompletedSuccessfully || settingsTask.Result is null)
+            {
+                if (settingsTask.IsCompletedSuccessfully && settingsTask.Result is null)
+                {
+                    MajDebug.LogInfo("No remote settings found, uploading local settings");
+                    UploadSettingsAsync(endpoint).Forget();
+                }
+                else
+                {
+                    MajDebug.LogWarning("Failed to sync settings from remote");
+                }
+                Hint();
+                return;
+            }
+            var remoteSettings = settingsTask.Result;
+            var localSettings = MajEnv.Settings;
+            if (remoteSettings.Game is not null) ApplyGameOptions(localSettings.Game, remoteSettings.Game);
+            if (remoteSettings.Judge is not null) ApplyJudgeOptions(localSettings.Judge, remoteSettings.Judge);
+            if (remoteSettings.Display is not null) ApplyDisplayOptions(localSettings.Display, remoteSettings.Display);
+            if (remoteSettings.Audio is not null) ApplyAudioOptions(localSettings.Audio, remoteSettings.Audio);
+            if (remoteSettings.Debug is not null) ApplyDebugOptions(localSettings.Debug, remoteSettings.Debug);
+            endpoint.RuntimeConfig.SettingsVersion = remoteSettings.Version;
+            MajEnv.SuppressSettingsUpload = true;
+            GameManager.RequestSave(this);
+            MajEnv.SuppressSettingsUpload = false;
+            MajDebug.LogInfo($"Settings synced from remote (version {remoteSettings.Version})");
+            Hint();
+        }
+        static async UniTaskVoid UploadSettingsAsync(ApiEndpoint endpoint)
+        {
+            var settings = MajEnv.Settings;
+            var request = new SettingsSyncRequest
+            {
+                Version = endpoint.RuntimeConfig.SettingsVersion,
+                Game = settings.Game,
+                Judge = settings.Judge,
+                Display = settings.Display,
+                Audio = settings.Audio,
+                Debug = settings.Debug,
+            };
+            var rsp = await Online.PutSettingsAsync(endpoint, request);
+            if (rsp is not null)
+            {
+                endpoint.RuntimeConfig.SettingsVersion = rsp.Version;
+                MajDebug.LogInfo($"Settings uploaded (version {rsp.Version})");
+            }
+        }
+        static void ApplyGameOptions(GameOptions target, GameOptions source)
+        {
+            target.TapSpeed = source.TapSpeed;
+            target.TouchSpeed = source.TouchSpeed;
+            target.SlideFadeInOffset = source.SlideFadeInOffset;
+            target.BackgroundDim = source.BackgroundDim;
+            target.StarRotation = source.StarRotation;
+            target.BGInfo = source.BGInfo;
+            target.TopInfo = source.TopInfo;
+            target.TrackSkip = source.TrackSkip;
+            target.FastRetry = source.FastRetry;
+            target.Mirror = source.Mirror;
+            target.Rotation = source.Rotation;
+            target.SlideSkipping = source.SlideSkipping;
+            target.Random = source.Random;
+#if UNITY_ANDROID || UNITY_IOS
+            target.ButtonRingForTouch = source.ButtonRingForTouch;
+#endif
+#if UNITY_STANDALONE
+            target.RecordMode = source.RecordMode;
+#endif
+        }
+        static void ApplyJudgeOptions(JudgeOptions target, JudgeOptions source)
+        {
+            target.AudioOffset = source.AudioOffset;
+            target.JudgeOffset = source.JudgeOffset;
+            target.AnswerOffset = source.AnswerOffset;
+            target.TouchPanelOffset = source.TouchPanelOffset;
+            target.Mode = source.Mode;
+        }
+        static void ApplyDisplayOptions(DisplayOptions target, DisplayOptions source)
+        {
+            target.Language = source.Language;
+            target.Skin = source.Skin;
+            target.DisplayCriticalPerfect = source.DisplayCriticalPerfect;
+            target.DisplayBreakScore = source.DisplayBreakScore;
+            target.FastLateType = source.FastLateType;
+            target.NoteJudgeType = source.NoteJudgeType;
+            target.TouchJudgeType = source.TouchJudgeType;
+            target.SlideJudgeType = source.SlideJudgeType;
+            target.BreakJudgeType = source.BreakJudgeType;
+            target.BreakFastLateType = source.BreakFastLateType;
+            target.SlideSortOrder = source.SlideSortOrder;
+            target.OuterJudgeDistance = source.OuterJudgeDistance;
+            target.InnerJudgeDistance = source.InnerJudgeDistance;
+            target.DisplayHoldHeadJudgeResult = source.DisplayHoldHeadJudgeResult;
+            target.TapScale = source.TapScale;
+            target.HoldScale = source.HoldScale;
+            target.TouchScale = source.TouchScale;
+            target.SlideScale = source.SlideScale;
+            target.TouchFeedback = source.TouchFeedback;
+            target.MainScreenTransform = source.MainScreenTransform;
+            target.MainScreenScale = source.MainScreenScale;
+            target.MainScreenOffset = source.MainScreenOffset;
+            target.MainScreenCachedScreenCenterY = source.MainScreenCachedScreenCenterY;
+            target.SubDisplayOffset = source.SubDisplayOffset;
+            target.SubDisplayScale = source.SubDisplayScale;
+            target.RenderQuality = source.RenderQuality;
+            target.FPSLimit = source.FPSLimit;
+            target.SkipVideoDownload = source.SkipVideoDownload;
+#if UNITY_STANDALONE
+            target.Resolution = source.Resolution;
+            target.Topmost = source.Topmost;
+#endif
+#if !(UNITY_ANDROID || UNITY_IOS)
+            target.VSync = source.VSync;
+#endif
+        }
+        static void ApplyAudioOptions(SoundOptions target, SoundOptions source)
+        {
+            target.ForceMono = source.ForceMono;
+            target.Backend = source.Backend;
+            var tv = target.Volume;
+            var sv = source.Volume;
+            tv.Global = sv.Global;
+            tv.BGM = sv.BGM;
+            tv.Track = sv.Track;
+            tv.Answer = sv.Answer;
+            tv.Tap = sv.Tap;
+            tv.Ex = sv.Ex;
+            tv.Break = sv.Break;
+            tv.Slide = sv.Slide;
+            tv.Touch = sv.Touch;
+            tv.Hanabi = sv.Hanabi;
+            tv.Voice = sv.Voice;
+#if !(UNITY_ANDROID || UNITY_IOS)
+            target.Wasapi = source.Wasapi;
+            target.Asio = source.Asio;
+            target.Channel = source.Channel;
+#else
+            target.Mobile = source.Mobile;
+#endif
+        }
+        static void ApplyDebugOptions(DebugOptions target, DebugOptions source)
+        {
+            target.DisplaySensor = source.DisplaySensor;
+            target.TouchSimulationRadius = source.TouchSimulationRadius;
+            target.TouchAAreaExtraRadius = source.TouchAAreaExtraRadius;
+            target.TouchBAreaExtraRadius = source.TouchBAreaExtraRadius;
+            target.TouchCAreaExtraRadius = source.TouchCAreaExtraRadius;
+            target.TouchDAreaExtraRadius = source.TouchDAreaExtraRadius;
+            target.TouchEAreaExtraRadius = source.TouchEAreaExtraRadius;
+            target.TouchRadiusAdjust = source.TouchRadiusAdjust;
+            target.DisplayFPS = source.DisplayFPS;
+            target.MenuOptionIterationSpeed = source.MenuOptionIterationSpeed;
+            target.DisplayOffset = source.DisplayOffset;
+            target.NoteAppearRate = source.NoteAppearRate;
+            target.OffsetUnit = source.OffsetUnit;
+            target.NoteFolding = source.NoteFolding;
+            target.DJAutoPolicy = source.DJAutoPolicy;
+            target.MaxQueuedFrames = source.MaxQueuedFrames;
+            target.TapPoolCapacity = source.TapPoolCapacity;
+            target.HoldPoolCapacity = source.HoldPoolCapacity;
+            target.TouchPoolCapacity = source.TouchPoolCapacity;
+            target.TouchHoldPoolCapacity = source.TouchHoldPoolCapacity;
+            target.EachLinePoolCapacity = source.EachLinePoolCapacity;
+            target.DebugLevel = source.DebugLevel;
+#if UNITY_STANDALONE
+            target.FullScreen = source.FullScreen;
+            target.HideCursorInGame = source.HideCursorInGame;
+#endif
         }
         async ValueTask<UserInfo> FetchUserInfomationAsync(ApiEndpoint endpoint, CancellationToken token = default)
         {

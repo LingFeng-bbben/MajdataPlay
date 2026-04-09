@@ -54,6 +54,8 @@ namespace MajdataPlay.Net
         public const string API_POST_MACHINE_REGISTER = "machine/register";
         public const string API_POST_AUTH_REQUEST = "machine/auth/request";
         public const string API_POST_AUTH_REVOKE = "machine/auth/revoke";
+        public const string API_GET_ACCOUNT_SETTINGS = "account/settings";
+        public const string API_PUT_ACCOUNT_SETTINGS = "account/settings";
 
         static SpinLock _dictLock = new();
         static SpinLock _cachedResponseLock = new();
@@ -935,6 +937,89 @@ namespace MajdataPlay.Net
                 return null;
             }
         }
+        public static async ValueTask<SettingsSyncResponse?> GetSettingsAsync(ApiEndpoint apiEndpoint, CancellationToken token = default)
+        {
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
+            {
+                await UniTask.SwitchToThreadPool();
+                try
+                {
+                    var uri = apiEndpoint.Url.Combine(API_GET_ACCOUNT_SETTINGS);
+                    var rsp = default(EndpointResponse);
+                    for (var i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
+                    {
+                        rsp = await GetAsync(uri, token);
+                        if (rsp.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.NotFound)
+                        {
+                            return null;
+                        }
+                        else if (!rsp.IsSuccessfully || !rsp.IsDeserializable)
+                        {
+                            MajDebug.LogError("Failed to get user settings");
+                            MajDebug.LogError($"Url:{uri}\nStatusCode:{rsp.StatusCode}\nErrorCode:{rsp.ErrorCode}\nMessage:{rsp.Message}");
+                            continue;
+                        }
+                        var settings = await rsp.DeserializeAsync<SettingsSyncResponse>();
+                        MajDebug.LogInfo($"Fetched user settings (version {settings?.Version})");
+                        return settings;
+                    }
+                    return null;
+                }
+                catch (Exception e)
+                {
+                    MajDebug.LogError("Get user settings failed: ");
+                    MajDebug.LogException(e);
+                    return null;
+                }
+            }
+        }
+        public static async ValueTask<SettingsPutResponse?> PutSettingsAsync(ApiEndpoint apiEndpoint, SettingsSyncRequest request, CancellationToken token = default)
+        {
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
+            {
+                await UniTask.SwitchToThreadPool();
+                try
+                {
+                    var uri = apiEndpoint.Url.Combine(API_PUT_ACCOUNT_SETTINGS);
+                    var json = await Serializer.Json.SerializeAsync(request, DEFAULT_JSON_SERIALIZER);
+                    var rsp = default(EndpointResponse);
+                    for (var i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
+                    {
+#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
+                        rsp = await PutAsync(uri, json, "application/json", token);
+#else
+                        rsp = await PutAsync(uri, new StringContent(json, Encoding.UTF8, "application/json"), token);
+#endif
+                        if (rsp.StatusCode is HttpStatusCode.Unauthorized)
+                        {
+                            MajDebug.LogWarning("Settings upload failed: unauthorized");
+                            return null;
+                        }
+                        else if (rsp.StatusCode is HttpStatusCode.Conflict)
+                        {
+                            MajDebug.LogWarning("Settings upload conflict: version mismatch");
+                            return null;
+                        }
+                        else if (!rsp.IsSuccessfully || !rsp.IsDeserializable)
+                        {
+                            MajDebug.LogError("Failed to upload user settings");
+                            MajDebug.LogError($"Url:{uri}\nStatusCode:{rsp.StatusCode}\nErrorCode:{rsp.ErrorCode}\nMessage:{rsp.Message}");
+                            continue;
+                        }
+                        var putRsp = await rsp.DeserializeAsync<SettingsPutResponse>();
+                        MajDebug.LogInfo($"Settings uploaded successfully (version {putRsp?.Version})");
+                        return putRsp;
+                    }
+                    return null;
+                }
+                catch (Exception e)
+                {
+                    MajDebug.LogError("Upload user settings failed: ");
+                    MajDebug.LogException(e);
+                    return null;
+                }
+            }
+        }
         public static void ClearResponseCache()
         {
             ref var @lock = ref _cachedResponseLock;
@@ -1213,6 +1298,76 @@ namespace MajdataPlay.Net
                 }
             }
         }
+        static async ValueTask<EndpointResponse> PutAsync(Uri uri, string content, string contentType, CancellationToken token = default)
+        {
+            await using (UniTask.ReturnToCurrentSynchronizationContext())
+            {
+                await UniTask.SwitchToMainThread();
+                var putReq = UnityWebRequest.Put(uri, content);
+                putReq.timeout = (int)UnityWebRequestFactory.Timeout.TotalMilliseconds / 1000;
+                putReq.SetRequestHeader("User-Agent", UnityWebRequestFactory.UserAgent);
+                putReq.SetRequestHeader("Content-Type", contentType);
+                var headers = default(IReadOnlyDictionary<string, IEnumerable<string>>);
+                try
+                {
+                    var asyncOperation = putReq.SendWebRequest();
+                    while (!asyncOperation.isDone)
+                    {
+                        if (token.IsCancellationRequested)
+                        {
+                            putReq.Abort();
+                            throw new HttpException(uri.OriginalString, HttpErrorCode.Canceled);
+                        }
+                        await UniTask.Yield();
+                    }
+                    headers = putReq.GetResponseHeaders()?.GroupBy(x => x.Key)
+                                                      .ToDictionary(x => x.Key, x => x.Select(x => x.Value).AsEnumerable());
+                    putReq.EnsureSuccessStatusCode();
+                    var nativeBuffer = putReq.downloadHandler.nativeData;
+                    var buffer = Array.Empty<byte>();
+                    if (nativeBuffer.Length != 0)
+                    {
+                        buffer = new byte[nativeBuffer.Length];
+                        nativeBuffer.CopyTo(buffer);
+                    }
+                    return new EndpointResponse(buffer, DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
+                    {
+                        IsSuccessfully = true,
+                        IsDeserializable = true && buffer.Length != 0,
+                        ErrorCode = default,
+                        StatusCode = (HttpStatusCode)putReq.responseCode,
+                        Message = "",
+                        Headers = headers ?? EndpointResponse.EMPTY_HEADERS
+                    };
+                }
+                catch (HttpException httpE)
+                {
+                    MajDebug.LogException(httpE);
+                    return new EndpointResponse(Array.Empty<byte>(), DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
+                    {
+                        IsSuccessfully = false,
+                        IsDeserializable = false,
+                        ErrorCode = httpE.ErrorCode,
+                        StatusCode = httpE.StatusCode,
+                        Message = httpE.Message,
+                        Headers = headers ?? EndpointResponse.EMPTY_HEADERS
+                    };
+                }
+                catch (Exception e)
+                {
+                    MajDebug.LogException(e);
+                    return new EndpointResponse(Array.Empty<byte>(), DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
+                    {
+                        IsSuccessfully = false,
+                        IsDeserializable = false,
+                        ErrorCode = HttpErrorCode.Unreachable,
+                        StatusCode = null,
+                        Message = e.ToString(),
+                        Headers = headers ?? EndpointResponse.EMPTY_HEADERS
+                    };
+                }
+            }
+        }
 #else
         static ValueTask<EndpointResponse> PostAsync(Uri uri, CancellationToken token = default)
         {
@@ -1240,6 +1395,52 @@ namespace MajdataPlay.Net
                 return new EndpointResponse(buffer, DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS) 
                 { 
                     IsSuccessfully = rsp.StatusCode == HttpStatusCode.OK, 
+                    IsDeserializable = rsp.StatusCode == HttpStatusCode.OK,
+                    ErrorCode = rsp.StatusCode == HttpStatusCode.OK ? HttpErrorCode.NoError : HttpErrorCode.Unsuccessful,
+                    StatusCode = rsp.StatusCode,
+                    Headers = rsp.Headers.ToDictionary(kv => kv.Key, kv => kv.Value, StringComparer.OrdinalIgnoreCase),
+                    Message = rsp.StatusCode == HttpStatusCode.OK ? "Ok" : ""
+                };
+            }
+            catch (OperationCanceledException)
+            {
+                var errorCode = HttpErrorCode.Timeout;
+                if (token.IsCancellationRequested)
+                {
+                    errorCode = HttpErrorCode.Canceled;
+                }
+                return new EndpointResponse(Array.Empty<byte>(), DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
+                {
+                    IsSuccessfully = false,
+                    IsDeserializable = false,
+                    ErrorCode = errorCode,
+                    StatusCode = null,
+                    Message = ""
+                };
+            }
+            catch (Exception e)
+            {
+                MajDebug.LogException(e);
+                return new EndpointResponse(Array.Empty<byte>(), DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
+                {
+                    IsSuccessfully = false,
+                    IsDeserializable = false,
+                    ErrorCode = HttpErrorCode.Unreachable,
+                    StatusCode = null,
+                    Message = e.ToString()
+                };
+            }
+        }
+        static async ValueTask<EndpointResponse> PutAsync(Uri uri, HttpContent content, CancellationToken token = default)
+        {
+            try
+            {
+                var client = MajEnv.SharedHttpClient;
+                var rsp = await client.PutAsync(uri, content, token);
+                var buffer = await rsp.Content.ReadAsByteArrayAsync();
+                return new EndpointResponse(buffer, DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
+                {
+                    IsSuccessfully = rsp.StatusCode == HttpStatusCode.OK,
                     IsDeserializable = rsp.StatusCode == HttpStatusCode.OK,
                     ErrorCode = rsp.StatusCode == HttpStatusCode.OK ? HttpErrorCode.NoError : HttpErrorCode.Unsuccessful,
                     StatusCode = rsp.StatusCode,

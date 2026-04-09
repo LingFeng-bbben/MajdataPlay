@@ -155,6 +155,12 @@ namespace MajdataPlay
         };
 
         static string _runtimeConfigPath = string.Empty;
+        static volatile bool _suppressSettingsUpload = false;
+        internal static bool SuppressSettingsUpload
+        {
+            get => _suppressSettingsUpload;
+            set => _suppressSettingsUpload = value;
+        }
         readonly static CancellationTokenSource _globalCTS = new();
         static MajEnv()
         {
@@ -580,6 +586,51 @@ namespace MajdataPlay
 
             File.WriteAllText(SettingsPath, json);
             File.WriteAllText(_runtimeConfigPath, json2);
+
+            UploadSettingsToPlayerEndpointsAsync().Forget();
+        }
+
+        static async UniTaskVoid UploadSettingsToPlayerEndpointsAsync()
+        {
+            if (_suppressSettingsUpload)
+            {
+                return;
+            }
+            var endpoints = GetEndpointsByRole(EndpointRole.Player);
+            if (endpoints.Length == 0)
+            {
+                return;
+            }
+            foreach (var endpoint in endpoints)
+            {
+                if (endpoint.RuntimeConfig.AuthMethod == NetAuthMethodOption.None)
+                {
+                    continue;
+                }
+                try
+                {
+                    var request = new SettingsSyncRequest
+                    {
+                        Version = endpoint.RuntimeConfig.SettingsVersion,
+                        Game = Settings.Game,
+                        Judge = Settings.Judge,
+                        Display = Settings.Display,
+                        Audio = Settings.Audio,
+                        Debug = Settings.Debug,
+                    };
+                    var rsp = await Online.PutSettingsAsync(endpoint, request);
+                    if (rsp is not null)
+                    {
+                        endpoint.RuntimeConfig.SettingsVersion = rsp.Version;
+                        MajDebug.LogInfo($"Settings synced to {endpoint.Name} (version {rsp.Version})");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MajDebug.LogWarning($"Failed to upload settings to {endpoint.Name}");
+                    MajDebug.LogException(ex);
+                }
+            }
         }
 
         static void CheckNoteSkinFolder()
