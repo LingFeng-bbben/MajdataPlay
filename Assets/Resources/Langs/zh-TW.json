@@ -252,6 +252,7 @@
     "MAJTEXT_ERR_NO_CHART": "沒有可用的譜面",
     "MAJTEXT_ONLINE_METHOD_NOT_ALLOWED": "發生了405錯誤, 請檢察網路或使用代理伺服器",
     "MAJTEXT_ONLINE_USERNAME_OR_PASSWORD_INCORRECT": "使用者名稱或密碼錯誤",
+    "MAJTEXT_ONLINE_ACCESS_FORBIDDEN": "被Net擋了，是不是沒有去信箱驗證帳號",
     "MAJTEXT_PRESS_ANY_KEY": "觸摸螢幕開始遊戲",
     "MAJTEXT_SAY": "說:",
     "MAJTEXT_SCANNING_CHARTS": "正在掃描譜面",

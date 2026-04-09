@@ -337,36 +337,20 @@ namespace MajdataPlay.Scenes.Login
                             if (!rsp.IsSuccessfully)
                             {
                                 MajDebug.LogError($"Login failed:\nStatusCode:{rsp.StatusCode}\nErrorCode:{rsp.ErrorCode}\nMessage:{rsp.Message}");
-                                var errMsg = string.Empty;
-                                switch(rsp.ErrorCode)
+                                var errMsg = rsp.ErrorCode switch
                                 {
-                                    case HttpErrorCode.Timeout:
-                                        errMsg = "MAJTEXT_LOGIN_CONNECT_TIMEOUT";
-                                        break;
-                                    case HttpErrorCode.InvalidRequest:
-                                        errMsg = rsp.Message;
-                                        break;
-                                    case HttpErrorCode.Unreachable:
-                                        errMsg = "MAJTEXT_LOGIN_CONNECT_UNREACHABLE";
-                                        break;
-                                    case HttpErrorCode.Unsuccessful:
-                                        if (rsp.StatusCode is HttpStatusCode.Unauthorized)
-                                        {
-                                            errMsg = "MAJTEXT_ONLINE_USERNAME_OR_PASSWORD_INCORRECT";
-                                        }
-                                        else if (rsp.StatusCode is HttpStatusCode.MethodNotAllowed)
-                                        {
-                                            errMsg = "MAJTEXT_ONLINE_METHOD_NOT_ALLOWED";
-                                        }
-                                        else
-                                        {
-                                            errMsg = "MAJTEXT_LOGIN_UNKNOWN_ERROR";
-                                        }
-                                        break;
-                                    default:
-                                        errMsg = "MAJTEXT_LOGIN_UNKNOWN_ERROR";
-                                        break;
-                                }
+                                    HttpErrorCode.Timeout => "MAJTEXT_LOGIN_CONNECT_TIMEOUT",
+                                    HttpErrorCode.InvalidRequest => rsp.Message,
+                                    HttpErrorCode.Unreachable => "MAJTEXT_LOGIN_CONNECT_UNREACHABLE",
+                                    HttpErrorCode.Unsuccessful => rsp.StatusCode switch
+                                    {
+                                        HttpStatusCode.Unauthorized => "MAJTEXT_ONLINE_USERNAME_OR_PASSWORD_INCORRECT",
+                                        HttpStatusCode.MethodNotAllowed => "MAJTEXT_ONLINE_METHOD_NOT_ALLOWED",
+                                        HttpStatusCode.Forbidden => "MAJTEXT_ONLINE_ACCESS_FORBIDDEN",
+                                        _ => "MAJTEXT_LOGIN_UNKNOWN_ERROR"
+                                    },
+                                    _ => "MAJTEXT_LOGIN_UNKNOWN_ERROR"
+                                };
                                 Hint($"{"MAJTEXT_LOGIN_LOGIN_FAILED".i18n()}:\n{errMsg.i18n()}", true);
                                 endpoint.AutoLogin = false;
                                 continue;
