@@ -68,7 +68,7 @@ jobs:
         with:
           unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: ${{ env.TARGET_PLATFORM }}
-          versioning: None
+          versioning: Custom
           version: ${{ steps.get_version.outputs.bundle_version_with_hash }}
           buildName: MajdataPlay
           buildsPath: ${{ env.CONFIGURATION }}
@@ -153,7 +153,7 @@ jobs:
         with:
           unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: ${{ env.TARGET_PLATFORM }}
-          versioning: None
+          versioning: Custom
           version: ${{ steps.get_version.outputs.bundle_version_with_hash }}
           androidVersionCode: ${{ steps.calc.outputs.VersionCode4Apk }}
           buildName: MajdataPlay
@@ -170,7 +170,7 @@ jobs:
         with:
           unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: ${{ env.TARGET_PLATFORM }}
-          versioning: None
+          versioning: Custom
           version: ${{ steps.get_version.outputs.bundle_version_with_hash }}
           androidVersionCode: ${{ steps.calc.outputs.VersionCode }}
           buildName: MajdataPlay
