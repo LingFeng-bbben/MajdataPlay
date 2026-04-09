@@ -38,6 +38,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
         int _parentForceFinishFlag = 0;
 
+        static readonly Quaternion s_Z180Rotation = Quaternion.Euler(0f, 0f, 180f);
+
 //#if UNITY_EDITOR
 //        Transform _judgeFramePoint;
 //        [SerializeField]
@@ -386,7 +388,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                         }
                         break;
                     case NoteStatus.Running:
-                        if (GetRemainingTimeWithoutOffset() == 0)
+                        var remaingTimeWithoutOffset = GetRemainingTimeWithoutOffset();
+                        if (remaingTimeWithoutOffset == 0)
                         {
                             starTransform.position = _starPositions[_starPositions.Count - 1];
                             ApplyStarRotation(_starRotations[_starRotations.Count - 1]);
@@ -397,27 +400,21 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                             State = NoteStatus.Arrived;
                             goto case NoteStatus.Arrived;
                         }
-                        var process = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
+                        var process = ((Length - remaingTimeWithoutOffset) / Length).Clamp(0, 1);
                         var indexProcess = (_starPositions.Count - 1) * process;
                         var index = (int)indexProcess;
                         var pos = indexProcess - index;
 
-                        var a = _starPositions[index + 1];
-                        var b = _starPositions[index];
-                        var ba = a - b;
-                        var newPos = ba * pos + b;
-
-                        starTransform.position = newPos;
-                        if (index < _starRotations.Count - 1)
-                        {
-                            var _a = _starRotations[index + 1].eulerAngles.z;
-                            var _b = _starRotations[index].eulerAngles.z;
-                            var dAngle = Mathf.DeltaAngle(_b, _a) * pos;
-                            dAngle = Mathf.Abs(dAngle);
-                            var newRotation = Quaternion.Euler(0f, 0f,
-                                            Mathf.MoveTowardsAngle(_b, _a, dAngle));
-                            ApplyStarRotation(newRotation);
-                        }
+                        var a = _starPositions[index];
+                        var b = _starPositions[index + 1];
+                        var newPosition = Vector3.LerpUnclamped(a, b, pos);
+                        var newRotation = Quaternion.SlerpUnclamped(
+                            _starRotations[index],
+                            _starRotations[index + 1],
+                            pos
+                        );
+                        starTransform.position = newPosition;
+                        ApplyStarRotation(newRotation);
                         break;
                     case NoteStatus.Arrived:
                         break;
@@ -768,7 +765,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void ApplyStarRotation(Quaternion newRotation)
+        void ApplyStarRotation(in Quaternion newRotation)
         {
             var star = Stars.Span[0];
             var starTransform = StarTransforms.Span[0];
@@ -779,9 +776,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             if (_isMirror)
             {
-                var halfFlip = newRotation.eulerAngles;
-                halfFlip.z += 180f;
-                starTransform.rotation = Quaternion.Euler(halfFlip);
+                starTransform.rotation = newRotation * s_Z180Rotation;
             }
             else
             {
@@ -798,12 +793,13 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 StartPos = 1;
             }
             _starPositions.Add(NoteHelper.GetTapPosition(StartPos, 4.8f));
+            _starRotations.Add(Quaternion.Euler(SlideBars[0].transform.rotation.normalized.eulerAngles + new Vector3(0f, 0f, 18f)));
             for (var i = 0; i < SlideBars.Count; i++)
             {
                 var bar = SlideBars[i];
                 _starPositions.Add(bar.transform.position);
 
-                _starRotations.Add(Quaternion.Euler(bar.transform.rotation.normalized.eulerAngles + new Vector3(0f, 0f, 18f)));
+                _starRotations.Add(Quaternion.Euler(SlideBars[i].transform.rotation.normalized.eulerAngles + new Vector3(0f, 0f, 18f)));
                 if (i == SlideBars.Count - 1)
                 {
                     var a = SlideBars[i - 1].transform.rotation.normalized.eulerAngles;
