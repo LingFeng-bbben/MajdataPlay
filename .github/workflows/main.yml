@@ -42,15 +42,14 @@ jobs:
           submodules: recursive
 
       - name: Extract version from unity project
-        id: get_version
         run: |
           VERSION=$(grep -m1 'bundleVersion:' ProjectSettings/ProjectSettings.asset | awk '{print $2}')
-          VERSION_WITH_HASH="${VERSION}-${GITHUB_SHA::7}"
+          VERSION_WITH_HASH="${VERSION}-${date +%Y%m%d}-${GITHUB_SHA::7}"
           echo "Unity project version: $VERSION"
           echo "Version with hash: $VERSION_WITH_HASH"
           
-          echo "bundle_version=$VERSION" >> $GITHUB_OUTPUT
-          echo "bundle_version_with_hash=$VERSION_WITH_HASH" >> $GITHUB_OUTPUT
+          echo "BUNDLE_VERSION=$VERSION" >> $GITHUB_ENV
+          echo "BUNDLE_VERSION_WITH_HASH=$VERSION_WITH_HASH" >> $GITHUB_ENV
       
       - name: Cache Unity Library
         uses: actions/cache@v4
@@ -69,7 +68,7 @@ jobs:
           unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: ${{ env.TARGET_PLATFORM }}
           versioning: Custom
-          version: ${{ steps.get_version.outputs.bundle_version_with_hash }}
+          version: ${{ env.BUNDLE_VERSION_WITH_HASH }}
           buildName: MajdataPlay
           buildsPath: ${{ env.CONFIGURATION }}
 
@@ -117,23 +116,21 @@ jobs:
           fetch-depth: 0
           
       - name: Extract version from unity project
-        id: get_version
         run: |
           VERSION=$(grep -m1 'bundleVersion:' ProjectSettings/ProjectSettings.asset | awk '{print $2}')
-          VERSION_WITH_HASH="${VERSION}-${GITHUB_SHA::7}"
+          VERSION_WITH_HASH="${VERSION}-${date +%Y%m%d}-${GITHUB_SHA::7}"
           echo "Unity project version: $VERSION"
           echo "Version with hash: $VERSION_WITH_HASH"
           
-          echo "bundle_version=$VERSION" >> $GITHUB_OUTPUT
-          echo "bundle_version_with_hash=$VERSION_WITH_HASH" >> $GITHUB_OUTPUT
+          echo "BUNDLE_VERSION=$VERSION" >> $GITHUB_ENV
+          echo "BUNDLE_VERSION_WITH_HASH=$VERSION_WITH_HASH" >> $GITHUB_ENV
           
       - name: Calculate Android version code
-        id: calc
         run: |
           COMMIT_COUNT=$(git rev-list HEAD --count)
           COUNT=$((COMMIT_COUNT + 100000))
-          echo "VersionCode=$COUNT" >> $GITHUB_OUTPUT
-          echo "VersionCode4Apk=$COMMIT_COUNT" >> $GITHUB_OUTPUT
+          echo "BUNDLE_VERSION_CODE=$COUNT" >> $GITHUB_ENV
+          echo "BUNDLE_VERSION_CODE_FOR_APK=$COMMIT_COUNT" >> $GITHUB_ENV
           echo $COUNT
 
       - name: Cache Unity Library
@@ -154,8 +151,8 @@ jobs:
           unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: ${{ env.TARGET_PLATFORM }}
           versioning: Custom
-          version: ${{ steps.get_version.outputs.bundle_version_with_hash }}
-          androidVersionCode: ${{ steps.calc.outputs.VersionCode4Apk }}
+          version: ${{ env.BUNDLE_VERSION_WITH_HASH }}
+          androidVersionCode: ${{ ENV.BUNDLE_VERSION_CODE_FOR_APK }}
           buildName: MajdataPlay
           buildsPath: ${{ env.CONFIGURATION }}
           androidKeystoreName: android-publish.keystore
@@ -171,8 +168,8 @@ jobs:
           unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: ${{ env.TARGET_PLATFORM }}
           versioning: Custom
-          version: ${{ steps.get_version.outputs.bundle_version_with_hash }}
-          androidVersionCode: ${{ steps.calc.outputs.VersionCode }}
+          version: ${{ env.BUNDLE_VERSION_WITH_HASH }}
+          androidVersionCode: ${{ env.BUNDLE_VERSION_CODE }}
           buildName: MajdataPlay
           buildsPath: ${{ env.CONFIGURATION }}
           androidExportType: 'androidAppBundle'
@@ -243,16 +240,21 @@ jobs:
           submodules: true
           fetch-depth: 0
 
+      - name: Calculate Android version code
+        run: |
+          COMMIT_COUNT=$(git rev-list HEAD --count)
+          echo "BUNDLE_VERSION_CODE=$COMMIT_COUNT" >> $GITHUB_ENV
+          echo $COUNT
+
       - name: Extract version from unity project
-        id: get_version
         run: |
           VERSION=$(grep -m1 'bundleVersion:' ProjectSettings/ProjectSettings.asset | awk '{print $2}')
           VERSION_WITH_HASH="${VERSION}-${GITHUB_SHA::7}"
           echo "Unity project version: $VERSION"
           echo "Version with hash: $VERSION_WITH_HASH"
           
-          echo "bundle_version=$VERSION" >> $GITHUB_OUTPUT
-          echo "bundle_version_with_hash=$VERSION_WITH_HASH" >> $GITHUB_OUTPUT
+          echo "BUNDLE_VERSION=$VERSION" >> $GITHUB_ENV
+          echo "BUNDLE_VERSION_WITH_HASH=$VERSION_WITH_HASH" >> $GITHUB_ENV
 
       - name: Cache Unity Library
         uses: actions/cache@v4
@@ -313,7 +315,6 @@ jobs:
           IOS_PROJECT_PATH: ${{ env.CONFIGURATION }}/iOS/MajdataPlay/Unity-iPhone.xcodeproj
           IOS_EXPORT_DIR: ${{ env.CONFIGURATION }}/iOS/export
           GITHUB_SHA: ${{ github.sha }}
-          BUNDLE_VERSION: ${{ steps.get_version.outputs.bundle_version }}
         run: |
           set -euo pipefail
         
@@ -348,31 +349,14 @@ jobs:
                 targets: ["UnityFramework"],
                 code_sign_identity: "Apple Distribution"
               )
-          
-              version_number = get_version_number(
-                xcodeproj: ENV["IOS_PROJECT_PATH"],
-                target: "Unity-iPhone"
-              )
-          
-              latest_build_number = latest_testflight_build_number(
-                api_key: api_key,
-                app_identifier: "net.majdata.majdataplay",
-                version: ENV["BUNDLE_VERSION"],
-                initial_build_number: 1
-              )
-          
-              new_build_number = (latest_build_number + 1).to_s
-
-              sh("echo NEW_BUILD_NUMBER=#{new_build_number} >> $GITHUB_ENV")
-          
+                  
               increment_build_number(
                 xcodeproj: ENV["IOS_PROJECT_PATH"],
-                build_number: new_build_number
+                build_number: ENV["BUNDLE_VERSION_CODE"]
               )
           
-              UI.message("Version: #{version_number}")
-              UI.message("Latest TestFlight build: #{latest_build_number}")
-              UI.message("New build number: #{new_build_number}")
+              UI.message("Version: #{ENV["BUNDLE_VERSION"]}")
+              UI.message("New build number: #{ENV["BUNDLE_VERSION_CODE"]}")
           
               gym(
                 project: ENV["IOS_PROJECT_PATH"],
@@ -409,7 +393,6 @@ jobs:
           IOS_PROJECT_PATH: ${{ env.CONFIGURATION }}/iOS/MajdataPlay/Unity-iPhone.xcodeproj
           IOS_EXPORT_DIR: ${{ env.CONFIGURATION }}/iOS/export
           GITHUB_SHA: ${{ github.sha }}
-          BUNDLE_VERSION: ${{ steps.get_version.outputs.bundle_version }}
         run: |
           set -euo pipefail
         
@@ -433,7 +416,7 @@ jobs:
                 ipa: File.join(ENV["IOS_EXPORT_DIR"], "MajdataPlay.ipa"),
                 distribute_external: true,
                 groups: ["beta"],
-                changelog: "Automated CI build\nCommit: #{ENV["GITHUB_SHA"]}\nBuild: #{ENV["NEW_BUILD_NUMBER"]}\nBuild at: #{ENV["BUILD_AT"]} (UTC+8)",
+                changelog: "Automated CI build\nCommit: #{ENV["GITHUB_SHA"]}\nBuild: #{ENV["BUNDLE_VERSION_CODE"]}\nBuild at: #{ENV["BUILD_AT"]} (UTC+8)",
                 submit_beta_review: true,
                 skip_waiting_for_build_processing: false
               )
