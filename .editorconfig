@@ -34,7 +34,7 @@ file_header_template = unset
 
 # this. 和 Me. 首选项
 dotnet_style_qualification_for_event = false:warning
-dotnet_style_qualification_for_field = false:warning
+dotnet_style_qualification_for_field = false
 dotnet_style_qualification_for_method = false:warning
 dotnet_style_qualification_for_property = false:warning
 
@@ -44,7 +44,7 @@ dotnet_style_predefined_type_for_member_access = true
 
 # 括号首选项
 dotnet_style_parentheses_in_arithmetic_binary_operators = always_for_clarity:warning
-dotnet_style_parentheses_in_other_binary_operators = always_for_clarity:warning
+dotnet_style_parentheses_in_other_binary_operators = always_for_clarity:suggestion
 dotnet_style_parentheses_in_other_operators = never_if_unnecessary
 dotnet_style_parentheses_in_relational_binary_operators = always_for_clarity:warning
 
