@@ -288,6 +288,7 @@
     "MAJTEXT_SAY": "说:",
     "MAJTEXT_SCANNING_CHARTS": "正在扫描谱面",
     "MAJTEXT_SCANNING_CHARTS_FROM_{0}": "正在从{0}拉取谱面",
+    "MAJTEXT_SCANNING_FAVORITES_FROM_{0}": "正在从{0}拉取收藏",
     "MAJTEXT_ERR_UNKNOWN": "未知错误",
     "MAJTEXT_ERR_OBSERROR": "无法连接到OBS WebSocket",
     "MAJTEXT_ERR_VIDEO_PLAYER_PREPARE_TIMEOUT": "视频加载超时，将使用歌曲封面作为背景",
