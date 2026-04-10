@@ -49,6 +49,8 @@ namespace MajdataPlay.Settings
         public bool StarRotation { get; set; } = true;
         
         public BGInfoOption BGInfo { get; set; } = BGInfoOption.Combo;
+        public BGInfoOption SecondaryBGInfo { get; set; } = BGInfoOption.None;
+        public BGInfoOption SubScreenBGInfo { get; set; } = BGInfoOption.Achievement;
         
         public TopInfoDisplayOption TopInfo { get; set; } = TopInfoDisplayOption.None;
         
