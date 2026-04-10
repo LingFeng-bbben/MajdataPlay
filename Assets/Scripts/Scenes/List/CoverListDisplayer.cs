@@ -110,13 +110,20 @@ namespace MajdataPlay.Scenes.List
                 {
                     newCollections[i] = collection;
                 }
+                else if (collection is OnlineSongCollection onlineCollection)
+                {
+                    newCollections[i] = new OnlineSongCollection(onlineCollection.Source, onlineCollection.Name, onlineCollection.ToArray())
+                    {
+                        DanInfo = collection.DanInfo,
+                        Type = collection.Type,
+                    };
+                }
                 else
                 {
                     newCollections[i] = new SongCollection(collection.Name, collection.ToArray())
                     {
                         DanInfo = collection.DanInfo,
                         Type = collection.Type,
-                        Location = collection.Location,
                     };
                 }
 

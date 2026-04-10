@@ -271,46 +271,57 @@ namespace MajdataPlay
                 throw;
             }
         }
-        
-        internal static async Task RefreshUserOnlineFav(IProgress<string>? progressReporter = null)
+        internal static async Task RefreshUserOnlineFavAsync(IProgress<string>? progressReporter = null)
         {
-            if (MajInstances.Settings.Online.Enable)
+            if (!MajInstances.Settings.Online.Enable)
             {
-                var collections = Collections.ToList();
-                foreach (var api in MajEnv.ApiEndpoints.OrderBy(x => x.Name))
+                return;
+            }
+            using var collections = new RentedList<SongCollection>(Collections);
+            for (var i = 0; i < collections.Count; i++)
+            {
+                var collection = collections[i];
+                if(collection.IsOnline && collection.Type is ChartStorageType.PlayList)
                 {
-                    if (api is null)
+                    collections.RemoveAt(i--);
+                }
+            }
+            foreach (var api in MajEnv.ApiEndpoints.OrderBy(x => x.Name))
+            {
+                if (api is null)
+                {
+                    continue;
+                }
+                if (string.IsNullOrEmpty(api.Name))
+                {
+                    continue;
+                }
+                try
+                {
+                    MajDebug.LogInfo($"[Online]Fetching fav list from {api.Url.OriginalString}");
+                    progressReporter?.Report(ZString.Format("MAJTEXT_SCANNING_FAVORITES_FROM_{0}".i18n(), api.Name));
+                    var daninfos = await Online.GetUserOnlineFavCollection(api);
+                    if (daninfos is not null && daninfos.Length > 0)
                     {
-                        continue;
-                    }
-                    if (string.IsNullOrEmpty(api.Name))
-                    {
-                        continue;
-                    }
-                    try
-                    {
-                        MajDebug.LogInfo($"[OnlineFav]Fetching fav list from {api.Url.OriginalString}");
-                        progressReporter?.Report(ZString.Format("MAJTEXT_SCANNING_FAVORITES_FROM_{0}".i18n(), api.Name));
-                        var daninfos = await Online.GetUserOnlineFavCollection(api);
-                        if (daninfos is not null && daninfos.Count() > 0)
+                        foreach (var dan in daninfos)
                         {
-                            foreach (var dan in daninfos)
+                            //TODO: make this parallel
+                            var collection = await GetOnlineDanCollectionAsync(_allCharts, dan, api);
+                            if (collection is not null)
                             {
-                                //TODO: make this parallel
-                                var collection = await GetDanCollection(_allCharts, dan);
-                                if (collection is not null)
-                                    collections.Add(collection);
+                                collections.Add(collection);
                             }
                         }
                     }
-                    catch (Exception e) {
-                        MajDebug.LogError($"[OnlineFav]Fetching fav list from {api.Url.OriginalString} failed because of {e.Message}");
-                        MajDebug.LogException(e);
-                    }
                 }
-                //Potential bug: user may not return to the dir because this change after refresh.
-                Collections = collections.ToArray();
+                catch (Exception e)
+                {
+                    MajDebug.LogError($"[Online]Fetching fav list from {api.Url.OriginalString} failed because of {e.Message}");
+                    MajDebug.LogException(e);
+                }
             }
+            //Potential bug: user may not return to the dir because this change after refresh.
+            Collections = collections.ToArray();
         }
         //get local song list and online song list
         static async Task<SongCollection[]> GetCollections(string rootPath, IProgress<string>? progressReporter)
@@ -443,7 +454,7 @@ namespace MajdataPlay
                 var (result, dan, e) = await Serializer.Json.TryDeserializeAsync<DanInfo>(jsonStream);
                 if (result && dan is not null)
                 {
-                    loadDanTasks[i] = GetDanCollection(_allCharts, dan);
+                    loadDanTasks[i] = GetLocalDanCollectionAsync(_allCharts, dan);
                 }
                 if (e is not null)
                 {
@@ -600,10 +611,7 @@ namespace MajdataPlay
                 {
                     Directory.CreateDirectory(cacheFolder);
                 }
-                return new SongCollection(cachePath, name, gameList.ToArray())
-                {
-                    Location = ChartStorageLocation.Online
-                };
+                return new OnlineSongCollection(api, cachePath, name, gameList.ToArray());
             }
             catch (OperationCanceledException)
             {
@@ -622,7 +630,16 @@ namespace MajdataPlay
             }
         }
         //import one dan file
-        private static async Task<SongCollection?> GetDanCollection(IEnumerable<ISongDetail> allCharts, DanInfo danInfo)
+        #region Dan or Playlist importor
+        private static async Task<SongCollection?> GetLocalDanCollectionAsync(IEnumerable<ISongDetail> allCharts, DanInfo danInfo)
+        {
+            return await GetDanCollectionAsync(allCharts, danInfo, null);
+        }
+        private static async Task<SongCollection?> GetOnlineDanCollectionAsync(IEnumerable<ISongDetail> allCharts, DanInfo danInfo, ApiEndpoint source)
+        {
+            return await GetDanCollectionAsync(allCharts, danInfo, source);
+        }
+        private static async Task<SongCollection?> GetDanCollectionAsync(IEnumerable<ISongDetail> allCharts, DanInfo danInfo, ApiEndpoint? source)
         {
             return await Task.Run(() =>
             {
@@ -639,13 +656,25 @@ namespace MajdataPlay
                     MajDebug.LogError("Failed to load dan, songs are empty or unable to find:" + danInfo.Name);
                     return default;
                 }
-                return new SongCollection(danInfo.Name, targetCharts)
+                if (source is not null)
                 {
-                    Type = danInfo.IsPlayList ? ChartStorageType.PlayList : ChartStorageType.Dan,
-                    DanInfo = danInfo.IsPlayList ? null : danInfo
-                };
+                    return new OnlineSongCollection(source, danInfo.Name, targetCharts)
+                    {
+                        Type = danInfo.IsPlayList ? ChartStorageType.PlayList : ChartStorageType.Dan,
+                        DanInfo = danInfo.IsPlayList ? null : danInfo
+                    };
+                }
+                else
+                {
+                    return new SongCollection(danInfo.Name, targetCharts)
+                    {
+                        Type = danInfo.IsPlayList ? ChartStorageType.PlayList : ChartStorageType.Dan,
+                        DanInfo = danInfo.IsPlayList ? null : danInfo
+                    };
+                }
             });
         }
+        #endregion
         static void OnSave(object? sender, EventArgs? args)
         {
             try

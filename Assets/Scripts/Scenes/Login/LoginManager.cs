@@ -218,7 +218,7 @@ namespace MajdataPlay.Scenes.Login
                                         _loading.SetActive(true);
                                         _isReady = false;
                                         MajDebug.LogDebug("Checking login status");
-                                        var getUserInfoTask = FetchUserInfomationAsync(endpoint);
+                                        var getUserInfoTask = FetchUserDataAsync(endpoint);
                                         while(!getUserInfoTask.IsCompleted)
                                         {
                                             await UniTask.Yield();
@@ -229,8 +229,9 @@ namespace MajdataPlay.Scenes.Login
                                         var userScores = Array.Empty<MajNetAccountSongScore>();
                                         if(getUserInfoTask.IsCompletedSuccessfully)
                                         {
-                                            userInfo = getUserInfoTask.Result.Summary;
-                                            userScores = getUserInfoTask.Result.Scores;
+                                            var userData = getUserInfoTask.Result;
+                                            userInfo = userData.Summary;
+                                            userScores = userData.Scores;
                                         }
                                         ScoreManager.LoadOnlineScores(userScores);
                                         await UpdateApiEndpointRuntimeConfigAsync(endpoint, userInfo);
@@ -360,7 +361,7 @@ namespace MajdataPlay.Scenes.Login
                                 MajDebug.LogInfo("Logged in");
                                 Hint("MAJTEXT_LOGIN_LOGIN_SUCCESS".i18n(), false);
                                 _loading.SetActive(true);
-                                var getUserInfoTask = FetchUserInfomationAsync(endpoint);
+                                var getUserInfoTask = FetchUserDataAsync(endpoint);
                                 if (!string.IsNullOrEmpty(authRequestId))
                                 {
                                     await RevokeAuthSession(endpoint, authRequestId);
@@ -434,14 +435,14 @@ namespace MajdataPlay.Scenes.Login
                     sceneSwitcher.SetLoadingText(string.Empty);
                 }
             }
-            var task2 = SongStorage.RefreshUserOnlineFav(progress);
+            var task2 = SongStorage.RefreshUserOnlineFavAsync(progress);
             while (!task2.IsCompleted)
             {
                 await UniTask.Yield();
             }
             if (!task2.IsCompletedSuccessfully)
             {
-                sceneSwitcher.SetLoadingText("MAJTEXT_ERR_SCAN_ONLINEFAVS_FAILED".i18n(), Color.red);
+                sceneSwitcher.SetLoadingText("MAJTEXT_ERR_SCAN_ONLINE_FAV_COLLECTION_FAILED".i18n(), Color.red);
             }
             else
             {
@@ -451,11 +452,10 @@ namespace MajdataPlay.Scenes.Login
             
             sceneSwitcher.SwitchScene("List");
         }
-        async ValueTask<UserInfo> FetchUserInfomationAsync(ApiEndpoint endpoint, CancellationToken token = default)
+        async ValueTask<UserData> FetchUserDataAsync(ApiEndpoint endpoint, CancellationToken token = default)
         {
             var userInfo = await Online.GetUserInfoAsync(endpoint, token);
             var userScores = await Online.GetUserScoresAsync(endpoint, token);
-
             token.ThrowIfCancellationRequested();
             return new()
             {
@@ -576,8 +576,10 @@ namespace MajdataPlay.Scenes.Login
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void Hint(string hintText = "", bool isError = false)
         {
-            if (!string.IsNullOrEmpty(hintText)) 
+            if (!string.IsNullOrEmpty(hintText))
+            {
                 _hintText.color = isError ? ErrorColor : SucceedColor;
+            }
             _hintText.text = hintText;
         }
 
@@ -585,7 +587,7 @@ namespace MajdataPlay.Scenes.Login
         {
             public string RequestId { get; init; }
         }
-        readonly struct UserInfo
+        readonly struct UserData
         {
             public UserSummary? Summary { get; init; }
             public MajNetAccountSongScore[] Scores { get; init; }

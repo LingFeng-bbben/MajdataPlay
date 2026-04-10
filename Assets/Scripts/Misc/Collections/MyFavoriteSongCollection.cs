@@ -32,16 +32,16 @@ namespace MajdataPlay.Collections
                 return;
             }
             _dataSet.Add(item);
-            _origin = _dataSet.ToArray();
+            Origin = _dataSet.ToArray();
             if(!IsSorted)
             {
-                _sorted = _origin;
+                Sorted = Origin;
             }
             else
             {
-                var sorted = new List<ISongDetail>(_sorted);
+                var sorted = new List<ISongDetail>(Sorted);
                 sorted.Add(item);
-                _sorted = sorted.ToArray();
+                Sorted = sorted.ToArray();
             }
         }
         public void Clear()
@@ -68,16 +68,16 @@ namespace MajdataPlay.Collections
                 return false;
             }
             _dataSet.Remove(item);
-            _origin = _dataSet.ToArray();
+            Origin = _dataSet.ToArray();
             if (!IsSorted)
             {
-                _sorted = _origin;
+                Sorted = Origin;
             }
-            else if (_sorted.Any(x => x.Hash == item.Hash))
+            else if (Sorted.Any(x => x.Hash == item.Hash))
             {
-                var sorted = new List<ISongDetail>(_sorted);
+                var sorted = new List<ISongDetail>(Sorted);
                 sorted.Remove(item);
-                _sorted = sorted.ToArray();
+                Sorted = sorted.ToArray();
             }
             return true;
         }
@@ -93,10 +93,10 @@ namespace MajdataPlay.Collections
                 throw new KeyNotFoundException();
             }
             _dataSet.RemoveAt(index);
-            _origin = _dataSet.ToArray();
+            Origin = _dataSet.ToArray();
             if (!IsSorted)
             {
-                _sorted = _origin;
+                Sorted = Origin;
             }
             return true;
         }

@@ -121,11 +121,15 @@ namespace MajdataPlay.Net
                 {
                     var uri = apiEndpoint.Url.Combine(API_GET_USER_INFO);
                     var rsp = default(EndpointResponse);
+                    var statistic = GetApiEndpointStatistic(apiEndpoint);
                     for (var i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
                     {
                         rsp = await GetAsync(uri, token);
                         if (rsp.StatusCode is HttpStatusCode.Unauthorized)
                         {
+                            await statistic.LockAsync(token);
+                            statistic.IsUserLoggedIn = false;
+                            statistic.Unlock();
                             return default;
                         }
                         else if (!rsp.IsSuccessfully || !rsp.IsDeserializable)
@@ -136,6 +140,9 @@ namespace MajdataPlay.Net
                         }
                         var userinfo = await rsp.DeserializeAsync<UserSummary>();
                         MajDebug.LogInfo("Login as " + userinfo.Username);
+                        await statistic.LockAsync(token);
+                        statistic.IsUserLoggedIn = true;
+                        statistic.Unlock();
                         return userinfo;
                     }
                     return default;
@@ -480,6 +487,7 @@ namespace MajdataPlay.Net
                         }
                         finally
                         {
+                            statistics.IsUserLoggedIn = false;
                             apiEndpoint.RuntimeConfig.AuthMethod = NetAuthMethodOption.None;
                             apiEndpoint.RuntimeConfig.Avatar = null;
                             apiEndpoint.RuntimeConfig.Username = "???";
@@ -770,6 +778,14 @@ namespace MajdataPlay.Net
             await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
                 await UniTask.SwitchToThreadPool();
+                var statistic = GetApiEndpointStatistic(apiEndpoint);
+                await statistic.LockAsync(token);
+                var isLoggedIn = statistic.IsUserLoggedIn;
+                statistic.Unlock();
+                if (isLoggedIn is not true)
+                {
+                    return null;
+                }
                 var url = apiEndpoint.Url.Combine(API_GET_USER_FAVCOLLECTION);
                 var rsp = default(EndpointResponse);
 
@@ -794,6 +810,9 @@ namespace MajdataPlay.Net
                     else if (rsp.StatusCode == HttpStatusCode.Unauthorized)
                     {
                         MajDebug.LogError($"Failed to get online dan list: user not logged in");
+                        await statistic.LockAsync(token);
+                        statistic.IsUserLoggedIn = false;
+                        statistic.Unlock();
                         break;
                     }
                     else if (!rsp.IsSuccessfully && rsp.StatusCode is not HttpStatusCode.OK)
@@ -816,6 +835,7 @@ namespace MajdataPlay.Net
             {
                 await UniTask.SwitchToThreadPool();
                 var url = apiEndpoint.Url.Combine(string.Format(API_GET_USER_ICON, username));
+                var statistic = GetApiEndpointStatistic(apiEndpoint);
                 for (var i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
                 {
                     try
@@ -825,8 +845,18 @@ namespace MajdataPlay.Net
                         {
                             MajDebug.LogError("Failed to download user icon");
                             MajDebug.LogError($"Url:{url}\nStatusCode:{rsp.StatusCode}\nErrorCode:{rsp.ErrorCode}\nMessage:{rsp.Message}");
+                            if (rsp.StatusCode is HttpStatusCode.Unauthorized)
+                            {
+                                await statistic.LockAsync(token);
+                                statistic.IsUserLoggedIn = false;
+                                statistic.Unlock();
+                                return default;
+                            }
                             continue;
                         }
+                        await statistic.LockAsync(token);
+                        statistic.IsUserLoggedIn = true;
+                        statistic.Unlock();
                         var avatar = await SpriteLoader.LoadAsync(rsp.AsMemory());
                         return avatar;
                     }
@@ -836,7 +866,7 @@ namespace MajdataPlay.Net
                         MajDebug.LogError(e);
                     }
                 }
-                return null;
+                return default;
             }
         }
         public static void ClearResponseCache()
