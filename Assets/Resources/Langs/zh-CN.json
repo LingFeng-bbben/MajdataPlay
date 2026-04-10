@@ -296,6 +296,7 @@
     "MAJTEXT_ERR_LOAD_CHART_FAILED": "加载谱面时发生错误",
     "MAJTEXT_ERR_EMPTY_CHART": "此难度为空",
     "MAJTEXT_ERR_SCAN_CHARTS_FAILED": "扫描谱面时出现问题",
+    "MAJTEXT_ERR_SCAN_ONLINE_FAV_COLLECTION_FAILED": "获取在线收藏时出现问题",
     "MAJTEXT_ERR_NO_CHART": "没有可用的谱面"
   }
 }
