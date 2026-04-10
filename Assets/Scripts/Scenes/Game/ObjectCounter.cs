@@ -17,6 +17,7 @@ using Unity.Burst.Intrinsics;
 using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 using UnityEngine.Profiling;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 #nullable enable
@@ -161,10 +162,15 @@ namespace MajdataPlay.Scenes.Game
         #endregion
 
         #region UIrefs
-        TextMeshProUGUI _bgInfoHeader;
-        TextMeshProUGUI _bgInfoText;
         TextMeshProUGUI _judgeResultCount;
         TextMeshProUGUI _rate;
+
+        [SerializeField]
+        [FormerlySerializedAs("centerInfoDisplayerHeader")]
+        TextMeshProUGUI _centerInfoDisplayerHeader;
+        [SerializeField]
+        [FormerlySerializedAs("centerInfoDisplayerText")]
+        TextMeshProUGUI _centerInfoDisplayerText;
 
         [SerializeField]
         GameObject _topInfoJudgeParent;
@@ -204,9 +210,6 @@ namespace MajdataPlay.Scenes.Game
             _judgeResultCount = GameObject.Find("JudgeResultCount").GetComponent<TextMeshProUGUI>();
             _rate = GameObject.Find("ObjectRate").GetComponent<TextMeshProUGUI>();
 
-            _bgInfoText = GameObject.Find("ComboText").GetComponent<TextMeshProUGUI>();
-            _bgInfoHeader = GameObject.Find("ComboTextHeader").GetComponent<TextMeshProUGUI>();
-
             //clean up
             Clear();
 
@@ -227,25 +230,25 @@ namespace MajdataPlay.Scenes.Game
                     break;
             }
 
-            SetBgInfoActive(true);
+            SetCenterInfoDisplayerActive(true);
             switch (MajInstances.Settings.Game.BGInfo)
             {
                 case BGInfoOption.CPCombo:
-                    _bgInfoHeader.color = CPComboColor;
-                    _bgInfoText.color = CPComboColor;
-                    _bgInfoHeader.text = "CPCombo";
+                    _centerInfoDisplayerHeader.color = CPComboColor;
+                    _centerInfoDisplayerText.color = CPComboColor;
+                    _centerInfoDisplayerHeader.text = "CPCombo";
                     //bgInfoHeader.alignment = TextAnchor.MiddleCenter;
                     break;
                 case BGInfoOption.PCombo:
-                    _bgInfoHeader.color = PComboColor;
-                    _bgInfoText.color = PComboColor;
-                    _bgInfoHeader.text = "PCombo";
+                    _centerInfoDisplayerHeader.color = PComboColor;
+                    _centerInfoDisplayerText.color = PComboColor;
+                    _centerInfoDisplayerHeader.text = "PCombo";
                     //bgInfoHeader.alignment = TextAnchor.MiddleCenter;
                     break;
                 case BGInfoOption.Combo:
-                    _bgInfoHeader.color = ComboColor;
-                    _bgInfoText.color = ComboColor;
-                    _bgInfoHeader.text = "Combo";
+                    _centerInfoDisplayerHeader.color = ComboColor;
+                    _centerInfoDisplayerText.color = ComboColor;
+                    _centerInfoDisplayerHeader.text = "Combo";
                     //bgInfoHeader.alignment = TextAnchor.MiddleCenter;
                     break;
                 case BGInfoOption.Achievement_101:
@@ -253,52 +256,52 @@ namespace MajdataPlay.Scenes.Game
                 case BGInfoOption.Achievement:
                 case BGInfoOption.AchievementClassical:
                 case BGInfoOption.AchievementClassical_100:
-                    _bgInfoHeader.text = "Achievement";
-                    _bgInfoHeader.color = AchievementGoldColor;
+                    _centerInfoDisplayerHeader.text = "Achievement";
+                    _centerInfoDisplayerHeader.color = AchievementGoldColor;
                     //bgInfoText.alignment = TextAnchor.MiddleRight;
                     break;
                 case BGInfoOption.DXScore:
                 case BGInfoOption.DXScoreRank:
-                    _bgInfoHeader.text = "でらっくす SCORE";
-                    _bgInfoHeader.color = DXScoreColor;
-                    _bgInfoText.color = DXScoreColor;
+                    _centerInfoDisplayerHeader.text = "でらっくす SCORE";
+                    _centerInfoDisplayerHeader.color = DXScoreColor;
+                    _centerInfoDisplayerText.color = DXScoreColor;
                     //bgInfoText.alignment = TextAnchor.MiddleCenter;
                     break;
                 case BGInfoOption.S_Border:
-                    _bgInfoHeader.text = "S  BORDER";
-                    _bgInfoHeader.color = AchievementSilverColor;
-                    _bgInfoText.color = AchievementSilverColor;
-                    _bgInfoText.text = "4.0000%";
+                    _centerInfoDisplayerHeader.text = "S  BORDER";
+                    _centerInfoDisplayerHeader.color = AchievementSilverColor;
+                    _centerInfoDisplayerText.color = AchievementSilverColor;
+                    _centerInfoDisplayerText.text = "4.0000%";
                     //bgInfoText.alignment = TextAnchor.MiddleRight;
                     break;
                 case BGInfoOption.SS_Border:
-                    _bgInfoHeader.text = "SS  BORDER";
-                    _bgInfoHeader.color = AchievementGoldColor;
-                    _bgInfoText.color = AchievementGoldColor;
-                    _bgInfoText.text = "2.0000%";
+                    _centerInfoDisplayerHeader.text = "SS  BORDER";
+                    _centerInfoDisplayerHeader.color = AchievementGoldColor;
+                    _centerInfoDisplayerText.color = AchievementGoldColor;
+                    _centerInfoDisplayerText.text = "2.0000%";
                     //bgInfoText.alignment = TextAnchor.MiddleRight;
                     break;
                 case BGInfoOption.SSS_Border:
-                    _bgInfoHeader.text = "SSS  BORDER";
-                    _bgInfoHeader.color = AchievementGoldColor;
-                    _bgInfoText.color = AchievementGoldColor;
-                    _bgInfoText.text = "1.0000%";
+                    _centerInfoDisplayerHeader.text = "SSS  BORDER";
+                    _centerInfoDisplayerHeader.color = AchievementGoldColor;
+                    _centerInfoDisplayerText.color = AchievementGoldColor;
+                    _centerInfoDisplayerText.text = "1.0000%";
                     //bgInfoText.alignment = TextAnchor.MiddleRight;
                     break;
                 case BGInfoOption.MyBest:
-                    _bgInfoHeader.text = "MyBestScore BORDER";
-                    _bgInfoHeader.color = AchievementGoldColor;
-                    _bgInfoText.color = AchievementGoldColor;
-                    _bgInfoText.text = "101.0000%";
+                    _centerInfoDisplayerHeader.text = "MyBestScore BORDER";
+                    _centerInfoDisplayerHeader.color = AchievementGoldColor;
+                    _centerInfoDisplayerText.color = AchievementGoldColor;
+                    _centerInfoDisplayerText.text = "101.0000%";
                     break;
                 case BGInfoOption.Diff:
-                    _bgInfoHeader.color = ComboColor;
-                    _bgInfoText.color = ComboColor;
-                    _bgInfoHeader.text = "";
-                    _bgInfoText.text = "";
+                    _centerInfoDisplayerHeader.color = ComboColor;
+                    _centerInfoDisplayerText.color = ComboColor;
+                    _centerInfoDisplayerHeader.text = "";
+                    _centerInfoDisplayerText.text = "";
                     break;
                 case BGInfoOption.None:
-                    SetBgInfoActive(false);
+                    SetCenterInfoDisplayerActive(false);
                     break;
                 default:
                     return;
@@ -319,15 +322,15 @@ namespace MajdataPlay.Scenes.Game
 
             if (_gameInfo.IsDanMode)
             {
-                SetBgInfoActive(true);
-                _bgInfoHeader.text = "LIFE";
-                _bgInfoHeader.color = ComboColor;
-                _bgInfoText.text = _gameInfo.CurrentHP.ToString();
-                _bgInfoText.color = ComboColor;
+                SetCenterInfoDisplayerActive(true);
+                _centerInfoDisplayerHeader.text = "LIFE";
+                _centerInfoDisplayerHeader.color = ComboColor;
+                _centerInfoDisplayerText.text = _gameInfo.CurrentHP.ToString();
+                _centerInfoDisplayerText.color = ComboColor;
             }
             else if(_gpManager.IsAutoplay)
             {
-                _bgInfoHeader.text = "AUTOPLAY";
+                _centerInfoDisplayerHeader.text = "AUTOPLAY";
             }
         }
 
@@ -626,15 +629,15 @@ namespace MajdataPlay.Scenes.Game
         {
             if (combo == 0)
             {
-                SetBgInfoActive(false);
+                SetCenterInfoDisplayerActive(false);
             }
             else
             {
-                SetBgInfoActive(true);
+                SetCenterInfoDisplayerActive(true);
                 _sb.Clear();
                 COMBO_OR_DXSCORE_FORMAT.FormatTo(ref _sb, combo);
                 var a = _sb.AsArraySegment();
-                _bgInfoText.SetCharArray(a.Array, a.Offset, a.Count);
+                _centerInfoDisplayerText.SetCharArray(a.Array, a.Offset, a.Count);
             }
         }
         /// <summary>
@@ -648,9 +651,9 @@ namespace MajdataPlay.Scenes.Game
                 _sb.Clear();
                 _sb.Append(_gameInfo.CurrentHP);
                 var a = _sb.AsArraySegment();
-                _bgInfoText.SetCharArray(a.Array, a.Offset, a.Count);
-                _bgInfoText.color = ComboColor;
-                SetBgInfoActive(true);
+                _centerInfoDisplayerText.SetCharArray(a.Array, a.Offset, a.Count);
+                _centerInfoDisplayerText.color = ComboColor;
+                SetCenterInfoDisplayerActive(true);
                 return;
             }
             switch (bgInfo)
@@ -671,9 +674,9 @@ namespace MajdataPlay.Scenes.Game
                         _sb.Clear();
                         DX_ACC_RATE_FORMAT.FormatTo(ref _sb, accRate);
                         var a = _sb.AsArraySegment();
-                        _bgInfoText.SetCharArray(a.Array, a.Offset, a.Count);
+                        _centerInfoDisplayerText.SetCharArray(a.Array, a.Offset, a.Count);
 
-                        UpdateAchievementColor(_accRate[2], _bgInfoText);
+                        UpdateAchievementColor(_accRate[2], _centerInfoDisplayerText);
                     }
                     break;
                 case BGInfoOption.Achievement_100:
@@ -683,9 +686,9 @@ namespace MajdataPlay.Scenes.Game
                         _sb.Clear();
                         DX_ACC_RATE_FORMAT.FormatTo(ref _sb, accRate);
                         var a = _sb.AsArraySegment();
-                        _bgInfoText.SetCharArray(a.Array, a.Offset, a.Count);
+                        _centerInfoDisplayerText.SetCharArray(a.Array, a.Offset, a.Count);
 
-                        UpdateAchievementColor(_accRate[3], _bgInfoText);
+                        UpdateAchievementColor(_accRate[3], _centerInfoDisplayerText);
                     }
                     break;
                 case BGInfoOption.Achievement:
@@ -695,9 +698,9 @@ namespace MajdataPlay.Scenes.Game
                         _sb.Clear();
                         DX_ACC_RATE_FORMAT.FormatTo(ref _sb, accRate);
                         var a = _sb.AsArraySegment();
-                        _bgInfoText.SetCharArray(a.Array, a.Offset, a.Count);
+                        _centerInfoDisplayerText.SetCharArray(a.Array, a.Offset, a.Count);
 
-                        UpdateAchievementColor(_accRate[4], _bgInfoText);
+                        UpdateAchievementColor(_accRate[4], _centerInfoDisplayerText);
                     }
                     break;
                 case BGInfoOption.AchievementClassical:
@@ -707,9 +710,9 @@ namespace MajdataPlay.Scenes.Game
                         _sb.Clear();
                         CLASSIC_ACC_RATE_FORMAT.FormatTo(ref _sb, accRate);
                         var a = _sb.AsArraySegment();
-                        _bgInfoText.SetCharArray(a.Array, a.Offset, a.Count);
+                        _centerInfoDisplayerText.SetCharArray(a.Array, a.Offset, a.Count);
 
-                        UpdateAchievementColor(_accRate[0], _bgInfoText);
+                        UpdateAchievementColor(_accRate[0], _centerInfoDisplayerText);
                     }
                     break;
                 case BGInfoOption.AchievementClassical_100:
@@ -719,9 +722,9 @@ namespace MajdataPlay.Scenes.Game
                         _sb.Clear();
                         CLASSIC_ACC_RATE_FORMAT.FormatTo(ref _sb, accRate);
                         var a = _sb.AsArraySegment();
-                        _bgInfoText.SetCharArray(a.Array, a.Offset, a.Count);
+                        _centerInfoDisplayerText.SetCharArray(a.Array, a.Offset, a.Count);
 
-                        UpdateAchievementColor(_accRate[1], _bgInfoText);
+                        UpdateAchievementColor(_accRate[1], _centerInfoDisplayerText);
                     }
                     break;
                 case BGInfoOption.DXScore:
@@ -729,7 +732,7 @@ namespace MajdataPlay.Scenes.Game
                         _sb.Clear();
                         COMBO_OR_DXSCORE_FORMAT.FormatTo(ref _sb, _lostDXScore);
                         var a = _sb.AsArraySegment();
-                        _bgInfoText.SetCharArray(a.Array, a.Offset, a.Count);
+                        _centerInfoDisplayerText.SetCharArray(a.Array, a.Offset, a.Count);
                     }
                     break;
                 case BGInfoOption.DXScoreRank:
@@ -746,18 +749,18 @@ namespace MajdataPlay.Scenes.Game
                         _sb.Clear();
                         DIFF_FORMAT.FormatTo(ref _sb, _lastJudgeDiff);
                         var a = _sb.AsArraySegment();
-                        _bgInfoText.SetCharArray(a.Array, a.Offset, a.Count);
+                        _centerInfoDisplayerText.SetCharArray(a.Array, a.Offset, a.Count);
 
-                        var oldColor = _bgInfoText.color;
+                        var oldColor = _centerInfoDisplayerText.color;
                         if (_lastJudgeDiff < 0)
                         {
                             oldColor = EarlyDiffColor;
-                            _bgInfoHeader.text = FAST_STRING;
+                            _centerInfoDisplayerHeader.text = FAST_STRING;
                         }
                         else
                         {
                             oldColor = LateDiffColor;
-                            _bgInfoHeader.text = LATE_STRING;
+                            _centerInfoDisplayerHeader.text = LATE_STRING;
                         }
                         var newColor = new Color()
                         {
@@ -766,8 +769,8 @@ namespace MajdataPlay.Scenes.Game
                             b = oldColor.b,
                             a = _diffTimer.Clamp(0, 1)
                         };
-                        _bgInfoHeader.color = newColor;
-                        _bgInfoText.color = newColor;
+                        _centerInfoDisplayerHeader.color = newColor;
+                        _centerInfoDisplayerText.color = newColor;
                         _diffTimer -= MajTimeline.DeltaTime * 3;
                     }
                     break;
@@ -801,25 +804,25 @@ namespace MajdataPlay.Scenes.Game
                 rate = Math.Floor(rate * 10000) / 10000;
                 DX_ACC_RATE_FORMAT.FormatTo(ref _sb, rate);
                 var a = _sb.AsArraySegment();
-                _bgInfoText.SetCharArray(a.Array, a.Offset, a.Count);
+                _centerInfoDisplayerText.SetCharArray(a.Array, a.Offset, a.Count);
                 //_bgInfoText.text = ZString.Format(DX_ACC_RATE_STRING, rate);
             }
             else
             {
-                SetBgInfoActive(false);
+                SetCenterInfoDisplayerActive(false);
             }
         }
-        void SetBgInfoActive(bool state)
+        void SetCenterInfoDisplayerActive(bool state)
         {
             switch(state)
             {
                 case true:
-                    _bgInfoText.gameObject.layer = 0;
-                    _bgInfoHeader.gameObject.layer = 0;
+                    _centerInfoDisplayerText.gameObject.layer = MajEnv.DEFAULT_LAYER;
+                    _centerInfoDisplayerHeader.gameObject.layer = MajEnv.DEFAULT_LAYER;
                     break;
                 case false:
-                    _bgInfoText.gameObject.layer = 3;
-                    _bgInfoHeader.gameObject.layer = 3;
+                    _centerInfoDisplayerText.gameObject.layer = MajEnv.HIDDEN_LAYER;
+                    _centerInfoDisplayerHeader.gameObject.layer = MajEnv.HIDDEN_LAYER;
                     break;
             }
         }
@@ -830,35 +833,35 @@ namespace MajdataPlay.Scenes.Game
             var num = remainingDXScore - (dxRank.Lower + 1);
             if (dxRank.Rank == 0)
             {
-                SetBgInfoActive(false);
+                SetCenterInfoDisplayerActive(false);
                 return;
             }
             else
             {
-                SetBgInfoActive(true);
+                SetCenterInfoDisplayerActive(true);
             }
             _sb.Clear();
             DXSCORE_RANK_HEADER_FORMAT.FormatTo(ref _sb, dxRank.Rank);
             var a = _sb.AsArraySegment();
-            _bgInfoHeader.SetCharArray(a.Array, a.Offset, a.Count);
+            _centerInfoDisplayerHeader.SetCharArray(a.Array, a.Offset, a.Count);
 
             _sb.Clear();
             DXSCORE_RANK_BODY_FORMAT.FormatTo(ref _sb, num);
             var b = _sb.AsArraySegment();
-            _bgInfoText.SetCharArray(b.Array, b.Offset, b.Count);
+            _centerInfoDisplayerText.SetCharArray(b.Array, b.Offset, b.Count);
 
             switch (dxRank.Rank)
             {
                 case 5:
                 case 4:
                 case 3:
-                    _bgInfoHeader.color = AchievementGoldColor;
-                    _bgInfoText.color = AchievementGoldColor;
+                    _centerInfoDisplayerHeader.color = AchievementGoldColor;
+                    _centerInfoDisplayerText.color = AchievementGoldColor;
                     break;
                 case 2:
                 case 1:
-                    _bgInfoHeader.color = DXScoreColor;
-                    _bgInfoText.color = DXScoreColor;
+                    _centerInfoDisplayerHeader.color = DXScoreColor;
+                    _centerInfoDisplayerText.color = DXScoreColor;
                     break;
             }
         }
