@@ -553,7 +553,7 @@ namespace MajdataPlay.Scenes.List
             await sceneSwitcher.FadeInAsync();
             sceneSwitcher.SwitchScene("Empty", false);
             await UniTask.Delay(400);
-            sceneSwitcher.SetLoadingText("Waiting for all background tasks to suspend".i18n());
+            sceneSwitcher.SetLoadingText("MAJTEXT_WAITING_FOR_BACKGROUND_TASKS_SUSPEND".i18n());
             await UniTask.Delay(100);
             var bTasks = WaitForBackgroundTaskSuspendAsync();
             while(!bTasks.IsCompleted)
@@ -628,7 +628,7 @@ namespace MajdataPlay.Scenes.List
             await sceneSwitcher.FadeInAsync();
             sceneSwitcher.SwitchScene("Empty", false);
             await UniTask.Delay(400);
-            sceneSwitcher.SetLoadingText("Waiting for all background tasks to suspend".i18n());
+            sceneSwitcher.SetLoadingText("MAJTEXT_WAITING_FOR_BACKGROUND_TASKS_SUSPEND".i18n());
             await UniTask.Delay(100);
             var bTasks = WaitForBackgroundTaskSuspendAsync();
             while (!bTasks.IsCompleted)

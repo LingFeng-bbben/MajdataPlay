@@ -804,7 +804,7 @@ namespace MajdataPlay.Scenes.Game
             var isAwaited = !allBackgroundTasks.IsCompleted;
             if (!allBackgroundTasks.IsCompleted)
             {
-                _sceneSwitcher.SetLoadingText($"{"Waiting for all background tasks to suspend".i18n()}...");
+                _sceneSwitcher.SetLoadingText($"{"MAJTEXT_WAITING_FOR_BACKGROUND_TASKS_SUSPEND".i18n()}...");
             }
             while (!allBackgroundTasks.IsCompleted)
             {
