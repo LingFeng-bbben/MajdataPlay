@@ -147,6 +147,8 @@ namespace MajdataPlay
             }
             
             strOut = origin;
+            var currentLang = _current;
+            MajDebug.LogWarning($"[i18n]Missing translation for: {origin}\nCode: {currentLang.Code}, Author: {currentLang.Author}");
             return false;
         }
         static Language _current = Language.Default;
