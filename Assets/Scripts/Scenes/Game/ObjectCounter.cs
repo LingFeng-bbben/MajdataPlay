@@ -489,7 +489,6 @@ namespace MajdataPlay.Scenes.Game
         {
             UpdateMainOutput();
             UpdateJudgeResult();
-            UpdateTopAcc();
         }
         void UpdateAccRate()
         {
@@ -1117,27 +1116,6 @@ namespace MajdataPlay.Scenes.Game
                 default:
                     break;
             }
-        }
-        /// <summary>
-        /// 更新顶部的总达成率
-        /// </summary>
-        void UpdateTopAcc()
-        {
-            var isClassic = MajInstances.GameManager.Settings.Judge.Mode == JudgeModeOption.Classic;
-            var format = isClassic ? CLASSIC_ACC_RATE_FORMAT : DX_ACC_RATE_FORMAT;
-            double value;
-            if(isClassic)
-            {
-                value = Math.Floor(_accRate[0] * 100) / 100;
-            }
-            else
-            {
-                value = Math.Floor(_accRate[4] * 10000) / 10000;
-            }
-            _sb.Clear();
-            format.FormatTo(ref _sb, value);
-            var arraySegment = _sb.AsArraySegment();
-            _rate.SetCharArray(arraySegment.Array, arraySegment.Offset, arraySegment.Count);
         }
         /// <summary>
         /// 计算最终达成率
