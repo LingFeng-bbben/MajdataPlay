@@ -853,7 +853,7 @@ namespace MajdataPlay.Net
                                 return default;
                             }
                             await UniTask.SwitchToMainThread();
-                            onError?.Invoke("MAJTEXT_LOGIN_DOWNLOADING_AVATAR_FAILED".i18n(i+1, MajEnv.HTTP_REQUEST_MAX_RETRY+1), true);
+                            onError?.Invoke("MAJTEXT_LOGIN_DOWNLOAD_AVATAR_FAILED_RETRIED_TIMES_{0}/{1}".i18n(i+1, MajEnv.HTTP_REQUEST_MAX_RETRY+1), true);
                             await UniTask.SwitchToThreadPool();
                             continue;
                         }
