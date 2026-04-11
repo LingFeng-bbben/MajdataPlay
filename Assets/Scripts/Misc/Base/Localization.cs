@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Collections;
+﻿using MajdataPlay.Buffers;
+using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
 using MajdataPlay.Utils;
 using Newtonsoft.Json;
@@ -77,18 +78,15 @@ namespace MajdataPlay
                     }
                     MajDebug.LogDebug("Lang file loaded: " + file);
                     var json = ta.text;
-                    Language? lang = null;
-                    if (Serializer.Json.TryDeserialize(json, out lang, out var exception, JsonReaderSettings) && lang is not null)
+                    Language? lang = Parse(json);
+                    if (lang is null)
                     {
-                        loadedLangs.Add(lang);
-                    }
-                    else
-                    {
-                        MajDebug.LogException(exception);
+                        MajDebug.LogError($"Failed to parse lang file: {file}");
                         continue;
                     }
+                    loadedLangs.Add(lang);
                 }
-                if (loadedLangs.IsEmpty())
+                if (loadedLangs.Count == 0)
                 {
                     return;
                 }
@@ -136,7 +134,42 @@ namespace MajdataPlay
             Current = result;
             return true;
         }
-
+        public static Language? Parse(string json)
+        {
+            if (Serializer.Json.TryDeserialize<Language>(json, out var lang, out var exception, JsonReaderSettings) && lang is not null)
+            {
+                return lang;
+            }
+            else
+            {
+                MajDebug.LogException(exception);
+                return default;
+            }
+        }
+        public static Language[] Parse(IEnumerable<string> jsons)
+        {
+            using var loadedLangs = new RentedList<Language>();
+            foreach (var json in jsons)
+            {
+                Language? lang = Parse(json);
+                if(lang is null)
+                {
+                    continue;
+                }
+                loadedLangs.Add(lang);
+            }
+            if (loadedLangs.Count == 0)
+            {
+                return Array.Empty<Language>();
+            }
+            var grouped = loadedLangs.GroupBy(x => x.ToString());
+            var available = new Language[grouped.Count()];
+            foreach (var (i, grouping) in grouped.WithIndex())
+            {
+                available[i] = grouping.First();
+            }
+            return available;
+        }
         public static bool TryGetLocalizedText(string origin,out string strOut)
         {
             var translations = Current.GetTranslations();
