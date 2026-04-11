@@ -1,4 +1,5 @@
 ﻿using MajdataPlay.Buffers;
+using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
@@ -21,8 +22,7 @@ namespace MajdataPlay.Editor.Windows
         VisualElement _rightRoot;
         ScrollView _keyValuePairViewer;
 
-        Language _template;
-        List<KeyValuePair<string, string>> _templateContent = new();
+        List<string> _templateContent = new();
         Language[] _languages = Array.Empty<Language>();
 
         List<VisualElement> _tabPages = new();
@@ -30,22 +30,22 @@ namespace MajdataPlay.Editor.Windows
         void Awake()
         {
             var langJsonPaths = Resources.LoadAll<TextAsset>("Langs");
-            var templateFile = Resources.Load<TextAsset>("Langs/template.i18n");
+            var templateFile = Resources.Load<TextAsset>("Langs/template.tpl");
             if(templateFile != null)
             {
-                _template = Localization.Parse(templateFile.text);
+                if(Serializer.Json.TryDeserialize<string[]>(templateFile.text, out var templateContent, out var e))
+                {
+                    _templateContent.AddRange(templateContent);
+                }
+                else
+                {
+                    Debug.LogError($"Failed to parse template content: {e}");
+                }
             }            
-            _template ??= new Language()
-            {
-                Author = "Template",
-                Code = "SB",
-                Translations = new()
-            };
-            _templateContent.AddRange(_template.Translations);
             using var jsons = new RentedList<string>();
             foreach (var lang in langJsonPaths)
             {
-                if (lang == null)
+                if (lang == null || lang.name.EndsWith(".tpl"))
                 {
                     continue;
                 }
@@ -120,22 +120,18 @@ namespace MajdataPlay.Editor.Windows
             {
                 var container = new VisualElement();
                 var keyField = new TextField("Key");
-                var valueField = new TextField("Value");
                 container.Add(keyField);
-                container.Add(valueField);
                 return container;
             };
             listView.bindItem = (element, index) =>
             {
-                var kv = _templateContent[index];
+                var k = _templateContent[index];
 
                 var container = element;
 
                 var keyField = container.ElementAt(0) as TextField;
-                var valueField = container.ElementAt(1) as TextField;
 
-                keyField.SetValueWithoutNotify(kv.Key);
-                valueField.SetValueWithoutNotify(kv.Value);
+                keyField.SetValueWithoutNotify(k);
             };
             rootElement.Add(listView);
         }
