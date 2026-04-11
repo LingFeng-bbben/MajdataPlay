@@ -472,7 +472,7 @@ namespace MajdataPlay.Scenes.Login
                 var result = (UserSummary)userInfo;
                 _loading.SetActive(true);
                 Hint("MAJTEXT_LOGIN_DOWNLOADING_AVATAR".i18n(), false);
-                var avatarTask = Online.GetUserIconAsync(endpoint, result.Username);
+                var avatarTask = Online.GetUserIconAsync(endpoint, result.Username, onError: Hint);
                 while (!avatarTask.IsCompleted)
                 {
                     await UniTask.Yield();
@@ -483,11 +483,6 @@ namespace MajdataPlay.Scenes.Login
                     Hint();
                     runtimeConfig.Avatar = avatarTask.Result;
                     MajDebug.LogInfo("User avatar has been downloaded");
-                }
-                else
-                {
-                    Hint("MAJTEXT_LOGIN_DOWNLOADING_AVATAR_FAILED".i18n(), true);
-                    MajDebug.LogInfo("Failed to download user avatar");
                 }
                 runtimeConfig.Username = result.Username;
             }

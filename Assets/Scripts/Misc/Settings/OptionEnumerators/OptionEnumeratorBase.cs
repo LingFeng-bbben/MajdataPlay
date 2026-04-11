@@ -202,7 +202,7 @@ public abstract class OptionEnumeratorBase
             if (!ValueTextLocalizationTemplate.Format(Name, ValueTexts[i]).Tryi18n(out var localizedText) &&
                 !GeneralValueTextLocalizationTemplate.Format(ValueTexts[i]).Tryi18n(out localizedText))
             {
-                localizedText = ValueTexts[i];
+                localizedText = ValueTexts[i]; 
             }
             LocalizedValueTexts[i] = localizedText;
         }

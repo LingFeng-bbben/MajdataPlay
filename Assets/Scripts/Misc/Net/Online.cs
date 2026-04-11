@@ -825,7 +825,7 @@ namespace MajdataPlay.Net
             }
         }
 
-        public static async ValueTask<Sprite?> GetUserIconAsync(ApiEndpoint apiEndpoint,string username, CancellationToken token = default)
+        public static async ValueTask<Sprite?> GetUserIconAsync(ApiEndpoint apiEndpoint,string username, CancellationToken token = default, Action<string, bool>? onError = null)
         {
             if(string.IsNullOrEmpty(username))
             {
@@ -852,6 +852,9 @@ namespace MajdataPlay.Net
                                 statistic.Unlock();
                                 return default;
                             }
+                            await UniTask.SwitchToMainThread();
+                            onError?.Invoke("MAJTEXT_LOGIN_DOWNLOADING_AVATAR_FAILED".i18n(i+1, MajEnv.HTTP_REQUEST_MAX_RETRY+1), true);
+                            await UniTask.SwitchToThreadPool();
                             continue;
                         }
                         await statistic.LockAsync(token);
