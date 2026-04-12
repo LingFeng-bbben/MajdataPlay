@@ -336,13 +336,6 @@ namespace MajdataPlay.IO
                         try
                         {
 #if UNITY_ANDROID
-                            var keyboard = Keyboard.current;
-
-                            if(keyboard is null)
-                            {
-                                continue;
-                            }
-
                             for (var i = 0; i < gameButtons.Length; i++)
                             {
                                 var button = gameButtons.Span[i];
