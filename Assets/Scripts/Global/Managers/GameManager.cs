@@ -12,6 +12,7 @@ using MajdataPlay.Platform.Win32;
 #elif UNITY_IOS
 using MajdataPlay.Platform.iOS;
 #elif UNITY_ANDROID
+using MajdataPlay.Platform.Android;
 using MajdataPlay.Platform.Android.Runtime;
 #endif
 using System;
@@ -138,6 +139,7 @@ namespace MajdataPlay
             MajEnv.Init();
 #if !UNITY_EDITOR
 #if UNITY_ANDROID
+            AndroidKeyboard.Init();
             var intent = CurrentActivity.Call<AndroidJavaObject>("getIntent");
             ChartImporter.Android_OnNewIntent(this, intent);
             OnNewIntent += ChartImporter.Android_OnNewIntent;

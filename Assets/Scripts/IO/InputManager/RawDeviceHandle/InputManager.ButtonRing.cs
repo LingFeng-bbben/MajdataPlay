@@ -8,10 +8,13 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine.InputSystem;
 using UnityEngine.Profiling;
 using System.IO.Pipes;
+
+#if UNITY_ANDROID || UNITY_EDITOR
+using MajdataPlay.Platform.Android;
+#endif
 #if UNITY_IOS || UNITY_EDITOR
 using MajdataPlay.Platform.iOS;
 #endif
@@ -344,23 +347,25 @@ namespace MajdataPlay.IO
                             {
                                 var button = gameButtons.Span[i];
                                 var keyCode = button.BindingKey;
-                                var state = (keyCode switch
+                                var androidKeyCode = (keyCode switch
                                 {
-                                    KeyCode.B1 => keyboard.wKey,
-                                    KeyCode.B2 => keyboard.eKey,
-                                    KeyCode.B3 => keyboard.dKey,
-                                    KeyCode.B4 => keyboard.cKey,
-                                    KeyCode.B5 => keyboard.xKey,
-                                    KeyCode.B6 => keyboard.zKey,
-                                    KeyCode.B7 => keyboard.aKey,
-                                    KeyCode.B8 => keyboard.qKey,
-                                    KeyCode.Test => keyboard.numpad9Key,
-                                    KeyCode.SelectP1 => keyboard.numpadMultiplyKey,
-                                    KeyCode.Service => keyboard.numpad7Key,
-                                    KeyCode.SelectP2 => keyboard.numpad3Key,
-                                    _ => null
-                                })?.isPressed ?? false;
-                                _buttonRealTimeStates[i] = state;
+                                    KeyCode.B1 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.W,
+                                    KeyCode.B2 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.E,
+                                    KeyCode.B3 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.D,
+                                    KeyCode.B4 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.C,
+                                    KeyCode.B5 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.X,
+                                    KeyCode.B6 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.Z,
+                                    KeyCode.B7 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.A,
+                                    KeyCode.B8 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.Q,
+
+                                    KeyCode.Test => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.Numpad9,
+                                    KeyCode.SelectP1 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.NumpadMultiply,
+                                    KeyCode.Service => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.Numpad7,
+                                    KeyCode.SelectP2 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.Numpad3,
+
+                                    _ => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.Unknown
+                                });
+                                _buttonRealTimeStates[i] = AndroidKeyboard.IsPreesedUnsafe(androidKeyCode);
                             }
 #elif UNITY_IOS || UNITY_EDITOR
                             for (var i = 0; i < gameButtons.Length; i++)
