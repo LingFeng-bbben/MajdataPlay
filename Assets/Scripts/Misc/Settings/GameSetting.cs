@@ -501,9 +501,7 @@ namespace MajdataPlay.Settings
         
         public TouchPanelOptions TouchPanel { get; set; } = new();
 #else
-        
-        public bool EnableKeyboardInput { get; set; } = false;
-        public bool EnableGamepadInput { get; set; } = false;
+        public MobileExternalButtonRingOption ExternalButtonRing { get; init; } = MobileExternalButtonRingOption.None;
 #endif
     }
 #if UNITY_STANDALONE

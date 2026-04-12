@@ -39,6 +39,7 @@ namespace MajdataPlay.IO
 
             static SpinLock _syncLock = new();
             static Task _buttonRingUpdateLoop = Task.CompletedTask;
+            static MobileExternalButtonRingOption _mobileExternalbuttonRingOption;
             
             readonly static bool[] _buttonStates = new bool[12];
             readonly static bool[] _buttonRealTimeStates = new bool[12];
@@ -89,50 +90,45 @@ namespace MajdataPlay.IO
                     MajDebug.LogWarning($"[ButtonRing]Not supported button ring manufacturer: {manufacturer}");
                 }
 #elif UNITY_ANDROID || UNITY_IOS
-                if(MajEnv.Settings.IO.InputDevice.EnableKeyboardInput)
-                {
-                    _buttonRingUpdateLoop = UniTask.Create(KeyboardUpdateLoop).AsTask();
-                }
-                else if(MajEnv.Settings.IO.InputDevice.EnableGamepadInput)
-                {
-                    _buttonRingUpdateLoop = UniTask.Create(GamepadUpdateLoop).AsTask();
-                }
+                _mobileExternalbuttonRingOption = MajEnv.Settings.IO.InputDevice.ExternalButtonRing;
 #endif
             }
             /// <summary>
             /// Update the button ring state of the this frame
             /// </summary>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public unsafe static void OnPreUpdate()
+            public static void OnPreUpdate()
             {
-                Profiler.BeginSample("ButtonRing.OnPreUpdate");
-                ref var @lock = ref _syncLock;
-                var isLocked = false;
-                try
+                using (UnityProfiler.Create("ButtonRing.OnPreUpdate"))
                 {
-                    @lock.Enter(ref isLocked);
-                    var isBtnHadOn = _isBtnHadOn.AsSpan();
-                    var isBtnHadOff = _isBtnHadOff.AsSpan();
-                    var buttonStates = _buttonStates.AsSpan();
-                    var isBtnHadOnInternal = _isBtnHadOnInternal.AsSpan();
-                    var isBtnHadOffInternal = _isBtnHadOffInternal.AsSpan();
-                    var buttonRealTimeStates = _buttonRealTimeStates.AsSpan();
-
-                    isBtnHadOnInternal.CopyTo(isBtnHadOn);
-                    isBtnHadOffInternal.CopyTo(isBtnHadOff);
-                    buttonRealTimeStates.CopyTo(buttonStates);
-
-                    isBtnHadOnInternal.Clear();
-                    isBtnHadOffInternal.Clear();
-                }
-                finally
-                {
-                    if(isLocked)
+                    using (new LockDisposable())
                     {
-                        @lock.Exit();
+#if UNITY_ANDROID || UNITY_IOS
+                        switch (_mobileExternalbuttonRingOption)
+                        {
+                            case MobileExternalButtonRingOption.Keyboard:
+                                KeyboardPreUpdate();
+                                break;
+                            case MobileExternalButtonRingOption.Gamepad:
+                                GamepadPreUpdate();
+                                break;
+                        }
+#endif
+                        var isBtnHadOn = _isBtnHadOn.AsSpan();
+                        var isBtnHadOff = _isBtnHadOff.AsSpan();
+                        var buttonStates = _buttonStates.AsSpan();
+                        var isBtnHadOnInternal = _isBtnHadOnInternal.AsSpan();
+                        var isBtnHadOffInternal = _isBtnHadOffInternal.AsSpan();
+                        var buttonRealTimeStates = _buttonRealTimeStates.AsSpan();
+
+                        isBtnHadOnInternal.CopyTo(isBtnHadOn);
+                        isBtnHadOffInternal.CopyTo(isBtnHadOff);
+                        buttonRealTimeStates.CopyTo(buttonStates);
+
+                        isBtnHadOnInternal.Clear();
+                        isBtnHadOffInternal.Clear();
                     }
                 }
-                Profiler.EndSample();
             }
             /// <summary>
             /// Determines whether the button at the given index was ever ON
@@ -308,182 +304,137 @@ namespace MajdataPlay.IO
                 return (int)area;
             }
 #if UNITY_ANDROID || UNITY_IOS
-            static async UniTask KeyboardUpdateLoop()
+            static void KeyboardPreUpdate()
             {
-#if UNITY_IOS || UNITY_EDITOR
-            IOS_NATIVE_KB_INIT:
-                while (true)
-                {
-                    var initResult = NativeKeyboard.Init();
-                    if (initResult != ErrorCode.NoError)
-                    {
-                        MajDebug.LogError($"[ButtonRing]Failed to initialize NativeKeyboard: {initResult}");
-                        await UniTask.Delay(2000);
-                        continue;
-                    }
-                    break;
-                }
-#endif
-                await UniTask.Yield(PlayerLoopTiming.LastPreUpdate);
-                var token = MajEnv.GlobalCT;
                 var gameButtons = _buttons.Slice(0, 8);
                 try
                 {
-                    MajDebug.LogInfo($"[ButtonRing]listening keyboard input");
-                    while (true)
-                    {
-                        token.ThrowIfCancellationRequested();
-                        try
-                        {
 #if UNITY_ANDROID
-                            for (var i = 0; i < gameButtons.Length; i++)
-                            {
-                                var button = gameButtons.Span[i];
-                                var keyCode = button.BindingKey;
-                                var androidKeyCode = (keyCode switch
-                                {
-                                    KeyCode.B1 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.W,
-                                    KeyCode.B2 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.E,
-                                    KeyCode.B3 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.D,
-                                    KeyCode.B4 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.C,
-                                    KeyCode.B5 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.X,
-                                    KeyCode.B6 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.Z,
-                                    KeyCode.B7 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.A,
-                                    KeyCode.B8 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.Q,
-
-                                    KeyCode.Test => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.Numpad9,
-                                    KeyCode.SelectP1 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.NumpadMultiply,
-                                    KeyCode.Service => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.Numpad7,
-                                    KeyCode.SelectP2 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.Numpad3,
-
-                                    _ => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.Unknown
-                                });
-                                _buttonRealTimeStates[i] = AndroidKeyboard.IsPreesedUnsafe(androidKeyCode);
-                            }
-#elif UNITY_IOS || UNITY_EDITOR
-                            for (var i = 0; i < gameButtons.Length; i++)
-                            {
-                                var button = gameButtons.Span[i];
-                                var keyCode = KeyboardHelper.ToiOSGCKeyCode(button.BindingKey);
-                                var @return = NativeKeyboard.IsPressed(keyCode, ref _buttonRealTimeStates[i]);
-                                if(@return is not (ErrorCode.NoError or ErrorCode.NotSupported))
-                                {
-                                    MajDebug.LogError($"[ButtonRing]Error occurred while reading key states from NativeKeyboard: {@return}");
-                                    goto IOS_NATIVE_KB_INIT;
-                                }
-                            }
-#endif
-                            IsConnected = true;
-
-                            using (new LockDisposable())
-                            {
-                                var states = _buttonRealTimeStates;
-                                var hadOn = _isBtnHadOnInternal;
-                                var hadOff = _isBtnHadOffInternal;
-
-                                for (int i = 0; i < 12; i++)
-                                {
-                                    var state = states[i];
-                                    hadOn[i] |= state;
-                                    hadOff[i] |= !state;
-                                }
-                            }
-                        }
-                        catch (Exception e)
+                    IsConnected = true;
+                    for (var i = 0; i < gameButtons.Length; i++)
+                    {
+                        var button = gameButtons.Span[i];
+                        var keyCode = button.BindingKey;
+                        var androidKeyCode = (keyCode switch
                         {
-                            IsConnected = false;
-                            MajDebug.LogError($"From Keyboard listener: \n{e}");
-                        }
-                        finally
+                            KeyCode.B1 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.W,
+                            KeyCode.B2 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.E,
+                            KeyCode.B3 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.D,
+                            KeyCode.B4 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.C,
+                            KeyCode.B5 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.X,
+                            KeyCode.B6 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.Z,
+                            KeyCode.B7 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.A,
+                            KeyCode.B8 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.Q,
+
+                            KeyCode.Test => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.Numpad9,
+                            KeyCode.SelectP1 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.NumpadMultiply,
+                            KeyCode.Service => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.Numpad7,
+                            KeyCode.SelectP2 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.Numpad3,
+
+                            _ => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.Unknown
+                        });
+                        _buttonRealTimeStates[i] = AndroidKeyboard.IsPreesedUnsafe(androidKeyCode);
+                    }
+#elif UNITY_IOS
+                    for (var i = 0; i < gameButtons.Length; i++)
+                    {
+                        var button = gameButtons.Span[i];
+                        var keyCode = KeyboardHelper.ToiOSGCKeyCode(button.BindingKey);
+                        var @return = NativeKeyboard.IsPressed(keyCode, ref _buttonRealTimeStates[i]);
+                        switch(@return)
                         {
-                            await UniTask.Yield(PlayerLoopTiming.LastPreUpdate);
+                            case ErrorCode.NoError:
+                                IsConnected = true;
+                                break;
+                            case ErrorCode.NoDevice:
+                            case ErrorCode.NotSupported:
+                                IsConnected = false;
+                                break;
+                            case ErrorCode.InvalidOperation: // Not init
+                                @return = NativeKeyboard.Init();
+                                if(@return == ErrorCode.NoError)
+                                {
+                                    i--;
+                                    IsConnected = true;
+                                    continue;
+                                }
+                                IsConnected = false;
+                                MajDebug.LogError($"[ButtonRing]Failed to initialize NativeKeyboard: {@return}");
+                                return;
+                            default:
+                                IsConnected = false;
+                                MajDebug.LogError($"[ButtonRing]Error occurred while reading key states from NativeKeyboard: {@return}");
+                                break;
                         }
                     }
+#endif
+                    var states = _buttonRealTimeStates;
+                    var hadOn = _isBtnHadOnInternal;
+                    var hadOff = _isBtnHadOffInternal;
+
+                    for (int i = 0; i < 12; i++)
+                    {
+                        var state = states[i];
+                        hadOn[i] |= state;
+                        hadOff[i] |= !state;
+                    }
                 }
-                finally
+                catch (Exception e)
                 {
                     IsConnected = false;
-#if UNITY_IOS
-                    NativeKeyboard.Free();
-#endif
+                    MajDebug.LogError($"From Keyboard listener: \n{e}");
                 }
             }
-            static async UniTask GamepadUpdateLoop()
+            static void GamepadPreUpdate()
             {
-                await UniTask.Yield(PlayerLoopTiming.LastPreUpdate);
-                var token = MajEnv.GlobalCT;
                 var gameButtons = _buttons.Slice(0, 8);
                 try
                 {
-                    MajDebug.LogInfo($"[ButtonRing]listening gamepad input");
-                    while (true)
+                    var gamepad = Gamepad.current;
+                    var now = MajTimeline.UnscaledTime;
+
+                    for (var i = 0; i < gameButtons.Length; i++)
                     {
-                        token.ThrowIfCancellationRequested();
-                        try
+                        var button = gameButtons.Span[i];
+                        var keyCode = button.BindingKey;
+                        var state = (keyCode switch
                         {
-                            var gamepad = Gamepad.current;
-                            var now = MajTimeline.UnscaledTime;
+                            KeyCode.B1 => gamepad?.buttonNorth,
+                            KeyCode.B2 => gamepad?.buttonEast,
+                            KeyCode.B3 => gamepad?.buttonSouth,
+                            KeyCode.B4 => gamepad?.buttonWest,
 
-                            if (gamepad is null)
-                            {
-                                continue;
-                            }
+                            KeyCode.B5 => gamepad?.dpad.up,
+                            KeyCode.B6 => gamepad?.dpad.right,
+                            KeyCode.B7 => gamepad?.dpad.down,
+                            KeyCode.B8 => gamepad?.dpad.left,
 
-                            for (var i = 0; i < gameButtons.Length; i++)
-                            {
-                                var button = gameButtons.Span[i];
-                                var keyCode = button.BindingKey;
-                                var state = (keyCode switch
-                                {
-                                    KeyCode.B1 => gamepad.buttonNorth,
-                                    KeyCode.B2 => gamepad.buttonEast,
-                                    KeyCode.B3 => gamepad.buttonSouth,
-                                    KeyCode.B4 => gamepad.buttonWest,
+                            KeyCode.Test => gamepad?.leftShoulder,
+                            KeyCode.SelectP1 => gamepad?.rightShoulder,
+                            KeyCode.Service => gamepad?.leftStickButton,
+                            KeyCode.SelectP2 => gamepad?.rightStickButton,
 
-                                    KeyCode.B5 => gamepad.dpad.up,
-                                    KeyCode.B6 => gamepad.dpad.right,
-                                    KeyCode.B7 => gamepad.dpad.down,
-                                    KeyCode.B8 => gamepad.dpad.left,
+                            _ => null
+                        })?.isPressed ?? false;
+                        _buttonRealTimeStates[i] = state;
+                    }
+                    IsConnected = true;
 
-                                    KeyCode.Test => gamepad.leftShoulder,
-                                    KeyCode.SelectP1 => gamepad.rightShoulder,
-                                    KeyCode.Service => gamepad.leftStickButton,
-                                    KeyCode.SelectP2 => gamepad.rightStickButton,
+                    var states = _buttonRealTimeStates;
+                    var hadOn = _isBtnHadOnInternal;
+                    var hadOff = _isBtnHadOffInternal;
 
-                                    _ => null
-                                })?.isPressed ?? false;
-                                _buttonRealTimeStates[i] = state;
-                            }
-                            IsConnected = true;
-
-                            using (new LockDisposable())
-                            {
-                                var states = _buttonRealTimeStates;
-                                var hadOn = _isBtnHadOnInternal;
-                                var hadOff = _isBtnHadOffInternal;
-
-                                for (int i = 0; i < 12; i++)
-                                {
-                                    var state = states[i];
-                                    hadOn[i] |= state;
-                                    hadOff[i] |= !state;
-                                }
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            IsConnected = false;
-                            MajDebug.LogError($"From Keyboard listener: \n{e}");
-                        }
-                        finally
-                        {
-                            await UniTask.Yield(PlayerLoopTiming.LastPreUpdate);
-                        }
+                    for (int i = 0; i < 12; i++)
+                    {
+                        var state = states[i];
+                        hadOn[i] |= state;
+                        hadOff[i] |= !state;
                     }
                 }
-                finally
+                catch (Exception e)
                 {
                     IsConnected = false;
+                    MajDebug.LogError($"From Gamepad listener: \n{e}");
                 }
             }
 #elif UNITY_STANDALONE
@@ -1010,15 +961,19 @@ namespace MajdataPlay.IO
                 bool _isLocked;
                 public LockDisposable()
                 {
+#if !(UNITY_ANDROID || UNITY_IOS)
                     _syncLock.Enter(ref _isLocked);
+#endif
                 }
                 public void Dispose()
                 {
+#if !(UNITY_ANDROID || UNITY_IOS)
                     if (_isLocked)
                     {
                         _syncLock.Exit();
                         _isLocked = false;
                     }
+#endif
                 }
             }
         }
