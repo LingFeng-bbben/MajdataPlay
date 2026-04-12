@@ -8,6 +8,7 @@ using System.Text;
 using Unity.VisualScripting;
 using UnityEditor;
 using UnityEditor.UIElements;
+using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -22,9 +23,12 @@ namespace MajdataPlay.Editor.Windows
         VisualElement _rightRoot;
         ScrollView _keyValuePairViewer;
 
+        [SerializeField]
         List<string> _templateContent = new();
+
         Language[] _languages = Array.Empty<Language>();
 
+        SerializedObject _windowSerializedObject;
         List<VisualElement> _tabPages = new();
 
         void Awake()
@@ -41,7 +45,8 @@ namespace MajdataPlay.Editor.Windows
                 {
                     Debug.LogError($"Failed to parse template content: {e}");
                 }
-            }            
+            }
+            _windowSerializedObject = new SerializedObject(this);
             using var jsons = new RentedList<string>();
             foreach (var lang in langJsonPaths)
             {
@@ -114,25 +119,37 @@ namespace MajdataPlay.Editor.Windows
         }
         void CreateTemplateEditorTab(VisualElement rootElement)
         {
-            var listView = new ListView();
-            listView.itemsSource = _templateContent;
-            listView.makeItem = () =>
+            //var listView = new ListView();
+            //listView.itemsSource = _templateContent;
+            //listView.makeItem = () =>
+            //{
+            //    var container = new VisualElement();
+            //    var keyField = new TextField("Key");
+            //    container.Add(keyField);
+            //    return container;
+            //};
+            //listView.bindItem = (element, index) =>
+            //{
+            //    var k = _templateContent[index];
+
+            //    var container = element;
+
+            //    var keyField = container.ElementAt(0) as TextField;
+
+            //    keyField.SetValueWithoutNotify(k);
+            //};
+            var property = _windowSerializedObject.FindProperty("_templateContent");
+
+            var field = new PropertyField(property);
+            field.Bind(_windowSerializedObject);
+            var listView = new ListView
             {
-                var container = new VisualElement();
-                var keyField = new TextField("Key");
-                container.Add(keyField);
-                return container;
+                bindingPath = property.propertyPath,
+                showFoldoutHeader = false,
+                showAddRemoveFooter = true,
+                reorderable = true
             };
-            listView.bindItem = (element, index) =>
-            {
-                var k = _templateContent[index];
-
-                var container = element;
-
-                var keyField = container.ElementAt(0) as TextField;
-
-                keyField.SetValueWithoutNotify(k);
-            };
+            listView.Bind(_windowSerializedObject);
             rootElement.Add(listView);
         }
 
