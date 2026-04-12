@@ -21,12 +21,15 @@ namespace MajdataPlay.Editor.Windows
         ListView _translatiosList;
 
         VisualElement _rightRoot;
-        ScrollView _keyValuePairViewer;
+        PropertyField _languageMetadataViewer;
 
         [SerializeField]
         List<string> _templateContent = new();
 
-        Language[] _languages = Array.Empty<Language>();
+        [SerializeField]
+        LanguageInfo _currentSelectedLanguage = null;
+
+        LanguageInfo[] _languages = Array.Empty<LanguageInfo>();
 
         SerializedObject _windowSerializedObject;
         List<VisualElement> _tabPages = new();
@@ -56,8 +59,19 @@ namespace MajdataPlay.Editor.Windows
                 }
                 jsons.Add(lang.text);
             }
+            var langInfos = new List<LanguageInfo>();
             var langs = Localization.Parse(jsons);
-            _languages = langs;
+            foreach(var lang in langs)
+            {
+                var langInfo = new LanguageInfo
+                {
+                    Code = lang.Code,
+                    Author = lang.Author,
+                    Translations = new (lang.Translations)
+                };
+                langInfos.Add(langInfo);
+            }
+            _languages = langInfos.ToArray();
         }
 
         void CreateTranslationEditorTab(VisualElement rootElement)
@@ -68,17 +82,6 @@ namespace MajdataPlay.Editor.Windows
 
             _leftRoot = new VisualElement();
             splitView.Add(_leftRoot);
-
-            var header = new VisualElement();
-            header.style.height = 24;
-            header.style.backgroundColor = new Color(0.2f, 0.2f, 0.2f);
-            header.style.justifyContent = Justify.Center;
-            _leftRoot.Add(header);
-
-            var label = new Label("Translations");
-            label.style.unityTextAlign = TextAnchor.MiddleLeft;
-            label.style.paddingLeft = 6;
-            header.Add(label);
 
             _translatiosList = new ListView();
             _translatiosList.selectionType = SelectionType.Single;
@@ -114,31 +117,12 @@ namespace MajdataPlay.Editor.Windows
             _rightRoot = new VisualElement();
             splitView.Add(_rightRoot);
 
-            _keyValuePairViewer = new();
-            _rightRoot.Add(_keyValuePairViewer);
+            _languageMetadataViewer = new();
+            _rightRoot.Add(_languageMetadataViewer);
         }
         void CreateTemplateEditorTab(VisualElement rootElement)
         {
-            //var listView = new ListView();
-            //listView.itemsSource = _templateContent;
-            //listView.makeItem = () =>
-            //{
-            //    var container = new VisualElement();
-            //    var keyField = new TextField("Key");
-            //    container.Add(keyField);
-            //    return container;
-            //};
-            //listView.bindItem = (element, index) =>
-            //{
-            //    var k = _templateContent[index];
-
-            //    var container = element;
-
-            //    var keyField = container.ElementAt(0) as TextField;
-
-            //    keyField.SetValueWithoutNotify(k);
-            //};
-            var property = _windowSerializedObject.FindProperty("_templateContent");
+            var property = _windowSerializedObject.FindProperty(nameof(_templateContent));
 
             var field = new PropertyField(property);
             field.Bind(_windowSerializedObject);
@@ -199,11 +183,14 @@ namespace MajdataPlay.Editor.Windows
         }
         void OnSelectionChanged(IEnumerable<object> selectedItems)
         {
-            var selected = selectedItems.FirstOrDefault();
-            if (selected is null)
+            var index = _translatiosList.selectedIndex;
+            if (index == -1)
             {
                 return;
             }
+            _languageMetadataViewer.Unbind();
+            _currentSelectedLanguage = _languages[index];
+            _languageMetadataViewer.BindProperty(_windowSerializedObject.FindProperty(nameof(_currentSelectedLanguage)));
         }
 
         [MenuItem("Window/Manage translations")]
@@ -211,6 +198,15 @@ namespace MajdataPlay.Editor.Windows
         {
             var window = GetWindow<TranslationManagerWindow>();
             window.titleContent = new GUIContent("Translation editor");
+        }
+
+        [Serializable]
+        class LanguageInfo
+        {
+            public string Code;
+            public string Author;
+
+            public List<KeyValuePair<string, string>> Translations;
         }
     }
 }
