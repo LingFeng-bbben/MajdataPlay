@@ -24,7 +24,7 @@ namespace MajdataPlay
 
         MajScenes _lastScene = MajScenes.Init;
         MajScenes _currentScene = MajScenes.Init;
-        ValueTask _onlineHeartbeatTask = new(Task.CompletedTask);
+        Task _onlineHeartbeatTask = Task.CompletedTask;
         CancellationTokenSource _heartbeatCts = new();
         TimeSpan _lastExecuteHeartbeatTime = TimeSpan.Zero;
         protected override void Awake()
@@ -114,9 +114,9 @@ namespace MajdataPlay
                     var currentTime = MajTimeline.UnscaledTime;
                     if(_onlineHeartbeatTask.IsCompleted && (currentTime - _lastExecuteHeartbeatTime).TotalMinutes > 5)
                     {
-                        _onlineHeartbeatTask = Online.HeartbeatAsync(_heartbeatCts.Token);
+                        _onlineHeartbeatTask = Online.HeartbeatAsync(_heartbeatCts.Token).AsTask();
                         _lastExecuteHeartbeatTime = currentTime;
-                        MajDebug.LogDebug("Online heartbeat execute");
+                        MajDebug.LogDebug("Online heartbeat requested");
                     }
                 }
 

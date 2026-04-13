@@ -454,8 +454,18 @@ namespace MajdataPlay.Scenes.Login
         }
         async ValueTask<UserData> FetchUserDataAsync(ApiEndpoint endpoint, CancellationToken token = default)
         {
-            var userInfo = await Online.GetUserInfoAsync(endpoint, token);
+            var fetchUserInfoRsp = await Online.GetUserInfoAsync(endpoint, token);
             var userScores = await Online.GetUserScoresAsync(endpoint, token);
+            var userInfo = default(UserSummary?);
+            if(fetchUserInfoRsp.TryDeserialize(out var userInfoOut, out var e))
+            {
+                userInfo = userInfoOut;
+            }
+            else
+            {
+                MajDebug.LogError("Failed to get user info");
+                MajDebug.LogException(e);
+            }
             token.ThrowIfCancellationRequested();
             return new()
             {
