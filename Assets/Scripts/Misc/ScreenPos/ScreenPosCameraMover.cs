@@ -7,6 +7,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay
 {
+    [DefaultExecutionOrder(100)]
     public class ScreenPosCameraMover : MonoBehaviour
     {
         const int FLAG_NOT_INIT = 0;
