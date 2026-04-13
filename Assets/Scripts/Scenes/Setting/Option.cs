@@ -83,17 +83,6 @@ namespace MajdataPlay.Scenes.Setting
         {
             _nameText.text = _optionName.i18n();
             _descriptionText.text = _optionDescription.i18n();
-            switch (PropertyInfo.Name)
-            {
-                case "SlideFadeInOffset":
-                case "AudioOffset":
-                case "JudgeOffset":
-                case "AnswerOffset":
-                case "TouchPanelOffset":
-                case "DisplayOffset":
-                    _descriptionText.text = _optionDescription.i18n() + $"\n{$"MAJTEXT_SETTING_OFFSETUNIT_{MajEnv.Settings.Debug.OffsetUnit}".i18n()}";
-                    break;
-            }
             UpdateOption();
         }
         void InitOptions()
@@ -262,10 +251,7 @@ namespace MajdataPlay.Scenes.Setting
         {
             _isEnabled = false;
             Localization.OnLanguageChanged -= OnLangChanged;
-            if(_optionEnumerator is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
+            _optionEnumerator.Dispose();
         }
         void OnDisable()
         {
