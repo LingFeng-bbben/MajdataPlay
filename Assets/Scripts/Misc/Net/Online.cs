@@ -860,7 +860,7 @@ namespace MajdataPlay.Net
                     nativeBuffer.CopyTo(buffer);
                 }
 
-                return new EndpointResponse(buffer, DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
+                return new EndpointResponse(buffer, _defaultJsonSerializer, _defaultJsonSerializerSettings)
                 {
                     IsSuccessfully = true,
                     IsDeserializable = true && buffer.Length != 0,
@@ -873,7 +873,7 @@ namespace MajdataPlay.Net
             catch (HttpException httpE)
             {
                 MajDebug.LogException(httpE);
-                return new EndpointResponse(Array.Empty<byte>(), DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
+                return new EndpointResponse(Array.Empty<byte>(), _defaultJsonSerializer, _defaultJsonSerializerSettings)
                 {
                     IsSuccessfully = false,
                     IsDeserializable = false,
@@ -886,7 +886,7 @@ namespace MajdataPlay.Net
             catch(Exception e)
             {
                 MajDebug.LogException(e);
-                return new EndpointResponse(Array.Empty<byte>(), DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
+                return new EndpointResponse(Array.Empty<byte>(), _defaultJsonSerializer, _defaultJsonSerializerSettings)
                 {
                     IsSuccessfully = false,
                     IsDeserializable = false,
@@ -986,7 +986,7 @@ namespace MajdataPlay.Net
                         buffer = new byte[nativeBuffer.Length];
                         nativeBuffer.CopyTo(buffer);
                     }
-                    return new EndpointResponse(buffer, DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
+                    return new EndpointResponse(buffer, _defaultJsonSerializer, _defaultJsonSerializerSettings)
                     {
                         IsSuccessfully = true,
                         IsDeserializable = true && buffer.Length != 0,
@@ -999,7 +999,7 @@ namespace MajdataPlay.Net
                 catch (HttpException httpE)
                 {
                     MajDebug.LogException(httpE);
-                    return new EndpointResponse(Array.Empty<byte>(), DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
+                    return new EndpointResponse(Array.Empty<byte>(), _defaultJsonSerializer, _defaultJsonSerializerSettings)
                     {
                         IsSuccessfully = false,
                         IsDeserializable = false,
@@ -1012,7 +1012,7 @@ namespace MajdataPlay.Net
                 catch (Exception e)
                 {
                     MajDebug.LogException(e);
-                    return new EndpointResponse(Array.Empty<byte>(), DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
+                    return new EndpointResponse(Array.Empty<byte>(), _defaultJsonSerializer, _defaultJsonSerializerSettings)
                     {
                         IsSuccessfully = false,
                         IsDeserializable = false,
@@ -1054,7 +1054,7 @@ namespace MajdataPlay.Net
                         nativeBuffer.CopyTo(buffer);
                     }
 
-                    return new EndpointResponse(buffer, DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
+                    return new EndpointResponse(buffer, _defaultJsonSerializer, _defaultJsonSerializerSettings)
                     {
                         IsSuccessfully = true,
                         IsDeserializable = true && buffer.Length != 0,
@@ -1067,7 +1067,7 @@ namespace MajdataPlay.Net
                 catch (HttpException httpE)
                 {
                     MajDebug.LogException(httpE);
-                    return new EndpointResponse(Array.Empty<byte>(), DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
+                    return new EndpointResponse(Array.Empty<byte>(), _defaultJsonSerializer, _defaultJsonSerializerSettings)
                     {
                         IsSuccessfully = false,
                         IsDeserializable = false,
@@ -1080,7 +1080,7 @@ namespace MajdataPlay.Net
                 catch (Exception e)
                 {
                     MajDebug.LogException(e);
-                    return new EndpointResponse(Array.Empty<byte>(), DEFAULT_JSON_SERIALIZER, DEFAULT_JSON_SERIALIZER_SETTINGS)
+                    return new EndpointResponse(Array.Empty<byte>(), _defaultJsonSerializer, _defaultJsonSerializerSettings)
                     {
                         IsSuccessfully = false,
                         IsDeserializable = false,
