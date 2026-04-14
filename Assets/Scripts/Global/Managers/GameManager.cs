@@ -6,15 +6,25 @@ using MajdataPlay.IO;
 using MajdataPlay.Scenes.Test;
 using MajdataPlay.Settings;
 using MajdataPlay.Timer;
+using ShimSkiaSharp;
 #if UNITY_STANDALONE_WIN
 using MajdataPlay.Platform.Win32;
+#elif UNITY_IOS
+using MajdataPlay.Platform.iOS;
+#elif UNITY_ANDROID
+using MajdataPlay.Platform.Android;
+using MajdataPlay.Platform.Android.Runtime;
 #endif
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -24,8 +34,11 @@ using UnityEngine.Scripting; // DO NOT REMOVE IT !!!
 namespace MajdataPlay
 {
 #nullable enable
-    internal sealed class GameManager : MajSingleton
+    public sealed class GameManager : MajSingleton
     {
+#if UNITY_ANDROID
+        public delegate void OnActivityResultCallback(object? sender, int requestCode, int resultCode, AndroidJavaObject? intent);
+#endif
         public static bool IsAppOnFocus { get; private set; } = true;
         public static event EventHandler<EventArgs?>? OnAppQuit;
         public static event EventHandler<EventArgs?>? OnSave;
@@ -33,6 +46,7 @@ namespace MajdataPlay
         public static event EventHandler<bool>? OnAppPause;
 #if UNITY_ANDROID
         public static event EventHandler<AndroidJavaObject?>? OnNewIntent;
+        public static event OnActivityResultCallback? OnActivityResult;
         public static AndroidJavaClass UnityPlayerClass { get; private set; }
         public static AndroidJavaClass MajdataPlayActivityClass { get; private set; }
 
@@ -61,7 +75,8 @@ namespace MajdataPlay
         readonly static ReadOnlyMemory<ITimeProvider> _builtInTimeProviders = MajTimeline.BuiltInTimeProviders;
 
 #if UNITY_ANDROID
-        OnNewIntentCallback _onNewIntentCallbackProxy;
+        OnNewIntentCallbackProxy _onNewIntentCallbackProxy;
+        OnActivityResultCallbackProxy _onActivityResultCallbackProxy;
 #endif
         protected override void Awake()
         {
@@ -75,13 +90,21 @@ namespace MajdataPlay
             _onNewIntentCallbackProxy = new(this);
             UnityEngine.Debug.Log("[Android]Setting onNewIntent callback proxy");
             MajdataPlayActivityClass.CallStatic("registerOnNewIntentCallback", _onNewIntentCallbackProxy);
+            _onActivityResultCallbackProxy = new(this);
+            UnityEngine.Debug.Log("[Android]Setting onActivityResult callback proxy");
+            MajdataPlayActivityClass.CallStatic("registerOnActivityResultCallback", _onActivityResultCallbackProxy);
 #endif
         }
         void Start()
         {
+            StartInternal().Forget();
+        }
+        async UniTask StartInternal()
+        {
 #if UNITY_IOS && !UNITY_EDITOR
             IOSNativeSettings.Init();
 #endif
+            await UniTask.CompletedTask;
             MajEnv.InitPath();
             MajDebug.Init();
             var s = "\n";
@@ -98,6 +121,7 @@ namespace MajdataPlay
             MajDebug.LogInfo($"Version: {MajInstances.GameVersion}");
 #if UNITY_ANDROID && !UNITY_EDITOR // Android Only (Sdk Version Log)
             MajDebug.LogInfo($"AndroidSdkVersion: {MajEnv.AndroidSdkVersion}");
+            MajDebug.LogInfo($"TargetSdkVersion: {MajEnv.TargetSdkVersion}");
             using var packageManager = CurrentActivity.Call<AndroidJavaObject>("getPackageManager");
             var packageName = CurrentActivity.Call<string>("getPackageName");
             using var packageInfo = packageManager.Call<AndroidJavaObject>("getPackageInfo", packageName, 0);
@@ -113,19 +137,28 @@ namespace MajdataPlay
             MajDebug.LogInfo($"AndroidVerCode: {androidVersionCode}");
 #endif
             MajEnv.Init();
+#if !UNITY_EDITOR
+#if UNITY_ANDROID
+            AndroidKeyboard.Init();
+            var intent = CurrentActivity.Call<AndroidJavaObject>("getIntent");
+            ChartImporter.Android_OnNewIntent(this, intent);
+            OnNewIntent += ChartImporter.Android_OnNewIntent;
+#elif UNITY_IOS
+            await UniTask.DelayFrame(2); // wait UnitySendMessage
+#endif
+#endif
+            await ChartImporter.OnStartAsync();
+#if UNITY_ANDROID || UNITY_IOS
             if (!Directory.Exists(MajEnv.AssetsPath))
             {
-#if UNITY_ANDROID
-                ExtractAssetsAndroid();
+                ExtractAssets();
                 MoveCharts();
                 MoveSkins();
-#elif UNITY_IOS
-                ExtractAssetsIos();
-                MoveCharts();
-                MoveSkins();
-#endif
             }
-
+#endif
+#if UNITY_STANDALONE
+            DiscordManager.Init();
+#endif
             MajInstances.FPSDisplayer.Init();
             MajInstances.AudioManager.Init();
             Localization.Init();
@@ -219,16 +252,16 @@ namespace MajdataPlay
             if (MajEnv.Mode == RunningMode.Test)
             {
                 EnterTestMode();
-                return;
             }
-
-            if (MajEnv.Mode == RunningMode.View)
+            else if (MajEnv.Mode == RunningMode.View)
             {
                 EnterView();
-                return;
             }
-
-            EnterTitle();
+            else
+            {
+                EnterTitle();
+            }
+            await MajInstances.SceneSwitcher.FadeOutAsync();
         }
 
         void DetectHWEncoder()
@@ -342,6 +375,7 @@ namespace MajdataPlay
         void Update()
         {
             ChangeTimerIfRequested();
+            ChartImporter.OnUpdate();
         }
 
         [Conditional("DEBUG")]
@@ -355,7 +389,46 @@ namespace MajdataPlay
                 MajTimeline.TimeProvider = selectedTimer;
             }
         }
-
+        [Conditional("UNITY_EDITOR")]
+        public void DebugImportChartArchive(string path)
+        {
+            ChartImporter.AddImportTask(path);
+        }
+        public void EnableGC()
+        {
+            GC.Collect();
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR //Android/iOS Only (GC Enable)
+            GarbageCollector.GCMode = GarbageCollector.Mode.Enabled;
+            MajDebug.LogWarning("GC has been enabled");
+#endif
+        }
+        public void DisableGC()
+        {
+            GC.Collect();
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR //Android/iOS Only (GC Disable)
+            GarbageCollector.GCMode = GarbageCollector.Mode.Disabled;
+            MajDebug.LogWarning("GC has been disabled");
+#endif
+        }
+        public static void RequestSave(object? sender)
+        {
+            try
+            {
+                if (OnSave is not null)
+                {
+                    OnSave(sender, null);
+                }
+            }
+            catch (Exception ex)
+            {
+                MajDebug.LogException(ex);
+            }
+        }
+        #region Events
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+        }
         void OnApplicationQuit()
         {
             Screen.sleepTimeout = SleepTimeout.SystemSetting;
@@ -395,7 +468,7 @@ namespace MajdataPlay
             {
                 OnAppPause(this, pause);
             }
-#if UNITY_ANDROID || UNITY_IOS  
+#if UNITY_ANDROID || UNITY_IOS
             if (pause)
             {
                 RequestSave(this);
@@ -406,46 +479,32 @@ namespace MajdataPlay
         [Preserve]
         void Android_OnNewIntent(AndroidJavaObject intent)
         {
-            //var intentObject = CurrentActivity.Call<AndroidJavaObject>("getIntent");
             if (OnNewIntent is not null)
             {
                 OnNewIntent(this, intent);
             }
         }
-#endif
-        public void EnableGC()
+        [Preserve]
+        void Android_OnActivityResult(int requestCode, int resultCode, AndroidJavaObject? intent)
         {
-            GC.Collect();
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR //Android/iOS Only (GC Enable)
-            GarbageCollector.GCMode = GarbageCollector.Mode.Enabled;
-            MajDebug.LogWarning("GC has been enabled");
-#endif
-        }
-
-        public void DisableGC()
-        {
-            GC.Collect();
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR //Android/iOS Only (GC Disable)
-            GarbageCollector.GCMode = GarbageCollector.Mode.Disabled;
-            MajDebug.LogWarning("GC has been disabled");
-#endif
-        }
-        public static void RequestSave(object? sender)
-        {
-            try
+            if (OnActivityResult is not null)
             {
-                if (OnSave is not null)
-                {
-                    OnSave(sender, null);
-                }
-            }
-            catch (Exception ex)
-            {
-                MajDebug.LogException(ex);
+                OnActivityResult(this, requestCode, resultCode, intent);
             }
         }
-        private static void ExtractAssetsIos()
+#elif UNITY_IOS
+        [Preserve]
+        public void IOS_OnFileOpen(string tempFilePath)
         {
+            ChartImporter.AddImportTask(tempFilePath);
+        }
+#endif
+#endregion
+        
+        #region Asset Extraction
+        private static void ExtractAssets()
+        {
+#if UNITY_IOS
             var extractRoot = Path.Combine(MajEnv.RootPath, "ExtStreamingAssets/");
             Directory.CreateDirectory(extractRoot);
             var paths = Resources.Load<TextAsset>("StreamingAssetPaths");
@@ -477,10 +536,7 @@ namespace MajdataPlay
                     MajDebug.LogError($"Extract failed(iOS): {line}\nsrc={srcPath}\n{e}");
                 }
             }
-        }
-
-        private static void ExtractAssetsAndroid()
-        {
+#elif UNITY_ANDROID
             var extractRoot = Path.Combine(MajEnv.RootPath, "ExtStreamingAssets");
             Directory.CreateDirectory(extractRoot);
 
@@ -541,6 +597,7 @@ namespace MajdataPlay
                     MajDebug.LogError($"Extract failed(Android): {line}\nsrc={srcUrl}\n{e}");
                 }
             }
+#endif
         }
 
         private static void MoveCharts()
@@ -563,8 +620,8 @@ namespace MajdataPlay
 
         private static void MoveSkins()
         {
-            var src = Path.Combine(MajEnv.RootPath, "ExtStreamingAssets", "Skins", "Light2");
-            var dst = Path.Combine(MajEnv.RootPath, "Skins", "Light2");
+            var src = Path.Combine(MajEnv.RootPath, "ExtStreamingAssets", "Skins", "default");
+            var dst = Path.Combine(MajEnv.RootPath, "Skins", "default");
 
             if (!Directory.Exists(src))
             {
@@ -578,12 +635,13 @@ namespace MajdataPlay
             Directory.Move(sourceDirName: src, destDirName: dst);
             MajDebug.LogInfo($"Moved: {src} -> {dst}");
         }
+        #endregion
 
 #if UNITY_ANDROID
-        class OnNewIntentCallback : AndroidJavaProxy
+        class OnNewIntentCallbackProxy : AndroidJavaProxy
         {
             readonly GameManager _gameManager;
-            public OnNewIntentCallback(GameManager gm) : base("net.majdata.majdataplay.CSharpOnNewIntentCallback")
+            public OnNewIntentCallbackProxy(GameManager gm) : base("net.majdata.majdataplay.CSharpOnNewIntentCallback")
             {
                 _gameManager = gm;
             }
@@ -593,6 +651,249 @@ namespace MajdataPlay
                 _gameManager.Android_OnNewIntent(intent);
             }
         }
+        class OnActivityResultCallbackProxy : AndroidJavaProxy
+        {
+            readonly GameManager _gameManager;
+            public OnActivityResultCallbackProxy(GameManager gm) : base("net.majdata.majdataplay.CSharpOnActivityResultCallback")
+            {
+                _gameManager = gm;
+            }
+
+            public void OnActivityResult(int requestCode, int resultCode, AndroidJavaObject? intent)
+            {
+                _gameManager.Android_OnActivityResult(requestCode, resultCode, intent);
+            }
+        }
 #endif
+        static class ChartImporter
+        {
+            static string _importRoot = string.Empty;
+            static ValueTask _importTask = UniTask.CompletedTask;
+            static readonly ConcurrentQueue<string> _pendingImportTasks = new ConcurrentQueue<string>();
+            
+            public static ValueTask OnStartAsync()
+            {
+                _importRoot = Path.Combine(MajEnv.ChartPath, "Import");
+                if (_pendingImportTasks.Count != 0)
+                {
+                    _importTask = Import();
+                    return _importTask;
+                }
+                return UniTask.CompletedTask;
+            }
+            public static void AddImportTask(string tempFilePath)
+            {
+                _pendingImportTasks.Enqueue(tempFilePath);
+            }
+            public static void OnUpdate()
+            {
+                if (SceneSwitcher.CurrentScene == MajScenes.Empty || 
+                    _pendingImportTasks.Count == 0 ||
+                    !_importTask.IsCompleted)
+                {
+                    return;
+                }
+                _importTask = Import();
+            }
+            static async ValueTask Import()
+            {
+                static void CopyDirectory(string sourceDir, string destDir)
+                {
+                    var dirs = new Stack<(string src, string dst)>();
+                    dirs.Push((sourceDir, destDir));
+
+                    while (dirs.Count > 0)
+                    {
+                        var (currentSource, currentDest) = dirs.Pop();
+
+                        Directory.CreateDirectory(currentDest);
+
+                        foreach (var file in Directory.GetFiles(currentSource))
+                        {
+                            var destFile = Path.Combine(currentDest, Path.GetFileName(file));
+                            File.Copy(file, destFile, true);
+                        }
+
+                        foreach (var subDir in Directory.GetDirectories(currentSource))
+                        {
+                            var newDest = Path.Combine(currentDest, Path.GetFileName(subDir));
+                            dirs.Push((subDir, newDest));
+                        }
+                    }
+                }
+                var nextScene = (MajScenes?)MajScenes.List;
+                if(SceneSwitcher.CurrentScene == MajScenes.Init)
+                {
+                    await MajInstances.SceneSwitcher.FadeInAsync();
+                    nextScene = null;
+                }
+                else
+                {
+                    while (SceneSwitcher.CurrentScene == MajScenes.Title)
+                    {
+                        nextScene = MajScenes.Login;
+                        await UniTask.Yield();
+                    }
+                    await MajInstances.SceneSwitcher.SwitchSceneAsync("Empty", false);
+                    await UniTask.Delay(300);
+                }
+                Directory.CreateDirectory(_importRoot);
+                while (_pendingImportTasks.TryDequeue(out var tempFilePath))
+                {
+                    MajDebug.LogDebug("[ZipImporter] Got file: " + tempFilePath);
+
+                    if (!File.Exists(tempFilePath))
+                    {
+                        MajDebug.LogError("[ZipImporter] File not found: " + tempFilePath);
+                        continue;
+                    }
+
+                    var ext = Path.GetExtension(tempFilePath).ToLowerInvariant();
+                    if (ext != ".zip" && ext != ".adx")
+                    {
+                        MajDebug.LogError("[ZipImporter] Unsupported extension: " + ext);
+                        continue;
+                    }
+                    var tempOutDir = Path.Combine(MajEnv.TempPath, Guid.NewGuid().ToString());
+                    
+                    try
+                    {
+                        var dirInfo = Directory.CreateDirectory(tempOutDir);
+                        using var archive = ZipFile.OpenRead(tempFilePath);
+                        var totalSize = archive.Entries.Sum(x => x.Length);
+                        var decompressedSize = 0L;
+                        var destRootFull = Path.GetFullPath(tempOutDir);
+                        if (!destRootFull.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal))
+                        {
+                            destRootFull += Path.DirectorySeparatorChar;
+                        }
+                        foreach (var entry in archive.Entries)
+                        {
+                            if (string.IsNullOrEmpty(entry.Name))
+                            {
+                                continue;
+                            }
+
+                            var combinedPath = Path.Combine(tempOutDir, entry.FullName);
+                            var fullPath = Path.GetFullPath(combinedPath);
+
+                            if (!fullPath.StartsWith(destRootFull, StringComparison.Ordinal))
+                            {
+                                throw new IOException("Zip entry escapes destination: " + entry.FullName);
+                            }
+
+                            var dir = Path.GetDirectoryName(fullPath);
+                            if (!string.IsNullOrEmpty(dir))
+                            {
+                                Directory.CreateDirectory(dir);
+                            }
+
+                            if (File.Exists(fullPath))
+                            {
+                                File.Delete(fullPath);
+                            }
+
+                            entry.ExtractToFile(fullPath);
+                            decompressedSize += entry.Length;
+                            MajInstances.SceneSwitcher.SetLoadingText($"Extracting...\n{decompressedSize * 100 / (double)totalSize:F2}%");
+                            await UniTask.Yield();
+                        }
+                        var subDirs = dirInfo.GetDirectories();
+                        if (subDirs.Length == 0)
+                        {
+                            continue;
+                        }
+                        Parallel.For(0, subDirs.Length, j =>
+                        {
+                            var dir = subDirs[j];
+                            if (dir.Attributes.HasFlag(FileAttributes.Hidden) || dir.Attributes.HasFlag(FileAttributes.System) || dir.Name.StartsWith("."))
+                            {
+                                return;
+                            }
+                            var subDirCount = dir.EnumerateDirectories()
+                                                 .Count(x => !(x.Attributes.HasFlag(FileAttributes.Hidden) || x.Attributes.HasFlag(FileAttributes.System) || x.Name.StartsWith(".")));
+
+                            if (subDirCount == 0)
+                            {
+                                var dirName = dir.Name;
+                                var dstPath = Path.Combine(_importRoot, dirName);
+                                for (var i = 0; Directory.Exists(dstPath); i++)
+                                {
+                                    dstPath = Path.Combine(_importRoot, $"{dirName} ({i + 1})");
+                                }
+                                CopyDirectory(dir.FullName, dstPath);
+                            }
+                            else
+                            {
+                                var dirName = dir.Name;
+                                var dstPath = Path.Combine(MajEnv.ChartPath, dirName);
+                                for (var i = 0; Directory.Exists(dstPath); i++)
+                                {
+                                    dstPath = Path.Combine(MajEnv.ChartPath, $"{dirName} ({i + 1})");
+                                }
+                                CopyDirectory(dir.FullName, dstPath);
+                            }
+                            Directory.Delete(dir.FullName, true);
+                        });
+                    }
+                    catch (Exception e)
+                    {
+                        MajDebug.LogError("[ZipImporter] Extract FAILED: " + e);
+
+                        try { Directory.Delete(tempOutDir, true); } catch { /* ignore */ }
+                        return;
+                    }
+                    finally
+                    {
+#if UNITY_ANDROID
+                        File.Delete(tempFilePath);
+#endif
+                    }
+                }
+                var progress = new Progress<string>();
+                progress.ProgressChanged += (o, e) =>
+                {
+                    MajInstances.SceneSwitcher.SetLoadingText(e);
+                };
+                var task = SongStorage.RefreshLocalAsync(progress);
+                while (!task.IsCompleted)
+                {
+                    await UniTask.Yield();
+                }
+                if (!task.IsCompletedSuccessfully)
+                {
+                    MajInstances.SceneSwitcher.SetLoadingText("MAJTEXT_SCAN_CHARTS_FAILED".i18n(), Color.red);
+                }
+                else
+                {
+                    MajInstances.SceneSwitcher.SetLoadingText(string.Empty);
+                }
+                await UniTask.Delay(3000);
+                if(nextScene is MajScenes scene)
+                {
+                    await MajInstances.SceneSwitcher.SwitchSceneAsync(scene.ToString());
+                }
+            }
+
+            public static void Android_OnNewIntent(object? sender, AndroidJavaObject? intent)
+            {
+                var intentUri = intent?.Call<AndroidJavaObject>("getData");
+                if (intentUri is null)
+                {
+                    return;
+                }
+                using var fileIOKit = new AndroidJavaClass("net.majdata.majdataplay.FileIOKit");
+                var tempPath = Path.Combine(MajEnv.CachePath, "Runtime", $"{Guid.NewGuid()}.zip");
+                var returnCode = fileIOKit.CallStatic<int>("CopyContentToFile", intentUri, tempPath);
+
+                MajDebug.LogDebug($"[Android][FileIOKit] return {returnCode}");
+                if(returnCode != 0)
+                {
+                    return;
+                }
+
+                AddImportTask(tempPath);
+            }
+        }
     }
 }

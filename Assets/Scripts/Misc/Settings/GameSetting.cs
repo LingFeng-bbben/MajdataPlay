@@ -49,6 +49,8 @@ namespace MajdataPlay.Settings
         public bool StarRotation { get; set; } = true;
         
         public BGInfoOption BGInfo { get; set; } = BGInfoOption.Combo;
+        public BGInfoOption SecondaryBGInfo { get; set; } = BGInfoOption.None;
+        public BGInfoOption SubScreenBGInfo { get; set; } = BGInfoOption.Achievement;
         
         public TopInfoDisplayOption TopInfo { get; set; } = TopInfoDisplayOption.None;
         
@@ -61,7 +63,8 @@ namespace MajdataPlay.Settings
         [Step("1")]
         [Range("-7", "7", HasMax = true, HasMin = true)]
         public int Rotation { get; set; } = 0;
-        
+        public bool SlideSkipping { get; set; } = true;
+
         public RandomModeOption Random { get; set; } = RandomModeOption.Disabled;
 #if UNITY_ANDROID || UNITY_IOS
         
@@ -96,7 +99,7 @@ namespace MajdataPlay.Settings
     {
         
         [OptionEnumerator(typeof(LanguageEnumerator))]
-        public string Language { get; set; } = "zh-CN - Majdata";
+        public string Language { get; set; } = "";
         
         [OptionEnumerator(typeof(SkinEnumerator))]
         public string Skin { get; set; } = "default";
@@ -168,7 +171,7 @@ namespace MajdataPlay.Settings
         [Range("0.05", "1.5", HasMax = true, HasMin = true)]
         public float MainScreenScale { get; set; } = 1f;
         
-        [Step("0.1")]
+        [Step("0.01")]
         [Range("-1", "1", HasMax = true, HasMin = true)]
         public float MainScreenOffset { get; set; } = 1f;
         [HideInSettingUI]
@@ -180,7 +183,8 @@ namespace MajdataPlay.Settings
         
         [Step("0.01")]
         public float SubDisplayScale { get; set; } = 1f;
-        
+        public GameplayScreenRotationAngleOption GameplayScreenRotationAngle { get; set; } = GameplayScreenRotationAngleOption.Zero;
+
         [OptionEnumerator(typeof(EngineEnumSettingEnumerator))]
         public RenderQualityOption RenderQuality { get; set; } = RenderQualityOption.Low;
 #if UNITY_STANDALONE
@@ -237,11 +241,6 @@ namespace MajdataPlay.Settings
         [Step("0.05")]
         [Range("0", "1", HasMax = true, HasMin = true)]
         [OptionEnumerator(typeof(AudioVolumeEnumerator))]
-        public float Answer { get; set; } = 0.8f;
-        
-        [Step("0.05")]
-        [Range("0", "1", HasMax = true, HasMin = true)]
-        [OptionEnumerator(typeof(AudioVolumeEnumerator))]
         public float BGM { get; set; } = 1f;
         
         [Step("0.05")]
@@ -252,12 +251,17 @@ namespace MajdataPlay.Settings
         [Step("0.05")]
         [Range("0", "1", HasMax = true, HasMin = true)]
         [OptionEnumerator(typeof(AudioVolumeEnumerator))]
-        public float Tap { get; set; } = 0.3f;
+        public float Answer { get; set; } = 0.8f;
         
         [Step("0.05")]
         [Range("0", "1", HasMax = true, HasMin = true)]
         [OptionEnumerator(typeof(AudioVolumeEnumerator))]
-        public float Slide { get; set; } = 0.3f;
+        public float Tap { get; set; } = 0.3f;
+
+        [Step("0.05")]
+        [Range("0", "1", HasMax = true, HasMin = true)]
+        [OptionEnumerator(typeof(AudioVolumeEnumerator))]
+        public float Ex { get; set; } = 0.3f;
         
         [Step("0.05")]
         [Range("0", "1", HasMax = true, HasMin = true)]
@@ -267,7 +271,17 @@ namespace MajdataPlay.Settings
         [Step("0.05")]
         [Range("0", "1", HasMax = true, HasMin = true)]
         [OptionEnumerator(typeof(AudioVolumeEnumerator))]
+        public float Slide { get; set; } = 0.3f;
+        
+        [Step("0.05")]
+        [Range("0", "1", HasMax = true, HasMin = true)]
+        [OptionEnumerator(typeof(AudioVolumeEnumerator))]
         public float Touch { get; set; } = 0.3f;
+
+        [Step("0.05")]
+        [Range("0", "1", HasMax = true, HasMin = true)]
+        [OptionEnumerator(typeof(AudioVolumeEnumerator))]
+        public float Hanabi { get; set; } = 0.3f;
         
         [Step("0.05")]
         [Range("0", "1", HasMax = true, HasMin = true)]
@@ -346,60 +360,60 @@ namespace MajdataPlay.Settings
 #if UNITY_ANDROID
         
         [Step("0.05")]
-        [Range("-5", "5", HasMax = true, HasMin = true)]
+        [Range("0", "2", HasMax = true, HasMin = true)]
         public float TouchSimulationRadius { get; set; } = 0.5f;
         
         [Step("0.05")]
-        [Range("-5", "5", HasMax = true, HasMin = true)]
+        [Range("0", "2", HasMax = true, HasMin = true)]
         public float TouchAAreaExtraRadius { get; set; } = 0f;
         
         [Step("0.05")]
-        [Range("-5", "5", HasMax = true, HasMin = true)]
+        [Range("0", "2", HasMax = true, HasMin = true)]
         public float TouchBAreaExtraRadius { get; set; } = 0f;
         
         [Step("0.05")]
-        [Range("-5", "5", HasMax = true, HasMin = true)]
-        public float TouchCAreaExtraRadius { get; set; } = 0.23f;
+        [Range("0", "2", HasMax = true, HasMin = true)]
+        public float TouchCAreaExtraRadius { get; set; } = 0.25f;
         
         [Step("0.05")]
-        [Range("-5", "5", HasMax = true, HasMin = true)]
+        [Range("0", "2", HasMax = true, HasMin = true)]
         public float TouchDAreaExtraRadius { get; set; } = 0.2f;
         
         [Step("0.05")]
-        [Range("-5", "5", HasMax = true, HasMin = true)]
-        public float TouchEAreaExtraRadius { get; set; } = 0.12f;
+        [Range("0", "2", HasMax = true, HasMin = true)]
+        public float TouchEAreaExtraRadius { get; set; } = 0.10f;
         
         [Step("0.05")]
-        [Range("-5", "5", HasMax = true, HasMin = true)]
+        [Range("0", "2", HasMax = true, HasMin = true)]
         public float TouchRadiusAdjust { get; set; } = 0f;
 #else
         
         [Step("0.05")]
-        [Range("-5", "5", HasMax = true, HasMin = true)]
+        [Range("0", "2", HasMax = true, HasMin = true)]
         public float TouchSimulationRadius { get; set; } = 0.5f;
         
         [Step("0.05")]
-        [Range("-5", "5", HasMax = true, HasMin = true)]
+        [Range("0", "2", HasMax = true, HasMin = true)]
         public float TouchAAreaExtraRadius { get; set; } = 0f;
         
         [Step("0.05")]
-        [Range("-5", "5", HasMax = true, HasMin = true)]
+        [Range("0", "2", HasMax = true, HasMin = true)]
         public float TouchBAreaExtraRadius { get; set; } = 0f;
         
         [Step("0.05")]
-        [Range("-5", "5", HasMax = true, HasMin = true)]
-        public float TouchCAreaExtraRadius { get; set; } = 0.23f;
+        [Range("0", "2", HasMax = true, HasMin = true)]
+        public float TouchCAreaExtraRadius { get; set; } = 0.25f;
         
         [Step("0.05")]
-        [Range("-5", "5", HasMax = true, HasMin = true)]
+        [Range("0", "2", HasMax = true, HasMin = true)]
         public float TouchDAreaExtraRadius { get; set; } = 0.2f;
         
         [Step("0.05")]
-        [Range("-5", "5", HasMax = true, HasMin = true)]
-        public float TouchEAreaExtraRadius { get; set; } = 0.12f;
+        [Range("0", "2", HasMax = true, HasMin = true)]
+        public float TouchEAreaExtraRadius { get; set; } = 0.10f;
         
         [Step("0.05")]
-        [Range("-5", "5", HasMax = true, HasMin = true)]
+        [Range("0", "2", HasMax = true, HasMin = true)]
         public float TouchRadiusAdjust { get; set; } = 0f;
 #endif
         
@@ -487,9 +501,7 @@ namespace MajdataPlay.Settings
         
         public TouchPanelOptions TouchPanel { get; set; } = new();
 #else
-        
-        public bool EnableKeyboardInput { get; set; } = false;
-        public bool EnableGamepadInput { get; set; } = false;
+        public MobileExternalButtonRingOption ExternalButtonRing { get; init; } = MobileExternalButtonRingOption.None;
 #endif
     }
 #if UNITY_STANDALONE
@@ -613,7 +625,11 @@ namespace MajdataPlay.Settings
         // Rear (LR / RR)
         // Side (LS / RS) (rear center)
         // CenterAndLFE (LFE / Center)
-        public string Main { get; set; } = "Front";
+        public float FrontVolume { get; set; } = 1f;
+        public float CenterAndLFEVolume { get; set; } = 1f;
+        public float SideVolume { get; set; } = 1f;
+        public float RearVolume { get; set; } = 1f;
+
     }
     public class AsioOptions
     {

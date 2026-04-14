@@ -73,15 +73,16 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         Vector3 _innerPos = NoteHelper.GetTapPosition(1, 1.225f);
         Vector3 _outerPos = NoteHelper.GetTapPosition(1, 4.8f);
 
-        readonly float _noteAppearRate = MajInstances.Settings?.Debug.NoteAppearRate ?? 0.265f;
+        float _noteAppearRate = 0.265f;
         //readonly float _touchPanelOffset = MajEnv.UserSetting?.Judge.TouchPanelOffset ?? 0;
 
-        const int _spriteSortOrder = 1;
-        const int _exSortOrder = 0;
+        const int TAP_SPRITE_SORT_ORDER = 1;
+        const int TAP_EX_SORT_ORDER = 0;
 
         protected override void Awake()
         {
             base.Awake();
+            _noteAppearRate = MajInstances.Settings.Debug.NoteAppearRate;
             _isStarRotation = _settings.Game.StarRotation;
             _notePoolManager = FindObjectOfType<NotePoolManager>();
             _thisRenderer = GetComponent<SpriteRenderer>();
@@ -136,8 +137,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             Transform.localScale = new Vector3(0, 0);
 
             _tapLineObject.transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (StartPos - 1));
-            _thisRenderer.sortingOrder = SortOrder - _spriteSortOrder;
-            _exRenderer.sortingOrder = SortOrder - _exSortOrder;
+            _thisRenderer.sortingOrder = SortOrder - TAP_SPRITE_SORT_ORDER;
+            _exRenderer.sortingOrder = SortOrder - TAP_EX_SORT_ORDER;
 
             LoadSkin();
             SetActive(true);

@@ -24,8 +24,8 @@ namespace MajdataPlay.IO
 {
     internal static unsafe partial class InputManager
     {
-        const int TOUCH_ANGLE_SMAPLE_COUNT = 128;
-        const float FINGER_RADIUS_SEGMENT_LENGTH = 0.5f / 4;
+        public const int TOUCH_ANGLE_SMAPLE_COUNT = 128;
+        public const float FINGER_RADIUS_SEGMENT_LENGTH = 0.5f / 4;
         
         // uint64 TouchPosData
         //
@@ -353,12 +353,15 @@ namespace MajdataPlay.IO
             var newP = ((ulong)_version) << (12 + 34);
             var rayToCenter = cubeRay - new Vector3(0, 0, -10);
             var radToCenter = rayToCenter.magnitude;
-            var edgeYPosition = Mathf.Max(5.08f + (1.5f + _lastMainScreenOffset * 2.7f), 5.4f);
+            var subScreenEdge = SubScreenEdge;
+            var edgeYPosition = Mathf.Max(5.08f + (1.5f + (_lastMainScreenOffset * 2.7f)), 5.4f);
             var extraButtonStates = (stackalloc bool[12]);
             var extraSensorStates = (stackalloc bool[34]);
             var isAnyExtraButtonTriggered = false;
             var isAnyExtraSensorTriggered = false;
-            if (cubeRay.y > edgeYPosition)
+            var isInSubScreenRect = (cubeRay.x > subScreenEdge.x && cubeRay.x < subScreenEdge.z) &&
+                                    (cubeRay.y > subScreenEdge.w && cubeRay.y < subScreenEdge.y);
+            if (isInSubScreenRect)
             {
                 extraButtonStates[9] = true;
                 isAnyExtraButtonTriggered = true;
@@ -369,9 +372,9 @@ namespace MajdataPlay.IO
                 const float SENSOR_GROUP_D_DEG = 8f;
                 
                 // out of the screen area to the button area
-                var degree = -Mathf.Atan2(rayToCenter.y, rayToCenter.x) * Mathf.Rad2Deg + 180;
+                var degree = (-Mathf.Atan2(rayToCenter.y, rayToCenter.x) * Mathf.Rad2Deg) + 180;
                 var pos = (int)(degree / 22.5f);
-                var degDiff = degree - 22.5f * pos;
+                var degDiff = degree - (22.5f * pos);
 
                 var center = pos;
                 var left = (pos + 15) & 15;
@@ -722,7 +725,7 @@ namespace MajdataPlay.IO
                 //}
             }
             var circleSamples = _unitCircle.Span;
-            var userRad = _lastFingerRadius * (1 + touchRadius * _lastTouchRadiusAdjust);
+            var userRad = _lastFingerRadius * (1 + (touchRadius * _lastTouchRadiusAdjust));
             var a_extraRad = _lastAAreaExtraRadius;
             var b_extraRad = _lastBAreaExtraRadius;
             var c_extraRad = _lastCAreaExtraRadius;

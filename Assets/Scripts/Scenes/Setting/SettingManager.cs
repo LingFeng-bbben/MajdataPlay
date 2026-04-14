@@ -26,13 +26,6 @@ namespace MajdataPlay.Scenes.Setting
         bool _isExited = false;
         bool _isInited = false;
 
-        const int NO_REQUEST = 0;
-        const int JMP_TO_MOD_PAGE = 1;
-        const int JMP_TO_DEFAULT_PAGE = 1 << 1;
-        const int IGNORE_CHART_SETTING_PAGE = 1 << 2;
-
-        static int _fromListRequest = NO_REQUEST;
-
         readonly SettingConfig _settingConfig = MajEnv.RuntimeConfig?.Setting ?? new();
         void Awake()
         {
@@ -40,14 +33,13 @@ namespace MajdataPlay.Scenes.Setting
         }
         void Start()
         {
-            var fromListRequest = _fromListRequest;
             var type = Setting.GetType();
             var properties = type.GetProperties()
                                  .Where(x => x.GetCustomAttributes<HideInSettingUIAttribute>().Count() == 0)
                                  .ToArray();
             var offset = 0;
 
-            if((fromListRequest & IGNORE_CHART_SETTING_PAGE) == 0)
+            if(!_settingConfig.IgnoreChartSettingPage)
             {
                 menus = new Menu[properties.Length + 1];
                 offset = 0;
@@ -175,26 +167,22 @@ namespace MajdataPlay.Scenes.Setting
             }
             await UniTask.DelayFrame(3);
             await SwitchToDesiredIndex();
-            _fromListRequest = NO_REQUEST;
             _isInited = true;
         }
 
         async UniTask SwitchToDesiredIndex()
         {
             await UniTask.Yield();
-            var fromListRequest = _fromListRequest;
             var index = 0;
-            if((fromListRequest & JMP_TO_MOD_PAGE) != 0)
+            index = Array.FindIndex(menus, x => x.Name == _settingConfig.SelectedMenu);
+            if(index == -1)
             {
-                index = menus.AsEnumerable().FindIndex(x => x.Name == "Mod");
-            }
-            else if ((fromListRequest & JMP_TO_DEFAULT_PAGE) != 0)
-            {
-                index = _settingConfig.SelectedPage;
+                index = Array.FindIndex(menus, x => x.Name == nameof(GameSetting.Game));
+                _settingConfig.SelectedOption = string.Empty;
             }
             Index = index;
             UpdateMenu(0, Index);
-            menus[Index].ToIndex(_settingConfig.SelectedMenuIndex);
+            menus[Index].ToOption(_settingConfig.SelectedOption);
         }
 
         public void PreviousMenu()
@@ -206,7 +194,7 @@ namespace MajdataPlay.Scenes.Setting
                 oldIndex = menus.Length;
                 Index = menus.Length - 1;
             }
-            _settingConfig.SelectedPage = Index;
+            _settingConfig.SelectedMenu = menus[Index].Name;
             UpdateMenu(oldIndex,Index);
         }
         public void NextMenu()
@@ -218,20 +206,8 @@ namespace MajdataPlay.Scenes.Setting
                 oldIndex = -1;
                 Index = 0;
             }
-            _settingConfig.SelectedPage = Index;
+            _settingConfig.SelectedMenu = menus[Index].Name;
             UpdateMenu(oldIndex, Index);
-        }
-        public static void JmpToModPage()
-        {
-            _fromListRequest |= JMP_TO_MOD_PAGE;
-        }
-        public static void IgnoreChartSettingPage()
-        {
-            _fromListRequest |= IGNORE_CHART_SETTING_PAGE;
-        }
-        public static void JmpToDefaultPage()
-        {
-            _fromListRequest |= JMP_TO_DEFAULT_PAGE;
         }
         void UpdateMenu(int oldIndex,int newIndex)
         {

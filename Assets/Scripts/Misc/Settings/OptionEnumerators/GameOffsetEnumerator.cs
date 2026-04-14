@@ -7,10 +7,24 @@ using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 
 namespace MajdataPlay.Settings.OptionEnumerators;
-public sealed class GameOffsetEnumerator : DefaultNumberEnumerator, IOptionEnumerator
+public sealed class GameOffsetEnumerator : DefaultNumberEnumerator, IOptionEnumerator, IDisposable
 {
     OffsetUnitOption _lastOffsetUnit;
     public override void OnUpdate()
+    {
+        CheckOffsetUnit();
+    }
+    public void Dispose()
+    {
+        CheckOffsetUnit();
+    }
+    protected override void InitInternal()
+    {
+        base.InitInternal();
+        _lastOffsetUnit = MajEnv.Settings.Debug.OffsetUnit;
+        UpdateOptionStep();
+    }
+    void CheckOffsetUnit()
     {
         var currentOffsetUnit = MajEnv.Settings.Debug.OffsetUnit;
         if (currentOffsetUnit == _lastOffsetUnit)
@@ -19,32 +33,24 @@ public sealed class GameOffsetEnumerator : DefaultNumberEnumerator, IOptionEnume
         }
         else if (currentOffsetUnit == OffsetUnitOption.Second)
         {
-            MajEnv.Settings.Judge.AudioOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.Settings.Judge.AudioOffset, 3);
-            MajEnv.Settings.Judge.JudgeOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.Settings.Judge.JudgeOffset, 3);
-            MajEnv.Settings.Judge.TouchPanelOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.Settings.Judge.TouchPanelOffset, 3);
-            MajEnv.Settings.Judge.AnswerOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.Settings.Judge.AnswerOffset, 3);
-            MajEnv.Settings.Game.SlideFadeInOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.Settings.Game.SlideFadeInOffset, 3);
-            MajEnv.Settings.Debug.DisplayOffset = MathF.Round(MajEnv.FRAME_LENGTH_SEC * MajEnv.Settings.Debug.DisplayOffset, 3);
+            CurrentValue = Math.Round((decimal)MajEnv.FRAME_LENGTH_SEC * CurrentValue, 3);
+            var valueToSet = (object)CurrentValue;
+            OptionValues[0] = valueToSet;
+            Value = Convert.ChangeType(valueToSet, Type);
             ChartSettingStorage.ConvertUnitToSecond();
         }
         else
         {
-            MajEnv.Settings.Judge.AudioOffset = MathF.Round(MajEnv.Settings.Judge.AudioOffset / MajEnv.FRAME_LENGTH_SEC, 1);
-            MajEnv.Settings.Judge.JudgeOffset = MathF.Round(MajEnv.Settings.Judge.JudgeOffset / MajEnv.FRAME_LENGTH_SEC, 1);
-            MajEnv.Settings.Judge.TouchPanelOffset = MathF.Round(MajEnv.Settings.Judge.TouchPanelOffset / MajEnv.FRAME_LENGTH_SEC, 1);
-            MajEnv.Settings.Judge.AnswerOffset = MathF.Round(MajEnv.Settings.Judge.AnswerOffset / MajEnv.FRAME_LENGTH_SEC, 1);
-            MajEnv.Settings.Game.SlideFadeInOffset = MathF.Round(MajEnv.Settings.Game.SlideFadeInOffset / MajEnv.FRAME_LENGTH_SEC, 1);
-            MajEnv.Settings.Debug.DisplayOffset = MathF.Round(MajEnv.Settings.Debug.DisplayOffset / MajEnv.FRAME_LENGTH_SEC, 1);
+            CurrentValue = Math.Round(CurrentValue / (decimal)MajEnv.FRAME_LENGTH_SEC, 1);
+            var valueToSet = (object)CurrentValue;
+            OptionValues[0] = valueToSet;
+            Value = Convert.ChangeType(valueToSet, Type);
             ChartSettingStorage.ConvertUnitToFrame();
         }
         UpdateOptionStep();
+        OptionValues[0] = Value;
+        UpdateValueText();
         _lastOffsetUnit = currentOffsetUnit;
-    }
-    protected override void InitInternal()
-    {
-        base.InitInternal();
-        _lastOffsetUnit = MajEnv.Settings.Debug.OffsetUnit;
-        UpdateOptionStep();
     }
     void UpdateOptionStep()
     {

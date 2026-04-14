@@ -3,10 +3,6 @@
 #import "UnityAppController.h"
 #import "UnityInterface.h"
 
-static void SendToUnity(const char* method, const char* msg) {
-    UnitySendMessage("ZipImporter", method, msg);
-}
-
 @interface OpenFileBridge : UnityAppController
 @end
 
@@ -51,11 +47,11 @@ static void SendToUnity(const char* method, const char* msg) {
         return YES;
     }
 
-    if (needStop) {
+    if (needStop) 
+    {
         [url stopAccessingSecurityScopedResource];
     }
-
-    SendToUnity("OnIncomingPackageReady", destPath.UTF8String);
+    UnitySendMessage("GameManager", "IOS_OnFileOpen", destPath.UTF8String);
     return YES;
 }
 

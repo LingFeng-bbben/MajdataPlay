@@ -25,6 +25,7 @@ namespace MajdataPlay.Settings
         public static string MajnetApi { get; private set; }
         public static string MajnetUsername { get; private set; }
         public static string MajnetPassword { get; private set; }
+        public static bool MajnetAutoLogin {get; private set; }
 
         // Custom
         public static bool CustomEnabled { get; private set; }
@@ -33,13 +34,14 @@ namespace MajdataPlay.Settings
         public static string CustomApi { get; private set; }
         public static string CustomUsername { get; private set; }
         public static string CustomPassword { get; private set; }
+        public static bool CustomAutoLogin { get; private set; }
 
         public static void Init()
         {
             if (Inited) return;
 
             // Root
-            AppVersion = GetString("app_version", "0.1.48");
+            AppVersion = GetString("app_version", "0.1.50");
 
             // Network
             Online = GetBool("enabled_online", false);
@@ -54,6 +56,7 @@ namespace MajdataPlay.Settings
             MajnetApi = GetString("majnet_api", "https://majdata.net/api/api3/");
             MajnetUsername = GetString("majnet_username", "");
             MajnetPassword = GetString("majnet_password", "");
+            MajnetAutoLogin = GetBool("majnet_auto_login", false);
 
             // Custom
             CustomEnabled = GetBool("custom_enabled", false);
@@ -61,6 +64,7 @@ namespace MajdataPlay.Settings
             CustomApi = GetString("custom_api", "");
             CustomUsername = GetString("custom_username", "");
             CustomPassword = GetString("custom_password", "");
+            CustomAutoLogin = GetBool("custom_auto_login", false);
 
             Inited = true;
         }

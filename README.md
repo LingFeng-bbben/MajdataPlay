@@ -19,6 +19,16 @@ Simai is a maimai chart discription language developed by [Celeca](https://twitt
 - Android
 - iOS
 
+## Install
+
+# !DOWNLOAD NOW!
+## !DOWNLOAD NOW!
+### !DOWNLOAD NOW!
+#### !DOWNLOAD NOW!
+##### !DOWNLOAD NOW!
+
+[<img src="googleplay.svg" height="60">](https://play.google.com/store/apps/details?id=net.majdata.majdataplay) [<img src="appstore.svg" height="60">](https://testflight.apple.com/join/PwxCNk5n)
+
 ## Getting Started
 
 > ⚠️ This repository contains a Unity project, not a standard C#/.NET project.

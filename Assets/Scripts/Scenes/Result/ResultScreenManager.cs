@@ -70,6 +70,8 @@ namespace MajdataPlay.Scenes.Result
         bool _isInited = false;
         bool _isExited = false;
 
+        const string PERFECT_COUNT_TEXT_TEMPLATE = "<line-height=60%>{0}\n<size=24>(-{1})</size>";
+
         void Awake()
         {
             InputManager.TouchButtonRingEdge = 4.8f;
@@ -116,14 +118,16 @@ namespace MajdataPlay.Scenes.Result
             var dxScoreRank = new DXScoreRank(result.DXScore, result.TotalDXScore);
             if (dxScoreRank.Rank > 0)
             {
-                dxScore.text = $"*{dxScoreRank.Rank} {result.DXScore}/{result.TotalDXScore}";
+                dxScore.text = $"✧ {dxScoreRank.Rank} {result.DXScore}/{result.TotalDXScore}";
             }
             else
             {
                 dxScore.text = $"{result.DXScore}/{result.TotalDXScore}";
             }
 
-            perfectCount.text = $"{totalJudgeRecord.CriticalPerfect + totalJudgeRecord.Perfect}";
+            perfectCount.text = string.Format(PERFECT_COUNT_TEXT_TEMPLATE, 
+                                              totalJudgeRecord.CriticalPerfect + totalJudgeRecord.Perfect, 
+                                              totalJudgeRecord.Perfect);
             greatCount.text = $"{totalJudgeRecord.Great}";
             goodCount.text = $"{totalJudgeRecord.Good}";
             missCount.text = $"{totalJudgeRecord.Miss}";
@@ -307,6 +311,18 @@ namespace MajdataPlay.Scenes.Result
             var slideJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Slide]);
             var touchJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Touch]);
             var breakJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Break]);
+            var breakJudgeRecord = judgeRecord[ScoreNoteType.Break];
+            var break2550Count = breakJudgeRecord[JudgeGrade.FastPerfect2nd] + breakJudgeRecord[JudgeGrade.LatePerfect2nd];
+            var break2500Count = breakJudgeRecord[JudgeGrade.FastPerfect3rd] + breakJudgeRecord[JudgeGrade.LatePerfect3rd];
+            var breakPerfectCountText = string.Empty;
+            if((break2550Count + break2500Count) == 0)
+            {
+                breakPerfectCountText = "0";
+            }
+            else
+            {
+                breakPerfectCountText = $"{break2550Count}+{break2500Count}";
+            }
             string[] nmsl = new string[]
             {
                 $"<color=#FFFFFF><indent=0%>NOTES<indent=16.6%><color=#FFF90E>Critical<indent=33.3%><color=#FFB30D>Perfect<indent=50%><color=#FFA2F1>Great<indent=66.6%><color=#00DF0E>Good<indent=83.3%><color=#C7C7C7>Miss",
@@ -314,7 +330,7 @@ namespace MajdataPlay.Scenes.Result
                 $"<color=#FFFFFF><indent=0%>Hold<indent=16.6%><color=#FFF90E>{holdJudgeInfo.CriticalPerfect}<indent=33.3%><color=#FFB30D>{holdJudgeInfo.Perfect}<indent=50%><color=#FFA2F1>{holdJudgeInfo.Great}<indent=66.6%><color=#00DF0E>{holdJudgeInfo.Good}<indent=83.3%><color=#C7C7C7>{holdJudgeInfo.Miss}",
                 $"<color=#FFFFFF><indent=0%>Slide<indent=16.6%><color=#FFF90E>{slideJudgeInfo.CriticalPerfect}<indent=33.3%><color=#FFB30D>{slideJudgeInfo.Perfect}<indent=50%><color=#FFA2F1>{slideJudgeInfo.Great}<indent=66.6%><color=#00DF0E>{slideJudgeInfo.Good}<indent=83.3%><color=#C7C7C7>{slideJudgeInfo.Miss}",
                 $"<color=#FFFFFF><indent=0%>Touch<indent=16.6%><color=#FFF90E>{touchJudgeInfo.CriticalPerfect}<indent=33.3%><color=#FFB30D>{touchJudgeInfo.Perfect}<indent=50%><color=#FFA2F1>{touchJudgeInfo.Great}<indent=66.6%><color=#00DF0E>{touchJudgeInfo.Good}<indent=83.3%><color=#C7C7C7>{touchJudgeInfo.Miss}",
-                $"<color=#FFFFFF><indent=0%>Break<indent=16.6%><color=#FFF90E>{breakJudgeInfo.CriticalPerfect}<indent=33.3%><color=#FFB30D>{breakJudgeInfo.Perfect}<indent=50%><color=#FFA2F1>{breakJudgeInfo.Great}<indent=66.6%><color=#00DF0E>{breakJudgeInfo.Good}<indent=83.3%><color=#C7C7C7>{breakJudgeInfo.Miss}",
+                $"<color=#FFFFFF><indent=0%>Break<indent=16.6%><color=#FFF90E>{breakJudgeInfo.CriticalPerfect}<indent=33.3%><color=#FFB30D>{breakPerfectCountText}<indent=50%><color=#FFA2F1>{breakJudgeInfo.Great}<indent=66.6%><color=#00DF0E>{breakJudgeInfo.Good}<indent=83.3%><color=#C7C7C7>{breakJudgeInfo.Miss}",
             };
             return string.Join("\n", nmsl);
         }

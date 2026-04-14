@@ -18,7 +18,6 @@ using UnityEngine.Profiling;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
-    using Unsafe = System.Runtime.CompilerServices.Unsafe;
     internal sealed class WifiDrop : SlideBase, IMajComponent
     {
 
@@ -139,14 +138,14 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 fadeInOffset = _settings.Game.SlideFadeInOffset * MajEnv.FRAME_LENGTH_SEC;
             }
+            FadeInMaxAlpha = 1f;
             FadeInTiming += fadeInOffset;
             FadeInTiming += Timing;
+            FadeInCompletedTiming = Timing - 0.05f;
             // Slide完全淡入时机
             // 正常情况下应为负值；速度过高将忽略淡入
-            FullFadeInTiming = FadeInTiming + 0.2f;
-            //var interval = fullFadeInTiming - fadeInTiming;
-            //Destroy(GetComponent<Animator>());
-            MaxFadeInAlpha = 1f;
+            FadeInDurationTimeSec = (FadeInCompletedTiming - FadeInTiming).Clamp(0, 0.2f);
+            FadeInCutoffTiming = FadeInTiming + FadeInDurationTimeSec;
             //淡入时机与正解帧间隔小于200ms时，加快淡入动画的播放速度
             //fadeInAnimator.speed = 0.2f / interval;
             //fadeInAnimator.SetTrigger("wifi");
@@ -186,6 +185,20 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 starTransforms[i] = star.transform;
                 star.transform.position = _starStartPositions[i];
                 star.transform.localScale = new Vector3(0f, 0f, 1f);
+            }
+
+            if(!USERSETTING_SLIDE_SKIPPING)
+            {
+                for (var i = 0; i < JudgeQueues.Length; i++)
+                {
+                    var queueMemory = JudgeQueues[i];
+                    var queue = queueMemory.Span;
+                    for (var j = 0; j < queue.Length; j++)
+                    {
+                        ref var area = ref queue[j];
+                        area.IsSkippable = false;
+                    }
+                }
             }
 
             State = NoteStatus.Inited;
@@ -299,7 +312,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                     HideAllBar();
                     if (IsClassic)
                     {
-                        ClassicJudge(thisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
+                        JudgeClassic(thisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
                     }
                     else
                     {
@@ -415,11 +428,20 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                             var starTransform = starTransforms[i];
 
                             _starRenderers[i].color = new Color(1, 1, 1, alpha);
-                            starTransform.localScale = new Vector3(alpha + 0.5f, alpha + 0.5f, alpha + 0.5f);
+                            if (IsClassic)
+                            {
+                                var scale = 1 + alpha / 2;
+                                starTransform.localScale = new Vector3(scale, scale, scale);
+                            }
+                            else
+                            {
+                                starTransform.localScale = new Vector3(alpha + 0.5f, alpha + 0.5f, alpha + 0.5f);
+                            }
                         }
                         break;
                     case NoteStatus.Running:
-                        if (GetRemainingTimeWithoutOffset() == 0)
+                        var remaingTimeWithoutOffset = GetRemainingTimeWithoutOffset();
+                        if (remaingTimeWithoutOffset == 0)
                         {
                             for (var i = 0; i < stars.Length; i++)
                             {
@@ -429,15 +451,14 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                             State = NoteStatus.Arrived;
                             goto case NoteStatus.Arrived;
                         }
-                        var process = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
+                        var process = (Length - remaingTimeWithoutOffset) / Length;
 
                         for (var i = 0; i < stars.Length; i++)
                         {
                             var starTransform = starTransforms[i];
-                            var a = _starEndPositions[i];
-                            var b = _starStartPositions[i];
-                            var ba = a - b;
-                            var newPos = ba * process + b;
+                            var a = _starStartPositions[i];
+                            var b = _starEndPositions[i];
+                            var newPos = Vector3.Lerp(a, b, process);
 
                             starTransform.position = newPos; //TODO add some runhua
                         }
@@ -528,24 +549,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                         rad = 0.15f;
                     }
                     var pos = (_starEndPositions[j] - startPos) * DJAutoplayProgress.Clamp(0, 1) + startPos;
-                    pos.z = -10;
-                    for (int i = 0; i < 9; i++)
-                    {
-                        
-                        var circular = new Vector3(rad * Mathf.Sin(45f * i), rad * Mathf.Cos(45f * i));
-                        if (i == 8)
-                        {
-                            circular = Vector3.zero;
-                        }
-                        var ray = new Ray(pos + circular, Vector3.forward);
-                        var ishit = Physics.Raycast(ray, out var hitInfom);
-                        if (ishit)
-                        {
-                            var id = hitInfom.colliderInstanceID;
-                            var area = InputManager.GetSensorAreaFromInstanceID(id);
-                            _noteManager.SimulateSensorPress(area);
-                        }
-                    }
+                    SlideDJAutoSimulateSensorPress(pos, rad);
                 }
                 if(DJAutoplayProgress >= currentProgress)
                 {

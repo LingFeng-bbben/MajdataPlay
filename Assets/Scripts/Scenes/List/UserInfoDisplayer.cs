@@ -15,7 +15,7 @@ namespace MajdataPlay
         public void DisplayUserInfo(ApiEndpoint apiEndpoint)
         {
             var runtimeConfig = apiEndpoint.RuntimeConfig;
-            if(runtimeConfig.AuthMethod == NetAuthMethodOption.None)
+            if(runtimeConfig.AuthMethod == NetAuthMethodOption.None || !runtimeConfig.IsLoggedIn)
             {
                 username_text.text = "Guest";
             }
@@ -24,7 +24,6 @@ namespace MajdataPlay
                 usericon.sprite = runtimeConfig.Avatar;
                 if (runtimeConfig.Avatar is null)
                 {
-
                     Error_icon.SetActive(true);
                 }
                 username_text.text = runtimeConfig.Username;

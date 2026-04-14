@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -22,6 +23,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
     internal abstract class SlideBase : NoteLongDrop
     {
+        const int SLIDE_BAR_MODE_SET_ALPHA = 1;
+        const int SLIDE_BAR_MODE_SET_MATERIAL = 2;
+        const int SLIDE_BAR_MODE_SET_ALPHA_AND_MATERIAL = 3;
         public IConnectableSlide? Parent => ConnectInfo.Parent;
         public ConnSlideInfo ConnectInfo
         {
@@ -89,20 +93,6 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             get => _isJustR;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => _isJustR = value;
-        }
-        public float FadeInTiming
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _fadeInTiming;
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => _fadeInTiming = value;
-        }
-        public float FullFadeInTiming
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _fullFadeInTiming;
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => _fullFadeInTiming = value;
         }
         public int EndPos
         {
@@ -191,7 +181,18 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
         protected float LastWaitTimeSec;
 
-        protected float MaxFadeInAlpha = 0.5f; // 淡入时最大不透明度
+        [ReadOnlyField, SerializeField]
+        protected float FadeInTiming = 0f;
+        [ReadOnlyField, SerializeField]
+        protected float FadeInCutoffTiming = 0f;
+        [ReadOnlyField, SerializeField]
+        protected float FadeInCompletedTiming = 0f;
+        [ReadOnlyField, SerializeField]
+        protected float FadeInDurationTimeSec = 0.2f;
+        [ReadOnlyField, SerializeField]
+        protected float FadeInMaxAlpha = 0.5f; // 淡入时最大不透明度
+
+
         protected float DJAutoplayProgress = 0;
 
         protected int LastHiddenSlideBarIndex = 0;
@@ -272,7 +273,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         [Il2CppSetOption(Option.NullChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void ClassicJudge(float currentSec)
+        protected void JudgeClassic(float currentSec)
         {
             if (!ConnectInfo.IsGroupPartEnd && ConnectInfo.IsConnSlide)
             {
@@ -286,20 +287,33 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             var isFast = diffSec < 0;
             _judgeDiff = diffSec * 1000;
             var diffMSec = MathF.Abs(diffSec) * 1000;
-            const float JUDGE_SEG_3RD_PERFECT_MSEC = SLIDE_JUDGE_CLASSIC_SEG_BASE_3RD_PERFECT_MSEC;
-            const float JUDGE_SEG_1ST_PERFECT_MSEC = JUDGE_SEG_3RD_PERFECT_MSEC * 0.333333f;
-            const float JUDGE_SEG_2ND_PERFECT_MSEC = JUDGE_SEG_3RD_PERFECT_MSEC * 0.666666f;
-
-            var judge = diffMSec switch
+            var judge = JudgeGrade.Miss;
+            if (isFast)
             {
-                <= JUDGE_SEG_1ST_PERFECT_MSEC => JudgeGrade.Perfect,
-                <= JUDGE_SEG_2ND_PERFECT_MSEC => isFast ? JudgeGrade.FastPerfect2nd : JudgeGrade.LatePerfect2nd,
-                <= JUDGE_SEG_3RD_PERFECT_MSEC => isFast ? JudgeGrade.FastPerfect3rd : JudgeGrade.LatePerfect3rd,
-                <= SLIDE_JUDGE_CLASSIC_SEG_1ST_GREAT_MSEC => isFast ? JudgeGrade.FastGreat : JudgeGrade.LateGreat,
-                <= SLIDE_JUDGE_CLASSIC_SEG_2ND_GREAT_MSEC => isFast ? JudgeGrade.FastGreat2nd : JudgeGrade.LateGreat2nd,
-                <= SLIDE_JUDGE_CLASSIC_SEG_3RD_GREAT_MSEC => isFast ? JudgeGrade.FastGreat3rd : JudgeGrade.LateGreat3rd,
-                _ => isFast ? JudgeGrade.FastGood : JudgeGrade.LateGood
-            };
+                judge = diffMSec switch
+                {
+                    <= SLIDE_JUDGE_CLASSIC_FAST_SEG_1ST_PERFECT_MSEC => JudgeGrade.Perfect,
+                    <= SLIDE_JUDGE_CLASSIC_FAST_SEG_2ND_PERFECT_MSEC => JudgeGrade.FastPerfect2nd,
+                    <= SLIDE_JUDGE_CLASSIC_FAST_SEG_3RD_PERFECT_MSEC => JudgeGrade.FastPerfect3rd,
+                    <= SLIDE_JUDGE_CLASSIC_FAST_SEG_1ST_GREAT_MSEC => JudgeGrade.FastGreat,
+                    <= SLIDE_JUDGE_CLASSIC_FAST_SEG_2ND_GREAT_MSEC => JudgeGrade.FastGreat2nd,
+                    <= SLIDE_JUDGE_CLASSIC_FAST_SEG_3RD_GREAT_MSEC => JudgeGrade.FastGreat3rd,
+                    _ => JudgeGrade.FastGood
+                };
+            }
+            else
+            {
+                judge = diffMSec switch
+                {
+                    <= SLIDE_JUDGE_CLASSIC_LATE_SEG_1ST_PERFECT_MSEC => JudgeGrade.Perfect,
+                    <= SLIDE_JUDGE_CLASSIC_LATE_SEG_2ND_PERFECT_MSEC => JudgeGrade.LatePerfect2nd,
+                    <= SLIDE_JUDGE_CLASSIC_LATE_SEG_3RD_PERFECT_MSEC => JudgeGrade.LatePerfect3rd,
+                    <= SLIDE_JUDGE_CLASSIC_LATE_SEG_1ST_GREAT_MSEC => JudgeGrade.LateGreat,
+                    <= SLIDE_JUDGE_CLASSIC_LATE_SEG_2ND_GREAT_MSEC => JudgeGrade.LateGreat2nd,
+                    <= SLIDE_JUDGE_CLASSIC_LATE_SEG_3RD_GREAT_MSEC => JudgeGrade.LateGreat3rd,
+                    _ => JudgeGrade.LateGood
+                };
+            }
 
             //MajDebug.Log($"Slide diff : {MathF.Round(diffMSec, 2)} ms");
             _judgeResult = judge;
@@ -309,10 +323,6 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             if (remainingStartTime < 0)
             {
                 LastWaitTimeSec = MathF.Abs(remainingStartTime) / 2;
-            }
-            else if (diffMSec >= SLIDE_JUDGE_GOOD_AREA_MSEC && !isFast)
-            {
-                LastWaitTimeSec = 0.05f;
             }
         }
         [Il2CppSetOption(Option.NullChecks, false)]
@@ -326,10 +336,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 return;
             }
+            ref var slideBarRef = ref MemoryMarshal.GetReference(SlideBars.AsSpan());
             for (; LastHiddenSlideBarIndex <= endIndex; LastHiddenSlideBarIndex++)
             {
+                ref var slideBar = ref Unsafe.Add(ref slideBarRef, LastHiddenSlideBarIndex);
                 //_slideBarRenderers[i].forceRenderingOff = true;
-                SlideBars[LastHiddenSlideBarIndex].layer = MajEnv.HIDDEN_LAYER;
+                slideBar.layer = MajEnv.HIDDEN_LAYER;
             }
         }
         [Il2CppSetOption(Option.NullChecks, false)]
@@ -354,18 +366,63 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void SetSlideBarAlpha(float alpha)
         {
-            for (var i = 0; i < SlideBarRenderers.Count; i++)
+            SetSlideBarRender(alpha, null, SLIDE_BAR_MODE_SET_ALPHA);
+        }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected void SetSlideBarMaterial(Material material)
+        {
+            SetSlideBarRender(0, material, SLIDE_BAR_MODE_SET_MATERIAL);
+        }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected void SetSlideBarAlphaAndMaterial(float alpha, Material material)
+        {
+            SetSlideBarRender(alpha, material, SLIDE_BAR_MODE_SET_ALPHA_AND_MATERIAL);
+        }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        void SetSlideBarRender(float alpha, Material? material, int setMode)
+        {
+            ref var slideBarRef = ref MemoryMarshal.GetReference(SlideBars.AsSpan());
+            ref var rendererRef = ref MemoryMarshal.GetReference(SlideBarRenderers.AsSpan());
+            var count = SlideBars.Count;
+            var newColor = new Color(1f, 1f, 1f, alpha);
+            for (var i = 0; i < count; i++)
             {
-                var sr = SlideBarRenderers[i];
-                var obj = SlideBars[i];
-                if (alpha <= 0f)
+                ref var sr = ref Unsafe.Add(ref rendererRef, i);
+                ref var obj = ref Unsafe.Add(ref slideBarRef, i);
+                switch(setMode)
                 {
-                    obj.layer = MajEnv.HIDDEN_LAYER;
-                }
-                else
-                {
-                    obj.layer = MajEnv.DEFAULT_LAYER;
-                    sr.color = new Color(1f, 1f, 1f, alpha);
+                    case SLIDE_BAR_MODE_SET_ALPHA:
+                        if (alpha <= 0f)
+                        {
+                            obj.layer = MajEnv.HIDDEN_LAYER;
+                        }
+                        else
+                        {
+                            obj.layer = MajEnv.DEFAULT_LAYER;
+                            sr.color = newColor;
+                        }
+                        break;
+                    case SLIDE_BAR_MODE_SET_MATERIAL:
+                        sr.sharedMaterial = material;
+                        break;
+                    case SLIDE_BAR_MODE_SET_ALPHA_AND_MATERIAL:
+                        if (alpha <= 0f)
+                        {
+                            obj.layer = MajEnv.HIDDEN_LAYER;
+                        }
+                        else
+                        {
+                            obj.layer = MajEnv.DEFAULT_LAYER;
+                            sr.color = newColor;
+                        }
+                        sr.sharedMaterial = material;
+                        break;
                 }
             }
         }
@@ -375,21 +432,17 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         public sealed override void SetActive(bool state)
         {
             base.SetActive(state);
+            ref var slideBarRef = ref MemoryMarshal.GetReference(SlideBars.AsSpan());
+            var count = SlideBars.Count;
+            var layer = MajEnv.HIDDEN_LAYER;
             if (state)
             {
-                for (var i = 0; i < SlideBars.Count; i++)
-                {
-                    var slideBar = SlideBars[i];
-                    slideBar.layer = MajEnv.DEFAULT_LAYER;
-                }
+                layer = MajEnv.DEFAULT_LAYER;
             }
-            else
+            for (var i = 0; i < count; i++)
             {
-                for (var i = 0; i < SlideBars.Count; i++)
-                {
-                    var slideBar = SlideBars[i];
-                    slideBar.layer = MajEnv.HIDDEN_LAYER;
-                }
+                ref var slideBar = ref Unsafe.Add(ref slideBarRef, i);
+                slideBar.layer = layer;
             }
             SetStarActive(state);
         }
@@ -505,49 +558,84 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void SlideBarFadeIn()
         {
-            if (SlideBarFadeInFlag == 1 || IsEnded || IsSlideNoTrack)
+            if (SlideBarFadeInFlag == 1 || IsSlideNoTrack || !IsInited || IsEnded)
+            {
+                return;
+            }
+            var thisFrameSec = ThisFrameSec;
+            if(thisFrameSec < FadeInTiming)
             {
                 return;
             }
 
-            var num = Timing - 0.05f;
-            var interval = (num - _fadeInTiming).Clamp(0, 0.2f);
-            var fullFadeInTiming = _fadeInTiming + interval;//淡入到maxFadeInAlpha的时间点
-
-            if (ThisFrameSec > num)
+            if (thisFrameSec > FadeInCompletedTiming)
             {
                 SlideBarFadeInFlag = 1;
-                SetSlideBarAlpha(1f);
-                if (IsBreak)
+                var breakMaterial = BreakMaterial;
+                if (IsBreak && breakMaterial is not null)
                 {
-                    var breakMaterial = BreakMaterial;
-                    if(breakMaterial is not null)
+                    SetSlideBarRender(1f, breakMaterial, SLIDE_BAR_MODE_SET_ALPHA_AND_MATERIAL);
+                }
+                else
+                {
+                    SetSlideBarRender(1f, null, SLIDE_BAR_MODE_SET_ALPHA);
+                }
+            }
+            else if (thisFrameSec > FadeInCutoffTiming)
+            {
+                SetSlideBarRender(FadeInMaxAlpha, null, SLIDE_BAR_MODE_SET_ALPHA);
+            }
+            else
+            {
+                var diff = FadeInCutoffTiming - thisFrameSec;
+                var alpha = 1 - diff / FadeInDurationTimeSec;
+
+                alpha *= FadeInMaxAlpha;
+                SetSlideBarRender(alpha, null, SLIDE_BAR_MODE_SET_ALPHA);
+            }
+        }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected void SlideDJAutoSimulateSensorPress(Vector3 cubeRay, float rad)
+        {
+            var p = 0UL;
+            unsafe
+            {
+                fixed (ulong* samplePtr = &InputManager.TouchPanelPositionSamples.GetPinnableReference())
+                fixed (Vector4* circleSamplesPtr = &InputManager.UnitCircle.GetPinnableReference())
+                {
+                    MobileTouchPanelHelper.PositionHandle(cubeRay,
+                        rad,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        InputManager.FINGER_RADIUS_SEGMENT_LENGTH,
+                        InputManager.TOUCH_ANGLE_SMAPLE_COUNT,
+                        samplePtr,
+                        circleSamplesPtr,
+                        ref p);
+                }
+                for (var i = 0; i < (int)SensorArea.C; i++)
+                {
+                    if ((p & (1UL << (i + 12))) != 0)
                     {
-                        for (var i = 0; i < SlideBarRenderers.Count; i++)
-                        {
-                            var renderer = SlideBarRenderers[i];
-                            renderer.sharedMaterial = breakMaterial;
-                        }
+                        _noteManager.SimulateSensorPress((SensorArea)i);
                     }
                 }
-                return;
-            }
-            else if (ThisFrameSec > fullFadeInTiming)
-            {
-                SetSlideBarAlpha(MaxFadeInAlpha);
-                return;
-            }
-            else if (ThisFrameSec < fullFadeInTiming)
-            {
-                var diff = (fullFadeInTiming - ThisFrameSec).Clamp(0, interval);
-                float alpha = 0;
-
-                if (interval != 0)
+                if ((p & (0b11 << (16 + 12))) != 0)
                 {
-                    alpha = 1 - diff / interval;
+                    _noteManager.SimulateSensorPress(SensorArea.C);
                 }
-                alpha *= MaxFadeInAlpha;
-                SetSlideBarAlpha(alpha);
+                for (var i = 18; i < 34; i++)
+                {
+                    if ((p & (1UL << (i + 12))) != 0)
+                    {
+                        _noteManager.SimulateSensorPress((SensorArea)(i - 1));
+                    }
+                }
             }
         }
         protected virtual void OnDestroy()
@@ -592,10 +680,6 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         float _startTiming;
         [ReadOnlyField, SerializeField]
         bool _isJustR = false;
-        [ReadOnlyField, SerializeField]
-        float _fadeInTiming = 0;
-        [ReadOnlyField, SerializeField]
-        float _fullFadeInTiming = 0.2f;
         [ReadOnlyField, SerializeField]
         int _endPos = 1;
         [SerializeField]

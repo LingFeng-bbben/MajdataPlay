@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay
 {
-    internal abstract class MajSingleton : MajComponent
+    public abstract class MajSingleton : MajComponent
     {
         delegate ref object RefGetter();
 

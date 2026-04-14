@@ -5,7 +5,7 @@ using MajdataPlay.Net;
 using MajdataPlay.Settings;
 using MajdataPlay.Utils;
 using MajSimai;
-using NeoSmart.AsyncLock;
+using Nito.AsyncEx;
 using System;
 using System.IO;
 using System.Linq;
@@ -59,12 +59,13 @@ namespace MajdataPlay
 
         ChartSetting _chartSettings;
 
+        volatile int _preloadJoinState = 0;
+
         readonly bool _isEmptyCover = false;
         readonly AsyncLock _previewAudioTrackLock = new();
         readonly AsyncLock _audioTrackLock = new();
         readonly AsyncLock _coverLock = new();
         readonly AsyncLock _maidataLock = new();
-        readonly AsyncLock _preloadLock = new();
 
         ~SongDetail()
         {
@@ -120,17 +121,24 @@ namespace MajdataPlay
         public async ValueTask PreloadAsync(INetProgress? progress = null, CancellationToken token = default)
         {
             ThrowIfDisposed();
-            if (_isPreloaded)
+            if (Interlocked.CompareExchange(ref _preloadJoinState, 1, 0) != 0)
             {
                 return;
             }
-            await UniTask.SwitchToThreadPool();
-            if (!await _preloadLock.TryLockAsync(_emptyCallback, TimeSpan.Zero))
+            try
             {
-                return;
+                if (_isPreloaded)
+                {
+                    return;
+                }
+                await UniTask.SwitchToThreadPool();
+                await Task.WhenAll(GetMaidataAsync(token: token).AsTask(), GetCoverAsync(true, token: token).AsTask());
+                _isPreloaded = true;
             }
-            await Task.WhenAll(GetMaidataAsync(token: token).AsTask(), GetCoverAsync(true, token: token).AsTask());
-            _isPreloaded = true;
+            finally
+            {
+                _preloadJoinState = 0;
+            }
         }
         public ValueTask<string> GetVideoPathAsync(INetProgress? progress = null, CancellationToken token = default)
         {

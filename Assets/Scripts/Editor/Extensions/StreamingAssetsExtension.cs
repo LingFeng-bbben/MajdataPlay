@@ -2,39 +2,41 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
-namespace MajdataPlay.Editor;
-public static class StreamingAssetsExtension
+namespace MajdataPlay.Editor
 {
-    /// <summary>
-    /// Recursively traverses each folder under <paramref name="path"/> and returns the list of file paths. 
-    /// It will only work in Editor mode.
-    /// </summary>
-    /// <param name="path">Relative to Application.streamingAssetsPath.</param>
-    /// <param name="paths">List of file path strings.</param>
-    /// <returns>List of file path strings.</returns>
-    public static List<string> GetPathsRecursively(string path, ref List<string> paths)
+    public static class StreamingAssetsExtension
     {
-        var fullPath = Path.Combine(Application.streamingAssetsPath, path);
-        DirectoryInfo dirInfo = new DirectoryInfo(fullPath);
-        foreach (var file in dirInfo.GetFiles())
+        /// <summary>
+        /// Recursively traverses each folder under <paramref name="path"/> and returns the list of file paths. 
+        /// It will only work in Editor mode.
+        /// </summary>
+        /// <param name="path">Relative to Application.streamingAssetsPath.</param>
+        /// <param name="paths">List of file path strings.</param>
+        /// <returns>List of file path strings.</returns>
+        public static List<string> GetPathsRecursively(string path, ref List<string> paths)
         {
-            if (!file.Name.Contains(".meta"))
+            var fullPath = Path.Combine(Application.streamingAssetsPath, path);
+            DirectoryInfo dirInfo = new DirectoryInfo(fullPath);
+            foreach (var file in dirInfo.GetFiles())
             {
-                paths.Add(Path.Combine(path, file.Name)); // With file extension
+                if (!file.Name.Contains(".meta"))
+                {
+                    paths.Add(Path.Combine(path, file.Name)); // With file extension
+                }
             }
+
+            foreach (var dir in dirInfo.GetDirectories())
+            {
+                GetPathsRecursively(Path.Combine(path, dir.Name), ref paths);
+            }
+
+            return paths;
         }
 
-        foreach (var dir in dirInfo.GetDirectories())
+        public static List<string> GetPathsRecursively(string path)
         {
-            GetPathsRecursively(Path.Combine(path, dir.Name), ref paths);
+            List<string> paths = new List<string>();
+            return GetPathsRecursively(path, ref paths);
         }
-
-        return paths;
-    }
-
-    public static List<string> GetPathsRecursively(string path)
-    {
-        List<string> paths = new List<string>();
-        return GetPathsRecursively(path, ref paths);
     }
 }

@@ -112,7 +112,7 @@ namespace MajdataPlay.Scenes.Setting
                 manager.PreviousMenu();
             }
             _selectedIndex = _selectedIndex.Clamp(0, _options.Length - 1);
-            _settingConfig.SelectedMenuIndex = _selectedIndex;
+            _settingConfig.SelectedOption = _options[_selectedIndex].PropertyInfo.Name;
         }
         void NextOption()
         {
@@ -122,7 +122,7 @@ namespace MajdataPlay.Scenes.Setting
                 manager.NextMenu();
             }
             _selectedIndex = _selectedIndex.Clamp(0, _options.Length - 1);
-            _settingConfig.SelectedMenuIndex = _selectedIndex;
+            _settingConfig.SelectedOption = _options[_selectedIndex].PropertyInfo.Name;
         }
         public void ToLast() => _selectedIndex = _options.Length - 1;
         public void ToFirst() => _selectedIndex = 0;
@@ -130,6 +130,18 @@ namespace MajdataPlay.Scenes.Setting
         public void ToIndex(int index)
         {
             _selectedIndex = index;
+            _selectedIndex = _selectedIndex.Clamp(0, _options.Length - 1);
+        }
+        public void ToOption(string optionName)
+        {
+            if (string.IsNullOrEmpty(optionName))
+            {
+                _selectedIndex = 0;
+            }
+            else
+            {
+                _selectedIndex = Array.FindIndex(_options, x => x.PropertyInfo.Name == optionName);
+            }
             _selectedIndex = _selectedIndex.Clamp(0, _options.Length - 1);
         }
 

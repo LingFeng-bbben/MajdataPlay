@@ -46,6 +46,8 @@ public sealed class SkinEnumerator : OptionEnumeratorBase, IOptionEnumerator
                                                 .ToArray();
         var currentSkin = _skinManager.SelectedSkin;
         OptionValues = skinNames;
+        ValueTexts = skinNames;
+        LocalizedValueTexts = skinNames;
         var currentIndex = skinNames.FindIndex(x => x == currentSkin.Name);
         if(currentIndex == -1)
         {

@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Nito.Disposables</id>
+    <version>2.2.1</version>
+    <authors>Stephen Cleary</authors>
+    <license type="expression">MIT</license>
+    <licenseUrl>https://licenses.nuget.org/MIT</licenseUrl>
+    <icon>icon.png</icon>
+    <projectUrl>https://github.com/StephenCleary/Disposables</projectUrl>
+    <description>IDisposable and IAsyncDisposable helper types.</description>
+    <tags>idisposable,iasyncdisposable,disposable</tags>
+    <repository type="git" url="https://github.com/StephenCleary/Disposables" commit="421e8c3af9e9baf1c885671887671971aa2d7a29" />
+    <dependencies>
+      <group targetFramework=".NETFramework4.6.1">
+        <dependency id="System.Collections.Immutable" version="1.7.1" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETStandard1.0">
+        <dependency id="NETStandard.Library" version="1.6.1" exclude="Build,Analyzers" />
+        <dependency id="System.Collections.Immutable" version="1.7.1" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="System.Collections.Immutable" version="1.7.1" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETStandard2.1">
+        <dependency id="System.Collections.Immutable" version="1.7.1" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

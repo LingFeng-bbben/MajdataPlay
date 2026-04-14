@@ -2,7 +2,7 @@ using Cysharp.Threading.Tasks;
 using MajdataPlay.IO;
 using MajdataPlay.Net;
 using MajdataPlay.Utils;
-using NeoSmart.AsyncLock;
+using Nito.AsyncEx;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -67,11 +67,18 @@ namespace MajdataPlay.Scenes.Result
             {
                 return;
             }
-            if(!_isAlreadyThumbUp && (InputManager.IsSensorClickedInThisFrame(SensorArea.E3) || InputManager.IsSensorClickedInThisFrame(SensorArea.B3)))
+            if(!_isAlreadyThumbUp && 
+                (InputManager.IsSensorClickedInThisFrame(SensorArea.E3) || 
+                InputManager.IsSensorClickedInThisFrame(SensorArea.B3))
+                )
             {
                 _ = SendLikeAsync();
             }
-            if (!_isAlreadyThumbUp && (InputManager.IsSensorClickedInThisFrame(SensorArea.E4) || InputManager.IsSensorClickedInThisFrame(SensorArea.D4) || InputManager.IsSensorClickedInThisFrame(SensorArea.A3)))
+            if (!_isScorePosted && !MajInstances.GameManager.Settings.Mod.IsAnyModActive() && 
+                (InputManager.IsSensorClickedInThisFrame(SensorArea.E4) || 
+                InputManager.IsSensorClickedInThisFrame(SensorArea.D4) || 
+                InputManager.IsSensorClickedInThisFrame(SensorArea.A3))
+                )
             {
                 _ = SendScoreAsync();
             }

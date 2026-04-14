@@ -16,6 +16,8 @@ namespace MajdataPlay.IO
         private int _decode = -1;
         private double _length = 0;
 
+        private float _volume = 1f;
+
         private double _gain = 1f;
         private bool _isSpeedChangeSupported = false;
         public override bool IsLoop
@@ -58,13 +60,13 @@ namespace MajdataPlay.IO
             get
             {
                 ThrowIfDisposed();
-                return (float)Bass.ChannelGetAttribute(_stream, ChannelAttribute.Volume);
+                return _volume;
             }
             set
             {
                 ThrowIfDisposed();
-                var volume = value.Clamp(0, 2) * _gain * MajInstances.Settings.Audio.Volume.Global.Clamp(0, 1);
-                Bass.ChannelSetAttribute(_stream, ChannelAttribute.Volume, volume);
+                _volume = (float)(value.Clamp(0, 2) * _gain * MajInstances.Settings.Audio.Volume.Global.Clamp(0, 1));
+                Bass.ChannelSetAttribute(_stream, ChannelAttribute.Volume, _volume);
             }
         }
         public override float Speed 
@@ -127,6 +129,7 @@ namespace MajdataPlay.IO
 
             MajDebug.LogInfo(Bass.LastError);
             _dataHandle = dataHandle;
+            GameManager.OnAppFocus += OnAppFocus;
         }
         public BassSimpleAudioSample(int stream, double gain, bool speedChange = false): this(stream, gain, default, speedChange)
         {
@@ -170,6 +173,7 @@ namespace MajdataPlay.IO
                 return;
             }
             _isDisposed = true;
+            GameManager.OnAppFocus -= OnAppFocus;
             Bass.ChannelStop(_stream);
             Bass.ChannelSetPosition(_stream, 0);
             if (_stream != -1)
@@ -190,6 +194,27 @@ namespace MajdataPlay.IO
             Dispose();
 
             return new ValueTask(Task.CompletedTask);
+        }
+        void OnAppFocus(object? sender, bool isFocus)
+        {
+#if UNITY_ANDROID || UNITY_IOS
+            if (_isDisposed)
+            {
+                return;
+            }
+            if (isFocus)
+            {
+                MajDebug.LogDebug("Application regained focus, attempting to restore mixer volume");
+                Bass.ChannelSetAttribute(_stream, ChannelAttribute.Volume, _volume);
+                MajDebug.LogDebug($"[Bass] {Bass.LastError}");
+            }
+            else
+            {
+                MajDebug.LogDebug("Application lost focus, attempting to mute the mixer");
+                Bass.ChannelSetAttribute(_stream, ChannelAttribute.Volume, 0f);
+                MajDebug.LogDebug($"[Bass] {Bass.LastError}");
+            }
+#endif
         }
         static BassSimpleAudioSample Create(byte[] data, bool normalize, bool speedChange)
         {

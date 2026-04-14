@@ -2,6 +2,6 @@
 {
     public enum SFXSampleType
     {
-        Answer, BGM, Tap, Slide, Break, Touch, Voice
+        Answer, BGM, Tap, Slide, Break, Touch, Voice, Ex, Hanabi
     }
 }

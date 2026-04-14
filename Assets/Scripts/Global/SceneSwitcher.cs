@@ -21,6 +21,7 @@ namespace MajdataPlay
             get; 
             private set; 
         }
+        public static event EventHandler<(MajScenes NewScene, MajScenes OldScene)>? OnSceneChanged;
         public static MajScenes CurrentScene { get; private set; } = MajScenes.Init;
         public static MajScenes LastScene { get; private set; } = MajScenes.Init;
 
@@ -71,6 +72,10 @@ namespace MajdataPlay
                 CurrentScene = Enum.Parse<MajScenes>(SCENE_NAMES[index]);
             }
             LastScene = lastScene;
+            if(OnSceneChanged is not null)
+            {
+                OnSceneChanged(this, (CurrentScene, LastScene));
+            }
             _canvas.worldCamera = MainCamera;
         }
 
@@ -78,7 +83,10 @@ namespace MajdataPlay
         {
             SwitchSceneInternal(sceneName,autoFadeOut).Forget();
         }
-
+        public UniTask SwitchSceneAsync(string sceneName, bool autoFadeOut = true)
+        {
+            return SwitchSceneInternal(sceneName, autoFadeOut);
+        }
         public void PauseMV()
         {
             _videoPlayer.Pause();

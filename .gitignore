@@ -93,3 +93,5 @@ Assets/Font/GenJyuuGothicScore.asset
 out.log
 /RecordOutputs
 /ChartSetting.db
+/android-publish.keystore
+*.slnx

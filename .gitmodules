@@ -4,3 +4,6 @@
 [submodule "Assets/Plugins/ManagedBass"]
 	path = Assets/Plugins/ManagedBass
 	url = https://github.com/TeamMajdata/ManagedBass.git
+[submodule "Assets/Plugins/UniTask"]
+	path = Assets/Plugins/UniTask
+	url = https://github.com/TeamMajdata/UniTask.git

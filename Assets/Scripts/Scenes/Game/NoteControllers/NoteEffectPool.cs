@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 using UnityEngine.Profiling;
+using UnityEngine.Serialization;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
@@ -15,16 +16,23 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         bool _isInited = false;
 
         [SerializeField]
-        GameObject tapEffectPrefab;
+        [FormerlySerializedAs("tapEffectPrefab")]
+        GameObject _tapEffectPrefab;
         [SerializeField]
-        GameObject touchEffectPrefab;
+        [FormerlySerializedAs("touchHoldEffectPrefab")]
+        GameObject _touchHoldEffectPrefab;
         [SerializeField]
-        GameObject holdEffectPrefab;
+        [FormerlySerializedAs("touchEffectPrefab")]
+        GameObject _touchEffectPrefab;
         [SerializeField]
+        [FormerlySerializedAs("holdEffectPrefab")]
+        GameObject _holdEffectPrefab;
+        [SerializeField]
+        [FormerlySerializedAs("_touchFeedbackEffectPrefab")]
         GameObject _touchFeedbackEffectPrefab;
 
         TapEffectDisplayer[] _tapJudgeEffects = new TapEffectDisplayer[8];
-        TapEffectDisplayer[] _touchHoldJudgeEffects = new TapEffectDisplayer[33];
+        TouchHoldEffectDisplayer[] _touchHoldJudgeEffects = new TouchHoldEffectDisplayer[33];
         TouchEffectDisplayer[] _touchJudgeEffects = new TouchEffectDisplayer[33];
 
         HoldEffectDisplayer[] _holdEffects = new HoldEffectDisplayer[8];
@@ -102,7 +110,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                     continue;
                 }
                 var rotation = Quaternion.Euler(0, 0, -22.5f + -45f * i);
-                var obj = Instantiate(tapEffectPrefab, tapParent);
+                var obj = Instantiate(_tapEffectPrefab, tapParent);
                 obj.name = $"TapEffect_{i + 1}";
                 obj.transform.rotation = rotation;
                 if (_gpManager != null && _gpManager.IsClassicMode)
@@ -120,7 +128,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                     continue;
                 }
                 var sensorPos = (SensorArea)i;
-                var obj = Instantiate(touchEffectPrefab, touchParent);
+                var obj = Instantiate(_touchEffectPrefab, touchParent);
                 var displayer = obj.GetComponent<TouchEffectDisplayer>();
                 displayer.DistanceRatio = MajInstances.Settings.Display.InnerJudgeDistance;
                 obj.name = $"TouchEffect_{sensorPos}";
@@ -136,7 +144,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 {
                     continue;
                 }
-                var obj = Instantiate(holdEffectPrefab, tapParent);
+                var obj = Instantiate(_holdEffectPrefab, tapParent);
                 obj.name = $"HoldEffect_{i + 1}";
                 var position = NoteHelper.GetTapPosition(i + 1, 4.8f);
                 var displayer = obj.GetComponent<HoldEffectDisplayer>();
@@ -151,7 +159,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                     continue;
                 }
                 var sensorPos = (SensorArea)i;
-                var obj = Instantiate(holdEffectPrefab, touchHoldParent);
+                var obj = Instantiate(_holdEffectPrefab, touchHoldParent);
                 obj.name = $"TouchHold_HoldingEffect_{sensorPos}";
                 var position = NoteHelper.GetTouchAreaPosition(sensorPos);
                 var displayer = obj.GetComponent<HoldEffectDisplayer>();
@@ -159,12 +167,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 displayer.Reset();
                 _touchHoldEffects[i] = displayer;
 
-                var obj4Hold = Instantiate(tapEffectPrefab, touchHoldParent);
+                var obj4Hold = Instantiate(_touchHoldEffectPrefab, touchHoldParent);
                 var distance = NoteHelper.GetTouchAreaDistance(sensorPos.GetGroup());
                 var position2 = Vector3.zero;
                 position2.y += distance;
                 var rotation = NoteHelper.GetTouchRoation(NoteHelper.GetTouchAreaPosition(sensorPos), sensorPos);
-                var displayer4Hold = obj4Hold.GetComponent<TapEffectDisplayer>();
+                var displayer4Hold = obj4Hold.GetComponent<TouchHoldEffectDisplayer>();
                 obj4Hold.transform.rotation = rotation;
                 displayer4Hold.DistanceRatio = MajInstances.Settings.Display.InnerJudgeDistance;
                 displayer4Hold.LocalPosition = position2;

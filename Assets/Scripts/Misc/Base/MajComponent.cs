@@ -9,7 +9,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay
 {
-    internal abstract class MajComponent : MonoBehaviour, IMajComponent
+    public abstract class MajComponent : MonoBehaviour, IMajComponent
     {
         /// <summary>
         /// This property is used to control the life cycle of components derived from MajComponent

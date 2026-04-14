@@ -4,7 +4,7 @@ using MajdataPlay.Buffers;
 using MajdataPlay.Drawing;
 using MajdataPlay.Utils;
 using MajSimai;
-using NeoSmart.AsyncLock;
+using Nito.AsyncEx;
 using SkiaSharp;
 using System;
 using System.Buffers;

@@ -10,7 +10,6 @@ using Unity.VisualScripting;
 #pragma warning disable CS8500
 namespace MajdataPlay.UnsafeKit
 {
-    using Unsafe = System.Runtime.CompilerServices.Unsafe;
     /// <summary>
     /// Managed references
     /// <para>When allocing, always try to transfer the object to the heap and pin it</para>

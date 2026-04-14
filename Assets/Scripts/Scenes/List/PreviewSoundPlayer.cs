@@ -137,7 +137,7 @@ namespace MajdataPlay.Scenes.List
                 for (var i = 1f; i > 0; i = i - 0.2f)
                 {
                     token.ThrowIfCancellationRequested();
-                    selectSound.Volume = i * GetVolume();
+                    selectSound.Volume = i * MajInstances.Settings.Audio.Volume.BGM;
                     await UniTask.Delay(100, cancellationToken: token, cancelImmediately: true);
                 }
                 while (true)
@@ -152,18 +152,18 @@ namespace MajdataPlay.Scenes.List
                                 for (var i = 1f; i > 0; i = i - 0.2f)
                                 {
                                     token.ThrowIfCancellationRequested();
-                                    previewSample.Volume = i * GetVolume();
+                                    previewSample.Volume = i * MajInstances.Settings.Audio.Volume.BGM;
                                     await UniTask.Delay(100, cancellationToken: token, cancelImmediately: true);
                                 }
                                 previewSample.Pause();
                                 await UniTask.Delay(1000, cancellationToken: token, cancelImmediately: true);
-                                previewSample.Volume = GetVolume();
+                                previewSample.Volume = MajInstances.Settings.Audio.Volume.BGM;
                                 previewSample.CurrentSec = previewOffsetSec;
                                 previewSample.Play();
                             }
                         }
                     }
-                    previewSample.Volume = GetVolume();
+                    previewSample.Volume = MajInstances.Settings.Audio.Volume.BGM;
                     await UniTask.Yield(token, cancelImmediately: true);
                 }
             }
@@ -179,21 +179,6 @@ namespace MajdataPlay.Scenes.List
                     previewSample.IsLoop = false;
                 }
             }
-        }
-        float GetVolume()
-        {
-#if UNITY_ANDROID || UNITY_IOS
-            if (GameManager.IsAppOnFocus)
-            {
-                return MajInstances.Settings.Audio.Volume.BGM;
-            }
-            else
-            {
-                return 0;
-            }
-#else
-            return MajInstances.Settings.Audio.Volume.BGM;
-#endif
         }
         private void OnDestroy()
         {

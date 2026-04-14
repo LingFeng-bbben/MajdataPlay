@@ -99,6 +99,8 @@ namespace MajdataPlay.Scenes.Game
         GameObject _skipBtn;
         [SerializeField]
         SpriteMask _noteMask;
+        [SerializeField]
+        RectTransform _mainDisplayer;
         [ReadOnlyField]
         [SerializeField]
         float _thisFrameSec = 0f;
@@ -120,7 +122,6 @@ namespace MajdataPlay.Scenes.Game
         float _3456PressTime = 0;
         float _p1SkipTime = 0;
         float _devicePlaybackOffset = 0f;
-        float _lastAudioSampleVolume = 0f;
 
         // Offset
         float _chartOffset = 0f;
@@ -140,7 +141,7 @@ namespace MajdataPlay.Scenes.Game
         MajTimer _timer = MajTimeline.CreateTimer();
         float _audioTrackStartAt = 0f;
 
-        GameInfo _gameInfo = Majdata<GameInfo>.Instance!;
+        GameInfo _gameInfo;
 
         SimaiFile _simaiFile;
         SimaiChart _chart;
@@ -148,6 +149,8 @@ namespace MajdataPlay.Scenes.Game
         ISongDetail _songDetail;
 
         float _trackVolume = 1f;
+
+        GameplayScreenRotationAngleOption _screenRotationAngle = GameplayScreenRotationAngleOption.Zero;
 
         AudioSampleWrap? _audioSample = null;
 
@@ -174,16 +177,17 @@ namespace MajdataPlay.Scenes.Game
             Majdata<GamePlayManager>.Instance = this;
             Majdata<INoteController>.Instance = this;
             Majdata<INoteTimeProvider>.Instance = this;
+            _gameInfo = Majdata<GameInfo>.Instance!;
             if (_gameInfo is null || _gameInfo.Current is null)
             {
                 throw new ArgumentNullException(nameof(_gameInfo));
             }
-            GameManager.OnAppFocus += OnAppFocus;
             //print(MajInstances.GameManager.SelectedIndex);
+            _screenRotationAngle = _setting.Display.GameplayScreenRotationAngle;
             _songDetail = _gameInfo.Current;
             HistoryScore = ScoreManager.GetScore(_songDetail, _listConfig.SelectedDiff);
             _timer = MajTimeline.CreateTimer();
-            _chartSetting = ChartSettingStorage.GetSetting(_songDetail);
+            _chartSetting = _gameInfo.ChartSettings;
             if(_setting.Debug.OffsetUnit == OffsetUnitOption.Second)
             {
                 _audioTimeOffsetSec = _setting.Judge.AudioOffset;
@@ -195,6 +199,18 @@ namespace MajdataPlay.Scenes.Game
                 _audioTimeOffsetSec = _setting.Judge.AudioOffset * MajEnv.FRAME_LENGTH_SEC;
                 _audioTimeOffsetSec += _chartSetting.AudioOffset * MajEnv.FRAME_LENGTH_SEC;
                 _displayOffsetSec = _setting.Debug.DisplayOffset * MajEnv.FRAME_LENGTH_SEC;
+            }
+            switch(_screenRotationAngle)
+            {
+                case GameplayScreenRotationAngleOption._90:
+                    _mainDisplayer.rotation = Quaternion.Euler(0, 0, -90);
+                    break;
+                case GameplayScreenRotationAngleOption._180:
+                    _mainDisplayer.rotation = Quaternion.Euler(0, 0, -180);
+                    break;
+                case GameplayScreenRotationAngleOption._270:
+                    _mainDisplayer.rotation = Quaternion.Euler(0, 0, -270);
+                    break;
             }
             _trackVolume = (MajEnv.Settings.Audio.Volume.Track + _chartSetting.TrackVolumeOffset).Clamp(0, 2);
 #if !UNITY_EDITOR && UNITY_STANDALONE
@@ -704,7 +720,7 @@ namespace MajdataPlay.Scenes.Game
                 _noteLoader.NoteSpeed = ((float)(107.25 / (71.4184491 * Mathf.Pow(tapSpeed + 0.9975f, -0.985558604f))));
             }
             _noteLoader.TouchSpeed = _setting.Game.TouchSpeed;
-            _noteLoader.ChartRotation = _chartRotation;
+            _noteLoader.ChartRotation = _chartRotation + (2 * (int)_screenRotationAngle);
 
             //var loaderTask = noteLoader.LoadNotes(Chart);
             var loaderTask = _noteLoader.LoadNotesIntoPoolAsync(_chart, _cts.Token);
@@ -788,7 +804,7 @@ namespace MajdataPlay.Scenes.Game
             var isAwaited = !allBackgroundTasks.IsCompleted;
             if (!allBackgroundTasks.IsCompleted)
             {
-                _sceneSwitcher.SetLoadingText($"{"Waiting for all background tasks to suspend".i18n()}...");
+                _sceneSwitcher.SetLoadingText($"{"MAJTEXT_WAITING_FOR_BACKGROUND_TASKS_SUSPEND".i18n()}...");
             }
             while (!allBackgroundTasks.IsCompleted)
             {
@@ -830,12 +846,14 @@ namespace MajdataPlay.Scenes.Game
             {
                 var userSettingBGDim = _setting.Game.BackgroundDim;
                 var dimDiff = 1 - userSettingBGDim;
+                var bgFadeStartTiming = MathF.Min(firstClockTiming, -BG_FADE_IN_LENGTH_SEC);
                 while (_timer.ElapsedSecondsAsFloat - _audioStartTime < 0)
                 {
                     var timeDiff = _timer.ElapsedSecondsAsFloat - _audioStartTime;
-                    if(timeDiff > -BG_FADE_IN_LENGTH_SEC)
+                    if (timeDiff > bgFadeStartTiming)
                     {
-                        var dim = 1 - (((BG_FADE_IN_LENGTH_SEC + timeDiff) / BG_FADE_IN_LENGTH_SEC) * dimDiff);
+                        var fadeProgress = ((timeDiff - bgFadeStartTiming) / BG_FADE_IN_LENGTH_SEC).Clamp(0f, 1f);
+                        var dim = 1 - (fadeProgress * dimDiff);
                         _bgManager.SetBackgroundDim(dim);
                     }
                     await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
@@ -876,17 +894,7 @@ namespace MajdataPlay.Scenes.Game
                     while (elapsedSeconds < 3)
                     {
                         token.ThrowIfCancellationRequested();
-                        _lastAudioSampleVolume = (elapsedSeconds / 3f) * originVol;
-#if UNITY_ANDROID || UNITY_IOS
-                        if (GameManager.IsAppOnFocus)
-                        {
-                            _audioSample.Volume = _lastAudioSampleVolume;
-                        }
-                        else
-                        {
-                            _audioSample.Volume = 0;
-                        }
-#endif
+                        _audioSample.Volume = (elapsedSeconds / 3f) * originVol;
                         await UniTask.Yield();
                         elapsedSeconds += MajTimeline.DeltaTime;
                     }
@@ -895,25 +903,10 @@ namespace MajdataPlay.Scenes.Game
                 {
                     MajDebug.LogException(e);
                 }
-                finally
-                {
-                    _lastAudioSampleVolume = originVol;
-#if UNITY_ANDROID || UNITY_IOS
-                    if (GameManager.IsAppOnFocus)
-                    {
-                        _audioSample.Volume = _lastAudioSampleVolume;
-                    }
-                    else
-                    {
-                        _audioSample.Volume = 0;
-                    }
-#endif
-                }
             }
             else
             {
                 token.ThrowIfCancellationRequested();
-                _lastAudioSampleVolume = _trackVolume;
                 _audioSample.Volume = _trackVolume;
                 await UniTask.Delay(3000);
                 token.ThrowIfCancellationRequested();
@@ -1221,23 +1214,23 @@ namespace MajdataPlay.Scenes.Game
                             //AudioTime = (float)audioSample.GetCurrentTime();
                             var elapsedSeconds = _timer.ElapsedSecondsAsFloat;
                             var playbackSpeed = PlaybackSpeed;
-                            var timeOffset = elapsedSeconds - _audioStartTime;
-                            var realTimeDifference = (float)_audioSample.CurrentSec - (elapsedSeconds - _audioStartTime) * playbackSpeed;
-                            var realTimeDifferenceb = (float)_bgManager.CurrentSec - (elapsedSeconds - _audioStartTime) * playbackSpeed;
+                            var timeOffset = elapsedSeconds - _audioStartTime + _devicePlaybackOffset;
+                            var realTimeDifference = (float)_audioSample.CurrentSec - timeOffset * playbackSpeed;
+                            var realTimeDifferenceb = (float)_bgManager.CurrentSec - timeOffset * playbackSpeed;
 
                             _thisFrameSec = timeOffset;
 #if UNITY_ANDROID || UNITY_IOS
-                            if (_thisFrameSec <= 2f && _thisFrameSec >= 0f)
+                            var diff = _thisFrameSec - _audioTrackStartAt;
+                            if (diff <= 2f && diff >= 0f)
                             {
-                                _devicePlaybackOffset = realTimeDifference;
+                                _devicePlaybackOffset += (realTimeDifference - _devicePlaybackOffset)*0.8f;
                             }
-                            _thisFrameSec += _devicePlaybackOffset;
 #endif
 
                             var sb = ZString.CreateStringBuilder(true);
                             try
                             {
-                                ERROR_TEXT_FORMAT.FormatTo(ref sb, Math.Abs(realTimeDifference), Math.Abs(realTimeDifferenceb));
+                                ERROR_TEXT_FORMAT.FormatTo(ref sb, realTimeDifference, realTimeDifferenceb);
                                 var a = sb.AsArraySegment();
                                 _errText.SetCharArray(a.Array, a.Offset, a.Count);
                             }
@@ -1393,24 +1386,8 @@ namespace MajdataPlay.Scenes.Game
         #endregion
 
         #region Events
-        void OnAppFocus(object? sender, bool isFocus)
-        {
-#if !UNITY_STANDALONE
-            if (_audioSample is null)
-            {
-                return;
-            }
-            if (isFocus)
-            {
-                _audioSample.Volume = _lastAudioSampleVolume;
-            }
-            else
-            {
-                _audioSample.Volume = 0;
-            }
-#endif
-        }
-#endregion
+
+        #endregion
 
         #region Clean Up
         void DisposeAudioTrack()
@@ -1437,7 +1414,6 @@ namespace MajdataPlay.Scenes.Game
 
         void OnDestroy()
         {
-            GameManager.OnAppFocus -= OnAppFocus;
             try
             {
                 MajDebug.LogInfo("GPManagerDestroy");

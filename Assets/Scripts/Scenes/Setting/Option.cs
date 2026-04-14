@@ -13,6 +13,7 @@ using TMPro;
 using Topten.RichTextKit.Editor;
 using Unity.Collections;
 using UnityEngine;
+using UnityEngine.Serialization;
 using RangeAttribute = MajdataPlay.Settings.RangeAttribute;
 #nullable enable
 namespace MajdataPlay.Scenes.Setting
@@ -25,11 +26,14 @@ namespace MajdataPlay.Scenes.Setting
         public object OptionObject { get; set; }
 
         [SerializeField]
-        TextMeshPro nameText;
+        [FormerlySerializedAs("nameText")]
+        TextMeshPro _nameText;
         [SerializeField]
-        TextMeshPro valueText;
+        [FormerlySerializedAs("valueText")]
+        TextMeshPro _valueText;
         [SerializeField]
-        TextMeshPro descriptionText;
+        [FormerlySerializedAs("descriptionText")]
+        TextMeshPro _descriptionText;
 
         bool _isEnabled = false;
         bool _isNum = false;
@@ -48,19 +52,18 @@ namespace MajdataPlay.Scenes.Setting
 
         IOptionEnumerator _optionEnumerator;
 
-        AudioManager _audioManager = MajInstances.AudioManager;
         public void Init()
         {
             Localization.OnLanguageChanged += OnLangChanged;
             InitOptions();
-            nameText.text = _optionName;
+            _nameText.text = _optionName.i18n();
             if(_isNoDescription)
             {
-                descriptionText.text = string.Empty;
+                _descriptionText.text = string.Empty;
             }
             else
             {
-                descriptionText.text = _optionDescription;
+                _descriptionText.text = _optionDescription.i18n();
                 switch (PropertyInfo.Name)
                 {
                     case "SlideFadeInOffset":
@@ -69,7 +72,7 @@ namespace MajdataPlay.Scenes.Setting
                     case "AnswerOffset":
                     case "TouchPanelOffset":
                     case "DisplayOffset":
-                        descriptionText.text += $"\n{$"MAJTEXT_SETTING_OFFSETUNIT_{MajEnv.Settings.Debug.OffsetUnit}".i18n()}";
+                        _descriptionText.text = _optionDescription.i18n() + $"\n{$"MAJTEXT_SETTING_OFFSETUNIT_{MajEnv.Settings.Debug.OffsetUnit}".i18n()}";
                         break;
                 }
             }
@@ -78,19 +81,8 @@ namespace MajdataPlay.Scenes.Setting
         }
         void OnLangChanged(object? sender,Language newLanguage)
         {
-            nameText.text = $"MAJSETTING_PROPERTY_{PropertyInfo.Name}".i18n();
-            descriptionText.text = $"MAJSETTING_PROPERTY_{PropertyInfo.Name}_DESC".i18n();
-            switch (PropertyInfo.Name)
-            {
-                case "SlideFadeInOffset":
-                case "AudioOffset":
-                case "JudgeOffset":
-                case "AnswerOffset":
-                case "TouchPanelOffset":
-                case "DisplayOffset":
-                    descriptionText.text += $"\n{$"MAJTEXT_SETTING_OFFSETUNIT_{MajEnv.Settings.Debug.OffsetUnit}".i18n()}";
-                    break;
-            }
+            _nameText.text = _optionName.i18n();
+            _descriptionText.text = _optionDescription.i18n();
             UpdateOption();
         }
         void InitOptions()
@@ -106,18 +98,11 @@ namespace MajdataPlay.Scenes.Setting
 
             if(optionDescriptionAttr is not null)
             {
-                var paragraphs = optionDescriptionAttr.Paragraphs;
-                using var sb = ZString.CreateStringBuilder(true);
-
-                foreach(var paragraph in paragraphs)
-                {
-                    sb.Append(ZString.Format(paragraph, PropertyInfo.Name).i18n());
-                }
-                _optionDescription = sb.ToString();
+                _optionDescription = optionDescriptionAttr.Text;
             }
             else
             {
-                _optionDescription = $"MAJSETTING_PROPERTY_{PropertyInfo.Name}_DESC".i18n();
+                _optionDescription = $"MAJSETTING_PROPERTY_{PropertyInfo.Name}_DESC";
             }
 
             if(optionEnumeratorAttr is not null)
@@ -147,7 +132,7 @@ namespace MajdataPlay.Scenes.Setting
                 {
                     _optionEnumerator = new DefaultEnumEnumerator();
                 }
-                else if (type == typeof(bool))
+                else if (type == typeof(bool) || type == typeof(bool?))
                 {
                     _optionEnumerator = new DefaultBooleanEnumerator();
                 }
@@ -185,11 +170,11 @@ namespace MajdataPlay.Scenes.Setting
                     {
                         if (_isUp)
                         {
-                            Up();
+                            _optionEnumerator.MoveNext();
                         }
                         else
                         {
-                            Down();
+                            _optionEnumerator.MovePrevious();
                         }
                         _iterationThrottle = 0;
                     }
@@ -219,13 +204,13 @@ namespace MajdataPlay.Scenes.Setting
                 {
                     if (isE4OrB4On)
                     {
-                        Up();
+                        _optionEnumerator.MoveNext();
                         _isUp = true;
                         _isPressed = true;
                     }
                     else if (isE6OrB5On)
                     {
-                        Down();
+                        _optionEnumerator.MovePrevious();
                         _isUp = false;
                         _isPressed = true;
                     }
@@ -249,40 +234,7 @@ namespace MajdataPlay.Scenes.Setting
         }
         void UpdateOption()
         {
-            var value = _optionEnumerator?.Current;
-            var origin = value?.ToString() ?? "undefined";
-            string localizedText;
-            switch (PropertyInfo.Name)
-            {
-                case "OuterJudgeDistance":
-                case "InnerJudgeDistance":
-                    if(value is 0f)
-                    {
-                        localizedText = "OFF";
-                    }
-                    else
-                    {
-                        localizedText = origin;
-                    }
-                    break;
-                default:
-                    if(!_isNum)
-                    {
-                        if(!$"MAJSETTING_PROPERTY_{PropertyInfo.Name}_OPTION_{origin}".Tryi18n(out localizedText) &&
-                           !$"MAJSETTING_GENERAL_OPTION_{origin}".Tryi18n(out localizedText))
-                        {
-                            localizedText = origin;
-                        }
-                    }
-                    else
-                    {
-                        localizedText = origin;
-                    }
-                    break;
-            }
-            valueText.text = localizedText;
-            nameText.text = $"MAJSETTING_PROPERTY_{PropertyInfo.Name}".i18n();
-            descriptionText.text = $"MAJSETTING_PROPERTY_{PropertyInfo.Name}_DESC".i18n();
+            _valueText.text = _optionEnumerator.LocalizedValueText;
             switch (PropertyInfo.Name)
             {
                 case "SlideFadeInOffset":
@@ -291,24 +243,15 @@ namespace MajdataPlay.Scenes.Setting
                 case "AnswerOffset":
                 case "TouchPanelOffset":
                 case "DisplayOffset":
-                    descriptionText.text += $"\n{$"MAJTEXT_SETTING_OFFSETUNIT_{MajEnv.Settings.Debug.OffsetUnit}".i18n()}";
+                    _descriptionText.text = _optionDescription.i18n() + $"\n{$"MAJTEXT_SETTING_OFFSETUNIT_{MajEnv.Settings.Debug.OffsetUnit}".i18n()}";
                     break;
             }
-        }
-        void Up()
-        {
-            _optionEnumerator.MoveNext();
-            UpdateOption();
-        }
-        void Down()
-        {
-            _optionEnumerator.MovePrevious();
-            UpdateOption();
         }
         void OnDestroy()
         {
             _isEnabled = false;
             Localization.OnLanguageChanged -= OnLangChanged;
+            _optionEnumerator.Dispose();
         }
         void OnDisable()
         {

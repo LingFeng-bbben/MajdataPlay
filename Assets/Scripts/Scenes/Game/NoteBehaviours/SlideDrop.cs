@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Unity.IL2CPP.CompilerServices;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Profiling;
 
@@ -36,6 +37,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         float _djAutoplayRatio = 1;
 
         int _parentForceFinishFlag = 0;
+
+        static readonly Quaternion s_Z180Rotation = Quaternion.Euler(0f, 0f, 180f);
 
 //#if UNITY_EDITOR
 //        Transform _judgeFramePoint;
@@ -176,9 +179,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
             FadeInTiming += fadeInOffset;
             FadeInTiming += Timing;
+            FadeInCompletedTiming = Timing - 0.05f;
             // Slide完全淡入时机
             // 正常情况下应为负值；速度过高将忽略淡入
-            FullFadeInTiming = FadeInTiming + 0.2f;
+            FadeInDurationTimeSec = (FadeInCompletedTiming - FadeInTiming).Clamp(0, 0.2f);
+            FadeInCutoffTiming = FadeInTiming + FadeInDurationTimeSec;
             //var interval = fullFadeInTiming - fadeInTiming;
             //fadeInAnimator = GetComponent<Animator>();
             //Destroy(GetComponent<Animator>());
@@ -242,12 +247,16 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                     var parent = Parent.GameObject.GetComponent<SlideDrop>();
                     StartTiming = parent.StartTiming + parent.Length;
                 }
-                UpdateJudgeQueue();
             }
+            UpdateJudgeQueue();
 
             if (ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide)
             {
                 var percent = _table.Const;
+                if (IsClassic)
+                {
+                    percent = _table.ClassicConst;
+                }
                 _judgeTiming = StartTiming + Length * (1 - percent);
                 LastWaitTimeSec = Length * percent;
             }
@@ -255,26 +264,39 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         void UpdateJudgeQueue()
         {
             var judgeQueue = JudgeQueues[0].Span;
-            if (ConnectInfo.TotalJudgeQueueLen < 4)
+            if (!USERSETTING_SLIDE_SKIPPING)
             {
-                if (ConnectInfo.IsGroupPartHead)
+                foreach (ref var judgeArea in judgeQueue)
                 {
-                    judgeQueue[0].IsSkippable = true;
-                    judgeQueue[1].IsSkippable = false;
-                }
-                else if (ConnectInfo.IsGroupPartEnd)
-                {
-                    judgeQueue[0].IsSkippable = false;
-                    judgeQueue[1].IsSkippable = true;
+                    judgeArea.IsSkippable = false;
                 }
             }
             else
             {
-                foreach (ref var judgeArea in judgeQueue)
+                if (ConnectInfo.IsConnSlide)
                 {
-                    judgeArea.IsSkippable = true;
+                    if (ConnectInfo.TotalJudgeQueueLen < 4)
+                    {
+                        if (ConnectInfo.IsGroupPartHead)
+                        {
+                            judgeQueue[0].IsSkippable = true;
+                            judgeQueue[1].IsSkippable = false;
+                        }
+                        else if (ConnectInfo.IsGroupPartEnd)
+                        {
+                            judgeQueue[0].IsSkippable = false;
+                            judgeQueue[1].IsSkippable = true;
+                        }
+                    }
+                    else
+                    {
+                        foreach (ref var judgeArea in judgeQueue)
+                        {
+                            judgeArea.IsSkippable = true;
+                        }
+                    }
                 }
-            }
+            }     
         }
         [OnPreUpdate]
         void OnPreUpdate()
@@ -355,11 +377,19 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                         var alpha = (1f - -timing / (StartTiming - Timing)).Clamp(0, 1);
 
                         _starRenderer.color = new Color(1, 1, 1, alpha);
-                        starTransform.localScale = new Vector3(alpha + 0.5f, alpha + 0.5f, alpha + 0.5f);
-
+                        if (IsClassic)
+                        {
+                            var scale = 1 + alpha / 2;
+                            starTransform.localScale = new Vector3(scale, scale, scale);
+                        }
+                        else
+                        {
+                            starTransform.localScale = new Vector3(alpha + 0.5f, alpha + 0.5f, alpha + 0.5f);
+                        }
                         break;
                     case NoteStatus.Running:
-                        if (GetRemainingTimeWithoutOffset() == 0)
+                        var remaingTimeWithoutOffset = GetRemainingTimeWithoutOffset();
+                        if (remaingTimeWithoutOffset == 0)
                         {
                             starTransform.position = _starPositions[_starPositions.Count - 1];
                             ApplyStarRotation(_starRotations[_starRotations.Count - 1]);
@@ -370,27 +400,21 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                             State = NoteStatus.Arrived;
                             goto case NoteStatus.Arrived;
                         }
-                        var process = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
+                        var process = ((Length - remaingTimeWithoutOffset) / Length).Clamp(0, 1);
                         var indexProcess = (_starPositions.Count - 1) * process;
                         var index = (int)indexProcess;
                         var pos = indexProcess - index;
 
-                        var a = _starPositions[index + 1];
-                        var b = _starPositions[index];
-                        var ba = a - b;
-                        var newPos = ba * pos + b;
-
-                        starTransform.position = newPos;
-                        if (index < _starRotations.Count - 1)
-                        {
-                            var _a = _starRotations[index + 1].eulerAngles.z;
-                            var _b = _starRotations[index].eulerAngles.z;
-                            var dAngle = Mathf.DeltaAngle(_b, _a) * pos;
-                            dAngle = Mathf.Abs(dAngle);
-                            var newRotation = Quaternion.Euler(0f, 0f,
-                                            Mathf.MoveTowardsAngle(_b, _a, dAngle));
-                            ApplyStarRotation(newRotation);
-                        }
+                        var a = _starPositions[index];
+                        var b = _starPositions[index + 1];
+                        var newPosition = Vector3.LerpUnclamped(a, b, pos);
+                        var newRotation = Quaternion.SlerpUnclamped(
+                            _starRotations[index],
+                            _starRotations[index + 1],
+                            pos
+                        );
+                        starTransform.position = newPosition;
+                        ApplyStarRotation(newRotation);
                         break;
                     case NoteStatus.Arrived:
                         break;
@@ -525,7 +549,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                         HideAllBar();
                         if (IsClassic)
                         {
-                            ClassicJudge(thisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
+                            JudgeClassic(thisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
                         }
                         else
                         {
@@ -693,6 +717,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         void DJAutoplay()
         {
+            const float DJAUTO_SIMULATE_RAD = 0.3f;
             if (IsFinished)
             {
                 return;
@@ -702,24 +727,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             var delta = 0f;
             for(; ; )
             {
-                var pos = GetPositionFromProgress(DJAutoplayProgress);
-                pos.z = -10;
-                for (int i = 0; i < 9; i++)
-                {
-                    const float rad = 0.3f;
-                    var circular = new Vector3(rad * Mathf.Sin(45f * i), rad * Mathf.Cos(45f * i));
-                    if (i == 8) 
-                        circular = Vector3.zero;
-                    var ray = new Ray(pos + circular, Vector3.forward);
-                    var ishit = Physics.Raycast(ray, out var hitInfom);
-                    if (ishit)
-                    {
-                        var id = hitInfom.colliderInstanceID;
-                        var area = InputManager.GetSensorAreaFromInstanceID(id);
-                        _noteManager.SimulateSensorPress(area);
-                    }
-                }
-                if(delta > 0.2f || 
+                var cubeRay = GetPositionFromProgress(DJAutoplayProgress);
+                SlideDJAutoSimulateSensorPress(cubeRay, DJAUTO_SIMULATE_RAD);
+
+                if (delta > 0.2f || 
                    delta + step > 0.2f ||
                    DJAutoplayProgress >= currentProgress)
                 {
@@ -754,7 +765,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void ApplyStarRotation(Quaternion newRotation)
+        void ApplyStarRotation(in Quaternion newRotation)
         {
             var star = Stars.Span[0];
             var starTransform = StarTransforms.Span[0];
@@ -765,9 +776,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             if (_isMirror)
             {
-                var halfFlip = newRotation.eulerAngles;
-                halfFlip.z += 180f;
-                starTransform.rotation = Quaternion.Euler(halfFlip);
+                starTransform.rotation = newRotation * s_Z180Rotation;
             }
             else
             {
@@ -784,12 +793,13 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 StartPos = 1;
             }
             _starPositions.Add(NoteHelper.GetTapPosition(StartPos, 4.8f));
+            _starRotations.Add(Quaternion.Euler(SlideBars[0].transform.rotation.normalized.eulerAngles + new Vector3(0f, 0f, 18f)));
             for (var i = 0; i < SlideBars.Count; i++)
             {
                 var bar = SlideBars[i];
                 _starPositions.Add(bar.transform.position);
 
-                _starRotations.Add(Quaternion.Euler(bar.transform.rotation.normalized.eulerAngles + new Vector3(0f, 0f, 18f)));
+                _starRotations.Add(Quaternion.Euler(SlideBars[i].transform.rotation.normalized.eulerAngles + new Vector3(0f, 0f, 18f)));
                 if (i == SlideBars.Count - 1)
                 {
                     var a = SlideBars[i - 1].transform.rotation.normalized.eulerAngles;

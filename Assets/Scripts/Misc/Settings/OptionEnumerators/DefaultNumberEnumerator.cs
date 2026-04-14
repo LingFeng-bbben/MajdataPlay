@@ -29,6 +29,7 @@ public class DefaultNumberEnumerator : OptionEnumeratorBase, IOptionEnumerator
         var valueToSet = (object)nextValue;
         OptionValues[0] = valueToSet;
         Value = Convert.ChangeType(valueToSet, Type);
+        UpdateValueText();
         return true;
     }
     public override bool MovePrevious()
@@ -50,6 +51,7 @@ public class DefaultNumberEnumerator : OptionEnumeratorBase, IOptionEnumerator
         var valueToSet = (object)nextValue;
         OptionValues[0] = valueToSet;
         Value = Convert.ChangeType(valueToSet, Type);
+        UpdateValueText();
         return true;
     }
 
@@ -58,6 +60,7 @@ public class DefaultNumberEnumerator : OptionEnumeratorBase, IOptionEnumerator
         var isNum = IsIntType || IsFloatType;
         if (!isNum)
         {
+            MajDebug.LogError($"[SettingUI]Invalid number type: {Type}");
             throw new InvalidOperationException("Type provided must be an Number");
         }
         var rangeAttribute = GetCustomAttribute<RangeAttribute>();
@@ -101,5 +104,36 @@ public class DefaultNumberEnumerator : OptionEnumeratorBase, IOptionEnumerator
         var currentValue = Value;
         CurrentValue = Convert.ToDecimal(currentValue);
         OptionValues[0] = CurrentValue;
+        InitValueTexts();
+        UpdateValueText();
+    }
+
+    protected void UpdateValueText()
+    {
+        var currentValue = Value;
+        ValueTexts[0] = currentValue?.ToString() ?? (IsOptional ? "UNSET" : "NULL");
+        if (currentValue is null)
+        {
+            if (!ValueTextLocalizationTemplate.Format(Name, ValueText).Tryi18n(out var localizedText) &&
+                !GeneralValueTextLocalizationTemplate.Format(ValueText).Tryi18n(out localizedText))
+            {
+                LocalizedValueTexts[0] = ValueText;
+            }
+            else
+            {
+                LocalizedValueTexts[0] = localizedText;
+            }
+        }
+        else
+        {
+            if (ValueTextLocalizationTemplate.Format(Name, ValueText).Tryi18n(out var localizedText))
+            {
+                LocalizedValueTexts[0] = localizedText;
+            }
+            else
+            {
+                LocalizedValueTexts[0] = ValueText;
+            }
+        }
     }
 }

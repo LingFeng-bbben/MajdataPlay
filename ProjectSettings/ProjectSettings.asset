@@ -143,7 +143,7 @@ PlayerSettings:
   loadStoreDebugModeEnabled: 0
   visionOSBundleVersion: 1.0
   tvOSBundleVersion: 1.0
-  bundleVersion: 0.1.48
+  bundleVersion: 0.1.52
   preloadedAssets: []
   metroInputSource: 0
   wsaTransparentSwapchain: 0
@@ -174,9 +174,9 @@ PlayerSettings:
     iPhone: 1
     tvOS: 0
   overrideDefaultApplicationIdentifier: 1
-  AndroidBundleVersionCode: 10
+  AndroidBundleVersionCode: 14
   AndroidMinSdkVersion: 23
-  AndroidTargetSdkVersion: 29
+  AndroidTargetSdkVersion: 36
   AndroidPreferredInstallLocation: 1
   aotOptions: 
   stripEngineCode: 1
@@ -271,8 +271,8 @@ PlayerSettings:
   AndroidTargetDevices: 1
   AndroidSplashScreenScale: 0
   androidSplashScreen: {fileID: 0}
-  AndroidKeystoreName: 
-  AndroidKeyaliasName: 
+  AndroidKeystoreName: '{inproject}: android-publish.keystore'
+  AndroidKeyaliasName: default
   AndroidEnableArmv9SecurityFeatures: 0
   AndroidBuildApkPerCpuArchitecture: 1
   AndroidTVCompatibility: 0
@@ -280,7 +280,7 @@ PlayerSettings:
   AndroidEnableTango: 0
   androidEnableBanner: 1
   androidUseLowAccuracyLocation: 0
-  androidUseCustomKeystore: 0
+  androidUseCustomKeystore: 1
   m_AndroidBanners:
   - width: 320
     height: 180

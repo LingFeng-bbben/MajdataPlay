@@ -7,33 +7,34 @@ using System.Threading.Tasks;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
 
-namespace MajdataPlay.Editor.Android;
-internal static class AndroidProcessor
+namespace MajdataPlay.Editor.Android
 {
-    public static void OnPreprocessBuild(BuildReport report)
+    internal static class AndroidProcessor
     {
-        Debug.LogWarning("OnPreprocessBuild");
-
-        SaveStreamingAssetPaths();
-    }
-
-    static void SaveStreamingAssetPaths(string directory = "", string file_name = "StreamingAssetPaths")
-    {
-        List<string> paths = StreamingAssetsExtension.GetPathsRecursively(directory); // Gets list of files from StreamingAssets/directory
-
-        string txtPath = Path.Combine(Application.dataPath, "Resources", file_name + ".txt"); // writes the list of file paths to /Assets/Resources/
-        if (File.Exists(txtPath))
+        public static void OnPreprocessBuild(BuildReport report)
         {
-            File.Delete(txtPath);
+            Debug.LogWarning("OnPreprocessBuild");
+
+            SaveStreamingAssetPaths();
         }
-        using (FileStream fs = File.Create(txtPath)) { }
-        using (StreamWriter writer = new StreamWriter(txtPath, false))
+
+        static void SaveStreamingAssetPaths(string directory = "", string file_name = "StreamingAssetPaths")
         {
-            foreach (string path in paths)
+            List<string> paths = StreamingAssetsExtension.GetPathsRecursively(directory); // Gets list of files from StreamingAssets/directory
+
+            string txtPath = Path.Combine(Application.dataPath, "Resources", file_name + ".txt"); // writes the list of file paths to /Assets/Resources/
+            if (File.Exists(txtPath))
             {
-                writer.WriteLine(path);
+                File.Delete(txtPath);
+            }
+            using (FileStream fs = File.Create(txtPath)) { }
+            using (StreamWriter writer = new StreamWriter(txtPath, false))
+            {
+                foreach (string path in paths)
+                {
+                    writer.WriteLine(path);
+                }
             }
         }
-
     }
 }

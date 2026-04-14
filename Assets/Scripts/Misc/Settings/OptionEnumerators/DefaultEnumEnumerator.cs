@@ -17,10 +17,13 @@ public class DefaultEnumEnumerator : OptionEnumeratorBase, IOptionEnumerator
         }
         var values = Enum.GetValues(Type);
         OptionValues = new object[values.Length];
+        ValueTexts = new string[values.Length];
+        LocalizedValueTexts = new string[values.Length];
         for (int i = 0; i < values.Length; i++)
         {
             OptionValues[i] = values.GetValue(i);
         }
+        InitValueTexts();
         var value = Value;
         ValueIndex = OptionValues.FindIndex(x => (int)x == (int)value);
     }

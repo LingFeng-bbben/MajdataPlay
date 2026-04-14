@@ -168,7 +168,10 @@ namespace MajdataPlay.IO
         }
         public static UnityAudioSample Create(string filePath, GameObject gameObject)
         {
-            using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(filePath, AudioType.UNKNOWN))
+            filePath = filePath.Replace('\\', '/');
+            string encoded = System.Uri.EscapeUriString(filePath);
+            encoded = encoded.Replace("+", "%2B");
+            using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(encoded, AudioType.UNKNOWN))
             {
                 www.SetRequestHeader("User-Agent", MajEnv.HTTP_USER_AGENT);
                 www.SendWebRequest();
@@ -182,7 +185,10 @@ namespace MajdataPlay.IO
         }
         public static async UniTask<UnityAudioSample> CreateAsync(string filePath, GameObject gameObject)
         {
-            using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(filePath, AudioType.UNKNOWN))
+            filePath = filePath.Replace('\\', '/');
+            string encoded = System.Uri.EscapeUriString(filePath);
+            encoded = encoded.Replace("+", "%2B");
+            using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(encoded, AudioType.UNKNOWN))
             {
                 www.SetRequestHeader("User-Agent", MajEnv.HTTP_USER_AGENT);
                 await www.SendWebRequest();

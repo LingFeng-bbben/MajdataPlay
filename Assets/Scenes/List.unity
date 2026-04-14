@@ -631,7 +631,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: MAJTEXT_SCENE_LIST_INPUT_HINT
+  m_text: MAJTEXT_LIST_INPUT_HINT
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 05efa2e3d6891424ea2b70283145ceb3, type: 2}
   m_sharedMaterial: {fileID: 2098280800310027963, guid: 05efa2e3d6891424ea2b70283145ceb3, type: 2}
@@ -720,7 +720,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f44ef1e05d923c540945f6ab6c06d325, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  local_key: MAJTEXT_SCENE_LIST_INPUT_HINT
+  local_key: MAJTEXT_LIST_INPUT_HINT
 --- !u!1 &99268655
 GameObject:
   m_ObjectHideFlags: 0
@@ -5751,6 +5751,18 @@ PrefabInstance:
     - target: {fileID: 6279557111080620025, guid: d170f1a30405d634e84aeca872a46298, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 43.73999
+      objectReference: {fileID: 0}
+    - target: {fileID: 6326863885416059801, guid: d170f1a30405d634e84aeca872a46298, type: 3}
+      propertyPath: m_fontAsset
+      value: 
+      objectReference: {fileID: 11400000, guid: d7ff2b6cb0ca2b34e8503767640c2f11, type: 2}
+    - target: {fileID: 6326863885416059801, guid: d170f1a30405d634e84aeca872a46298, type: 3}
+      propertyPath: m_sharedMaterial
+      value: 
+      objectReference: {fileID: -4464831289724477432, guid: d7ff2b6cb0ca2b34e8503767640c2f11, type: 2}
+    - target: {fileID: 6326863885416059801, guid: d170f1a30405d634e84aeca872a46298, type: 3}
+      propertyPath: m_hasFontAssetChanged
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6427247033723599783, guid: d170f1a30405d634e84aeca872a46298, type: 3}
       propertyPath: m_AnchorMax.y

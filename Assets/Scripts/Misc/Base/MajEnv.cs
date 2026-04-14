@@ -25,6 +25,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Android;
 using UnityEngine.Scripting;
@@ -73,20 +74,23 @@ namespace MajdataPlay
 #if UNITY_STANDALONE_WIN
         public static LibVLC VLCLibrary { get; private set; }
 #endif
+#if UNITY_ANDROID // Android Only (Sdk Version Declare)
         public static int AndroidSdkVersion
         {
-#if UNITY_ANDROID && !UNITY_EDITOR // Android Only (Sdk Version Declare)
             get; 
             private set;
-#else
-            get { throw new NotSupportedException(); }
-            private set { throw new NotSupportedException(); }
-#endif
         }
+        public static int TargetSdkVersion
+        {
+            get;
+            private set;
+        }
+#endif
 
         public static string RootPath { get; private set; } = string.Empty;
         public static string AssetsPath { get; private set; } = string.Empty;
         public static string CachePath { get; private set; } = string.Empty;
+        public static string TempPath { get; private set; } = string.Empty;
         public static string ChartPath { get; private set; } = string.Empty;
         public static string SettingsPath { get; private set; } = string.Empty;
         public static string SkinPath { get; private set; } = string.Empty;
@@ -167,67 +171,78 @@ namespace MajdataPlay
             var versionClass = AndroidJNI.FindClass("android/os/Build$VERSION");
             var fieldID = AndroidJNI.GetStaticFieldID(versionClass, "SDK_INT", "I");
             AndroidSdkVersion = AndroidJNI.GetStaticIntField(versionClass, fieldID);
+            var appInfo = GameManager.CurrentActivity.Call<AndroidJavaObject>("getApplicationInfo");
+            TargetSdkVersion = appInfo.Get<int>("targetSdkVersion");
 
-            var androidStoragePermissions = new string[]
+            if (AndroidSdkVersion < 30 || TargetSdkVersion < 30) // < Android 11
             {
-                Permission.ExternalStorageRead,
-                Permission.ExternalStorageWrite,
-            };
-            var isGranted = true;
-            for (var i = 0; i < androidStoragePermissions.Length; i++)
-            {
-                var flag = 0;
-                var permission = androidStoragePermissions[i];
-            RECHECK_PERMISSION:
-                if (!Permission.HasUserAuthorizedPermission(permission))
+                var androidStoragePermissions = new string[]
                 {
-                    switch (flag)
+                    Permission.ExternalStorageRead,
+                    Permission.ExternalStorageWrite,
+                };
+                var isGranted = true;
+                for (var i = 0; i < androidStoragePermissions.Length; i++)
+                {
+                    var flag = 0;
+                    var permission = androidStoragePermissions[i];
+                RECHECK_PERMISSION:
+                    if (!Permission.HasUserAuthorizedPermission(permission))
                     {
-                        case 0:
-                            Permission.RequestUserPermission(permission);
-                            flag = 1;
-                            goto RECHECK_PERMISSION;
-                        case 1:
-                            isGranted = false;
-                            goto BREAK_LOOP;
+                        switch (flag)
+                        {
+                            case 0:
+                                Permission.RequestUserPermission(permission);
+                                flag = 1;
+                                goto RECHECK_PERMISSION;
+                            case 1:
+                                isGranted = false;
+                                goto BREAK_LOOP;
+                        }
+                        continue;
+                    BREAK_LOOP:
+                        break;
                     }
-                    continue;
-                BREAK_LOOP:
-                    break;
                 }
-            }
-            if (isGranted)
-            {
-                RootPath = "/sdcard/Documents/MajdataPlay";
-                if (!Directory.Exists(RootPath))
+                if (isGranted)
                 {
-                    Directory.CreateDirectory(RootPath);
-                }
-                var noMediaFlag = new FileInfo(Path.Combine(RootPath, ".nomedia"));
-                if(!noMediaFlag.Exists)
-                {
-                    try
+                    RootPath = "/sdcard/Documents/MajdataPlay";
+                    if (!Directory.Exists(RootPath))
                     {
-                        noMediaFlag.Create().Dispose();
-                        MajDebug.LogDebug("Created .nomedia flag file");
+                        Directory.CreateDirectory(RootPath);
                     }
-                    catch(Exception e)
+                    var noMediaFlag = new FileInfo(Path.Combine(RootPath, ".nomedia"));
+                    if (!noMediaFlag.Exists)
                     {
-                        MajDebug.LogError("Failed to create .nomedia flag file");
-                        MajDebug.LogException(e);
+                        try
+                        {
+                            noMediaFlag.Create().Dispose();
+                            MajDebug.LogDebug("Created .nomedia flag file");
+                        }
+                        catch (Exception e)
+                        {
+                            MajDebug.LogError("Failed to create .nomedia flag file");
+                            MajDebug.LogException(e);
+                        }
                     }
+                    else
+                    {
+                        MajDebug.LogDebug(".nomedia flag file exists");
+                    }
+                    AssetsPath = Path.Combine(RootPath, "ExtStreamingAssets/");
                 }
                 else
                 {
-                    MajDebug.LogDebug(".nomedia flag file exists");
+                    RootPath = Application.persistentDataPath;
+                    AssetsPath = Path.Combine(Application.persistentDataPath, "ExtStreamingAssets/");
                 }
-                AssetsPath = Path.Combine(RootPath, "ExtStreamingAssets/");
             }
-            else
+            else // >= Android 11
             {
                 RootPath = Application.persistentDataPath;
                 AssetsPath = Path.Combine(Application.persistentDataPath, "ExtStreamingAssets/");
             }
+                
             CachePath = Application.temporaryCachePath;
 #elif UNITY_IOS
             RootPath = Application.persistentDataPath;
@@ -255,10 +270,12 @@ namespace MajdataPlay
 
             var netCachePath = Path.Combine(CachePath, "Net");
             var runtimeCachePath = Path.Combine(CachePath, "Runtime");
+            TempPath = Path.Combine(CachePath, "Temp");
 
             CreateDirectoryIfNotExists(CachePath);
             CreateDirectoryIfNotExists(runtimeCachePath);
             CreateDirectoryIfNotExists(netCachePath);
+            CreateDirectoryIfNotExists(TempPath);
             CreateDirectoryIfNotExists(ChartPath);
             CreateDirectoryIfNotExists(RecordOutputsPath);
             SharedHttpClient.Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS);
@@ -337,6 +354,7 @@ namespace MajdataPlay
                             Url = apiUri!,
                             Username = IOSNativeSettings.MajnetUsername,
                             Password = IOSNativeSettings.MajnetPassword,
+                            AutoLogin = IOSNativeSettings.MajnetAutoLogin,
                         });
                     }
                     else
@@ -357,6 +375,7 @@ namespace MajdataPlay
                             Url = apiUri!,
                             Username = IOSNativeSettings.CustomUsername,
                             Password = IOSNativeSettings.CustomPassword,
+                            AutoLogin = IOSNativeSettings.CustomAutoLogin,
                         });
                     }
                     else
