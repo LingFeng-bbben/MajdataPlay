@@ -27,6 +27,8 @@ namespace MajdataPlay.IO
         public const int TOUCH_ANGLE_SMAPLE_COUNT = 128;
         public const float FINGER_RADIUS_SEGMENT_LENGTH = 0.5f / 4;
         
+        // uint64 TouchPosData
+        //
         // Button bit (12bit)
         // 1 2 3 4 5 6 7 8 9 10 11 12
         // 0 0 0 0 0 0 0 0 0 0  0  0
@@ -35,6 +37,9 @@ namespace MajdataPlay.IO
         // 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
         // Version bit (16bit)
         // uint16
+        // Flag bit (2 bit)
+        // 0: ButtonRing only
+        // 1: Sensor only
         readonly static ulong* _posData = null;
         readonly static Dictionary<int, ulong> _touchRecorder = new(32);
         readonly static ReadOnlyMemory<Vector4> _unitCircle = ReadOnlyMemory<Vector4>.Empty;
@@ -146,21 +151,23 @@ namespace MajdataPlay.IO
                 }
                 var touchPosData = 0UL;
                 var touchRadius = touch.radius.magnitude;
+                _touchRecorder.TryGetValue(touch.touchId, out var lastTouchPosData);
+                var isSensorOnly = (lastTouchPosData & (1UL << 63)) != 0;
                 PositionToSensorState(sensorStates,
                     extraButton,
                     mainCamera, 
                     touch.screenPosition, 
                     touchRadius / PLATFORM_TOUCH_RADIUS_ADJUST, 
-                    ref touchPosData);
+                    ref touchPosData,
+                    ref isSensorOnly);
                 if (touchRadius > _maxTouchRadius)
                 {
                     MajDebug.LogInfo($"Touch radius: {touchRadius}");
                     _maxTouchRadius = touchRadius;
                 }
 #if UNITY_ANDROID || UNITY_IOS
-                _touchRecorder.TryGetValue(touch.touchId, out var lastTouchPosData);
 
-                if (UseOuterTouchAsSensor)
+                if (UseOuterTouchAsSensor || isSensorOnly)
                 {
                     for (var i = 0; i < 34; i++)
                     {
@@ -185,7 +192,23 @@ namespace MajdataPlay.IO
                     }
                 }
                 else
-                {
+                {                    
+                    for (var i = 0; i < 34; i++)
+                    {
+                        var lastState = (lastTouchPosData & (1UL << (i + 12))) != 0;
+                        var currentState = (touchPosData & (1UL << (i + 12))) != 0;
+                        var isClicked = !lastState && currentState;
+                        if (i < 8)
+                        {
+                            var isPreviousFrameInButton = (lastTouchPosData & (1UL << i)) != 0;
+                            isClicked = isClicked && !isPreviousFrameInButton;
+                        }
+
+                        if(isClicked)
+                        {
+                            sensorClickedCount[i]++;
+                        }
+                    }
                     for (var i = 0; i < 8; i++)
                     {
                         var lastState = (lastTouchPosData & (1UL << i)) != 0;
@@ -198,25 +221,8 @@ namespace MajdataPlay.IO
                             buttonClickedCount[i]++;
                         }
                     }
-                    for (var i = 0; i < 34; i++)
-                    {
-                        var lastState = (lastTouchPosData & (1UL << (i + 12))) != 0;
-                        var currentState = (touchPosData & (1UL << (i + 12))) != 0;
-                        var isClicked = !lastState && currentState;
-
-                        if (i < 8)
-                        {
-                            var isPreviousFrameInButton = (lastTouchPosData & (1UL << i)) != 0;
-                            isClicked = isClicked && !isPreviousFrameInButton;
-                        }
-
-                        if(isClicked)
-                        {
-                            sensorClickedCount[i]++;
-                        }
-                    }
                 }
-
+#endif
                 if (touch.ended)
                 {
                     _touchRecorder.Remove(touch.touchId);
@@ -225,7 +231,6 @@ namespace MajdataPlay.IO
                 {
                     _touchRecorder[touch.touchId] = touchPosData;
                 }
-#endif
             }
         }
 
@@ -243,12 +248,18 @@ namespace MajdataPlay.IO
                 _touchRecorder.Remove(1);
                 return;
             }
-            var touchPosData = 0UL;
-            PositionToSensorState(sensorStates, extraButton, mainCamera, mouse.position.value, 0, ref touchPosData);
-#if UNITY_ANDROID || UNITY_IOS
             _touchRecorder.TryGetValue(1, out var lastTouchPosData);
-
-            if (UseOuterTouchAsSensor)
+            var touchPosData = 0UL;
+            var isSensorOnly = (lastTouchPosData & (1UL << 63)) != 0;
+            PositionToSensorState(sensorStates, 
+                extraButton, 
+                mainCamera, 
+                mouse.position.value, 
+                0, 
+                ref touchPosData,
+                ref isSensorOnly);
+#if UNITY_ANDROID || UNITY_IOS
+            if (UseOuterTouchAsSensor || isSensorOnly)
             {
                 for (var i = 0; i < 34; i++)
                 {
@@ -274,18 +285,6 @@ namespace MajdataPlay.IO
             }
             else
             {
-                for (var i = 0; i < 8; i++)
-                {
-                    var lastState = (lastTouchPosData & (1UL << i)) != 0;
-                    var currentState = (touchPosData & (1UL << i)) != 0;
-                    var isPreviousFrameInSensor = (lastTouchPosData & (1UL << (i + 12))) != 0;
-                    var isClicked = (!lastState && currentState) && !isPreviousFrameInSensor;
-
-                    if (isClicked)
-                    {
-                        buttonClickedCount[i]++;
-                    }
-                }
                 for (var i = 0; i < 34; i++)
                 {
                     var lastState = (lastTouchPosData & (1UL << (i + 12))) != 0;
@@ -303,6 +302,18 @@ namespace MajdataPlay.IO
                         sensorClickedCount[i]++;
                     }
                 }
+                for (var i = 0; i < 8; i++)
+                {
+                    var lastState = (lastTouchPosData & (1UL << i)) != 0;
+                    var currentState = (touchPosData & (1UL << i)) != 0;
+                    var isPreviousFrameInSensor = (lastTouchPosData & (1UL << (i + 12))) != 0;
+                    var isClicked = (!lastState && currentState) && !isPreviousFrameInSensor;
+
+                    if (isClicked)
+                    {
+                        buttonClickedCount[i]++;
+                    }
+                }
             }
 
             _touchRecorder[1] = touchPosData;
@@ -313,7 +324,8 @@ namespace MajdataPlay.IO
         static void PositionToSensorState(Span<bool> sensorStates, Span<bool> buttonStates, Camera mainCamera, Vector3 position)
         {
             var _ = 0UL;
-            PositionToSensorState(sensorStates, buttonStates, mainCamera, position, 0, ref _);
+            var isSensorOnly = false;
+            PositionToSensorState(sensorStates, buttonStates, mainCamera, position, 0, ref _, ref isSensorOnly);
         }
         /// <summary>
         /// return extra button pos 0-7, if none return -1
@@ -328,7 +340,8 @@ namespace MajdataPlay.IO
             Camera mainCamera, 
             Vector3 position, 
             float touchRadius, 
-            ref ulong rawPositionData)
+            ref ulong rawPositionData,
+            ref bool isSensorOnly)
         {
             var x = (int)position.x;
             var y = (int)position.y;
@@ -734,13 +747,18 @@ namespace MajdataPlay.IO
                     circleSamplesPtr,
                     ref newP);
             }
-
             for (var i = 0; i < 34; i++)
             {
-                sensorStates[i] |= (newP & (1UL << (i + 12))) != 0;
+                var result = (newP & (1UL << (i + 12))) != 0;
+                sensorStates[i] |= result;
+                isSensorOnly |= result;
+            }
+            if(isSensorOnly)
+            {
+                newP |= (1UL << 63);
             }
 
-            if (UseOuterTouchAsSensor)
+            if (UseOuterTouchAsSensor || isSensorOnly)
             {
                 for (var i = 0; i < 8; i++)
                 {
