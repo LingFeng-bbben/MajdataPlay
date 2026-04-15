@@ -5,21 +5,23 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine.Profiling;
 
-namespace MajdataPlay;
-public readonly ref struct UnityProfiler
+namespace MajdataPlay
 {
-    public required string Name { get; init; }
+    public readonly ref struct UnityProfiler
+    {
+        public required string Name { get; init; }
 
-    public void Dispose()
-    {
-        Profiler.EndSample();
-    }
-    public static UnityProfiler Create(string name)
-    {
-        Profiler.BeginSample(name);
-        return new UnityProfiler()
+        public void Dispose()
         {
-            Name = name,
-        };
+            Profiler.EndSample();
+        }
+        public static UnityProfiler Create(string name)
+        {
+            Profiler.BeginSample(name);
+            return new UnityProfiler()
+            {
+                Name = name,
+            };
+        }
     }
 }

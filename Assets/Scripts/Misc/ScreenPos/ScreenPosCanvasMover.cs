@@ -10,6 +10,7 @@ using UnityEngine.UI;
 #nullable enable
 namespace MajdataPlay
 {
+    [DefaultExecutionOrder(150)]
     public class ScreenPosCanvasMover : MonoBehaviour
     {
         const int FLAG_NOT_INIT = 0;
@@ -63,10 +64,10 @@ namespace MajdataPlay
         // 脏检测（避免每帧重复计算）
         [SerializeField]
         [ReadOnlyField]
-        float _lastOffset = float.NaN;       // 上一帧的主屏幕偏移量
+        float _lastMainDisplayOffset = float.NaN;       // 上一帧的主屏幕偏移量
         [SerializeField]
         [ReadOnlyField]
-        float _lastScale = float.NaN;        // 上一帧的主屏幕缩放
+        float _lastMainDisplayScale = float.NaN;        // 上一帧的主屏幕缩放
         [SerializeField]
         [ReadOnlyField]
         float _lastSubDisplayOffset = float.NaN; // 上一帧的副屏幕偏移量
@@ -126,10 +127,6 @@ namespace MajdataPlay
         [SerializeField]
         [ReadOnlyField]
         RectTransform? _subDisplay;
-
-        [SerializeField]
-        [ReadOnlyField]
-        readonly Vector3[] _subDisplayWorldCorners = new Vector3[4];
 
         DisplayOptions? _displayOptions;
 
@@ -331,7 +328,6 @@ namespace MajdataPlay
             float newY = SUB_DISPLAY_ORIGINAL_POS_Y + offset;
             _subDisplay.anchoredPosition = new Vector2(_subDisplay.anchoredPosition.x, newY);
             _subDisplay.localScale = new Vector3(scale, scale, 1f);
-            RefreshCornersPosition();
         }
 
         void UpdateSubCover()
@@ -368,8 +364,8 @@ namespace MajdataPlay
             {
                 var offset = _displayOptions!.MainScreenOffset;
                 var scale = _displayOptions!.MainScreenScale;
-                _lastOffset = offset;
-                _lastScale = scale;
+                _lastMainDisplayOffset = offset;
+                _lastMainDisplayScale = scale;
                 ApplyPosition(offset, scale);
 
                 var subOffset = _displayOptions.SubDisplayOffset;
@@ -384,21 +380,6 @@ namespace MajdataPlay
                 RestoreOriginal();
             }
         }
-        void RefreshCornersPosition()
-        {
-            if(_subDisplay is null)
-            {
-                return;
-            }
-            _subDisplay.GetWorldCorners(_subDisplayWorldCorners);
-            var edge = new Vector4();
-            edge.x = _subDisplayWorldCorners[0].x; // left
-            edge.y = _subDisplayWorldCorners[1].y; // top
-            edge.z = _subDisplayWorldCorners[2].x; // right
-            edge.w = _subDisplayWorldCorners[3].y; // bottom
-            InputManager.SubScreenEdge = edge;
-            MajDebug.LogDebug(edge);
-        }
 
         void Update()
         {
@@ -411,12 +392,8 @@ namespace MajdataPlay
                         {
                             return;
                         }
-                        if (_subDisplay != null)
-                        {
-                            RefreshCornersPosition();
-                        }
-                        _flag = FLAG_INITED;
                         ApplyTransform();
+                        _flag = FLAG_INITED;
                     }
                     goto case FLAG_INITED;
                 case FLAG_INITED:
@@ -428,8 +405,8 @@ namespace MajdataPlay
                             if (_lastTransformDisplay)
                             {
                                 _lastTransformDisplay = false;
-                                _lastOffset = float.NaN;
-                                _lastScale = float.NaN;
+                                _lastMainDisplayOffset = float.NaN;
+                                _lastMainDisplayScale = float.NaN;
                                 _lastSubDisplayOffset = float.NaN;
                                 _lastSubDisplayScale = float.NaN;
                                 RestoreOriginal();
@@ -443,8 +420,8 @@ namespace MajdataPlay
                         var screenOffset = _displayOptions.MainScreenOffset;
                         var screenScale = _displayOptions.MainScreenScale;
 
-                        bool subChanged = subDisplayOffset != _lastSubDisplayOffset || subDisplayScale != _lastSubDisplayScale;
-                        bool mainChanged = screenOffset != _lastOffset || screenScale != _lastScale;
+                        var subChanged = subDisplayOffset != _lastSubDisplayOffset || subDisplayScale != _lastSubDisplayScale;
+                        var mainChanged = screenOffset != _lastMainDisplayOffset || screenScale != _lastMainDisplayScale;
 
                         if (!subChanged && !mainChanged)
                         {
@@ -460,8 +437,8 @@ namespace MajdataPlay
 
                         if (mainChanged)
                         {
-                            _lastOffset = screenOffset;
-                            _lastScale = screenScale;
+                            _lastMainDisplayOffset = screenOffset;
+                            _lastMainDisplayScale = screenScale;
                             ApplyPosition(screenOffset, screenScale, updateCache: true);
                         }
                         UpdateSubCover();

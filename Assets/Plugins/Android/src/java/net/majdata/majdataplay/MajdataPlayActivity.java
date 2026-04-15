@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.KeyEvent;
 
 import com.unity3d.player.UnityPlayer;
 import com.unity3d.player.UnityPlayerActivity;
@@ -12,6 +13,7 @@ public class MajdataPlayActivity extends UnityPlayerActivity
 {
     static CSharpOnNewIntentCallback onNewIntentCallbackProxy;
     static CSharpOnActivityResultCallback onActivityResultCallbackProxy;
+    static CSharpOnDispatchKeyEventCallback onDispatchKeyEventCallbackProxy;
     static Activity currentActivity;
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -38,6 +40,16 @@ public class MajdataPlayActivity extends UnityPlayerActivity
             onActivityResultCallbackProxy.OnActivityResult(requestCode, resultCode, data);
         }
     }
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event)
+    {
+        if (onDispatchKeyEventCallbackProxy != null)
+        {
+            onDispatchKeyEventCallbackProxy.OnDispatchKeyEvent(event.getAction(), event.getKeyCode());
+        }
+
+        return super.dispatchKeyEvent(event);
+    }
     public static Activity getCurrentActivity()
     {
         return currentActivity;
@@ -51,9 +63,14 @@ public class MajdataPlayActivity extends UnityPlayerActivity
     }
     public static void registerOnActivityResultCallback(CSharpOnActivityResultCallback callback)
     {
-        if (onActivityResultCallbackProxy == null)
-        {
+        if (onActivityResultCallbackProxy == null) {
             onActivityResultCallbackProxy = callback;
+        }
+    }
+    public static void registerDispatchKeyEventCallback(CSharpOnDispatchKeyEventCallback callback)
+    {
+        if (onDispatchKeyEventCallbackProxy == null) {
+            onDispatchKeyEventCallbackProxy = callback;
         }
     }
 }
