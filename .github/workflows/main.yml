@@ -155,7 +155,7 @@ jobs:
           androidVersionCode: ${{ ENV.BUNDLE_VERSION_CODE_FOR_APK }}
           buildName: MajdataPlay
           buildsPath: ${{ env.CONFIGURATION }}
-          androidTargetSdkVersion: android-29
+          androidTargetSdkVersion: 29
           androidKeystoreName: android-publish.keystore
           androidKeystoreBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }} 
           androidKeystorePass: ${{ secrets.ANDROID_KEYSTORE_PASS }} 
@@ -174,7 +174,7 @@ jobs:
           buildName: MajdataPlay
           buildsPath: ${{ env.CONFIGURATION }}
           androidExportType: 'androidAppBundle'
-          androidTargetSdkVersion: android-36
+          androidTargetSdkVersion: 36
           androidKeystoreName: android-publish.keystore
           androidKeystoreBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }} 
           androidKeystorePass: ${{ secrets.ANDROID_KEYSTORE_PASS }} 
