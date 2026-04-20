@@ -1,3 +1,4 @@
+#if !UNITY_OPENHARMONY
 using MajdataPlay.Extensions;
 using MajdataPlay.Numerics;
 using MajdataPlay.Utils;
@@ -307,3 +308,4 @@ namespace MajdataPlay.IO
         }
     }
 }
+#endif

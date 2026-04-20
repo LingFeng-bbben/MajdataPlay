@@ -3,6 +3,7 @@ using MajdataPlay.Extensions;
 using MajdataPlay.Numerics;
 using MajdataPlay.Utils;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -92,6 +93,15 @@ namespace MajdataPlay.IO
         }
         public UnityAudioSample(AudioClip audioClip, GameObject gameObject)
         {
+            if (audioClip is null)
+            {
+                throw new ArgumentNullException(nameof(audioClip));
+            }
+            if (gameObject is null)
+            {
+                throw new ArgumentNullException(nameof(gameObject));
+            }
+
             this._audioClip = audioClip;
             this._gameObject = gameObject;
             this._audioClip.LoadAudioData();
@@ -166,17 +176,65 @@ namespace MajdataPlay.IO
                 _audioSource = null;
             }
         }
+        static string GetAudioSourcePath(string filePath)
+        {
+            if (Uri.TryCreate(filePath, UriKind.Absolute, out var uri) && uri.IsFile)
+            {
+                return uri.LocalPath;
+            }
+            return filePath;
+        }
+        static AudioType GetAudioType(string filePath)
+        {
+            var extension = Path.GetExtension(GetAudioSourcePath(filePath)).ToLowerInvariant();
+            return extension switch
+            {
+                ".mp3" => AudioType.MPEG,
+                ".ogg" => AudioType.OGGVORBIS,
+                ".wav" => AudioType.WAV,
+                ".aif" or ".aiff" => AudioType.AIFF,
+                _ => AudioType.UNKNOWN
+            };
+        }
+        static void ThrowIfUnsupported(string filePath)
+        {
+#if UNITY_OPENHARMONY
+            var extension = Path.GetExtension(GetAudioSourcePath(filePath));
+            if (string.Equals(extension, ".opus", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidAudioTrackException("OpenHarmony not support .opus tracks.", filePath);
+            }
+#endif
+        }
+        static UnityWebRequest CreateAudioRequest(string filePath)
+        {
+            ThrowIfUnsupported(filePath);
+            filePath = filePath.Replace('\\', '/');
+            string encoded = Uri.EscapeUriString(filePath);
+            encoded = encoded.Replace("+", "%2B");
+            var www = UnityWebRequestMultimedia.GetAudioClip(encoded, GetAudioType(filePath));
+            www.SetRequestHeader("User-Agent", MajEnv.HTTP_USER_AGENT);
+            return www;
+        }
         public static UnityAudioSample Create(string filePath, GameObject gameObject)
         {
-            filePath = filePath.Replace('\\', '/');
-            string encoded = System.Uri.EscapeUriString(filePath);
-            encoded = encoded.Replace("+", "%2B");
-            using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(encoded, AudioType.UNKNOWN))
+            using (UnityWebRequest www = CreateAudioRequest(filePath))
             {
-                www.SetRequestHeader("User-Agent", MajEnv.HTTP_USER_AGENT);
                 www.SendWebRequest();
-                while (!www.isDone) ;
+                while (!www.isDone)
+                {
+                }
+                if (www.result != UnityWebRequest.Result.Success)
+                {
+                    throw new InvalidAudioTrackException(www.error ?? "Failed to load audio track", filePath);
+                }
+
                 var myClip = DownloadHandlerAudioClip.GetContent(www);
+                if (myClip is null)
+                {
+                    throw new InvalidAudioTrackException("Failed to decode audio track", filePath);
+                }
+
                 return new UnityAudioSample(myClip, gameObject)
                 {
                     CanSeek = filePath.StartsWith("file://"),
@@ -185,14 +243,20 @@ namespace MajdataPlay.IO
         }
         public static async UniTask<UnityAudioSample> CreateAsync(string filePath, GameObject gameObject)
         {
-            filePath = filePath.Replace('\\', '/');
-            string encoded = System.Uri.EscapeUriString(filePath);
-            encoded = encoded.Replace("+", "%2B");
-            using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(encoded, AudioType.UNKNOWN))
+            using (UnityWebRequest www = CreateAudioRequest(filePath))
             {
-                www.SetRequestHeader("User-Agent", MajEnv.HTTP_USER_AGENT);
                 await www.SendWebRequest();
+                if (www.result != UnityWebRequest.Result.Success)
+                {
+                    throw new InvalidAudioTrackException(www.error ?? "Failed to load audio track", filePath);
+                }
+
                 var myClip = DownloadHandlerAudioClip.GetContent(www);
+                if (myClip is null)
+                {
+                    throw new InvalidAudioTrackException("Failed to decode audio track", filePath);
+                }
+
                 return new UnityAudioSample(myClip, gameObject)
                 {
                     CanSeek = filePath.StartsWith("file://")

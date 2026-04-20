@@ -248,6 +248,10 @@ namespace MajdataPlay
             RootPath = Application.persistentDataPath;
             AssetsPath = Path.Combine(Application.persistentDataPath, "ExtStreamingAssets/");
             CachePath = Application.temporaryCachePath;
+#elif UNITY_OPENHARMONY
+            RootPath = "/storage/Users/currentUser/Download/com.bbben.MajdataPlay";
+            AssetsPath = Path.Combine(RootPath, "ExtStreamingAssets/");
+            CachePath = Application.temporaryCachePath;
 #else
             throw new NotImplementedException();
 #endif

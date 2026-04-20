@@ -148,7 +148,7 @@ namespace MajdataPlay
 #endif
 #endif
             await ChartImporter.OnStartAsync();
-#if UNITY_ANDROID || UNITY_IOS
+#if UNITY_ANDROID || UNITY_IOS || UNITY_OPENHARMONY
             if (!Directory.Exists(MajEnv.AssetsPath))
             {
                 ExtractAssets();
@@ -536,7 +536,7 @@ namespace MajdataPlay
                     MajDebug.LogError($"Extract failed(iOS): {line}\nsrc={srcPath}\n{e}");
                 }
             }
-#elif UNITY_ANDROID
+#elif UNITY_ANDROID || UNITY_OPENHARMONY
             var extractRoot = Path.Combine(MajEnv.RootPath, "ExtStreamingAssets");
             Directory.CreateDirectory(extractRoot);
 
