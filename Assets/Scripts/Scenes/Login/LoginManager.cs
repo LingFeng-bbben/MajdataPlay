@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using MajdataPlay.Buffers;
 using MajdataPlay.IO;
 using MajdataPlay.Net;
+using MajdataPlay.Utils;
 using QRCoder;
 using System;
 using System.Linq;
@@ -100,26 +101,31 @@ namespace MajdataPlay.Scenes.Login
             var isPasswordClearBtnClicked = InputManager.IsSensorClickedUpInThisFrame(SensorArea.A3);
             if(isUsernameInputClicked)
             {
-                _eventSystem.SetSelectedGameObject(null!);
-                _eventSystem.SetSelectedGameObject(_usernameInput.gameObject);
+                LegacyInputFieldHelper.Focus(_eventSystem, _usernameInput);
             }
             if(isUsernameClearBtnClicked)
             {
-                _eventSystem.SetSelectedGameObject(null!);
-                _eventSystem.SetSelectedGameObject(_usernameInput.gameObject);
+                LegacyInputFieldHelper.Focus(_eventSystem, _usernameInput);
                 _usernameInput.text = string.Empty;
             }
             if (isPasswordInputClicked)
             {
-                _eventSystem.SetSelectedGameObject(null!);
-                _eventSystem.SetSelectedGameObject(_passwordInput.gameObject);
+                LegacyInputFieldHelper.Focus(_eventSystem, _passwordInput);
             }
             if (isPasswordClearBtnClicked)
             {
-                _eventSystem.SetSelectedGameObject(null!);
-                _eventSystem.SetSelectedGameObject(_passwordInput.gameObject);
+                LegacyInputFieldHelper.Focus(_eventSystem, _passwordInput);
                 _passwordInput.text = string.Empty;
             }
+        }
+
+        void OnGUI()
+        {
+            if(!_isReady || _isExited)
+            {
+                return;
+            }
+            LegacyInputFieldHelper.HandleMacOSKeyboardEvent(_eventSystem, Event.current, _usernameInput, _passwordInput);
         }
 
         async UniTaskVoid LoginProcessor()

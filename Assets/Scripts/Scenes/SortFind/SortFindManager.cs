@@ -45,7 +45,7 @@ namespace MajdataPlay.Scenes.SortFind
                 _slots[i] = (SortType)i;
             }
             _eventSystem = EventSystem.current;
-            _eventSystem.SetSelectedGameObject(_searchBar.gameObject);
+            LegacyInputFieldHelper.Focus(_eventSystem, _searchBar);
             LedRing.SetAllLight(Color.black);
             _searchBar.text = SongStorage.OrderBy.Keyword;
             _selectIndex = (int)SongStorage.OrderBy.SortBy;
@@ -87,8 +87,13 @@ namespace MajdataPlay.Scenes.SortFind
                      InputManager.IsSensorClickedInThisFrame(SensorArea.C) ||
                      InputManager.IsSensorClickedInThisFrame(SensorArea.B2))
             {
-                _eventSystem.SetSelectedGameObject(_searchBar.gameObject);
+                LegacyInputFieldHelper.Focus(_eventSystem, _searchBar);
             }
+        }
+
+        void OnGUI()
+        {
+            LegacyInputFieldHelper.HandleMacOSKeyboardEvent(_eventSystem, Event.current, _searchBar);
         }
 
         void SetActiveSort(SortType sortType)
