@@ -35,11 +35,7 @@ namespace MajdataPlay.IO
             static float _brightness = 1.0f;
             static LedDevice()
             {
-#if !UNITY_STANDALONE_WIN
-                _isEnabled = false;
-#else
                 _isEnabled = MajInstances.Settings.IO.OutputDevice.Led.Enable;
-#endif
 
                 _isThrottlerEnabled = MajInstances.Settings.IO.OutputDevice.Led.Throttler;
 
@@ -50,9 +46,6 @@ namespace MajdataPlay.IO
             }
             public static void Init()
             {
-#if !UNITY_STANDALONE_WIN
-                return;
-#endif
                 _brightness = MajInstances.Settings.IO.OutputDevice.Led.Brightness.Clamp(0, 1f);
                 try
                 {
@@ -61,6 +54,14 @@ namespace MajdataPlay.IO
                         return;
                     }
                     var manufacturer = _deviceManufacturer;
+#if !UNITY_STANDALONE_WIN
+                    // On non-Windows standalone, only Dao HID LED is supported.
+                    if (manufacturer != DeviceManufacturerOption.Dao)
+                    {
+                        MajDebug.LogInfo("[Led]Non-Windows standalone only enables Dao HID LED output.");
+                        return;
+                    }
+#endif
                     switch (manufacturer)
                     {
                         case DeviceManufacturerOption.General:
