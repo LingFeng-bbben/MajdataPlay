@@ -692,7 +692,7 @@ namespace MajdataPlay.IO
 
                 try
                 {
-                    _ioThreadSync.WaitNotify();
+                    _ioThreadSync.WaitReadReady();
                     ReadOnlySpan<byte> buffer = _ioThreadSync.ReadBuffer;
                     IsConnected = true;
                     MajDebug.LogInfo($"[TouchPanel]Slave thread has started");
@@ -701,7 +701,7 @@ namespace MajdataPlay.IO
                         token.ThrowIfCancellationRequested();
                         try
                         {
-                            _ioThreadSync.WaitNotify();
+                            _ioThreadSync.WaitReadReady();
                             switch(manufacturer)
                             {
                                 case DeviceManufacturerOption.Dao:
@@ -712,7 +712,7 @@ namespace MajdataPlay.IO
                                     break;
                             }
                             
-                            _ioThreadSync.Notify();
+                            _ioThreadSync.SignalReadConsumed();
                             var isLocked = false;
                             try
                             {

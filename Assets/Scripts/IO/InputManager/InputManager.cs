@@ -1394,15 +1394,28 @@ namespace MajdataPlay.IO
             public ReadOnlyMemory<byte> ReadBufferMemory { get; set; } = ReadOnlyMemory<byte>.Empty;
             public NamedPipeClientStream PipeClientStream { get; set; }
 
-            readonly EventWaitHandle _eventWaitHandle = new(false, EventResetMode.AutoReset);
+            readonly EventWaitHandle _readReadyEvent = new(false, EventResetMode.AutoReset);
+            readonly EventWaitHandle _readConsumedEvent = new(false, EventResetMode.AutoReset);
 
-            public bool WaitNotify()
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool WaitReadReady()
             {
-                return _eventWaitHandle.WaitOne();
+                return _readReadyEvent.WaitOne();
             }
-            public void Notify()
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void SignalReadReady()
             {
-                _eventWaitHandle.Set();
+                _readReadyEvent.Set();
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool WaitReadConsumed()
+            {
+                return _readConsumedEvent.WaitOne();
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void SignalReadConsumed()
+            {
+                _readConsumedEvent.Set();
             }
         }
         readonly struct HidConnInfo

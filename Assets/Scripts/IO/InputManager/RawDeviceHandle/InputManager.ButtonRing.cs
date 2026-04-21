@@ -578,7 +578,7 @@ namespace MajdataPlay.IO
                 {
                     Memory<byte> memory = new byte[device.GetMaxInputReportLength()];
                     _ioThreadSync.ReadBufferMemory = memory;
-                    _ioThreadSync.Notify();
+                    _ioThreadSync.SignalReadReady();
                     Span<byte> buffer = memory.Span;
                     IsConnected = true;
                     MajDebug.LogInfo($"[ButtonRing]Connected\nDevice: {device}");
@@ -599,9 +599,9 @@ namespace MajdataPlay.IO
                                     AdxHIDDevice.Parse(buffer, _buttonRealTimeStates);
                                     break;
                                 case DeviceManufacturerOption.Dao:
-                                    _ioThreadSync.Notify();
+                                    _ioThreadSync.SignalReadReady();
                                     DaoHIDDevice.Parse(buffer, _buttonRealTimeStates);
-                                    _ioThreadSync.WaitNotify();
+                                    _ioThreadSync.WaitReadConsumed();
                                     break;
                             }
                             UpdateKeyboardFn(fnButtons, fnBuffer);
@@ -693,7 +693,7 @@ namespace MajdataPlay.IO
                     Memory<byte> memory = new byte[64];
                     _ioThreadSync.ReadBufferMemory = memory;
                     _ioThreadSync.PipeClientStream = pipeClientStream;
-                    _ioThreadSync.Notify();
+                    _ioThreadSync.SignalReadReady();
                     var buffer = memory.Span;
                     stopwatch.Start();
                     while (true)
@@ -709,7 +709,7 @@ namespace MajdataPlay.IO
                             {
                                 continue;
                             }
-                            _ioThreadSync.Notify();
+                            _ioThreadSync.SignalReadReady();
                             var data = BitConverter.ToUInt64(buffer);
                             try
                             {
