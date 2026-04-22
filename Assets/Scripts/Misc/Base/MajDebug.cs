@@ -21,6 +21,7 @@ namespace MajdataPlay
         static StreamWriter? _fileStream;
 
         readonly static Utf16PreparedFormat<DateTime, LogLevel> LOG_OUTPUT_FORMAT = ZString.PrepareUtf16<DateTime, LogLevel>("[{0:yyyy-MM-dd HH:mm:ss.ffff}][{1}] ");
+        readonly static long LOG_FILE_MAX_SIZE = 500L * 1024 * 1024; // 500 MB
 
         static bool _isInited = false;
         readonly static object _initLock = new();
@@ -219,6 +220,10 @@ namespace MajdataPlay
                 {
                     using var condition = log.Condition;
                     if(log.Level < (MajEnv.Settings?.Debug.DebugLevel ?? LogLevel.Debug))
+                    {
+                        continue;
+                    }
+                    if(_fileStream.BaseStream.Position > LOG_FILE_MAX_SIZE)
                     {
                         continue;
                     }
