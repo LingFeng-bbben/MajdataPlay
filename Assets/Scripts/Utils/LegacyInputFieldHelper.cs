@@ -55,6 +55,15 @@ namespace MajdataPlay.Utils
 #endif
         }
 
+        static void SetCaretPosition(InputField inputField, int position)
+        {
+            var textLength = (inputField.text ?? string.Empty).Length;
+            position = Mathf.Clamp(position, 0, textLength);
+            inputField.caretPosition = position;
+            inputField.selectionAnchorPosition = position;
+            inputField.selectionFocusPosition = position;
+        }
+
 #if UNITY_STANDALONE_OSX || UNITY_EDITOR_OSX
         static bool TryHandleShortcut(Event current, InputField inputField)
         {
@@ -261,13 +270,6 @@ namespace MajdataPlay.Utils
             selectionEnd = Mathf.Max(inputField.selectionAnchorPosition, inputField.selectionFocusPosition);
         }
 
-        static void SetCaretPosition(InputField inputField, int position)
-        {
-            position = Mathf.Clamp(position, 0, inputField.text.Length);
-            inputField.caretPosition = position;
-            inputField.selectionAnchorPosition = position;
-            inputField.selectionFocusPosition = position;
-        }
 #endif
     }
 }
