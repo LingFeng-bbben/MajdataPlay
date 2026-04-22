@@ -55,6 +55,8 @@ namespace MajdataPlay.Settings
         public TopInfoDisplayOption TopInfo { get; set; } = TopInfoDisplayOption.None;
         
         public bool TrackSkip { get; set; } = true;
+
+        public AutoTrackSkipOption AutoTrackSkip { get; set; } = AutoTrackSkipOption.Disabled;
         
         public bool FastRetry { get; set; } = true;
         

@@ -116,6 +116,7 @@ namespace MajdataPlay.Scenes.Game
         int _chartRotation = 0;
 
         bool _isTrackSkipAvailable = MajEnv.Settings?.Game.TrackSkip ?? false;
+        AutoTrackSkipOption _autoTrackSkipOption = MajEnv.Settings?.Game.AutoTrackSkip ?? AutoTrackSkipOption.Disabled;
         bool _isFastRetryAvailable = MajEnv.Settings?.Game.FastRetry ?? false;
         float? _allNotesFinishedTiming = null;
         float _2367PressTime = 0;
@@ -976,6 +977,7 @@ namespace MajdataPlay.Scenes.Game
                         _noteAudioManager.OnLateUpdate();
                         _noteManager.OnLateUpdate();
                         _objectCounter.OnLateUpdate();
+                        AutoTrackSkipUpdate();
                         break;
                 }
                 _noteEffectPool.OnLateUpdate();
@@ -1190,6 +1192,64 @@ namespace MajdataPlay.Scenes.Game
                     return;
                 }
             } 
+        }
+        void AutoTrackSkipUpdate()
+        {
+            if (State != GamePlayStatus.Running && State != GamePlayStatus.Blocking)
+            {
+                return;
+            }
+            if (_autoTrackSkipOption == AutoTrackSkipOption.Disabled)
+            {
+                return;
+            }
+            if (MajEnv.Mode != RunningMode.Play || _gameInfo.IsDanMode || IsPracticeMode || IsAutoplay)
+            {
+                return;
+            }
+
+            var maxAchievement = _objectCounter.CalculateFinalResult();
+            switch (_autoTrackSkipOption)
+            {
+                case AutoTrackSkipOption.S:
+                    if (maxAchievement < 97f)
+                    {
+                        ReturnTo().Forget();
+                    }
+                    break;
+                case AutoTrackSkipOption.SS:
+                    if (maxAchievement < 99f)
+                    {
+                        ReturnTo().Forget();
+                    }
+                    break;
+                case AutoTrackSkipOption.SSS:
+                    if (maxAchievement < 100f)
+                    {
+                        ReturnTo().Forget();
+                    }
+                    break;
+                case AutoTrackSkipOption.SSSPlus:
+                    if (maxAchievement < 100.5f)
+                    {
+                        ReturnTo().Forget();
+                    }
+                    break;
+                case AutoTrackSkipOption.Best:
+                    if ((HistoryScore?.PlayCount ?? 0) == 0)
+                    {
+                        return;
+                    }
+                    if (maxAchievement < HistoryScore!.Acc.DX)
+                    {
+                        ReturnTo().Forget();
+                    }
+                    break;
+                case AutoTrackSkipOption.Disabled:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
         void AudioTimeUpdate()
         {
