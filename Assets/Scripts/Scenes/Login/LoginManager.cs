@@ -125,7 +125,9 @@ namespace MajdataPlay.Scenes.Login
             {
                 return;
             }
+#if UNITY_STANDALONE_OSX
             LegacyInputFieldHelper.HandleMacOSKeyboardEvent(_eventSystem, Event.current, _usernameInput, _passwordInput);
+#endif
         }
 
         async UniTaskVoid LoginProcessor()

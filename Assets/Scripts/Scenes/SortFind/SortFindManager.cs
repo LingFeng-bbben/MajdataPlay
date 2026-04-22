@@ -93,7 +93,9 @@ namespace MajdataPlay.Scenes.SortFind
 
         void OnGUI()
         {
+#if UNITY_STANDALONE_OSX
             LegacyInputFieldHelper.HandleMacOSKeyboardEvent(_eventSystem, Event.current, _searchBar);
+#endif
         }
 
         void SetActiveSort(SortType sortType)
