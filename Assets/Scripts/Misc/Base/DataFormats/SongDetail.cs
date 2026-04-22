@@ -48,6 +48,23 @@ namespace MajdataPlay
         readonly string _coverPath = string.Empty;
 
         static readonly Action _emptyCallback = () => { };
+        static readonly string[] _trackFilePriority =
+#if UNITY_OPENHARMONY
+        {
+            "track.mp3",
+            "track.ogg",
+            "track.aac",
+            "track.wav"
+        };
+#else
+        {
+            "track.opus",
+            "track.mp3",
+            "track.ogg",
+            "track.aac",
+            "track.wav"
+        };
+#endif
         bool _isPreloaded = false;
         bool _isDisposed = false;
 
@@ -71,6 +88,18 @@ namespace MajdataPlay
         {
             Dispose(false);
         }
+        internal static FileInfo? ResolveTrackFile(FileInfo[] files)
+        {
+            foreach (var fileName in _trackFilePriority)
+            {
+                var trackFile = files.FirstOrDefault(o => string.Equals(o.Name, fileName, StringComparison.OrdinalIgnoreCase));
+                if (trackFile is not null)
+                {
+                    return trackFile;
+                }
+            }
+            return null;
+        }
         public SongDetail(string chartFolder, SimaiMetadata metadata)
         {
             var files = new DirectoryInfo(chartFolder).GetFiles();
@@ -82,7 +111,7 @@ namespace MajdataPlay
             };
 
             _maidataPath = Path.Combine(chartFolder, "maidata.txt");
-            _trackPath = files.FirstOrDefault(o => o.Name.ToLower() is "track.opus" or "track.mp3" or "track.ogg" or "track.aac" or "track.wav").FullName;
+            _trackPath = ResolveTrackFile(files)?.FullName ?? string.Empty;
             _videoPath = files.FirstOrDefault(o =>
             {
                 var thisFilename = o.Name.ToLower();

@@ -207,7 +207,9 @@ namespace MajdataPlay.Settings
     
     public class SoundOptions
     {
-#if UNITY_IOS || UNITY_ANDROID
+#if UNITY_OPENHARMONY
+        readonly static SoundBackendOption DEFAULT_SOUND_BACKEND = SoundBackendOption.Unity;
+#elif UNITY_IOS || UNITY_ANDROID
         readonly static SoundBackendOption DEFAULT_SOUND_BACKEND = SoundBackendOption.BassSimple;
 #else
         readonly static SoundBackendOption DEFAULT_SOUND_BACKEND = SoundBackendOption.Wasapi;
@@ -216,7 +218,7 @@ namespace MajdataPlay.Settings
         public bool ForceMono { get; set; } = false;
         
         public SFXVolume Volume { get; set; } = new();
-#if !(UNITY_ANDROID || UNITY_IOS)
+#if !(UNITY_ANDROID || UNITY_IOS ||UNITY_OPENHARMONY)
         
         public WasapiOptions Wasapi { get; set; } = new();
         

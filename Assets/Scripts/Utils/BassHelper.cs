@@ -1,3 +1,4 @@
+#if !UNITY_OPENHARMONY
 using MajdataPlay.IO;
 using ManagedBass;
 using ManagedBass.Aac;
@@ -82,3 +83,4 @@ namespace MajdataPlay.Utils
         }
     }
 }
+#endif

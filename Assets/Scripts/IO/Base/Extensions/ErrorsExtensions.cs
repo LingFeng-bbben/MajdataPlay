@@ -1,4 +1,5 @@
-﻿using ManagedBass;
+﻿#if !UNITY_OPENHARMONY
+using ManagedBass;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,3 +19,4 @@ namespace MajdataPlay.IO
         }
     }
 }
+#endif

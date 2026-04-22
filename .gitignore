@@ -95,3 +95,10 @@ out.log
 /ChartSetting.db
 /android-publish.keystore
 *.slnx
+
+# tuanjie engine
+
+Il2CppBackup
+*.hap
+*.app
+MajdataPlay_BurstDebugInformation_DoNotShip/*

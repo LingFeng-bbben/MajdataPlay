@@ -515,10 +515,17 @@ namespace MajdataPlay
                 MajDebug.LogDebug($"[MaiChart Scanner][{thisDir.Name}]Enter folder: {songDir.Name}");
                 var files = songDir.GetFiles();
                 var maidataFile = files.FirstOrDefault(o => o.Name.ToLower() is "maidata.txt");
-                var trackFile = files.FirstOrDefault(o => o.Name.ToLower() is "track.opus" or "track.mp3" or "track.ogg" or "track.aac" or "track.wav");
+                var trackFile = SongDetail.ResolveTrackFile(files);
 
                 if (maidataFile is null || trackFile is null)
                 {
+#if UNITY_OPENHARMONY
+                    if (trackFile is null && files.Any(o => string.Equals(o.Name, "track.opus", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        MajDebug.LogError($"[MaiChart Scanner][{thisDir.Name}/{songDir.Name}] .opus audio format is not supported on OpenHarmony. Please use track.mp3, track.ogg, track.aac, or track.wav.");
+                    }
+                    else
+#endif
                     MajDebug.LogDebug($"[MaiChart Scanner][{thisDir.Name}/{songDir.Name}]No maidata or track files found, ignored.");
                     continue;
                 }
