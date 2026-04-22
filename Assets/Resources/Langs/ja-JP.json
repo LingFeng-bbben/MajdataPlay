@@ -244,7 +244,7 @@
     "MAJTEXT_LOGIN_CONNECT_TIMEOUT": "接続タイムアウト",
     "MAJTEXT_LOGIN_CONNECT_UNREACHABLE": "サーバーに接続できません",
     "MAJTEXT_LOGIN_DOWNLOADING_AVATAR": "アバターをダウンロード中...",
-    "MAJTEXT_LOGIN_DOWNLOADING_AVATAR_FAILED": "アバターのダウンロードに失敗しました",
+    "MAJTEXT_LOGIN_DOWNLOAD_AVATAR_FAILED_RETRIED_TIMES_{0}/{1}": "アバターのダウンロードに失敗しました, 再試行中 {0}/{1}",
     "MAJTEXT_LOGIN_LOGIN_FAILED": "ログインに失敗しました",
     "MAJTEXT_LOGIN_LOGIN_SUCCESS": "ログイン成功, ユーザーデータを取得中...",
     "MAJTEXT_LOGIN_SESSION_EXPIRED": "ログインセッションの有効期限が切れました",

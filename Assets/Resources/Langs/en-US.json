@@ -222,7 +222,7 @@
     "MAJTEXT_LOGIN_CONNECT_TIMEOUT": "Connection Timeout",
     "MAJTEXT_LOGIN_CONNECT_UNREACHABLE": "Unable to Connect to Server",
     "MAJTEXT_LOGIN_DOWNLOADING_AVATAR": "Downloading Avatar...",
-    "MAJTEXT_LOGIN_DOWNLOADING_AVATAR_FAILED": "Failed to Download Avatar",
+    "MAJTEXT_LOGIN_DOWNLOAD_AVATAR_FAILED_RETRIED_TIMES_{0}/{1}": "Failed to Download Avatar, Retrying {0}/{1}",
     "MAJTEXT_LOGIN_LOGIN_FAILED": "Login Failed",
     "MAJTEXT_LOGIN_LOGIN_SUCCESS": "Login successful, fetching user data...",
     "MAJTEXT_LOGIN_SESSION_EXPIRED": "Login session expired",
