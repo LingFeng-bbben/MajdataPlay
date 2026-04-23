@@ -155,6 +155,10 @@ namespace MajdataPlay
                 MoveCharts();
                 MoveSkins();
             }
+            else
+            {
+                SyncMissingAssets();
+            }
 #endif
 #if UNITY_STANDALONE
             DiscordManager.Init();
@@ -502,18 +506,35 @@ namespace MajdataPlay
 #endregion
         
         #region Asset Extraction
+        private static string[] GetStreamingAssetRelativePaths(bool ignoreMaiCharts)
+        {
+            var paths = Resources.Load<TextAsset>("StreamingAssetPaths");
+            if (paths == null)
+            {
+                MajDebug.LogError("StreamingAssetPaths not found in Resources.");
+                return Array.Empty<string>();
+            }
+
+            return paths.text
+                        .Replace("\\", "/")
+                        .Split('\n')
+                        .Select(x => x.Trim())
+                        .Where(x => x.Length != 0)
+                        .Where(x => !ignoreMaiCharts || !x.StartsWith("MaiCharts/", StringComparison.OrdinalIgnoreCase))
+                        .ToArray();
+        }
         private static void ExtractAssets()
         {
+            var relativePaths = GetStreamingAssetRelativePaths(ignoreMaiCharts: false);
+            if (relativePaths.Length == 0)
+            {
+                return;
+            }
 #if UNITY_IOS
             var extractRoot = Path.Combine(MajEnv.RootPath, "ExtStreamingAssets/");
             Directory.CreateDirectory(extractRoot);
-            var paths = Resources.Load<TextAsset>("StreamingAssetPaths");
-            var fs = paths.text;
-            MajDebug.LogInfo(fs);
-            string[] fLines = fs.Replace("\\", "/").Split("\n");
-            foreach (var rawLine in fLines)
+            foreach (var line in relativePaths)
             {
-                var line = rawLine.Trim();
                 var srcPath = Path.Combine(Application.streamingAssetsPath, line);
                 var dstPath = Path.Combine(extractRoot, line);
                 var dstDir = Path.GetDirectoryName(dstPath);
@@ -539,25 +560,8 @@ namespace MajdataPlay
 #elif UNITY_ANDROID
             var extractRoot = Path.Combine(MajEnv.RootPath, "ExtStreamingAssets");
             Directory.CreateDirectory(extractRoot);
-
-            var paths = Resources.Load<TextAsset>("StreamingAssetPaths");
-            if (paths == null)
+            foreach (var line in relativePaths)
             {
-                MajDebug.LogError("StreamingAssetPaths not found in Resources.");
-                return;
-            }
-
-            var fs = paths.text;
-            MajDebug.LogInfo(fs);
-
-            string[] fLines = fs.Replace("\\", "/").Split('\n');
-
-            foreach (var rawLine in fLines)
-            {
-                var line = rawLine.Trim();
-                if (line.Length == 0)
-                    continue;
-
                 var srcUrl = Path.Combine(Application.streamingAssetsPath, line).Replace("\\", "/");
 
                 var dstPath = Path.Combine(extractRoot, line);
@@ -595,6 +599,95 @@ namespace MajdataPlay
                 catch (Exception e)
                 {
                     MajDebug.LogError($"Extract failed(Android): {line}\nsrc={srcUrl}\n{e}");
+                }
+            }
+#endif
+        }
+        private static void SyncMissingAssets()
+        {
+            var relativePaths = GetStreamingAssetRelativePaths(ignoreMaiCharts: true);
+            if (relativePaths.Length == 0)
+            {
+                return;
+            }
+#if UNITY_IOS
+            var extractRoot = Path.Combine(MajEnv.RootPath, "ExtStreamingAssets/");
+            Directory.CreateDirectory(extractRoot);
+            foreach (var line in relativePaths)
+            {
+                var dstPath = Path.Combine(extractRoot, line);
+                if (File.Exists(dstPath))
+                {
+                    continue;
+                }
+
+                var srcPath = Path.Combine(Application.streamingAssetsPath, line);
+                var dstDir = Path.GetDirectoryName(dstPath);
+                if (!string.IsNullOrEmpty(dstDir)) Directory.CreateDirectory(dstDir);
+                MajDebug.LogInfo($"Sync missing(iOS): {srcPath} -> {dstPath}");
+
+                try
+                {
+                    var data = File.ReadAllBytes(srcPath);
+                    if (data.Length == 0)
+                    {
+                        MajDebug.LogError($"Sync missing failed(iOS): empty data: {line}\nsrc={srcPath}");
+                        continue;
+                    }
+
+                    File.WriteAllBytes(dstPath, data);
+                }
+                catch (Exception e)
+                {
+                    MajDebug.LogError($"Sync missing failed(iOS): {line}\nsrc={srcPath}\n{e}");
+                }
+            }
+#elif UNITY_ANDROID
+            var extractRoot = Path.Combine(MajEnv.RootPath, "ExtStreamingAssets");
+            Directory.CreateDirectory(extractRoot);
+            foreach (var line in relativePaths)
+            {
+                var dstPath = Path.Combine(extractRoot, line);
+                if (File.Exists(dstPath))
+                {
+                    continue;
+                }
+
+                var srcUrl = Path.Combine(Application.streamingAssetsPath, line).Replace("\\", "/");
+                var dstDir = Path.GetDirectoryName(dstPath);
+                if (!string.IsNullOrEmpty(dstDir))
+                    Directory.CreateDirectory(dstDir);
+
+                MajDebug.LogInfo($"Sync missing(Android): {srcUrl} -> {dstPath}");
+
+                try
+                {
+                    using var req = UnityWebRequest.Get(srcUrl);
+                    req.downloadHandler = new DownloadHandlerBuffer();
+                    var op = req.SendWebRequest();
+                    while (!op.isDone)
+                    {
+                        System.Threading.Thread.Sleep(1);
+                    }
+
+                    if (req.result != UnityWebRequest.Result.Success)
+                    {
+                        MajDebug.LogError($"Sync missing failed(Android): {line}\nsrc={srcUrl}\nerr={req.error}");
+                        continue;
+                    }
+
+                    var data = req.downloadHandler.data;
+                    if (data == null || data.Length == 0)
+                    {
+                        MajDebug.LogError($"Sync missing failed(Android): empty data: {line}\nsrc={srcUrl}");
+                        continue;
+                    }
+
+                    File.WriteAllBytes(dstPath, data);
+                }
+                catch (Exception e)
+                {
+                    MajDebug.LogError($"Sync missing failed(Android): {line}\nsrc={srcUrl}\n{e}");
                 }
             }
 #endif
