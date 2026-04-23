@@ -13,7 +13,7 @@ namespace MajdataPlay
     internal static class MajInstances
     {
 #if UNITY_EDITOR || DEBUG
-        public static SemVersion GameVersion { get; } = SemVersion.Parse("0.1.0", SemVersionStyles.Strict);
+        public static SemVersion GameVersion { get; } = SemVersion.Parse("0.1.51", SemVersionStyles.Strict);
 #else
         public static SemVersion GameVersion { get; } = SemVersion.Parse(Application.version,SemVersionStyles.Strict);
 #endif
