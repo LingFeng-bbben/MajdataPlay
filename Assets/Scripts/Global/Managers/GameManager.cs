@@ -158,6 +158,7 @@ namespace MajdataPlay
             else
             {
                 SyncMissingAssets();
+                RestoreManagedAssetsIfMissing();
             }
 #endif
 #if UNITY_STANDALONE
@@ -690,6 +691,112 @@ namespace MajdataPlay
                 catch (Exception e)
                 {
                     MajDebug.LogError($"Sync missing failed(Android): {line}\nsrc={srcUrl}\n{e}");
+                }
+            }
+#endif
+        }
+        private static void RestoreManagedAssetsIfMissing()
+        {
+            var chartRootMissing = !Directory.EnumerateFileSystemEntries(MajEnv.ChartPath).Any();
+            var skinRootMissing = !Directory.EnumerateFileSystemEntries(MajEnv.SkinPath).Any();
+            if (!chartRootMissing && !skinRootMissing)
+            {
+                return;
+            }
+
+            var relativePaths = GetStreamingAssetRelativePaths(ignoreRootManagedAssets: false);
+            if (relativePaths.Length == 0)
+            {
+                return;
+            }
+
+            if (chartRootMissing)
+            {
+                RestoreManagedAssetGroup("MaiCharts/", MajEnv.ChartPath, relativePaths);
+            }
+
+            if (skinRootMissing)
+            {
+                RestoreManagedAssetGroup("Skins/", MajEnv.SkinPath, relativePaths);
+            }
+        }
+        private static void RestoreManagedAssetGroup(string sourcePrefix, string destinationRoot, IReadOnlyList<string> relativePaths)
+        {
+            var targetPaths = relativePaths.Where(x => x.StartsWith(sourcePrefix, StringComparison.OrdinalIgnoreCase))
+                                           .ToArray();
+            if (targetPaths.Length == 0)
+            {
+                return;
+            }
+
+            Directory.CreateDirectory(destinationRoot);
+
+#if UNITY_IOS
+            foreach (var line in targetPaths)
+            {
+                var relativePath = line.Substring(sourcePrefix.Length);
+                var srcPath = Path.Combine(Application.streamingAssetsPath, line);
+                var dstPath = Path.Combine(destinationRoot, relativePath);
+                var dstDir = Path.GetDirectoryName(dstPath);
+                if (!string.IsNullOrEmpty(dstDir)) Directory.CreateDirectory(dstDir);
+                MajDebug.LogInfo($"Restore managed asset(iOS): {srcPath} -> {dstPath}");
+
+                try
+                {
+                    var data = File.ReadAllBytes(srcPath);
+                    if (data.Length == 0)
+                    {
+                        MajDebug.LogError($"Restore managed asset failed(iOS): empty data: {line}\nsrc={srcPath}");
+                        continue;
+                    }
+
+                    File.WriteAllBytes(dstPath, data);
+                }
+                catch (Exception e)
+                {
+                    MajDebug.LogError($"Restore managed asset failed(iOS): {line}\nsrc={srcPath}\n{e}");
+                }
+            }
+#elif UNITY_ANDROID
+            foreach (var line in targetPaths)
+            {
+                var relativePath = line.Substring(sourcePrefix.Length);
+                var srcUrl = Path.Combine(Application.streamingAssetsPath, line).Replace("\\", "/");
+                var dstPath = Path.Combine(destinationRoot, relativePath);
+                var dstDir = Path.GetDirectoryName(dstPath);
+                if (!string.IsNullOrEmpty(dstDir))
+                    Directory.CreateDirectory(dstDir);
+
+                MajDebug.LogInfo($"Restore managed asset(Android): {srcUrl} -> {dstPath}");
+
+                try
+                {
+                    using var req = UnityWebRequest.Get(srcUrl);
+                    req.downloadHandler = new DownloadHandlerBuffer();
+                    var op = req.SendWebRequest();
+                    while (!op.isDone)
+                    {
+                        System.Threading.Thread.Sleep(1);
+                    }
+
+                    if (req.result != UnityWebRequest.Result.Success)
+                    {
+                        MajDebug.LogError($"Restore managed asset failed(Android): {line}\nsrc={srcUrl}\nerr={req.error}");
+                        continue;
+                    }
+
+                    var data = req.downloadHandler.data;
+                    if (data == null || data.Length == 0)
+                    {
+                        MajDebug.LogError($"Restore managed asset failed(Android): empty data: {line}\nsrc={srcUrl}");
+                        continue;
+                    }
+
+                    File.WriteAllBytes(dstPath, data);
+                }
+                catch (Exception e)
+                {
+                    MajDebug.LogError($"Restore managed asset failed(Android): {line}\nsrc={srcUrl}\n{e}");
                 }
             }
 #endif
