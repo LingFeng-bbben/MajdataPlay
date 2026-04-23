@@ -506,7 +506,7 @@ namespace MajdataPlay
 #endregion
         
         #region Asset Extraction
-        private static string[] GetStreamingAssetRelativePaths(bool ignoreMaiCharts)
+        private static string[] GetStreamingAssetRelativePaths(bool ignoreRootManagedAssets)
         {
             var paths = Resources.Load<TextAsset>("StreamingAssetPaths");
             if (paths == null)
@@ -520,12 +520,14 @@ namespace MajdataPlay
                         .Split('\n')
                         .Select(x => x.Trim())
                         .Where(x => x.Length != 0)
-                        .Where(x => !ignoreMaiCharts || !x.StartsWith("MaiCharts/", StringComparison.OrdinalIgnoreCase))
+                        .Where(x => !ignoreRootManagedAssets ||
+                                    (!x.StartsWith("MaiCharts/", StringComparison.OrdinalIgnoreCase) &&
+                                     !x.StartsWith("Skins/", StringComparison.OrdinalIgnoreCase)))
                         .ToArray();
         }
         private static void ExtractAssets()
         {
-            var relativePaths = GetStreamingAssetRelativePaths(ignoreMaiCharts: false);
+            var relativePaths = GetStreamingAssetRelativePaths(ignoreRootManagedAssets: false);
             if (relativePaths.Length == 0)
             {
                 return;
@@ -605,7 +607,7 @@ namespace MajdataPlay
         }
         private static void SyncMissingAssets()
         {
-            var relativePaths = GetStreamingAssetRelativePaths(ignoreMaiCharts: true);
+            var relativePaths = GetStreamingAssetRelativePaths(ignoreRootManagedAssets: true);
             if (relativePaths.Length == 0)
             {
                 return;
