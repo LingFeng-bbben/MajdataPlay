@@ -1165,7 +1165,7 @@ namespace MajdataPlay.Scenes.Game
                         }
                         else
                         {
-                            ReturnTo().Forget();
+                            TrackSkipTo(delayMiliseconds: 5000).Forget();
                         }
                     }
                     else if (_2367PressTime >= 0.5f && _isTrackSkipAvailable)
