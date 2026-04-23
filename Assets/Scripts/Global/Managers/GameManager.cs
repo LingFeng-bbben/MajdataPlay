@@ -160,6 +160,8 @@ namespace MajdataPlay
                 SyncMissingAssets();
                 RestoreManagedAssetsIfMissing();
             }
+#elif UNITY_STANDALONE_WIN && !UNITY_EDITOR
+            RestoreManagedAssetsIfMissing();
 #endif
 #if UNITY_STANDALONE
             DiscordManager.Init();
@@ -797,6 +799,34 @@ namespace MajdataPlay
                 catch (Exception e)
                 {
                     MajDebug.LogError($"Restore managed asset failed(Android): {line}\nsrc={srcUrl}\n{e}");
+                }
+            }
+#elif UNITY_STANDALONE_WIN
+            foreach (var line in targetPaths)
+            {
+                var relativePath = line.Substring(sourcePrefix.Length);
+                var srcPath = Path.Combine(Application.streamingAssetsPath, line);
+                var dstPath = Path.Combine(destinationRoot, relativePath);
+                var dstDir = Path.GetDirectoryName(dstPath);
+                if (!string.IsNullOrEmpty(dstDir))
+                    Directory.CreateDirectory(dstDir);
+
+                MajDebug.LogInfo($"Restore managed asset(Windows): {srcPath} -> {dstPath}");
+
+                try
+                {
+                    var data = File.ReadAllBytes(srcPath);
+                    if (data.Length == 0)
+                    {
+                        MajDebug.LogError($"Restore managed asset failed(Windows): empty data: {line}\nsrc={srcPath}");
+                        continue;
+                    }
+
+                    File.WriteAllBytes(dstPath, data);
+                }
+                catch (Exception e)
+                {
+                    MajDebug.LogError($"Restore managed asset failed(Windows): {line}\nsrc={srcPath}\n{e}");
                 }
             }
 #endif
