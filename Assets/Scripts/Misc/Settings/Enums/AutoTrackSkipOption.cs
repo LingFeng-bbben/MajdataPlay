@@ -10,6 +10,8 @@ namespace MajdataPlay.Settings
         SS,
         SSS,
         SSSPlus,
-        Best
+        Best,
+        FC,
+        AP
     }
 }

@@ -484,6 +484,15 @@ namespace MajdataPlay.Scenes.Game
                 NoteJudgeDiffs = _noteJudgeDiffList.ToArray()
             };
         }
+        internal UnpackJudgeInfo GetCurrentTotalJudgeInfo()
+        {
+            for (var i = 0; i < 15; i++)
+            {
+                _dictTotalJudgedCount[(JudgeGrade)i] = _totalJudgedCount[i];
+            }
+
+            return JudgeDetail.UnpackJudgeRecord(new JudgeInfo(_dictTotalJudgedCount));
+        }
 
         private void UpdateOutput()
         {

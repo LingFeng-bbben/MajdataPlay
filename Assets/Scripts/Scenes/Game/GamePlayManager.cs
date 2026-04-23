@@ -1248,6 +1248,18 @@ namespace MajdataPlay.Scenes.Game
                         TrackSkipTo(delayMiliseconds: 5000).Forget();
                     }
                     break;
+                case AutoTrackSkipOption.FC:
+                    if (HasLostFCRequirement())
+                    {
+                        TrackSkipTo(delayMiliseconds: 5000).Forget();
+                    }
+                    break;
+                case AutoTrackSkipOption.AP:
+                    if (HasLostAPRequirement())
+                    {
+                        TrackSkipTo(delayMiliseconds: 5000).Forget();
+                    }
+                    break;
                 case AutoTrackSkipOption.Disabled:
                     break;
                 default:
@@ -1310,11 +1322,33 @@ namespace MajdataPlay.Scenes.Game
                         FastRetry().Forget();
                     }
                     break;
+                case AutoQuickRetryOption.FC:
+                    if (HasLostFCRequirement())
+                    {
+                        FastRetry().Forget();
+                    }
+                    break;
+                case AutoQuickRetryOption.AP:
+                    if (HasLostAPRequirement())
+                    {
+                        FastRetry().Forget();
+                    }
+                    break;
                 case AutoQuickRetryOption.Disabled:
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+        bool HasLostFCRequirement()
+        {
+            var judgeInfo = _objectCounter.GetCurrentTotalJudgeInfo();
+            return judgeInfo.Miss != 0;
+        }
+        bool HasLostAPRequirement()
+        {
+            var judgeInfo = _objectCounter.GetCurrentTotalJudgeInfo();
+            return judgeInfo.Great != 0 || judgeInfo.Good != 0 || judgeInfo.Miss != 0;
         }
         void AudioTimeUpdate()
         {
