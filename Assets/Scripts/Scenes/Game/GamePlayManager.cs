@@ -117,6 +117,7 @@ namespace MajdataPlay.Scenes.Game
 
         bool _isTrackSkipAvailable = MajEnv.Settings?.Game.TrackSkip ?? false;
         AutoTrackSkipOption _autoTrackSkipOption = MajEnv.Settings?.Game.AutoTrackSkip ?? AutoTrackSkipOption.Disabled;
+        AutoQuickRetryOption _autoQuickRetryOption = MajEnv.Settings?.Game.AutoQuickRetry ?? AutoQuickRetryOption.Disabled;
         bool _isFastRetryAvailable = MajEnv.Settings?.Game.FastRetry ?? false;
         float? _allNotesFinishedTiming = null;
         float _2367PressTime = 0;
@@ -978,6 +979,7 @@ namespace MajdataPlay.Scenes.Game
                         _noteManager.OnLateUpdate();
                         _objectCounter.OnLateUpdate();
                         AutoTrackSkipUpdate();
+                        AutoQuickRetryUpdate();
                         break;
                 }
                 _noteEffectPool.OnLateUpdate();
@@ -1246,6 +1248,68 @@ namespace MajdataPlay.Scenes.Game
                     }
                     break;
                 case AutoTrackSkipOption.Disabled:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+        void AutoQuickRetryUpdate()
+        {
+            if (State != GamePlayStatus.Running && State != GamePlayStatus.Blocking)
+            {
+                return;
+            }
+            if (_autoQuickRetryOption == AutoQuickRetryOption.Disabled)
+            {
+                return;
+            }
+            if (_autoTrackSkipOption != AutoTrackSkipOption.Disabled)
+            {
+                return;
+            }
+            if (MajEnv.Mode != RunningMode.Play || _gameInfo.IsDanMode || IsPracticeMode || IsAutoplay)
+            {
+                return;
+            }
+
+            var maxAchievement = _objectCounter.CalculateFinalResult();
+            switch (_autoQuickRetryOption)
+            {
+                case AutoQuickRetryOption.S:
+                    if (maxAchievement < 97f)
+                    {
+                        FastRetry().Forget();
+                    }
+                    break;
+                case AutoQuickRetryOption.SS:
+                    if (maxAchievement < 99f)
+                    {
+                        FastRetry().Forget();
+                    }
+                    break;
+                case AutoQuickRetryOption.SSS:
+                    if (maxAchievement < 100f)
+                    {
+                        FastRetry().Forget();
+                    }
+                    break;
+                case AutoQuickRetryOption.SSSPlus:
+                    if (maxAchievement < 100.5f)
+                    {
+                        FastRetry().Forget();
+                    }
+                    break;
+                case AutoQuickRetryOption.Best:
+                    if ((HistoryScore?.PlayCount ?? 0) == 0)
+                    {
+                        return;
+                    }
+                    if (maxAchievement < HistoryScore!.Acc.DX)
+                    {
+                        FastRetry().Forget();
+                    }
+                    break;
+                case AutoQuickRetryOption.Disabled:
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

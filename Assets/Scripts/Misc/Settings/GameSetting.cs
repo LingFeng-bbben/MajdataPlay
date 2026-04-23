@@ -60,6 +60,8 @@ namespace MajdataPlay.Settings
         
         public bool FastRetry { get; set; } = true;
         
+        public AutoQuickRetryOption AutoQuickRetry { get; set; } = AutoQuickRetryOption.Disabled;
+        
         public MirrorOption Mirror { get; set; } = MirrorOption.Off;
         
         [Step("1")]
