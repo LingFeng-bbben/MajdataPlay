@@ -85,6 +85,7 @@ namespace MajdataPlay.Scenes.Game
 
         public GameObject AllPerfectAnimation;
         public GameObject FullComboAnimation;
+        public GameObject TrackSkipAnimation;
 
 
         [SerializeField]
@@ -1174,11 +1175,11 @@ namespace MajdataPlay.Scenes.Game
                             var info = new GameInfo(GameMode.Practice, _gameInfo.Charts, _gameInfo.Levels, 114514);
                             info.TimeRange = _gameInfo.TimeRange;
                             Majdata<GameInfo>.Instance = info;
-                            ReturnTo("Practice").Forget();
+                            TrackSkipTo("Practice", 2000).Forget();
                         }
                         else
                         {
-                            ReturnTo().Forget();
+                            TrackSkipTo(delayMiliseconds: 5000).Forget();
                         }
                     }
                     else if (_3456PressTime >= 0.5f && _isFastRetryAvailable)
@@ -1216,25 +1217,25 @@ namespace MajdataPlay.Scenes.Game
                 case AutoTrackSkipOption.S:
                     if (maxAchievement < 97f)
                     {
-                        ReturnTo().Forget();
+                        TrackSkipTo(delayMiliseconds: 5000).Forget();
                     }
                     break;
                 case AutoTrackSkipOption.SS:
                     if (maxAchievement < 99f)
                     {
-                        ReturnTo().Forget();
+                        TrackSkipTo(delayMiliseconds: 5000).Forget();
                     }
                     break;
                 case AutoTrackSkipOption.SSS:
                     if (maxAchievement < 100f)
                     {
-                        ReturnTo().Forget();
+                        TrackSkipTo(delayMiliseconds: 5000).Forget();
                     }
                     break;
                 case AutoTrackSkipOption.SSSPlus:
                     if (maxAchievement < 100.5f)
                     {
-                        ReturnTo().Forget();
+                        TrackSkipTo(delayMiliseconds: 5000).Forget();
                     }
                     break;
                 case AutoTrackSkipOption.Best:
@@ -1244,7 +1245,7 @@ namespace MajdataPlay.Scenes.Game
                     }
                     if (maxAchievement < HistoryScore!.Acc.DX)
                     {
-                        ReturnTo().Forget();
+                        TrackSkipTo(delayMiliseconds: 5000).Forget();
                     }
                     break;
                 case AutoTrackSkipOption.Disabled:
@@ -1417,6 +1418,16 @@ namespace MajdataPlay.Scenes.Game
                     break;
             }
         }
+        void PlayTrackSkipEffect()
+        {
+            if (TrackSkipAnimation is null)
+            {
+                return;
+            }
+
+            TrackSkipAnimation.SetActive(true);
+            MajInstances.AudioManager.PlaySFX("GameOver.wav");
+        }
         async UniTaskVoid NextRound4Practice(int delayMiliseconds = 100)
         {
             if (State == GamePlayStatus.Ended)
@@ -1468,30 +1479,32 @@ namespace MajdataPlay.Scenes.Game
 
         public void GameOver()
         {
-            //TODO: Play GameOver Animation
-            CalculateScore(playEffect:false);
+            if (State == GamePlayStatus.Ended)
+                return;
 
-            EndGame(targetScene: "TotalResult").Forget();
+            CalculateScore(playEffect:false);
+            _cts.Cancel();
+            _audioSample?.Stop();
+            PlayTrackSkipEffect();
+            EndGame(5000, targetScene: "TotalResult").Forget();
         }
 
         async UniTaskVoid ReturnTo(string sceneName = "List")
         {
             State = GamePlayStatus.Ended;
-            var sceneSwitcher = MajInstances.SceneSwitcher;
-            await sceneSwitcher.FadeInAsync();
-            await UniTask.Delay(500);
             _audioSample?.Stop();
-            ClearAllResources();
-            await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
-            
-            var wait4Recorder = RecordHelper.StopRecordAsync();
-            while (!wait4Recorder.IsCompleted)
-            {
-                _sceneSwitcher.SetLoadingText($"{"Waiting for recorder".i18n()}...");
-                await UniTask.Yield();
-            }
-            _sceneSwitcher.SetLoadingText(string.Empty);
-            sceneSwitcher.SwitchScene(sceneName, false);
+            await ExitToScene(sceneName, 500, false);
+        }
+        async UniTaskVoid TrackSkipTo(string sceneName = "List", int delayMiliseconds = 5000)
+        {
+            if (State == GamePlayStatus.Ended)
+                return;
+
+            State = GamePlayStatus.Ended;
+            _cts.Cancel();
+            _audioSample?.Stop();
+            PlayTrackSkipEffect();
+            await ExitToScene(sceneName, delayMiliseconds, true);
         }
         public async UniTaskVoid EndGame(int delayMiliseconds = 100,string targetScene = "Result")
         {
@@ -1505,6 +1518,30 @@ namespace MajdataPlay.Scenes.Game
             await UniTask.DelayFrame(5);
             
             MajInstances.SceneSwitcher.SwitchScene(targetScene);
+        }
+        async UniTask ExitToScene(string sceneName, int delayMiliseconds = 0, bool delayBeforeFade = false)
+        {
+            var sceneSwitcher = MajInstances.SceneSwitcher;
+            if (delayBeforeFade && delayMiliseconds > 0)
+            {
+                await UniTask.Delay(delayMiliseconds);
+            }
+            await sceneSwitcher.FadeInAsync();
+            if (!delayBeforeFade && delayMiliseconds > 0)
+            {
+                await UniTask.Delay(delayMiliseconds);
+            }
+            ClearAllResources();
+            await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+
+            var wait4Recorder = RecordHelper.StopRecordAsync();
+            while (!wait4Recorder.IsCompleted)
+            {
+                _sceneSwitcher.SetLoadingText($"{"Waiting for recorder".i18n()}...");
+                await UniTask.Yield();
+            }
+            _sceneSwitcher.SetLoadingText(string.Empty);
+            sceneSwitcher.SwitchScene(sceneName, false);
         }
 
         #endregion
