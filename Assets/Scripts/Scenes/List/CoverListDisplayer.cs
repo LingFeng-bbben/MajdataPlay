@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Buffers;
 using MajdataPlay.Collections;
+using MajdataPlay.IO;
 using MajdataPlay.Scenes.Game;
 using MajdataPlay.Settings.Runtime;
 using MajdataPlay.Utils;
@@ -462,7 +463,7 @@ namespace MajdataPlay.Scenes.List
                 var songScore = ScoreManager.GetScore(songinfo, _listConfig.SelectedDiff);
                 CoverBigDisplayer.SetMeta(songinfo.Title, songinfo.Artist, songinfo.Designers[selectedDifficulty], songinfo.Levels[selectedDifficulty]);
                 CoverBigDisplayer.SetScore(songScore);
-                ListManager.AllBackgroundTasks.Add(chartAnalyzer.AnalyzeAndDrawGraphAsync(songinfo, (ChartLevel)selectedDifficulty));
+                ListManager.AllBackgroundTasks.Add(AnalyzeAndUpdateBpmLedAsync(songinfo, (ChartLevel)selectedDifficulty));
                 FavoriteAdder.SetSong(songinfo);
                 ListManager.AllBackgroundTasks.Add(RankingDisplayer.SetSongScoreRanking(songinfo, (ChartLevel)selectedDifficulty));
                 var allocatedSongCoverDisplayer = _allocatedSongCoverDisplayer.Span;
@@ -565,7 +566,7 @@ namespace MajdataPlay.Scenes.List
                     CoverBigDisplayer.SetScore(songScore);
                     SubInfoDisplayer.RefreshContentAsync(songInfo).Forget();
                     _previewSoundPlayer.PlayPreviewSound(songInfo);
-                    ListManager.AllBackgroundTasks.Add(chartAnalyzer.AnalyzeAndDrawGraphAsync(songInfo, (ChartLevel)selectedDifficulty));
+                    ListManager.AllBackgroundTasks.Add(AnalyzeAndUpdateBpmLedAsync(songInfo, (ChartLevel)selectedDifficulty));
                     FavoriteAdder.SetSong(songInfo);
                     ListManager.AllBackgroundTasks.Add(RankingDisplayer.SetSongScoreRanking(songInfo, (ChartLevel)selectedDifficulty));
                     SetCursor(songInfo);
@@ -753,6 +754,24 @@ namespace MajdataPlay.Scenes.List
             _utageSortedCollections[pos].SetCursor(songDetail);
             _listConfig.SelectedSongIndex = SongStorage.WorkingCollection.Index;
             _listConfig.SelectedSongHash = songDetail.Hash;
+        }
+        async Task AnalyzeAndUpdateBpmLedAsync(ISongDetail songDetail, ChartLevel level)
+        {
+            await chartAnalyzer.AnalyzeAndDrawGraphAsync(songDetail, level);
+            if (!IsChartList || !ReferenceEquals(_currentCollection.Current, songDetail) || _listConfig.SelectedDiff != level)
+            {
+                return;
+            }
+
+            var bpm = chartAnalyzer.LastAnalyzeBpm;
+            if (bpm <= 0f)
+            {
+                LedRing.SetSineFunc(3, Color.green, 1000);
+                return;
+            }
+
+            var halfNoteMs = 120000f / bpm;
+            LedRing.SetSineFunc(3, Color.green, (long)halfNoteMs);
         }
         void UpdateCurrentSongCollection()
         {

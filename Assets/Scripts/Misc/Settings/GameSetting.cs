@@ -523,7 +523,7 @@ namespace MajdataPlay.Settings
         
         public float Brightness { get; set; } = 1.0f;
         
-        public int RefreshRateMs { get; set; } = 100;
+        public int RefreshRateMs { get; set; } = 16;
         
         public bool Throttler { get; set; } = false;
         
