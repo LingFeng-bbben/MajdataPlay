@@ -81,7 +81,7 @@ namespace MajdataPlay
 
         public void SwitchScene(string sceneName, bool autoFadeOut = true)
         {
-            SwitchSceneInternal(sceneName,autoFadeOut).Forget();
+            SwitchSceneInternal(sceneName, autoFadeOut).Forget();
         }
         public UniTask SwitchSceneAsync(string sceneName, bool autoFadeOut = true)
         {

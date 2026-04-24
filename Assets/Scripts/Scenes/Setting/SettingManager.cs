@@ -81,14 +81,6 @@ namespace MajdataPlay.Scenes.Setting
                 menu.gameObject.SetActive(true);
             }
 
-            LedRing.SetAllLight(Color.white);
-            LedRing.SetButtonLight(Color.green, 3);
-            LedRing.SetButtonLight(Color.red, 4);
-            LedRing.SetButtonLight(Color.blue, 2);
-            LedRing.SetButtonLight(Color.blue, 5);
-            LedRing.SetButtonLight(Color.blue, 0);
-            LedRing.SetButtonLight(Color.blue, 7);
-
             MajInstances.AudioManager.PlaySFX("settings.wav");
 
             InitializeAllMenu().Forget();
@@ -167,7 +159,20 @@ namespace MajdataPlay.Scenes.Setting
             }
             await UniTask.DelayFrame(3);
             await SwitchToDesiredIndex();
+            MajInstances.SceneSwitcher.FadeOut();
+            SetSettingLights();
             _isInited = true;
+        }
+
+        void SetSettingLights()
+        {
+            LedRing.SetAllLight(Color.white);
+            LedRing.SetButtonLight(Color.green, 3);
+            LedRing.SetButtonLight(Color.red, 4);
+            LedRing.SetButtonLight(Color.blue, 2);
+            LedRing.SetButtonLight(Color.blue, 5);
+            LedRing.SetButtonLight(Color.blue, 0);
+            LedRing.SetButtonLight(Color.blue, 7);
         }
 
         async UniTask SwitchToDesiredIndex()

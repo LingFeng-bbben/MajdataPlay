@@ -140,7 +140,7 @@ namespace MajdataPlay.Utils
                 MajInstances.SceneSwitcher.SetLoadingText(string.Empty);
             }
             await UniTask.Delay(3000);
-            MajInstances.SceneSwitcher.SwitchScene("List");
+            MajInstances.SceneSwitcher.SwitchScene("List", false);
         }
 
         

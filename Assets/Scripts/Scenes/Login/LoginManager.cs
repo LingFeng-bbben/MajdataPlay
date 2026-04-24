@@ -78,7 +78,7 @@ namespace MajdataPlay.Scenes.Login
             _enabledEndpoints = rentedApiEndpoints.ToArray();
             if (_enabledEndpoints.Length == 0)
             {
-                MajInstances.SceneSwitcher.SwitchScene("List");
+                MajInstances.SceneSwitcher.SwitchScene("List", false);
                 return;
             }
             _loading.SetActive(false);
@@ -458,7 +458,7 @@ namespace MajdataPlay.Scenes.Login
             }
 
             
-            sceneSwitcher.SwitchScene("List");
+            sceneSwitcher.SwitchScene("List", false);
         }
         async ValueTask<UserData> FetchUserDataAsync(ApiEndpoint endpoint, CancellationToken token = default)
         {
