@@ -34,6 +34,7 @@ namespace MajdataPlay.Scenes.Game
 
         public Text? anaText;
         public float LastAnalyzeBpm { get; private set; } = 0f;
+        public bool LastAnalyzeIsEmpty { get; private set; }
 
         [SerializeField]
         GameObject? _iconPrefab;
@@ -112,6 +113,7 @@ namespace MajdataPlay.Scenes.Game
                         {
                             await UniTask.SwitchToMainThread(token);
                             SetLoading();
+                            LastAnalyzeIsEmpty = false;
                             await UniTask.SwitchToThreadPool();
                             var simaiFile = await songDetail.GetMaidataAsync(token: token);
                             var maiChart = simaiFile.Charts[(int)level];
@@ -119,6 +121,7 @@ namespace MajdataPlay.Scenes.Game
                             {
                                 await UniTask.SwitchToMainThread(token);
                                 LastAnalyzeBpm = 0f;
+                                LastAnalyzeIsEmpty = true;
                                 SetHelp();
                                 return;
                             }
@@ -153,6 +156,7 @@ namespace MajdataPlay.Scenes.Game
                             }
                             SetTexture(result.LineGraph);
                             LastAnalyzeBpm = GetFirstBpm(maiChart);
+                            LastAnalyzeIsEmpty = false;
                             if (anaText is not null)
                             {
                                 var max = result.PeakDensity;
@@ -191,6 +195,7 @@ namespace MajdataPlay.Scenes.Game
                             }
                             await UniTask.SwitchToMainThread(token);
                             LastAnalyzeBpm = 0f;
+                            LastAnalyzeIsEmpty = false;
                             SetError();
                             //_rawImage.texture = new Texture2D(0, 0);
                             if (anaText is not null)
@@ -208,10 +213,12 @@ namespace MajdataPlay.Scenes.Game
             {
                 await UniTask.SwitchToMainThread();
                 SetLoading();
+                LastAnalyzeIsEmpty = false;
                 if (data.IsEmpty)
                 {
                     await UniTask.SwitchToMainThread();
                     LastAnalyzeBpm = 0f;
+                    LastAnalyzeIsEmpty = true;
                     SetHelp();
                     return;
                 }
@@ -221,6 +228,7 @@ namespace MajdataPlay.Scenes.Game
                 token.ThrowIfCancellationRequested();
                 _rawImage.texture = result.LineGraph;
                 LastAnalyzeBpm = GetFirstBpm(data);
+                LastAnalyzeIsEmpty = false;
                 if (anaText is not null)
                 {
                     var max = result.PeakDensity;
@@ -256,6 +264,7 @@ namespace MajdataPlay.Scenes.Game
                 MajDebug.LogException(ex);
                 await UniTask.SwitchToMainThread();
                 LastAnalyzeBpm = 0f;
+                LastAnalyzeIsEmpty = false;
                 SetError();
                 _rawImage.texture = _emptyTexture!;
                 if (anaText is not null)
