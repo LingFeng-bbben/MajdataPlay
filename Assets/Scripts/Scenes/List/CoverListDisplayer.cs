@@ -767,11 +767,13 @@ namespace MajdataPlay.Scenes.List
             if (bpm <= 0f)
             {
                 LedRing.SetSineFunc(3, Color.green, 1000);
+                CabinetLight.SetLightSineFunc(1.0f, 2000);
                 return;
             }
 
             var halfNoteMs = 120000f / bpm;
             LedRing.SetSineFunc(3, Color.green, (long)halfNoteMs);
+            CabinetLight.SetLightSineFunc(1.0f, (long)(halfNoteMs * 2));
         }
         void UpdateCurrentSongCollection()
         {

@@ -76,6 +76,7 @@ namespace MajdataPlay
             {
                 OnSceneChanged(this, (CurrentScene, LastScene));
             }
+            CabinetLight.SetLight(1.0f);
             _canvas.worldCamera = MainCamera;
         }
 
@@ -118,6 +119,7 @@ namespace MajdataPlay
             animator.SetBool("In", false);
             loadingText.gameObject.SetActive(false);
             LedRing.SetAllLight(Color.white);
+            CabinetLight.SetLight(1.0f);
         }
         public async UniTask FadeOutAsync()
         {
@@ -125,6 +127,7 @@ namespace MajdataPlay
             await UniTask.Delay(SWITCH_ELAPSED_MS);
             loadingText.gameObject.SetActive(false);
             LedRing.SetAllLight(Color.white);
+            CabinetLight.SetLight(1.0f);
         }
         public void FadeIn()
         {
@@ -132,6 +135,7 @@ namespace MajdataPlay
             loadingText.text = string.Empty;
             loadingText.gameObject.SetActive(true);
             LedRing.SetAllLight(LoadingLightColor);
+            CabinetLight.SetLight(0.5f);
         }
         public async UniTask FadeInAsync()
         {
@@ -140,6 +144,7 @@ namespace MajdataPlay
             loadingText.text = string.Empty;
             loadingText.gameObject.SetActive(true);
             LedRing.SetAllLight(LoadingLightColor);
+            CabinetLight.SetLight(0.5f);
         }
         public void SetLoadingText(string text , Color color)
         {
@@ -162,6 +167,7 @@ namespace MajdataPlay
             animator.SetBool("In", true);
             await UniTask.Delay(SWITCH_ELAPSED_MS);
             LedRing.SetAllLight(LoadingLightColor);
+            CabinetLight.SetLight(0.5f);
             await SwitchSceneCoreAsync(sceneName, autoFadeOut);
         }
         async UniTask SwitchSceneCoreAsync(string sceneName, bool autoFadeOut)
@@ -175,6 +181,7 @@ namespace MajdataPlay
             {
                 animator.SetBool("In", false);
                 LedRing.SetAllLight(Color.white);
+                CabinetLight.SetLight(1.0f);
                 loadingText.gameObject.SetActive(false);
             }
         }
@@ -198,6 +205,7 @@ namespace MajdataPlay
                 throw taskToRun.Exception;
             }
             LedRing.SetAllLight(LoadingLightColor);
+            CabinetLight.SetLight(0.5f);
             await SwitchSceneCoreAsync(sceneName, true);
         }
         public async UniTaskVoid SwitchSceneAfterTaskAsync(string sceneName, Task taskToRun)
@@ -221,6 +229,7 @@ namespace MajdataPlay
                 throw taskToRun.AsTask().Exception;
             }
             LedRing.SetAllLight(LoadingLightColor);
+            CabinetLight.SetLight(0.5f);
             await SwitchSceneCoreAsync(sceneName, true);
         }
         public async UniTaskVoid SwitchSceneAfterTaskAsync(string sceneName, ValueTask taskToRun)
@@ -246,6 +255,7 @@ namespace MajdataPlay
                     throw taskToRun.AsTask().Exception;
             }            
             LedRing.SetAllLight(LoadingLightColor);
+            CabinetLight.SetLight(0.5f);
             await SwitchSceneCoreAsync(sceneName, true);
         }
         public async UniTaskVoid SwitchSceneAfterTaskAsync(string sceneName, UniTask taskToRun)
@@ -271,6 +281,7 @@ namespace MajdataPlay
                 throw taskToRun.Exception;
             }
             LedRing.SetAllLight(LoadingLightColor);
+            CabinetLight.SetLight(0.5f);
             await SwitchSceneCoreAsync(sceneName, true);
             return taskToRun.Result;
         }
@@ -295,6 +306,7 @@ namespace MajdataPlay
                 throw taskToRun.AsTask().Exception;
             }
             LedRing.SetAllLight(LoadingLightColor);
+            CabinetLight.SetLight(0.5f);
             await SwitchSceneCoreAsync(sceneName, true);
             return taskToRun.Result;
         }
@@ -321,6 +333,7 @@ namespace MajdataPlay
                     throw taskToRun.AsTask().Exception;
             }
             LedRing.SetAllLight(LoadingLightColor);
+            CabinetLight.SetLight(0.5f);
             await SwitchSceneCoreAsync(sceneName, true);
 
             return taskToRun.AsValueTask().Result;

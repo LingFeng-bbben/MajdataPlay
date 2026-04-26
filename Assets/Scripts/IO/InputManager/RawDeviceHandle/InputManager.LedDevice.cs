@@ -54,6 +54,7 @@ namespace MajdataPlay.IO
                         return;
                     }
                     var manufacturer = _deviceManufacturer;
+                    CabinetLight.SetSupported(manufacturer == DeviceManufacturerOption.Dao, _isEnabled);
 #if !UNITY_STANDALONE_WIN
                     // On non-Windows standalone, only Dao HID LED is supported.
                     if (manufacturer != DeviceManufacturerOption.Dao)
@@ -295,6 +296,7 @@ namespace MajdataPlay.IO
                                                .OutputReports
                                                .FirstOrDefault()
                                                ?.ReportID ?? 0;
+                    var latestCabinetLightBrightness = byte.MaxValue;
                     Span<byte> buffer = stackalloc byte[device.GetMaxOutputReportLength()];
                     buffer[0] = outputReportId;
                     IsConnected = true;
@@ -307,6 +309,7 @@ namespace MajdataPlay.IO
                         {
                             var needUpdate = false;
                             LedRing.LedFuncUpdate();
+                            CabinetLight.LedFuncUpdate();
                             for (var i = 0; i < 8; i++)
                             {
                                 var color = ledColors[i];
@@ -322,9 +325,15 @@ namespace MajdataPlay.IO
                                 };
                                 needUpdate = true;
                             }
+                            var cabinetLightBrightness = CabinetLight.ReportBrightness;
+                            if (latestCabinetLightBrightness != cabinetLightBrightness)
+                            {
+                                latestCabinetLightBrightness = cabinetLightBrightness;
+                                needUpdate = true;
+                            }
                             if (needUpdate)
                             {
-                                var reportBuffer = DaoHIDLedDevice.BuildUpdatePacket(buffer, ledColors);
+                                var reportBuffer = DaoHIDLedDevice.BuildUpdatePacket(buffer, ledColors, cabinetLightBrightness);
                                 hidStream.Write(reportBuffer);
                             }
                         }
@@ -426,7 +435,7 @@ namespace MajdataPlay.IO
             static class DaoHIDLedDevice
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                public static ReadOnlySpan<byte> BuildUpdatePacket(Span<byte> rawBuffer, ReadOnlySpan<Color> ledColors)
+                public static ReadOnlySpan<byte> BuildUpdatePacket(Span<byte> rawBuffer, ReadOnlySpan<Color> ledColors, byte cabinetLightBrightness)
                 {
                     var buffer = rawBuffer.Slice(1);
                     for (int i = 0,li = 0; li < ledColors.Length;)
@@ -440,6 +449,7 @@ namespace MajdataPlay.IO
                         buffer[i++] = g;
                         buffer[i++] = b;
                     }
+                    buffer[24] = (byte)(cabinetLightBrightness * _brightness);
                     return rawBuffer;
                 }
             }
