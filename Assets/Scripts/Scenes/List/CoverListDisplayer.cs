@@ -764,6 +764,21 @@ namespace MajdataPlay.Scenes.List
             }
 
             var bpm = chartAnalyzer.LastAnalyzeBpm;
+            while (IsChartList &&
+                   ReferenceEquals(_currentCollection.Current, songDetail) &&
+                   _listConfig.SelectedDiff == level &&
+                   _previewSoundPlayer.IsPreviewPending(songDetail) &&
+                   !_previewSoundPlayer.IsPreviewPlaying(songDetail))
+            {
+                await UniTask.Yield();
+            }
+            if (!IsChartList ||
+                !ReferenceEquals(_currentCollection.Current, songDetail) ||
+                _listConfig.SelectedDiff != level ||
+                !_previewSoundPlayer.IsPreviewPlaying(songDetail))
+            {
+                return;
+            }
             if (bpm <= 0f)
             {
                 LedRing.SetSineFunc(3, Color.green, 1000);
