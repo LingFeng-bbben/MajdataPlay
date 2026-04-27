@@ -1561,7 +1561,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f44ef1e05d923c540945f6ab6c06d325, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  local_key: UseKeyboardHint
+  local_key: MAJTEXT_SORTFIND_UseKeyboardHint
 --- !u!114 &1097361893
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2137,7 +2137,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f44ef1e05d923c540945f6ab6c06d325, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  local_key: UseKeyboardHint
+  local_key: MAJTEXT_SORTFIND_UseKeyboardHint
 --- !u!114 &1470813177
 MonoBehaviour:
   m_ObjectHideFlags: 0
