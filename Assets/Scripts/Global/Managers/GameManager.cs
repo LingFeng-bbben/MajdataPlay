@@ -9,6 +9,8 @@ using MajdataPlay.Timer;
 using ShimSkiaSharp;
 #if UNITY_STANDALONE_WIN
 using MajdataPlay.Platform.Win32;
+#elif UNITY_STANDALONE_OSX
+using MajdataPlay.Platform.MacOS;
 #elif UNITY_IOS
 using MajdataPlay.Platform.iOS;
 #elif UNITY_ANDROID
@@ -208,6 +210,12 @@ namespace MajdataPlay
 #endif
 
             ApplyScreenConfig();
+#if UNITY_STANDALONE_OSX && !UNITY_EDITOR
+            if (Settings.Debug.FullScreen && MajEnv.Mode != RunningMode.View)
+            {
+                await ApplyMacOSFullscreenAsync();
+            }
+#endif
 
             var availableLangs = Localization.Available;
             if (!availableLangs.IsEmpty())
@@ -351,15 +359,26 @@ namespace MajdataPlay
 
         public void ApplyScreenConfig()
         {
-#if UNITY_STANDALONE_WIN
+#if UNITY_STANDALONE_WIN || UNITY_STANDALONE_OSX
             if (MajEnv.Mode != RunningMode.View)
             {
                 var fullScreen = Settings.Debug.FullScreen;
+#if UNITY_STANDALONE_OSX
+                Screen.fullScreen = fullScreen;
+                Screen.fullScreenMode = fullScreen
+                    ? FullScreenMode.FullScreenWindow
+                    : FullScreenMode.Windowed;
+#else
                 Screen.fullScreen = fullScreen;
                 Screen.fullScreenMode = FullScreenMode.ExclusiveFullScreen;
+#endif
 
                 var resolution = Settings.Display.Resolution.ToLower();
+#if UNITY_STANDALONE_OSX
+                if (!fullScreen && resolution is not "auto")
+#else
                 if (resolution is not "auto")
+#endif
                 {
                     var param = resolution.Split("x");
                     int width, height;
@@ -378,6 +397,14 @@ namespace MajdataPlay
 #endif
             Application.targetFrameRate = Settings.Display.FPSLimit;
         }
+
+#if UNITY_STANDALONE_OSX && !UNITY_EDITOR
+        async UniTask ApplyMacOSFullscreenAsync()
+        {
+            await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
+            NativePresentation.EnterNativeFullscreenIfNeeded();
+        }
+#endif
 
         void Update()
         {
