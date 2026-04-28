@@ -12,7 +12,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay
 {
-    internal sealed class FPSDisplayer : MajSingleton
+    internal sealed class FPSDisplayer : MajComponent
     {
         const int FPS_SAMPLE_COUNT = 120;
         const int _1_LOW_FPS_SAMPLE_COUNT = 120;
@@ -36,10 +36,25 @@ namespace MajdataPlay
         protected override void Awake()
         {
             base.Awake();
+            if (Majdata<FPSDisplayer>.Instance is not null)
+            {
+                throw new TypeInitializationException(
+                    typeof(FPSDisplayer).FullName,
+                    new InvalidOperationException("A singleton of the current type already exists"));
+            }
+
             MajInstances.FPSDisplayer = this;
             _textDisplayer = GetComponent<TextMeshPro>();
             _lastUpdateTiming = MajTimeline.UnscaledTime;
             GameObject.SetActive(false);
+        }
+
+        void OnDestroy()
+        {
+            if (ReferenceEquals(Majdata<FPSDisplayer>.Instance, this))
+            {
+                Majdata<FPSDisplayer>.Free();
+            }
         }
         internal void Init()
         {
