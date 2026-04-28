@@ -43,9 +43,9 @@ namespace MajdataPlay.Recording
         public void Init()
         {
             _webSocket.OnMessage += OnMessageReceived;
-            Connect();
             try
             {
+                Connect();
                 Authenticate();
             }
             catch
