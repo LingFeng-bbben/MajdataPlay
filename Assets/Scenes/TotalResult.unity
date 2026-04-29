@@ -4535,7 +4535,7 @@ GameObject:
   - component: {fileID: 738438930}
   - component: {fileID: 738438929}
   m_Layer: 5
-  m_Name: LIFE
+  m_Name: totalAchievement
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4580,9 +4580,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'LIFE
+  m_text: 'Total
 
-    6666'
+    303.0000%'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 464b47ef51400ec4db25bf3fa2d3c9af, type: 2}
   m_sharedMaterial: {fileID: 3060286513935875457, guid: 464b47ef51400ec4db25bf3fa2d3c9af, type: 2}
@@ -6911,7 +6911,7 @@ GameObject:
   - component: {fileID: 1130897916}
   - component: {fileID: 1130897915}
   m_Layer: 5
-  m_Name: LIFE (1)
+  m_Name: life
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6956,7 +6956,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Start LIFE 666
+  m_text: LIFE 666 / 1000
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 464b47ef51400ec4db25bf3fa2d3c9af, type: 2}
   m_sharedMaterial: {fileID: 3060286513935875457, guid: 464b47ef51400ec4db25bf3fa2d3c9af, type: 2}
@@ -12623,8 +12623,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resultPrefab: {fileID: 4081636613036787854, guid: 528203199c749984fa9df6bd2fdf1920, type: 3}
   resultPrefabParent: {fileID: 1274580514}
-  initLife: {fileID: 1130897915}
-  Life: {fileID: 738438929}
+  life: {fileID: 1130897915}
+  totalAchievement: {fileID: 738438929}
   Title: {fileID: 1250844065}
 --- !u!1001 &6959415326676185805
 PrefabInstance:

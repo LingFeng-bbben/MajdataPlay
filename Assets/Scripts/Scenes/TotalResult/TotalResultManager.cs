@@ -9,6 +9,7 @@ using MajdataPlay.IO;
 using Cysharp.Threading.Tasks;
 using UnityEngine.UIElements;
 using MajdataPlay.Scenes.Game;
+using MajdataPlay.Settings;
 
 namespace MajdataPlay.Scenes.TotalResult
 {
@@ -16,8 +17,8 @@ namespace MajdataPlay.Scenes.TotalResult
     {
         public GameObject resultPrefab;
         public Transform resultPrefabParent;
-        public TextMeshProUGUI initLife;
-        public TextMeshProUGUI Life;
+        public TextMeshProUGUI life;
+        public TextMeshProUGUI totalAchievement;
         public TextMeshProUGUI Title;
 
         GameInfo _gameInfo = Majdata<GameInfo>.Instance!;
@@ -34,17 +35,17 @@ namespace MajdataPlay.Scenes.TotalResult
             var levels = _gameInfo.Levels;
             var songInfos = _gameInfo.Charts;
             var name = _gameInfo.DanInfo.Name;
-            var life = _gameInfo.CurrentHP;
+            var isClassic = MajInstances.GameManager.Settings.Judge.Mode == JudgeModeOption.Classic;
+            var totalAchievementValue = results.Sum(result => isClassic ? result.Acc.Classic : result.Acc.DX);
             if (_gameInfo.IsDanLifeEnabled)
             {
-                initLife.text = "Start LIFE " + _gameInfo.DanInfo.StartHP + " Restore LIFE " + _gameInfo.DanInfo.RestoreHP;
-                Life.text = "LIFE\n" + life.ToString();
+                life.text = "LIFE " + _gameInfo.CurrentHP + " / " + _gameInfo.MaxHP;
             }
             else
             {
-                initLife.text = "LIFE Disabled";
-                Life.text = "";
+                life.text = "LIFE Disabled";
             }
+            totalAchievement.text = isClassic ? $"Total {totalAchievementValue:F2}%" : $"Total {totalAchievementValue:F4}%";
             Title.text = name;
             for (var i = 0; i < songInfos.Length; i++)
             {
