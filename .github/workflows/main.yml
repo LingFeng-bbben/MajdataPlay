@@ -222,7 +222,7 @@ jobs:
 
   build-apple:
     name: Build (macOS/iOS)
-    runs-on: macos-latest
+    runs-on: macos-26
     if: ${{ github.event_name == 'push' }}
     strategy:
       fail-fast: false
