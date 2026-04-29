@@ -11,7 +11,7 @@ namespace MajdataPlay.Misc.Base
     {
         private const float START_DELAY = 2f;
         private const float SCROLL_SPEED = 48f;
-        private const float END_GAP_VIEWPORT_RATIO = 0.4f;
+        private const float END_GAP_VIEWPORT_RATIO = 0.3f;
 
         private TextMeshProUGUI? _sourceText;
         private TextMeshProUGUI? _mainText;
