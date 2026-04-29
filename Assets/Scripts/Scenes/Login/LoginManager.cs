@@ -14,7 +14,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using static QRCoder.QRCodeGenerator;
 #nullable enable
@@ -36,9 +35,13 @@ namespace MajdataPlay.Scenes.Login
         GameObject _qrCodeErrorIcon;
 
         [SerializeField]
-        InputField _usernameInput;
+        TMP_InputField _usernameInput;
         [SerializeField]
-        InputField _passwordInput;
+        TMP_InputField _passwordInput;
+        [SerializeField]
+        GameObject _usernameClearButton;
+        [SerializeField]
+        GameObject _passwordClearButton;
         [SerializeField]
         GameObject _button4;
 
@@ -54,7 +57,6 @@ namespace MajdataPlay.Scenes.Login
         Color SucceedColor;
 
         RawImage _qrCodeRawImage = null!;
-        EventSystem _eventSystem = null!;
         ApiEndpoint[] _apiEndpoints = Array.Empty<ApiEndpoint>();
         ApiEndpoint[] _enabledEndpoints = Array.Empty<ApiEndpoint>();
 
@@ -67,7 +69,6 @@ namespace MajdataPlay.Scenes.Login
         {
             _apiEndpoints = MajEnv.ApiEndpoints;
             _qrCodeRawImage = _qrCodeComponent.GetComponent<RawImage>();
-            _eventSystem = GetComponent<EventSystem>();
             using var rentedApiEndpoints = new RentedList<ApiEndpoint>();
             for (var i = 0; i < _apiEndpoints.Length; i++)
             {
@@ -83,6 +84,9 @@ namespace MajdataPlay.Scenes.Login
             }
             _loading.SetActive(false);
             Hint();
+            _usernameInput.onValueChanged.AddListener(_ => UpdateClearButtons());
+            _passwordInput.onValueChanged.AddListener(_ => UpdateClearButtons());
+            UpdateClearButtons();
             LoginProcessor().Forget();
         }
         void Update()
@@ -101,33 +105,35 @@ namespace MajdataPlay.Scenes.Login
             var isPasswordClearBtnClicked = InputManager.IsSensorClickedUpInThisFrame(SensorArea.A3);
             if(isUsernameInputClicked)
             {
-                LegacyInputFieldHelper.Focus(_eventSystem, _usernameInput);
+                Focus(_usernameInput);
             }
             if(isUsernameClearBtnClicked)
             {
-                LegacyInputFieldHelper.Focus(_eventSystem, _usernameInput);
+                Focus(_usernameInput);
                 _usernameInput.text = string.Empty;
             }
             if (isPasswordInputClicked)
             {
-                LegacyInputFieldHelper.Focus(_eventSystem, _passwordInput);
+                Focus(_passwordInput);
             }
             if (isPasswordClearBtnClicked)
             {
-                LegacyInputFieldHelper.Focus(_eventSystem, _passwordInput);
+                Focus(_passwordInput);
                 _passwordInput.text = string.Empty;
             }
         }
 
-        void OnGUI()
+        void UpdateClearButtons()
         {
-            if(!_isReady || _isExited)
-            {
-                return;
-            }
-#if UNITY_STANDALONE_OSX
-            LegacyInputFieldHelper.HandleMacOSKeyboardEvent(_eventSystem, Event.current, _usernameInput, _passwordInput);
-#endif
+            _usernameClearButton.SetActive(!string.IsNullOrEmpty(_usernameInput.text));
+            _passwordClearButton.SetActive(!string.IsNullOrEmpty(_passwordInput.text));
+        }
+
+        static void Focus(TMP_InputField inputField)
+        {
+            inputField.Select();
+            inputField.ActivateInputField();
+            inputField.MoveTextEnd(false);
         }
 
         async UniTaskVoid LoginProcessor()
@@ -304,7 +310,6 @@ namespace MajdataPlay.Scenes.Login
                                 await sceneSwitcher.FadeInAsync();
                                 await RevokeAuthSession(endpoint, authRequestId);
                             }
-                            _eventSystem.SetSelectedGameObject(null!);
                             _usernameInput.DeactivateInputField();
                             _passwordInput.DeactivateInputField();
                             break;
@@ -322,7 +327,6 @@ namespace MajdataPlay.Scenes.Login
                             _usernameInput.readOnly = true;
                             _passwordInput.readOnly = true;
 
-                            _eventSystem.SetSelectedGameObject(null!);
                             _usernameInput.DeactivateInputField();
                             _passwordInput.DeactivateInputField();
 
