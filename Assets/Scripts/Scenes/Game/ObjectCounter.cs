@@ -315,7 +315,7 @@ namespace MajdataPlay.Scenes.Game
                 return;
             }
 
-            if (_gameInfo.IsDanMode)
+            if (_gameInfo.IsDanLifeEnabled)
             {
                 SetInfoDisplayerActive(_centerInfoDisplayerObject, _centerInfoDisplayerHeaderObject, true);
                 _centerInfoDisplayerHeader.text = "LIFE";
@@ -604,7 +604,7 @@ namespace MajdataPlay.Scenes.Game
                 }
             }
 
-            if (MajEnv.Mode == RunningMode.Play && _gameInfo.IsDanMode) 
+            if (MajEnv.Mode == RunningMode.Play && _gameInfo.IsDanLifeEnabled) 
             {
                 _gameInfo.OnNoteJudged(judgeResult.Grade, multiple);
                 if (_gameInfo.CurrentHP == 0 && _gameInfo.IsForceGameover)
@@ -636,7 +636,7 @@ namespace MajdataPlay.Scenes.Game
         }
         void UpdateCenterInfoOutput()
         {
-            if (MajEnv.Mode != RunningMode.View && _gameInfo.IsDanMode)
+            if (MajEnv.Mode != RunningMode.View && _gameInfo.IsDanLifeEnabled)
             {
                 _sb.Clear();
                 _sb.Append(_gameInfo.CurrentHP);

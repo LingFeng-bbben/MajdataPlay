@@ -17,6 +17,7 @@ namespace MajdataPlay.Scenes.Game
         public ChartLevel CurrentLevel { get; private set; } = ChartLevel.Easy;
         public ChartSetting ChartSettings { get; private set; }
         public bool IsDanMode => Mode == GameMode.Dan;
+        public bool IsDanLifeEnabled => IsDanMode && DanInfo?.StartHP >= 0;
         public bool IsPracticeMode => Mode == GameMode.Practice;
 
         public ISongDetail[] Charts => _chartQueue;
@@ -106,7 +107,7 @@ namespace MajdataPlay.Scenes.Game
         }
         public void OnNoteJudged(in JudgeGrade grade,int multiple = 1)
         {
-            if (!IsDanMode || DanInfo is null)
+            if (!IsDanLifeEnabled || DanInfo is null)
             {
                 return;
             }
@@ -136,8 +137,11 @@ namespace MajdataPlay.Scenes.Game
             switch (Mode)
             {
                 case GameMode.Dan:
-                    CurrentHP += HPRecover;
-                    CurrentHP = CurrentHP.Clamp(0, MaxHP);
+                    if (IsDanLifeEnabled)
+                    {
+                        CurrentHP += HPRecover;
+                        CurrentHP = CurrentHP.Clamp(0, MaxHP);
+                    }
                     break;
             }
             return true;

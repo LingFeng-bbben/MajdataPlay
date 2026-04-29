@@ -35,8 +35,16 @@ namespace MajdataPlay.Scenes.TotalResult
             var songInfos = _gameInfo.Charts;
             var name = _gameInfo.DanInfo.Name;
             var life = _gameInfo.CurrentHP;
-            initLife.text = "Start LIFE " + _gameInfo.DanInfo.StartHP + " Restore LIFE " + _gameInfo.DanInfo.RestoreHP;
-            Life.text = "LIFE\n" + life.ToString();
+            if (_gameInfo.IsDanLifeEnabled)
+            {
+                initLife.text = "Start LIFE " + _gameInfo.DanInfo.StartHP + " Restore LIFE " + _gameInfo.DanInfo.RestoreHP;
+                Life.text = "LIFE\n" + life.ToString();
+            }
+            else
+            {
+                initLife.text = "LIFE Disabled";
+                Life.text = "";
+            }
             Title.text = name;
             for (var i = 0; i < songInfos.Length; i++)
             {
@@ -57,7 +65,7 @@ namespace MajdataPlay.Scenes.TotalResult
             DelayBind().Forget();
             MajInstances.AudioManager.StopSFX("bgm_result.mp3");
             MajInstances.AudioManager.PlaySFX("bgm_dan.mp3", true);
-            if(_gameInfo.DanInfo.RestoreHP > 0)
+            if (!_gameInfo.IsDanLifeEnabled || _gameInfo.CurrentHP > 0)
             {
                 MajInstances.AudioManager.PlaySFX("challenge_clear.wav");
             }
