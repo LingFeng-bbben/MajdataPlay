@@ -124,8 +124,10 @@ namespace MajdataPlay.Scenes.Game
         public long LostNoteBaseScore { get; private set; }
         public long LostNoteExtraScore { get; private set; }
         public long LostNoteExtraScoreClassic { get; private set; }
+        
+        public AchievementStatistics AchievementStats { get; private set; }
 
-        readonly static double[] _accRate = new double[5]
+        readonly double[] _accRate = new double[5]
         {
             0.00,    // classic acc (+)
             100.00,  // classic acc (-)
@@ -1127,14 +1129,6 @@ namespace MajdataPlay.Scenes.Game
             }
         }
         /// <summary>
-        /// 计算最终达成率
-        /// </summary>
-        public float CalculateFinalResult()
-        {
-            UpdateAccRate();
-            return (float)_accRate[2];
-        }
-        /// <summary>
         /// 根据Achievement更新BgInfoHeader的颜色
         /// </summary>
         /// <param name="achievementRate"></param>
@@ -1456,6 +1450,29 @@ namespace MajdataPlay.Scenes.Game
         {
             public bool IsRequested { get; init; }
             public JudgeGrade Grade { get; init; }
+        }
+        public readonly struct AchievementStatistics
+        {
+            /// <summary>
+            /// classic acc (+)
+            /// </summary>
+            public readonly double ClassicAchievement_A;
+            /// <summary>
+            /// classic acc (-)
+            /// </summary>
+            public readonly double ClassicAchievement_B;
+            /// <summary>
+            /// acc 101(-)
+            /// </summary>
+            public readonly double Achievement_A;
+            /// <summary>
+            /// acc 100(-)
+            /// </summary>
+            public readonly double Achievement_B;
+            /// <summary>
+            /// acc (+)
+            /// </summary>
+            public readonly double Achievement_C;
         }
     }
 }
