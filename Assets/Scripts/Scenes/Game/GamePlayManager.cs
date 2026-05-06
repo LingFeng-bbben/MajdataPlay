@@ -118,6 +118,11 @@ namespace MajdataPlay.Scenes.Game
         float _audioStartTime = -114514;
         int _chartRotation = 0;
 
+        ButtonZone[] _buttonKeyFor2367 = new ButtonZone[4];
+        ButtonZone[] _buttonKeyFor3456 = new ButtonZone[4];
+        SensorArea[] _sensorAreaFor2367 = new SensorArea[4];
+        SensorArea[] _sensorAreaFor3456 = new SensorArea[4];
+
         bool _isTrackSkipAvailable = false;
         bool _isFastRetryAvailable = false;
         float? _allNotesFinishedTiming = null;
@@ -218,12 +223,90 @@ namespace MajdataPlay.Scenes.Game
             {
                 case GameplayScreenRotationAngleOption._90:
                     _mainDisplayer.rotation = Quaternion.Euler(0, 0, -90);
+                    _buttonKeyFor2367[0] = ButtonZone.A4;
+                    _buttonKeyFor2367[1] = ButtonZone.A5;
+                    _buttonKeyFor2367[2] = ButtonZone.A8;
+                    _buttonKeyFor2367[3] = ButtonZone.A1;
+
+                    _buttonKeyFor3456[0] = ButtonZone.A5;
+                    _buttonKeyFor3456[1] = ButtonZone.A6;
+                    _buttonKeyFor3456[2] = ButtonZone.A7;
+                    _buttonKeyFor3456[3] = ButtonZone.A8;
+
+                    _sensorAreaFor2367[0] = SensorArea.A4;
+                    _sensorAreaFor2367[1] = SensorArea.A5;
+                    _sensorAreaFor2367[2] = SensorArea.A8;
+                    _sensorAreaFor2367[3] = SensorArea.A1;
+
+                    _sensorAreaFor3456[0] = SensorArea.A5;
+                    _sensorAreaFor3456[1] = SensorArea.A6;
+                    _sensorAreaFor3456[2] = SensorArea.A7;
+                    _sensorAreaFor3456[3] = SensorArea.A8;
                     break;
                 case GameplayScreenRotationAngleOption._180:
                     _mainDisplayer.rotation = Quaternion.Euler(0, 0, -180);
+                    _buttonKeyFor2367[0] = ButtonZone.A6;
+                    _buttonKeyFor2367[1] = ButtonZone.A7;
+                    _buttonKeyFor2367[2] = ButtonZone.A2;
+                    _buttonKeyFor2367[3] = ButtonZone.A3;
+
+                    _buttonKeyFor3456[0] = ButtonZone.A7;
+                    _buttonKeyFor3456[1] = ButtonZone.A8;
+                    _buttonKeyFor3456[2] = ButtonZone.A1;
+                    _buttonKeyFor3456[3] = ButtonZone.A2;
+
+                    _sensorAreaFor2367[0] = SensorArea.A6;
+                    _sensorAreaFor2367[1] = SensorArea.A7;
+                    _sensorAreaFor2367[2] = SensorArea.A2;
+                    _sensorAreaFor2367[3] = SensorArea.A3;
+
+                    _sensorAreaFor3456[0] = SensorArea.A7;
+                    _sensorAreaFor3456[1] = SensorArea.A8;
+                    _sensorAreaFor3456[2] = SensorArea.A1;
+                    _sensorAreaFor3456[3] = SensorArea.A2;
                     break;
                 case GameplayScreenRotationAngleOption._270:
                     _mainDisplayer.rotation = Quaternion.Euler(0, 0, -270);
+                    _buttonKeyFor2367[0] = ButtonZone.A8;
+                    _buttonKeyFor2367[1] = ButtonZone.A1;
+                    _buttonKeyFor2367[2] = ButtonZone.A4;
+                    _buttonKeyFor2367[3] = ButtonZone.A5;
+
+                    _buttonKeyFor3456[0] = ButtonZone.A1;
+                    _buttonKeyFor3456[1] = ButtonZone.A2;
+                    _buttonKeyFor3456[2] = ButtonZone.A3;
+                    _buttonKeyFor3456[3] = ButtonZone.A4;
+
+                    _sensorAreaFor2367[0] = SensorArea.A8;
+                    _sensorAreaFor2367[1] = SensorArea.A1;
+                    _sensorAreaFor2367[2] = SensorArea.A4;
+                    _sensorAreaFor2367[3] = SensorArea.A5;
+
+                    _sensorAreaFor3456[0] = SensorArea.A1;
+                    _sensorAreaFor3456[1] = SensorArea.A2;
+                    _sensorAreaFor3456[2] = SensorArea.A3;
+                    _sensorAreaFor3456[3] = SensorArea.A4;
+                    break;
+                default:
+                    _buttonKeyFor2367[0] = ButtonZone.A2;
+                    _buttonKeyFor2367[1] = ButtonZone.A3;
+                    _buttonKeyFor2367[2] = ButtonZone.A6;
+                    _buttonKeyFor2367[3] = ButtonZone.A7;
+
+                    _buttonKeyFor3456[0] = ButtonZone.A3;
+                    _buttonKeyFor3456[1] = ButtonZone.A4;
+                    _buttonKeyFor3456[2] = ButtonZone.A5;
+                    _buttonKeyFor3456[3] = ButtonZone.A6;
+
+                    _sensorAreaFor2367[0] = SensorArea.A2;
+                    _sensorAreaFor2367[1] = SensorArea.A3;
+                    _sensorAreaFor2367[2] = SensorArea.A6;
+                    _sensorAreaFor2367[3] = SensorArea.A7;
+
+                    _sensorAreaFor3456[0] = SensorArea.A3;
+                    _sensorAreaFor3456[1] = SensorArea.A4;
+                    _sensorAreaFor3456[2] = SensorArea.A5;
+                    _sensorAreaFor3456[3] = SensorArea.A6;
                     break;
             }
             _trackVolume = (MajEnv.Settings.Audio.Volume.Track + _chartSetting.TrackVolumeOffset).Clamp(0, 2);
@@ -1123,23 +1206,23 @@ namespace MajdataPlay.Scenes.Game
                     _p1PressTime = 0;
                     return;
                 }
-                var _inner_2367 = InputManager.CheckSensorStatus(SensorArea.A2, SwitchStatus.On) &&
-                                   InputManager.CheckSensorStatus(SensorArea.A3, SwitchStatus.On) &&
-                                   InputManager.CheckSensorStatus(SensorArea.A6, SwitchStatus.On) &&
-                                   InputManager.CheckSensorStatus(SensorArea.A7, SwitchStatus.On);
-                var _inner_3456 = InputManager.CheckSensorStatus(SensorArea.A3, SwitchStatus.On) &&
-                                    InputManager.CheckSensorStatus(SensorArea.A4, SwitchStatus.On) &&
-                                    InputManager.CheckSensorStatus(SensorArea.A5, SwitchStatus.On) &&
-                                    InputManager.CheckSensorStatus(SensorArea.A6, SwitchStatus.On);
+                var _inner_2367 = InputManager.CheckSensorStatus(_sensorAreaFor2367[0], SwitchStatus.On) &&
+                                   InputManager.CheckSensorStatus(_sensorAreaFor2367[1], SwitchStatus.On) &&
+                                   InputManager.CheckSensorStatus(_sensorAreaFor2367[2], SwitchStatus.On) &&
+                                   InputManager.CheckSensorStatus(_sensorAreaFor2367[3], SwitchStatus.On);
+                var _inner_3456 = InputManager.CheckSensorStatus(_sensorAreaFor3456[0], SwitchStatus.On) &&
+                                    InputManager.CheckSensorStatus(_sensorAreaFor3456[1], SwitchStatus.On) &&
+                                    InputManager.CheckSensorStatus(_sensorAreaFor3456[2], SwitchStatus.On) &&
+                                    InputManager.CheckSensorStatus(_sensorAreaFor3456[3], SwitchStatus.On);
 
-                var _outter_2367 = InputManager.CheckButtonStatus(ButtonZone.A2, SwitchStatus.On) &&
-                                    InputManager.CheckButtonStatus(ButtonZone.A3, SwitchStatus.On) &&
-                                    InputManager.CheckButtonStatus(ButtonZone.A6, SwitchStatus.On) &&
-                                    InputManager.CheckButtonStatus(ButtonZone.A7, SwitchStatus.On);
-                var _outter_3456 = InputManager.CheckButtonStatus(ButtonZone.A3, SwitchStatus.On) &&
-                                    InputManager.CheckButtonStatus(ButtonZone.A4, SwitchStatus.On) &&
-                                    InputManager.CheckButtonStatus(ButtonZone.A5, SwitchStatus.On) &&
-                                    InputManager.CheckButtonStatus(ButtonZone.A6, SwitchStatus.On);
+                var _outter_2367 = InputManager.CheckButtonStatus(_buttonKeyFor2367[0], SwitchStatus.On) &&
+                                    InputManager.CheckButtonStatus(_buttonKeyFor2367[1], SwitchStatus.On) &&
+                                    InputManager.CheckButtonStatus(_buttonKeyFor2367[2], SwitchStatus.On) &&
+                                    InputManager.CheckButtonStatus(_buttonKeyFor2367[3], SwitchStatus.On);
+                var _outter_3456 = InputManager.CheckButtonStatus(_buttonKeyFor3456[0], SwitchStatus.On) &&
+                                    InputManager.CheckButtonStatus(_buttonKeyFor3456[1], SwitchStatus.On) &&
+                                    InputManager.CheckButtonStatus(_buttonKeyFor3456[2], SwitchStatus.On) &&
+                                    InputManager.CheckButtonStatus(_buttonKeyFor3456[3], SwitchStatus.On);
 #if UNITY_ANDROID || UNITY_IOS
                 var _2367 = (_inner_2367 || _outter_2367) && _isTrackSkipAvailable;
                 var _3456 = (_inner_3456 || _outter_3456) && _isFastRetryAvailable;
