@@ -243,7 +243,7 @@ namespace MajdataPlay.Scenes.Game
                 Destroy(GameObject.Find("EventSystem"));
             }
 #if UNITY_ANDROID || UNITY_IOS
-            InputManager.UseOuterTouchAsSensor = _setting.Game.ButtonRingForTouch;
+            InputManager.UseOuterTouchAsSensor = _gameSettings.Game.ButtonRingForTouch;
 #endif
             InputManager.TouchButtonRingEdge = 5.4f;
             MajInstances.SceneSwitcher.HideMV();
