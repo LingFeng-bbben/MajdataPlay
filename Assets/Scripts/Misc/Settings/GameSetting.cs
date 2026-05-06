@@ -56,7 +56,7 @@ namespace MajdataPlay.Settings
         
         public bool TrackSkip { get; set; } = true;
 
-        public AutoTrackSkipOption AutoTrackSkip { get; set; } = AutoTrackSkipOption.Disabled;
+        public EnforceGameFailureCondition EnforceGameFailure { get; set; } = EnforceGameFailureCondition.Disabled;
         
         public bool FastRetry { get; set; } = true;
         

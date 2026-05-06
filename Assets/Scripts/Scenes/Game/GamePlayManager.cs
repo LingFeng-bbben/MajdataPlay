@@ -123,10 +123,13 @@ namespace MajdataPlay.Scenes.Game
         SensorArea[] _sensorAreaFor2367 = new SensorArea[4];
         SensorArea[] _sensorAreaFor3456 = new SensorArea[4];
 
+        Accurate _historyAccurate;
+
         bool _isTrackSkipAvailable = false;
         bool _isFastRetryAvailable = false;
+        bool _isEnforceFastRetry = false;
         float? _allNotesFinishedTiming = null;
-        AutoTrackSkipOption _autoTrackSkipOption = AutoTrackSkipOption.Disabled;
+        EnforceGameFailureCondition _enforceGameFailureCondition = EnforceGameFailureCondition.Disabled;
 
         // Key timers
         float _2367PressTime = 0;
@@ -191,7 +194,8 @@ namespace MajdataPlay.Scenes.Game
             Majdata<INoteTimeProvider>.Instance = this;
             _gameInfo = Majdata<GameInfo>.Instance!;
             _gameSettings = MajInstances.Settings;
-            _autoTrackSkipOption = _gameSettings.Game.AutoTrackSkip;
+            _enforceGameFailureCondition = _gameSettings.Game.EnforceGameFailure;
+            _isEnforceFastRetry = (int)_enforceGameFailureCondition % 2 == 0;
             _isTrackSkipAvailable = _gameSettings.Game.TrackSkip;
             _isFastRetryAvailable = _gameSettings.Game.FastRetry;
             BreakMaterial = MajEnv.BreakMaterial;
@@ -205,6 +209,10 @@ namespace MajdataPlay.Scenes.Game
             _screenRotationAngle = _gameSettings.Display.GameplayScreenRotationAngle;
             _songDetail = _gameInfo.Current;
             HistoryScore = ScoreManager.GetScore(_songDetail, _listConfig.SelectedDiff);
+            if(HistoryScore is not null)
+            {
+                _historyAccurate = HistoryScore.Acc;
+            }
             _timer = MajTimeline.CreateTimer();
             _chartSetting = _gameInfo.ChartSettings;
             if(_gameSettings.Debug.OffsetUnit == OffsetUnitOption.Second)
@@ -1072,7 +1080,7 @@ namespace MajdataPlay.Scenes.Game
                         _noteAudioManager.OnLateUpdate();
                         _noteManager.OnLateUpdate();
                         _objectCounter.OnLateUpdate();
-                        AutoTrackSkipLateUpdate();
+                        EnforceGameFailureLateUpdate();
                         break;
                 }
                 GameControlLateUpdate();
@@ -1286,9 +1294,9 @@ namespace MajdataPlay.Scenes.Game
                 }
             } 
         }
-        void AutoTrackSkipLateUpdate()
+        void EnforceGameFailureLateUpdate()
         {
-            if (_autoTrackSkipOption == AutoTrackSkipOption.Disabled)
+            if (_enforceGameFailureCondition == EnforceGameFailureCondition.Disabled)
             {
                 return;
             }
@@ -1312,60 +1320,73 @@ namespace MajdataPlay.Scenes.Game
                 maxAchievement = accStats.Achievement_A;
             }
             ref readonly var judgeStats = ref _objectCounter.JudgeStats;
-            switch (_autoTrackSkipOption)
+            switch (_enforceGameFailureCondition)
             {
-                case AutoTrackSkipOption.S:
+                case EnforceGameFailureCondition.TrackSkip_S:
+                case EnforceGameFailureCondition.Retry_S:
                     if (maxAchievement < 97f)
                     {
-                        AutoTrackSkipTo().Forget();
+                        goto ZAKO_ZAKO;
                     }
                     break;
-                case AutoTrackSkipOption.SS:
+                case EnforceGameFailureCondition.TrackSkip_SS:
+                case EnforceGameFailureCondition.Retry_SS:
                     if (maxAchievement < 99f)
                     {
-                        AutoTrackSkipTo().Forget();
+                        goto ZAKO_ZAKO;
                     }
                     break;
-                case AutoTrackSkipOption.SSS:
+                case EnforceGameFailureCondition.TrackSkip_SSS:
+                case EnforceGameFailureCondition.Retry_SSS:
                     if (maxAchievement < 100f)
                     {
-                        AutoTrackSkipTo().Forget();
+                        goto ZAKO_ZAKO;
                     }
                     break;
-                case AutoTrackSkipOption.SSSPlus:
+                case EnforceGameFailureCondition.TrackSkip_SSSPlus:
+                case EnforceGameFailureCondition.Retry_SSSPlus:
                     if (maxAchievement < 100.5f)
                     {
-                        AutoTrackSkipTo().Forget();
+                        goto ZAKO_ZAKO;
                     }
                     break;
-                case AutoTrackSkipOption.Best:
-                    if ((HistoryScore?.PlayCount ?? 0) == 0)
+                case EnforceGameFailureCondition.TrackSkip_Best:
+                case EnforceGameFailureCondition.Retry_Best:
+                    if (maxAchievement < (IsClassicMode ? _historyAccurate.Classic : _historyAccurate.DX))
                     {
-                        return;
-                    }
-                    if (maxAchievement < HistoryScore!.Acc.DX)
-                    {
-                        AutoTrackSkipTo().Forget();
+                        goto ZAKO_ZAKO;
                     }
                     break;
-                case AutoTrackSkipOption.FC:
+                case EnforceGameFailureCondition.TrackSkip_FC:
+                case EnforceGameFailureCondition.Retry_FC:
                     if (judgeStats.TotalMissCount != 0)
                     {
-                        AutoTrackSkipTo().Forget();
+                        goto ZAKO_ZAKO;
                     }
                     break;
-                case AutoTrackSkipOption.AP:
+                case EnforceGameFailureCondition.TrackSkip_AP:
+                case EnforceGameFailureCondition.Retry_AP:
                     if (judgeStats.TotalGreatCount != 0 ||
                         judgeStats.TotalGoodCount != 0 ||
                         judgeStats.TotalMissCount != 0)
                     {
-                        AutoTrackSkipTo().Forget();
+                        goto ZAKO_ZAKO;
                     }
                     break;
-                case AutoTrackSkipOption.Disabled:
+                case EnforceGameFailureCondition.Disabled:
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
+                ZAKO_ZAKO:
+                    if (_isEnforceFastRetry)
+                    {
+                        EnforceFastRetry().Forget();
+                    }
+                    else
+                    {
+                        EnforceTrackSkipTo().Forget();
+                    }
+                    break;
             }
         }
         void AudioTimeUpdate()
@@ -1559,7 +1580,7 @@ namespace MajdataPlay.Scenes.Game
             _audioSample?.Stop();
             await ExitToScene(sceneName, delayMiliseconds);
         }
-        async UniTaskVoid AutoTrackSkipTo(string sceneName = "List")
+        async UniTaskVoid EnforceTrackSkipTo(string sceneName = "List")
         {
             if (State == GamePlayStatus.Ended)
             {
@@ -1571,6 +1592,23 @@ namespace MajdataPlay.Scenes.Game
             _audioSample?.Stop();
             PlayGameOverEffect();
             await ExitToScene(sceneName, 5000, true);
+        }
+        async UniTaskVoid EnforceFastRetry()
+        {
+            if (State == GamePlayStatus.Ended)
+            {
+                return;
+            }
+
+            State = GamePlayStatus.Ended;
+            _cts.Cancel();
+            _audioSample?.Stop();
+            PlayGameOverEffect();
+            await UniTask.Delay(5000);
+            MajInstances.SceneSwitcher.FadeIn();
+            await UniTask.Delay(400);
+            ClearAllResources();
+            MajInstances.SceneSwitcher.SwitchScene("Game", false);
         }
         public async UniTaskVoid EndGame(int delayMiliseconds = 100,string targetScene = "Result")
         {
