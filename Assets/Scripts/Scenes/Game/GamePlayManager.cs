@@ -118,11 +118,10 @@ namespace MajdataPlay.Scenes.Game
         float _audioStartTime = -114514;
         int _chartRotation = 0;
 
-        bool _isTrackSkipAvailable = MajEnv.Settings?.Game.TrackSkip ?? false;
-        AutoTrackSkipOption _autoTrackSkipOption = MajEnv.Settings?.Game.AutoTrackSkip ?? AutoTrackSkipOption.Disabled;
-        AutoQuickRetryOption _autoQuickRetryOption = MajEnv.Settings?.Game.AutoQuickRetry ?? AutoQuickRetryOption.Disabled;
-        bool _isFastRetryAvailable = MajEnv.Settings?.Game.FastRetry ?? false;
+        bool _isTrackSkipAvailable = false;
+        bool _isFastRetryAvailable = false;
         float? _allNotesFinishedTiming = null;
+        AutoTrackSkipOption _autoTrackSkipOption = AutoTrackSkipOption.Disabled;
 
         // Key timers
         float _2367PressTime = 0;
@@ -187,6 +186,9 @@ namespace MajdataPlay.Scenes.Game
             Majdata<INoteTimeProvider>.Instance = this;
             _gameInfo = Majdata<GameInfo>.Instance!;
             _gameSettings = MajInstances.Settings;
+            _autoTrackSkipOption = _gameSettings.Game.AutoTrackSkip;
+            _isTrackSkipAvailable = _gameSettings.Game.TrackSkip;
+            _isFastRetryAvailable = _gameSettings.Game.FastRetry;
             BreakMaterial = MajEnv.BreakMaterial;
             DefaultMaterial = MajEnv.DefaultMaterial;
             HoldShineMaterial = MajEnv.HoldShineMaterial;
@@ -988,7 +990,6 @@ namespace MajdataPlay.Scenes.Game
                         _noteManager.OnLateUpdate();
                         _objectCounter.OnLateUpdate();
                         AutoTrackSkipLateUpdate();
-                        AutoQuickRetryLateUpdate();
                         break;
                 }
                 GameControlLateUpdate();
@@ -1204,15 +1205,15 @@ namespace MajdataPlay.Scenes.Game
         }
         void AutoTrackSkipLateUpdate()
         {
-            if (State != GamePlayStatus.Running && State != GamePlayStatus.Blocking)
-            {
-                return;
-            }
             if (_autoTrackSkipOption == AutoTrackSkipOption.Disabled)
             {
                 return;
             }
-            if (MajEnv.Mode != RunningMode.Play || _gameInfo.IsDanMode || IsPracticeMode || IsAutoplay)
+            else if (State != GamePlayStatus.Running && State != GamePlayStatus.Blocking)
+            {
+                return;
+            }
+            else if (_gameInfo.IsDanMode || IsPracticeMode)
             {
                 return;
             }
@@ -1279,92 +1280,6 @@ namespace MajdataPlay.Scenes.Game
                     }
                     break;
                 case AutoTrackSkipOption.Disabled:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-        void AutoQuickRetryLateUpdate()
-        {
-            if (State != GamePlayStatus.Running && State != GamePlayStatus.Blocking)
-            {
-                return;
-            }
-            if (_autoQuickRetryOption == AutoQuickRetryOption.Disabled)
-            {
-                return;
-            }
-            if (_autoTrackSkipOption != AutoTrackSkipOption.Disabled)
-            {
-                return;
-            }
-            if (MajEnv.Mode != RunningMode.Play || _gameInfo.IsDanMode || IsPracticeMode || IsAutoplay)
-            {
-                return;
-            }
-
-            var accStats = _objectCounter.AccurateStats;
-            var maxAchievement = 0d;
-            if (IsClassicMode)
-            {
-                maxAchievement = accStats.Achievement_A;
-            }
-            else
-            {
-                maxAchievement = accStats.ClassicAchievement_B;
-            }
-            ref readonly var judgeStats = ref _objectCounter.JudgeStats;
-            switch (_autoQuickRetryOption)
-            {
-                case AutoQuickRetryOption.S:
-                    if (maxAchievement < 97f)
-                    {
-                        FastRetry().Forget();
-                    }
-                    break;
-                case AutoQuickRetryOption.SS:
-                    if (maxAchievement < 99f)
-                    {
-                        FastRetry().Forget();
-                    }
-                    break;
-                case AutoQuickRetryOption.SSS:
-                    if (maxAchievement < 100f)
-                    {
-                        FastRetry().Forget();
-                    }
-                    break;
-                case AutoQuickRetryOption.SSSPlus:
-                    if (maxAchievement < 100.5f)
-                    {
-                        FastRetry().Forget();
-                    }
-                    break;
-                case AutoQuickRetryOption.Best:
-                    if ((HistoryScore?.PlayCount ?? 0) == 0)
-                    {
-                        return;
-                    }
-                    if (maxAchievement < HistoryScore!.Acc.DX)
-                    {
-                        FastRetry().Forget();
-                    }
-                    break;
-                case AutoQuickRetryOption.FC:
-                    if (judgeStats.TotalMissCount != 0)
-                    {
-                        FastRetry().Forget();
-                    }
-                    break;
-                case AutoQuickRetryOption.AP:
-                    if (judgeStats.TotalGreatCount != 0 ||
-                        judgeStats.TotalGoodCount != 0 ||
-                        judgeStats.TotalMissCount != 0)
-                    {
-                        FastRetry().Forget();
-                    }
-                    break;
-                case AutoQuickRetryOption.Disabled:
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
