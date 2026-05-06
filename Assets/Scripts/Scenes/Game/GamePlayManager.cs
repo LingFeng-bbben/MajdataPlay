@@ -130,6 +130,7 @@ namespace MajdataPlay.Scenes.Game
         bool _isEnforceFastRetry = false;
         float? _allNotesFinishedTiming = null;
         EnforceGameFailureCondition _enforceGameFailureCondition = EnforceGameFailureCondition.Disabled;
+        GameplaySubScreenClickBehaviorOption _gameplaySubScreenClickBehavior = GameOptions.DEFAULT_GameplaySubScreenClickBehavior;
 
         // Key timers
         float _2367PressTime = 0;
@@ -195,6 +196,7 @@ namespace MajdataPlay.Scenes.Game
             _gameInfo = Majdata<GameInfo>.Instance!;
             _gameSettings = MajInstances.Settings;
             _enforceGameFailureCondition = _gameSettings.Game.EnforceGameFailure;
+            _gameplaySubScreenClickBehavior = _gameSettings.Game.GameplaySubScreenClickBehavior;
             _isEnforceFastRetry = (int)_enforceGameFailureCondition % 2 == 0;
             _isTrackSkipAvailable = _gameSettings.Game.TrackSkip;
             _isFastRetryAvailable = _gameSettings.Game.FastRetry;
@@ -1200,11 +1202,6 @@ namespace MajdataPlay.Scenes.Game
         }
         void FnKeyStateUpdate()
         {
-#if UNITY_ANDROID || UNITY_IOS
-            const float BUTTON_1P_SKIP_PRESS_TIME_SEC = 0.5f;
-#else
-            const float BUTTON_1P_SKIP_PRESS_TIME_SEC = 0f;
-#endif
             using (UnityProfiler.Create("GamePlayManager.FnKeyStateUpdate"))
             {
                 if (State == GamePlayStatus.Ended)
@@ -1260,18 +1257,42 @@ namespace MajdataPlay.Scenes.Game
                     _p1PressTime = 0;
                 }
 
-                if (_p1PressTime > BUTTON_1P_SKIP_PRESS_TIME_SEC)
+                if (_p1PressTime != 0)
                 {
-                    if (IsPracticeMode)
+                    switch(_gameplaySubScreenClickBehavior)
                     {
-                        var info = new GameInfo(GameMode.Practice, _gameInfo.Charts, _gameInfo.Levels, 114514);
-                        info.TimeRange = _gameInfo.TimeRange;
-                        Majdata<GameInfo>.Instance = info;
-                        ReturnTo("Practice").Forget();
-                    }
-                    else
-                    {
-                        TrackSkipTo().Forget();
+                        case GameplaySubScreenClickBehaviorOption.TrackSkip:
+                            goto ON_TRIGGER_TRACK_SKIP;
+                        case GameplaySubScreenClickBehaviorOption.FastRetry:
+                            goto ON_TRIGGER_FAST_RETRY;
+                        case GameplaySubScreenClickBehaviorOption.TrackSkip_1_Sec_Delay:
+                            if (_p1PressTime >= 1f)
+                            {
+                                goto ON_TRIGGER_TRACK_SKIP;
+                            }
+                            break;
+                        case GameplaySubScreenClickBehaviorOption.FastRetry_1_Sec_Delay:
+                            if (_p1PressTime >= 1f)
+                            {
+                                goto ON_TRIGGER_FAST_RETRY;
+                            }
+                            break;
+                        ON_TRIGGER_TRACK_SKIP:
+                            if (IsPracticeMode)
+                            {
+                                var info = new GameInfo(GameMode.Practice, _gameInfo.Charts, _gameInfo.Levels, 114514);
+                                info.TimeRange = _gameInfo.TimeRange;
+                                Majdata<GameInfo>.Instance = info;
+                                ReturnTo("Practice").Forget();
+                            }
+                            else
+                            {
+                                TrackSkipTo().Forget();
+                            }
+                            break;
+                        ON_TRIGGER_FAST_RETRY:
+                            FastRetry().Forget();
+                            break;
                     }
                 }
                 else if (_2367PressTime >= 0.5f && _isTrackSkipAvailable)
