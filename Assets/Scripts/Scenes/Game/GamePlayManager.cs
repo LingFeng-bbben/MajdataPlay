@@ -1217,7 +1217,7 @@ namespace MajdataPlay.Scenes.Game
                 return;
             }
 
-            var accStats = _objectCounter.AchievementStats;
+            var accStats = _objectCounter.AccurateStats;
             var maxAchievement = 0d;
             if(IsClassicMode)
             {
@@ -1227,6 +1227,7 @@ namespace MajdataPlay.Scenes.Game
             {
                 maxAchievement = accStats.ClassicAchievement_B;
             }
+            ref readonly var judgeStats = ref _objectCounter.JudgeStats;
             switch (_autoTrackSkipOption)
             {
                 case AutoTrackSkipOption.S:
@@ -1264,13 +1265,15 @@ namespace MajdataPlay.Scenes.Game
                     }
                     break;
                 case AutoTrackSkipOption.FC:
-                    if (HasLostFCRequirement())
+                    if (judgeStats.TotalMissCount != 0)
                     {
                         AutoTrackSkipTo().Forget();
                     }
                     break;
                 case AutoTrackSkipOption.AP:
-                    if (HasLostAPRequirement())
+                    if (judgeStats.TotalGreatCount != 0 ||
+                        judgeStats.TotalGoodCount != 0 ||
+                        judgeStats.TotalMissCount != 0)
                     {
                         AutoTrackSkipTo().Forget();
                     }
@@ -1300,7 +1303,7 @@ namespace MajdataPlay.Scenes.Game
                 return;
             }
 
-            var accStats = _objectCounter.AchievementStats;
+            var accStats = _objectCounter.AccurateStats;
             var maxAchievement = 0d;
             if (IsClassicMode)
             {
@@ -1310,6 +1313,7 @@ namespace MajdataPlay.Scenes.Game
             {
                 maxAchievement = accStats.ClassicAchievement_B;
             }
+            ref readonly var judgeStats = ref _objectCounter.JudgeStats;
             switch (_autoQuickRetryOption)
             {
                 case AutoQuickRetryOption.S:
@@ -1347,13 +1351,15 @@ namespace MajdataPlay.Scenes.Game
                     }
                     break;
                 case AutoQuickRetryOption.FC:
-                    if (HasLostFCRequirement())
+                    if (judgeStats.TotalMissCount != 0)
                     {
                         FastRetry().Forget();
                     }
                     break;
                 case AutoQuickRetryOption.AP:
-                    if (HasLostAPRequirement())
+                    if (judgeStats.TotalGreatCount != 0 ||
+                        judgeStats.TotalGoodCount != 0 ||
+                        judgeStats.TotalMissCount != 0)
                     {
                         FastRetry().Forget();
                     }
@@ -1363,16 +1369,6 @@ namespace MajdataPlay.Scenes.Game
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-        }
-        bool HasLostFCRequirement()
-        {
-            var judgeInfo = _objectCounter.GetCurrentTotalJudgeInfo();
-            return judgeInfo.Miss != 0;
-        }
-        bool HasLostAPRequirement()
-        {
-            var judgeInfo = _objectCounter.GetCurrentTotalJudgeInfo();
-            return judgeInfo.Great != 0 || judgeInfo.Good != 0 || judgeInfo.Miss != 0;
         }
         void AudioTimeUpdate()
         {
@@ -1433,7 +1429,7 @@ namespace MajdataPlay.Scenes.Game
 
         private GameResult CalculateScore(bool playEffect = true)
         {
-            var accStats = _objectCounter.AchievementStats;
+            var accStats = _objectCounter.AccurateStats;
             print("GameResult: " + accStats.Achievement_A);
             var result = _objectCounter.GetPlayRecord(_songDetail, _listConfig.SelectedDiff);
             _gameInfo.RecordResult(result);
