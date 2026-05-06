@@ -46,6 +46,7 @@ MaiCharts\Original\Zunda Overdance\maidata.txt
 MaiCharts\Original\Zunda Overdance\track.opus
 MovieBG\allperfect.webm
 MovieBG\fullcombo.webm
+MovieBG\GameOver.webm
 MovieBG\title.webm
 SFX\answer.wav
 SFX\answer_clock.wav
@@ -57,6 +58,7 @@ SFX\bgm_title.mp3
 SFX\break.wav
 SFX\break_slide.wav
 SFX\break_tap.wav
+SFX\GameOver.wav
 SFX\slide.wav
 SFX\slide_break_slide.wav
 SFX\slide_break_start.wav
