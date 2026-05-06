@@ -1222,11 +1222,11 @@ namespace MajdataPlay.Scenes.Game
             var maxAchievement = 0d;
             if(IsClassicMode)
             {
-                maxAchievement = accStats.Achievement_A;
+                maxAchievement = accStats.ClassicAchievement_B;
             }
             else
             {
-                maxAchievement = accStats.ClassicAchievement_B;
+                maxAchievement = accStats.Achievement_A;
             }
             ref readonly var judgeStats = ref _objectCounter.JudgeStats;
             switch (_autoTrackSkipOption)
