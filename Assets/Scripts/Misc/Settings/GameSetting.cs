@@ -524,7 +524,7 @@ namespace MajdataPlay.Settings
     public class LedOptions
     {
         
-        public bool Enable { get; set; } = true;
+        public bool Enable { get; init; } = true;
         
         public float Brightness { get; set; } = 1.0f;
         
@@ -539,7 +539,8 @@ namespace MajdataPlay.Settings
     
     public class ButtonRingOptions
     {
-        
+        public bool Enable { get; init; } = true;
+
         public ButtonRingDeviceOption? Type { get; set; } = null;
         
         public bool Debounce { get; set; } = false;
@@ -553,7 +554,8 @@ namespace MajdataPlay.Settings
     
     public class TouchPanelOptions
     {
-        
+        public bool Enable { get; init; } = true;
+
         public bool Debounce { get; set; } = false;
         
         public TouchPanelSensitivityConfig Sensitivities { get; set; } = default;

@@ -33,6 +33,8 @@ namespace MajdataPlay.IO
         {
             public static bool IsConnected { get; private set; } = false;
 
+            static int _isInited = 0;
+            static bool _isEnabled = false;
             static SpinLock _syncLock = new();
             static Task _touchPanelUpdateLoop = Task.CompletedTask;
 
@@ -47,6 +49,16 @@ namespace MajdataPlay.IO
             #region Public Methods
             public static void Init()
             {
+                if(Interlocked.CompareExchange(ref _isInited, 0, 1) == 1)
+                {
+                    return;
+                }
+                _isEnabled = MajEnv.Settings.IO.InputDevice.TouchPanel.Enable;
+                if (!_isEnabled)
+                {
+                    MajDebug.LogInfo("[TouchPanel]Disabled");
+                    return;
+                }
                 if (!_touchPanelUpdateLoop.IsCompleted)
                 {
                     return;

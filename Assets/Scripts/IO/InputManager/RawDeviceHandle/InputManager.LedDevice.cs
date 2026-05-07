@@ -27,32 +27,37 @@ namespace MajdataPlay.IO
                 private set;
             }
 
+            static int _isInited = 0;
+            static bool _isEnabled = true;
+            static float _brightness = 1.0f;
+            static bool _isThrottlerEnabled = false;
+
             static Task _ledDeviceUpdateLoop = Task.CompletedTask;
 
-            readonly static bool _isThrottlerEnabled = false;
-            readonly static bool _isEnabled = true;
-
-            static float _brightness = 1.0f;
-            static LedDevice()
-            {
-                _isEnabled = MajInstances.Settings.IO.OutputDevice.Led.Enable;
-
-                _isThrottlerEnabled = MajInstances.Settings.IO.OutputDevice.Led.Throttler;
-
-                if (MajInstances.Settings.IO.OutputDevice.Led.RefreshRateMs <= 16)
-                {
-                    MajInstances.Settings.IO.OutputDevice.Led.RefreshRateMs = 16;
-                }
-            }
             public static void Init()
             {
-                _brightness = MajInstances.Settings.IO.OutputDevice.Led.Brightness.Clamp(0, 1f);
+                if (Interlocked.CompareExchange(ref _isInited, 0, 1) == 1)
+                {
+                    return;
+                }
+                _isEnabled = MajEnv.Settings.IO.OutputDevice.Led.Enable;
+                _isThrottlerEnabled = MajEnv.Settings.IO.OutputDevice.Led.Throttler;
+                if (MajEnv.Settings.IO.OutputDevice.Led.RefreshRateMs <= 16)
+                {
+                    MajEnv.Settings.IO.OutputDevice.Led.RefreshRateMs = 16;
+                }
+                _brightness = MajEnv.Settings.IO.OutputDevice.Led.Brightness.Clamp(0, 1f);
+                if (!_isEnabled)
+                {
+                    MajDebug.LogInfo("[Led]Disabled");
+                    return;
+                }
+                else if (!_ledDeviceUpdateLoop.IsCompleted)
+                {
+                    return;
+                }
                 try
                 {
-                    if (!_ledDeviceUpdateLoop.IsCompleted || !_isEnabled)
-                    {
-                        return;
-                    }
                     var manufacturer = _deviceManufacturer;
                     CabinetLight.SetSupported(manufacturer == DeviceManufacturerOption.Dao, _isEnabled);
 #if !UNITY_STANDALONE_WIN
