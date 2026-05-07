@@ -1086,7 +1086,8 @@ namespace MajdataPlay.IO
                 static NovHIDTouchPanel()
                 {
                     var rad = MajEnv.Settings.IO.InputDevice.TouchPanel.CapacitivePanelOptions.TouchRadius;
-                    _mapper = new TouchSensorMapper(MIN_X, MIN_Y, MAX_X, MAX_Y, rad, FLIP);
+                    var radiusOffset = MajEnv.Settings.IO.InputDevice.TouchPanel.CapacitivePanelOptions.RadiusOffset;
+                    _mapper = new TouchSensorMapper(MIN_X, MIN_Y, MAX_X, MAX_Y, rad, radiusOffset, FLIP);
                 }
 
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1181,14 +1182,22 @@ namespace MajdataPlay.IO
                     private readonly float _maxY;
                     private readonly float _radius;
                     private readonly bool _flip;
+                    private readonly RadiusOffset _radiusOffset;
 
-                    public TouchSensorMapper(float minX, float minY, float maxX, float maxY, float radius, bool flip)
+                    public TouchSensorMapper(float minX, 
+                        float minY, 
+                        float maxX, 
+                        float maxY, 
+                        float radius, 
+                        CapacitiveTouchPanelRadiusOffsetConfig radiusOffset, 
+                        bool flip)
                     {
                         _minX = minX;
                         _minY = minY;
                         _maxX = maxX;
                         _maxY = maxY;
                         _radius = radius;
+                        _radiusOffset = new();
                         _flip = flip;
                     }
 
@@ -1418,24 +1427,63 @@ namespace MajdataPlay.IO
                         for (int i = 0; i < 34; i++)
                         {
                             bool isInsidePolygon;
+                            var sensor = _sensors[i];
+                            var radius = i switch
+                            {
+                                0 => _radius + _radiusOffset.A,
+                                1 => _radius + _radiusOffset.A,
+                                2 => _radius + _radiusOffset.A,
+                                3 => _radius + _radiusOffset.A,
+                                4 => _radius + _radiusOffset.A,
+                                5 => _radius + _radiusOffset.A,
+                                6 => _radius + _radiusOffset.A,
+                                7 => _radius + _radiusOffset.A,
+                                8 => _radius + _radiusOffset.B,
+                                9 => _radius + _radiusOffset.B,
+                                10 => _radius + _radiusOffset.B,
+                                11 => _radius + _radiusOffset.B,
+                                12 => _radius + _radiusOffset.B,
+                                13 => _radius + _radiusOffset.B,
+                                14 => _radius + _radiusOffset.B,
+                                15 => _radius + _radiusOffset.B,
+                                16 => _radius + _radiusOffset.C,
+                                17 => _radius + _radiusOffset.C,
+                                18 => _radius + _radiusOffset.D,
+                                19 => _radius + _radiusOffset.D,
+                                20 => _radius + _radiusOffset.D,
+                                21 => _radius + _radiusOffset.D,
+                                22 => _radius + _radiusOffset.D,
+                                23 => _radius + _radiusOffset.D,
+                                24 => _radius + _radiusOffset.D,
+                                25 => _radius + _radiusOffset.D,
+                                26 => _radius + _radiusOffset.E,
+                                27 => _radius + _radiusOffset.E,
+                                28 => _radius + _radiusOffset.E,
+                                29 => _radius + _radiusOffset.E,
+                                30 => _radius + _radiusOffset.E,
+                                31 => _radius + _radiusOffset.E,
+                                32 => _radius + _radiusOffset.E,
+                                33 => _radius + _radiusOffset.E,
+                                _ => _radius
+                            };
 
-                            if (_radius > 0)
+                            if (radius > 0)
                             {
                                 // 当有半径时，需要检查圆与多边形的关系
-                                isInsidePolygon = PolygonRaycasting.IsVertDistance(_sensors[i], canvasPoint, _radius);
+                                isInsidePolygon = PolygonRaycasting.IsVertDistance(sensor, canvasPoint, radius);
                                 if (!isInsidePolygon)
                                 {
-                                    isInsidePolygon = PolygonRaycasting.IsCircleIntersectingPolygonEdges(_sensors[i], canvasPoint, _radius);
+                                    isInsidePolygon = PolygonRaycasting.IsCircleIntersectingPolygonEdges(sensor, canvasPoint, radius);
                                 }
                                 if (!isInsidePolygon)
                                 {
-                                    isInsidePolygon = PolygonRaycasting.InPointInInternal(_sensors[i], canvasPoint);
+                                    isInsidePolygon = PolygonRaycasting.InPointInInternal(sensor, canvasPoint);
                                 }
                             }
                             else
                             {
                                 // 当半径为0时，只需要检查点是否在多边形内部
-                                isInsidePolygon = PolygonRaycasting.InPointInInternal(_sensors[i], canvasPoint);
+                                isInsidePolygon = PolygonRaycasting.InPointInInternal(sensor, canvasPoint);
                             }
 
                             if (isInsidePolygon)
@@ -1454,97 +1502,22 @@ namespace MajdataPlay.IO
                     {
                         return toMin + (value - fromMin) * (toMax - toMin) / (fromMax - fromMin);
                     }
-                }
-                static class PolygonRaycasting
-                {
-                    /// <summary>
-                    /// 检查点是否在多边形的顶点内
-                    /// </summary>
-                    /// <returns></returns>
-                    public static bool InPointInInternal(Vector2[] polygon, Vector2 localInputPoint)
+                    struct RadiusOffset
                     {
-                        bool isInsidePolygon = false;
-                        int num = polygon.Length;
-                        float x = localInputPoint.x;
-                        float y = localInputPoint.y;
-                        Vector2 prevVertex = polygon[num - 1];
-                        float prevX = prevVertex.x;
-                        float prevY = prevVertex.y;
-                        for (int i = 0; i < polygon.Length; i++)
+                        public readonly int A;
+                        public readonly int B;
+                        public readonly int C;
+                        public readonly int D;
+                        public readonly int E;
+
+                        public RadiusOffset(CapacitiveTouchPanelRadiusOffsetConfig config)
                         {
-                            Vector2 currentVertex = polygon[i];
-                            float currentX = currentVertex.x;
-                            float currentY = currentVertex.y;
-
-
-                            // 判断点是否在边的左右交替
-                            if ((currentY > y ^ prevY > y) && (x < (prevX - currentX) * (y - currentY) / (prevY - currentY) + currentX))
-                            {
-                                isInsidePolygon = !isInsidePolygon;
-                            }
-                            prevX = currentX;
-                            prevY = currentY;
+                            A = config.A;
+                            B = config.B;
+                            C = config.C;
+                            D = config.D;
+                            E = config.E;
                         }
-                        return isInsidePolygon;
-                    }
-                    /// <summary>
-                    /// 检查顶点是否在触摸点的范围
-                    /// </summary>
-                    /// <param name="polygon"></param>
-                    /// <param name="circleCenter"></param>
-                    /// <param name="radius"></param>
-                    /// <returns></returns>
-                    public static bool IsVertDistance(Vector2[] polygon, Vector2 circleCenter, float radius)
-                    {
-                        for (int i = 0; i < polygon.Length; i++)
-                        {
-                            Vector2 currentVertex = polygon[i];
-                            if (Vector2.Distance(circleCenter, currentVertex) < radius)
-                            {
-                                return true;
-                            }
-                        }
-                        return false;
-                    }
-                    /// <summary>
-                    /// 检查圆是否与多边形的边相交
-                    /// </summary>
-                    /// <param name="polygon"></param>
-                    /// <param name="circleCenter"></param>
-                    /// <param name="radius"></param>
-                    /// <returns></returns>
-                    public static bool IsCircleIntersectingPolygonEdges(Vector2[] polygon, Vector2 circleCenter, float radius)
-                    {
-                        int vertexCount = polygon.Length;
-
-                        for (int i = 0; i < vertexCount; i++)
-                        {
-                            Vector2 a = polygon[i];
-                            Vector2 b = polygon[(i + 1) % vertexCount];
-
-                            // 检查圆心到边的最短距离是否小于等于半径
-                            if (DistanceFromPointToSegment(circleCenter, a, b) <= radius)
-                            {
-                                return true;
-                            }
-                        }
-
-                        return false;
-                    }
-                    // 计算点到线段的最短距离
-                    private static float DistanceFromPointToSegment(Vector2 point, Vector2 segmentStart, Vector2 segmentEnd)
-                    {
-                        Vector2 segment = segmentEnd - segmentStart;
-                        float segmentLengthSquared = segment.sqrMagnitude;
-
-                        if (segmentLengthSquared == 0f)
-                        {
-                            return Vector2.Distance(point, segmentStart); // 退化为一个点
-                        }
-
-                        float t = Mathf.Clamp(Vector2.Dot(point - segmentStart, segment) / segmentLengthSquared, 0f, 1f);
-                        Vector2 projection = segmentStart + t * segment;
-                        return Vector2.Distance(point, projection);
                     }
                 }
             }

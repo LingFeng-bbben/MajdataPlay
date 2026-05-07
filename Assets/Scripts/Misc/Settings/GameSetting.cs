@@ -600,6 +600,7 @@ namespace MajdataPlay.Settings
     {
         
         public int TouchRadius { get; set; } = 30;
+        public CapacitiveTouchPanelRadiusOffsetConfig RadiusOffset { get; set; } = new();
     }
     
     public class SerialPortOptions
@@ -627,7 +628,20 @@ namespace MajdataPlay.Settings
         
         public short E { get; set; }
     }
-    
+    public struct CapacitiveTouchPanelRadiusOffsetConfig
+    {
+
+        public int A { get; set; }
+
+        public int B { get; set; }
+
+        public int C { get; set; }
+
+        public int D { get; set; }
+
+        public int E { get; set; }
+    }
+
     public class ChannelOptions
     {
         // Front (LF / RF)
