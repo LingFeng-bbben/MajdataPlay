@@ -70,6 +70,13 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => _isEX = value;
         }
+        public bool IsMine
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _isMine;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => _isMine = value;
+        }
         public bool IsInited
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -447,6 +454,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         bool _isBreak = false;
         [ReadOnlyField, SerializeField]
         bool _isEX = false;
+        [ReadOnlyField, SerializeField]
+        bool _isMine = false;
         [ReadOnlyField, SerializeField]
         bool _isAutoplay = false;
         [ReadOnlyField, SerializeField]
