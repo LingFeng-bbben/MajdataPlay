@@ -465,7 +465,9 @@ namespace MajdataPlay.IO
         
         public static void Init()
         {
+#if UNITY_STANDALONE
             LedDevice.Init();
+#endif
         }
         public static void SetLedRingColorData(ReadOnlySpan<Color> colors)
         {

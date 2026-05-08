@@ -546,7 +546,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
 
 #if UNITY_ANDROID || UNITY_IOS
-            if (_noteManager.IsSensorClickedInThisFrame(_sensorPos) && _noteManager.TryUseSensorClickEvent(_sensorPos))
+            if (NoteManager.IsSensorClickedInThisFrame(SensorPos) && NoteManager.TryUseSensorClickEvent(SensorPos))
             {
                 Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
             }

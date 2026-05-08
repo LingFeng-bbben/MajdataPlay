@@ -58,6 +58,7 @@ namespace MajdataPlay.IO
                 {
                     return;
                 }
+#if UNITY_STANDALONE
                 _isEnabled = MajEnv.Settings.IO.InputDevice.TouchPanel.Enable;
                 if (!_isEnabled)
                 {
@@ -68,7 +69,6 @@ namespace MajdataPlay.IO
                 {
                     return;
                 }
-#if UNITY_STANDALONE
                 var manufacturer = IODetector.DeviceManufacturer;
                 var buttonRingDevice = IODetector.ButtonRingDevice;
                 if (manufacturer == DeviceManufacturerOption.General)
