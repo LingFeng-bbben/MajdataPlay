@@ -30,7 +30,7 @@ namespace MajdataPlay.Scenes.TotalResult
         }
         void Start()
         {
-            LedRing.SetAllLight(Color.white);
+            CabinetLed.SetAllLight(Color.white);
             var results = _gameInfo.Results;
             var levels = _gameInfo.Levels;
             var songInfos = _gameInfo.Charts;
@@ -79,7 +79,7 @@ namespace MajdataPlay.Scenes.TotalResult
         async UniTaskVoid DelayBind()
         {
             await UniTask.Delay(1000);
-            LedRing.SetButtonLight(Color.green, 3);
+            CabinetLed.SetButtonLight(Color.green, 3);
             _isInited = true;
         }
         void Update()

@@ -69,10 +69,11 @@ namespace MajdataPlay.IO
                     return;
                 }
 #if UNITY_STANDALONE
-                var manufacturer = _deviceManufacturer;
+                var manufacturer = IODetector.DeviceManufacturer;
+                var buttonRingDevice = IODetector.ButtonRingDevice;
                 if (manufacturer == DeviceManufacturerOption.General)
                 {
-                    switch (_buttonRingDevice)
+                    switch (buttonRingDevice)
                     {
                         case ButtonRingDeviceOption.Keyboard:
                             _buttonRingUpdateLoop = Task.Factory.StartNew(KeyboardUpdateLoop, TaskCreationOptions.LongRunning);
@@ -81,7 +82,7 @@ namespace MajdataPlay.IO
                             _buttonRingUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
                             break;
                         default:
-                            MajDebug.LogWarning($"[ButtonRing]Not supported button ring device: {_buttonRingDevice}");
+                            MajDebug.LogWarning($"[ButtonRing]Not supported button ring device: {buttonRingDevice}");
                             break;
                     }
                 }
@@ -537,7 +538,7 @@ namespace MajdataPlay.IO
             static void HIDUpdateLoop()
             {
                 ref var @lock = ref _syncLock;
-                var hidOptions = _buttonRingHidConnInfo;
+                var hidOptions = IODetector.ButtonRingHidConnInfo;
                 var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
                 var pollingRate = _btnPollingRateMs;
@@ -547,8 +548,8 @@ namespace MajdataPlay.IO
                 var t1 = stopwatch.Elapsed;
                 var pid = hidOptions.ProductId;
                 var vid = hidOptions.VendorId;
-                var manufacturer = _deviceManufacturer;
-                var deviceType = _buttonRingDevice;
+                var manufacturer = IODetector.DeviceManufacturer;
+                var deviceType = IODetector.ButtonRingDevice;
                 var deviceName = string.IsNullOrEmpty(hidOptions.DeviceName) ? GetHIDDeviceName(deviceType, manufacturer) : hidOptions.DeviceName;
                 var hidConfig = new OpenConfiguration();
                 var filter = new DeviceFilter()
@@ -679,7 +680,7 @@ namespace MajdataPlay.IO
             static void PipeUpdateLoop()
             {
                 ref var @lock = ref _syncLock;
-                var pipeName = $"majdataplay_{_playerIndex}p";
+                var pipeName = $"majdataplay_{IODetector.PlayerIndex}p";
                 var token = MajEnv.GlobalCT;
                 var pollingRate = _btnPollingRateMs;
                 var stopwatch = new Stopwatch();
@@ -915,7 +916,7 @@ namespace MajdataPlay.IO
                 public static void Parse(ReadOnlySpan<byte> reportData,Span<bool> buffer)
                 {
                     reportData = reportData.Slice(1); // skip report id
-                    switch (_playerIndex)
+                    switch (IODetector.PlayerIndex)
                     {
                         case 1:
                             buffer[0] = (~reportData[IO4_BA1_1P_INDEX] & IO4_BA1_OFFSET) != 0;

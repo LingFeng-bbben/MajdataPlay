@@ -83,7 +83,7 @@ namespace MajdataPlay.Scenes.Result
             var result = _gameInfo.GetLastResult();
             var isClassic = MajEnv.Settings.Judge.Mode == JudgeModeOption.Classic;
 
-            LedRing.SetAllLight(Color.white);
+            CabinetLed.SetAllLight(Color.white);
 
             var totalJudgeRecord = JudgeDetail.UnpackJudgeRecord(result.JudgeRecord.TotalJudgeInfo);
             var song = result.SongDetail;
@@ -292,7 +292,7 @@ namespace MajdataPlay.Scenes.Result
                 MajDebug.LogException(e); 
             }
             _isInited = true;
-            LedRing.SetButtonLight(Color.yellow, 4);
+            CabinetLed.SetButtonLight(Color.yellow, 4);
             var t1 = _scoreSaveTask;
             var t2 = RecordHelper.StopRecordAsync();
             while(!t1.IsCompleted || !t2.IsCompleted)
@@ -300,7 +300,7 @@ namespace MajdataPlay.Scenes.Result
                 await UniTask.Yield();
             }
             _isAllTaskFinished = true;
-            LedRing.SetButtonLight(Color.green, 3);
+            CabinetLed.SetButtonLight(Color.green, 3);
         }
 
 

@@ -71,19 +71,19 @@ namespace MajdataPlay.Scenes.List
             diff = i;
             if (i + 1 < diffColors.Length)
             {
-                LedRing.SetButtonLight(diffColors[i + 1], 0);
+                CabinetLed.SetButtonLight(diffColors[i + 1], 0);
             }
             else
             {
-                LedRing.SetButtonLight(diffColors.First(), 0);
+                CabinetLed.SetButtonLight(diffColors.First(), 0);
             }
             if (i - 1 >= 0)
             {
-                LedRing.SetButtonLight(diffColors[i - 1], 7);
+                CabinetLed.SetButtonLight(diffColors[i - 1], 7);
             }
             else
             {
-                LedRing.SetButtonLight(diffColors.Last(), 7);
+                CabinetLed.SetButtonLight(diffColors.Last(), 7);
             }
 
         }

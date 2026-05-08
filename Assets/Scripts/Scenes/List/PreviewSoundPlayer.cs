@@ -42,8 +42,8 @@ namespace MajdataPlay.Scenes.List
             _currentPreviewSong = info;
             _isPreviewPlaying = false;
             var previewVersion = ++_previewVersion;
-            LedRing.SetButtonLight(Color.green, 3);
-            CabinetLight.SetLight(1.0f);
+            CabinetLed.SetButtonLight(Color.green, 3);
+            CabinetLed.SetCabinetLight(1.0f);
             _cancellationTokenSource = new();
             ListManager.AllBackgroundTasks.Add(PlayPreviewAsync(info, _cancellationTokenSource.Token, previewVersion));
         }

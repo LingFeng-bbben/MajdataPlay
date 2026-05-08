@@ -42,7 +42,7 @@ namespace MajdataPlay.Scenes.SortFind
                 _slots[i] = (SortType)i;
             }
             Focus(_searchBar);
-            LedRing.SetAllLight(Color.black);
+            CabinetLed.SetAllLight(Color.black);
             _searchBar.text = SongStorage.OrderBy.Keyword;
             _searchBar.onValueChanged.AddListener(_ => _clearButton.SetActive(!string.IsNullOrEmpty(_searchBar.text)));
             _clearButton.SetActive(!string.IsNullOrEmpty(_searchBar.text));

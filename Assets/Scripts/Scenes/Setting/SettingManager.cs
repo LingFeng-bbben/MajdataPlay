@@ -166,13 +166,13 @@ namespace MajdataPlay.Scenes.Setting
 
         void SetSettingLights()
         {
-            LedRing.SetAllLight(Color.white);
-            LedRing.SetButtonLight(Color.green, 3);
-            LedRing.SetButtonLight(Color.red, 4);
-            LedRing.SetButtonLight(Color.blue, 2);
-            LedRing.SetButtonLight(Color.blue, 5);
-            LedRing.SetButtonLight(Color.blue, 0);
-            LedRing.SetButtonLight(Color.blue, 7);
+            CabinetLed.SetAllLight(Color.white);
+            CabinetLed.SetButtonLight(Color.green, 3);
+            CabinetLed.SetButtonLight(Color.red, 4);
+            CabinetLed.SetButtonLight(Color.blue, 2);
+            CabinetLed.SetButtonLight(Color.blue, 5);
+            CabinetLed.SetButtonLight(Color.blue, 0);
+            CabinetLed.SetButtonLight(Color.blue, 7);
         }
 
         async UniTask SwitchToDesiredIndex()

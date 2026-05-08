@@ -145,12 +145,12 @@ namespace MajdataPlay.Scenes.List
                 MajInstances.SceneSwitcher.FadeOut();
                 _coverListDisplayer.SlideToDifficulty((int)_listConfig.SelectedDiff);
                 _isInited = true;
-                LedRing.SetButtonLight(Color.green, 3);
-                LedRing.SetButtonLight(Color.red, 4);
-                LedRing.SetButtonLight(Color.blue, 2);
-                LedRing.SetButtonLight(Color.blue, 5);
-                LedRing.SetButtonLight(Color.yellow, 6);
-                LedRing.SetButtonLight(Color.yellow, 1);
+                CabinetLed.SetButtonLight(Color.green, 3);
+                CabinetLed.SetButtonLight(Color.red, 4);
+                CabinetLed.SetButtonLight(Color.blue, 2);
+                CabinetLed.SetButtonLight(Color.blue, 5);
+                CabinetLed.SetButtonLight(Color.yellow, 6);
+                CabinetLed.SetButtonLight(Color.yellow, 1);
             }
         }
         void OnDestroy()
@@ -366,7 +366,7 @@ namespace MajdataPlay.Scenes.List
                     }
                     else
                     {
-                        LedRing.SetButtonLight(Color.red, 4);
+                        CabinetLed.SetButtonLight(Color.red, 4);
                         _coverListDisplayer.SwitchToSongList();
                         _coverListDisplayer.SlideListToTop();
                         if (SongStorage.WorkingCollection.IsOnline)
@@ -417,7 +417,7 @@ namespace MajdataPlay.Scenes.List
                 if (_coverListDisplayer.IsChartList)
                 {
                     _coverListDisplayer.SwitchToDirList();
-                    LedRing.SetButtonLight(Color.white, 4);
+                    CabinetLed.SetButtonLight(Color.white, 4);
                     SongStorage.WorkingCollection.Index = 0;
                 }
                 else if (_isOnlineEnabled && _coverListDisplayer.IsDirList)

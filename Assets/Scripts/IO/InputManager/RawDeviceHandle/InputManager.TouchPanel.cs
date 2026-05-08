@@ -63,7 +63,8 @@ namespace MajdataPlay.IO
                 {
                     return;
                 }
-                switch (_deviceManufacturer)
+                var deviceManufacturer = IODetector.DeviceManufacturer;
+                switch (deviceManufacturer)
                 {
                     case DeviceManufacturerOption.Yuan:
                     case DeviceManufacturerOption.General:
@@ -334,7 +335,7 @@ namespace MajdataPlay.IO
                 const int RECONNECT_INTERVAL = 1000;
 
                 ref var @lock = ref _syncLock;
-                var serialPortOptions = _touchPanelSerialConnInfo;
+                var serialPortOptions = IODetector.TouchPanelSerialConnInfo;
                 var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
                 var pollingRate = _sensorPollingRateMs;
@@ -451,7 +452,7 @@ namespace MajdataPlay.IO
 
                 ref var @lock = ref _syncLock;
                 var touchPanelOptions = MajEnv.Settings.IO.InputDevice.TouchPanel;
-                var usbOptions = _touchPanelUsbConnInfo;
+                var usbOptions = IODetector.TouchPanelUsbConnInfo;
                 var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
                 var pollingRate = _sensorPollingRateMs;
@@ -459,7 +460,7 @@ namespace MajdataPlay.IO
                 var t1 = stopwatch.Elapsed;
                 var pid = usbOptions.ProductId;
                 var vid = usbOptions.VendorId;
-                var manufacturer = _deviceManufacturer;
+                var manufacturer = IODetector.DeviceManufacturer;
                 var deviceName = string.IsNullOrEmpty(usbOptions.DeviceName) ? GetUsbDeviceName(manufacturer) : usbOptions.DeviceName;
                 
                 var deviceFinder = new UsbDeviceFinder(vid, pid);
@@ -696,7 +697,7 @@ namespace MajdataPlay.IO
                 ref var @lock = ref _syncLock;
                 var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
-                var manufacturer = _deviceManufacturer;
+                var manufacturer = IODetector.DeviceManufacturer;
 
                 currentThread.Name = "IO/T Thread";
                 currentThread.IsBackground = true;
@@ -793,7 +794,7 @@ namespace MajdataPlay.IO
                         serialSession.Open();
                         var encoding = Encoding.ASCII;
                         var sensConfig = MajEnv.Settings.IO.InputDevice.TouchPanel.Sensitivities;
-                        var index = _playerIndex == 1 ? 'L' : 'R';
+                        var index = IODetector.PlayerIndex == 1 ? 'L' : 'R';
                         //see also https://github.com/Sucareto/Mai2Touch/tree/main/Mai2Touch
 
                         serialSession.Write(encoding.GetBytes("{RSET}"));

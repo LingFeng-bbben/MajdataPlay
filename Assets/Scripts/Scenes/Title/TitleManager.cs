@@ -28,7 +28,7 @@ namespace MajdataPlay.Scenes.Title
         void Start()
         {
             InitAsync().Forget();
-            LedRing.SetAllLight(Color.white);
+            CabinetLed.SetAllLight(Color.white);
             if (InputManager.IsTouchPanelConnected)
             {
                 Destroy(GameObject.Find("EventSystem"));

@@ -616,22 +616,22 @@ namespace MajdataPlay.Scenes.Game
             {
                 return;
             }
-            LedRing.SetAllLight(Color.black);
+            CabinetLed.SetAllLight(Color.black);
             if (progress == 0)
             {
-                LedRing.SetSineFunc(0, Color.green, 1000);
+                CabinetLed.SetSineFunc(0, Color.green, 1000);
                 return;
             }
             else if(progress == 8)
             {
-                LedRing.SetAllLight(Color.green);
+                CabinetLed.SetAllLight(Color.green);
                 return;
             }
             for (var i = 0; i < progress; i++)
             {
-                LedRing.SetButtonLight(Color.green, i);
+                CabinetLed.SetButtonLight(Color.green, i);
             }
-            LedRing.SetSineFunc(progress, Color.green, 1000);
+            CabinetLed.SetSineFunc(progress, Color.green, 1000);
         }
 
 
@@ -842,7 +842,7 @@ namespace MajdataPlay.Scenes.Game
             }
             if(loaderTask.Status.IsCanceled())
             {
-                LedRing.SetAllLight(Color.white);
+                CabinetLed.SetAllLight(Color.white);
                 return;
             }
             else if(loaderTask.Status.IsFaulted())
@@ -851,7 +851,7 @@ namespace MajdataPlay.Scenes.Game
                 var e = task.Exception.InnerException;
 
                 MajInstances.SceneSwitcher.SetLoadingText($"{"MAJTEXT_ERR_LOAD_CHART_FAILED".i18n()}\n{e.Message}%", Color.red);
-                LedRing.SetAllLight(Color.red);
+                CabinetLed.SetAllLight(Color.red);
                 MajDebug.LogException(task.Exception);
                 StopAllCoroutines();
                 throw e;
@@ -867,7 +867,7 @@ namespace MajdataPlay.Scenes.Game
             {
                 return;
             }
-            LedRing.SetAllLight(Color.white);
+            CabinetLed.SetAllLight(Color.white);
             await UniTask.SwitchToMainThread();
             switch (ModInfo.NoteMask)
             {
@@ -1490,25 +1490,25 @@ namespace MajdataPlay.Scenes.Game
                     _allPerfectAnimation.SetActive(true);
                     MajInstances.AudioManager.PlaySFX("all_perfect_plus.wav");
                     MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
-                    LedRing.SetAllLightSineFunc(Color.yellow, 2000);
+                    CabinetLed.SetAllLightSineFunc(Color.yellow, 2000);
                     break;
                 case ComboState.AP:
                     _allPerfectAnimation.SetActive(true);
                     MajInstances.AudioManager.PlaySFX("all_perfect.wav");
                     MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
-                    LedRing.SetAllLightSineFunc(Color.red, 2000);
+                    CabinetLed.SetAllLightSineFunc(Color.red, 2000);
                     break;
                 case ComboState.FCPlus:
                     _fullComboAnimation.SetActive(true);
                     MajInstances.AudioManager.PlaySFX("full_combo_plus.wav");
                     MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
-                    LedRing.SetAllLightSineFunc(Color.green, 2000);
+                    CabinetLed.SetAllLightSineFunc(Color.green, 2000);
                     break;
                 case ComboState.FC:
                     _fullComboAnimation.SetActive(true);
                     MajInstances.AudioManager.PlaySFX("full_combo.wav");
                     MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
-                    LedRing.SetAllLightSineFunc(Color.green, 2000);
+                    CabinetLed.SetAllLightSineFunc(Color.green, 2000);
                     break;
             }
         }

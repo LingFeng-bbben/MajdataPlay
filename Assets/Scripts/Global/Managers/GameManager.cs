@@ -262,8 +262,9 @@ namespace MajdataPlay
                 SetWindowTopmost();
             }
 #endif
-
+            IODetector.Init();
             InputManager.Init(Majdata<DummyTouchPanelRenderer>.Instance!.InstanceID2SensorIndexMappingTable);
+            OutputManager.Init();
             if (MajEnv.Mode == RunningMode.Test)
             {
                 EnterTestMode();

@@ -108,7 +108,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         public void PlayEffect(int position, in NoteJudgeResult judgeResult)
         {
             var pos = (SensorArea)(position - 1);
-            LedRing.SetButtonLightWithTimeout(GetColor(judgeResult.Grade), position - 1);
+            CabinetLed.SetButtonLightWithTimeout(GetColor(judgeResult.Grade), position - 1);
 
             if (!judgeResult.IsMissOrTooFast)
             {
@@ -120,7 +120,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PlayHoldEffect(int keyIndex, in JudgeGrade judgeType)
         {
-            LedRing.SetButtonLight(GetColor(judgeType), keyIndex - 1);
+            CabinetLed.SetButtonLight(GetColor(judgeType), keyIndex - 1);
             _effectPool.PlayHoldEffect(judgeType, keyIndex);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -131,7 +131,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ResetHoldEffect(int keyIndex)
         {
-            LedRing.SetButtonLight(Color.white, keyIndex - 1);
+            CabinetLed.SetButtonLight(Color.white, keyIndex - 1);
             _effectPool.ResetHoldEffect(keyIndex);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

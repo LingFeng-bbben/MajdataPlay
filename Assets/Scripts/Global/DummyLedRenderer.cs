@@ -18,11 +18,11 @@ namespace MajdataPlay
         }
         internal void OnPreUpdate()
         {
-            var ledColors = LedRing.LedColors;
-            for (var i = 0; i < ledColors.Length; i++)
-            {
-                _dummyLights[i].color = ledColors[i];
-            }
+            //var ledColors = LedRing.LedColors;
+            //for (var i = 0; i < ledColors.Length; i++)
+            //{
+            //    _dummyLights[i].color = ledColors[i];
+            //}
         }
     }
 }
