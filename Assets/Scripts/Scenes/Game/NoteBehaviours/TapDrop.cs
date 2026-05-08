@@ -83,14 +83,14 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         {
             base.Awake();
             _noteAppearRate = MajInstances.Settings.Debug.NoteAppearRate;
-            _isStarRotation = _settings.Game.StarRotation;
+            _isStarRotation = Settings.Game.StarRotation;
             _notePoolManager = FindObjectOfType<NotePoolManager>();
             _thisRenderer = GetComponent<SpriteRenderer>();
 
             _exObject = Transform.GetChild(0).gameObject;
             _exRenderer = _exObject.GetComponent<SpriteRenderer>();
 
-            _tapLineObject = Instantiate(_tapLinePrefab, _noteManager.gameObject.transform.GetChild(7));
+            _tapLineObject = Instantiate(_tapLinePrefab, NoteManager.gameObject.transform.GetChild(7));
             _tapLineObject.SetActive(true);
             _tapLineRenderer = _tapLineObject.GetComponent<SpriteRenderer>();
             _tapLineTransform = _tapLineObject.transform;
@@ -115,7 +115,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
             StartPos = poolingInfo.StartPos;
             Timing = poolingInfo.Timing;
-            _judgeTiming = Timing;
+            JudgeTiming = Timing;
             SortOrder = poolingInfo.NoteSortOrder;
             Speed = poolingInfo.Speed;
             IsEach = poolingInfo.IsEach;
@@ -125,13 +125,13 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             IsStar = poolingInfo.IsStar;
             IsDouble = poolingInfo.IsDouble;
             RotateSpeed = poolingInfo.RotateSpeed;
-            _isJudged = false;
+            IsJudged = false;
             Distance = -100;
             _innerPos = NoteHelper.GetTapPosition(StartPos, 1.225f);
             _outerPos = NoteHelper.GetTapPosition(StartPos, 4.8f);
-            _sensorPos = (SensorArea)(StartPos - 1);
-            _buttonPos = _sensorPos.ToButtonZone();
-            _judgableRange = new(JudgeTiming - 0.15f, JudgeTiming + 0.15f, ContainsType.Closed);
+            SensorPos = (SensorArea)(StartPos - 1);
+            _buttonPos = SensorPos.ToButtonZone();
+            JudgableRange = new(JudgeTimingWithOffset - 0.15f, JudgeTimingWithOffset + 0.15f, ContainsType.Closed);
 
             Transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (StartPos - 1));
             Transform.localScale = new Vector3(0, 0);
@@ -158,32 +158,32 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             RendererState = RendererStatus.Off;
             var result = new NoteJudgeResult()
             {
-                Grade = _judgeResult,
+                Grade = JudgeResult,
                 IsBreak = IsBreak,
                 IsEX = IsEX,
-                Diff = _judgeDiff
+                Diff = JudgeDiff
             };
             PlayJudgeSFX(result);
             //MajDebug.LogDebug($"Note index: {QueueInfo.Index}");
-            _noteManager.NextNote(QueueInfo);
+            NoteManager.NextNote(QueueInfo);
             
-            _effectManager.PlayEffect(StartPos, result);
-            _objectCounter.ReportResult(this, result);
+            EffectManager.PlayEffect(StartPos, result);
+            ObjectCounter.ReportResult(this, result);
             _notePoolManager.Collect(this);
         }
         protected override void PlaySFX()
         {
             PlayJudgeSFX(new NoteJudgeResult()
             {
-                Grade = _judgeResult,
+                Grade = JudgeResult,
                 IsBreak = IsBreak,
                 IsEX = IsEX,
-                Diff = _judgeDiff
+                Diff = JudgeDiff
             });
         }
         protected override void PlayJudgeSFX(in NoteJudgeResult judgeResult)
         {
-            _audioEffMana.PlayTapSound(judgeResult);
+            AudioEffMana.PlayTapSound(judgeResult);
         }
         [OnPreUpdate]
         void OnPreUpdate()
@@ -201,7 +201,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 case AutoplayModeOption.Enable:
                     base.Autoplay();
-                    if(_isJudged)
+                    if(IsJudged)
                     {
                         End();
                     }
@@ -214,11 +214,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         void DJAutoplay()
         {
-            if (_isJudged || !IsAutoplay)
+            if (IsJudged || !IsAutoplay)
             {
                 return;
             }
-            else if (!_noteManager.IsCurrentNoteJudgeable(QueueInfo))
+            else if (!NoteManager.IsCurrentNoteJudgeable(QueueInfo))
             {
                 return;
             }
@@ -230,13 +230,13 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             if (isBtnFirst)
             {
-                _ = _noteManager.SimulateButtonClick(_buttonPos) ||
-                    (USERSETTING_DJAUTO_POLICY == DJAutoPolicyOption.Permissive && _noteManager.SimulateSensorClick(_sensorPos));
+                _ = NoteManager.SimulateButtonClick(_buttonPos) ||
+                    (USERSETTING_DJAUTO_POLICY == DJAutoPolicyOption.Permissive && NoteManager.SimulateSensorClick(SensorPos));
             }
             else
             {
-                _ = _noteManager.SimulateSensorClick(_sensorPos) ||
-                    (USERSETTING_DJAUTO_POLICY == DJAutoPolicyOption.Permissive && _noteManager.SimulateButtonClick(_buttonPos));
+                _ = NoteManager.SimulateSensorClick(SensorPos) ||
+                    (USERSETTING_DJAUTO_POLICY == DJAutoPolicyOption.Permissive && NoteManager.SimulateButtonClick(_buttonPos));
             }
         }
         [OnUpdate]
@@ -302,7 +302,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         void TooLateCheck()
         {
             // Too late check
-            if (_isJudged || IsEnded || AutoplayMode == AutoplayModeOption.Enable)
+            if (IsJudged || IsEnded || AutoplayMode == AutoplayModeOption.Enable)
             {
                 return;
             }
@@ -313,8 +313,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             if (isTooLate)
             {
                 //MajDebug.LogWarning("Note too late");
-                _judgeResult = JudgeGrade.Miss;
-                _isJudged = true;
+                JudgeResult = JudgeGrade.Miss;
+                IsJudged = true;
                 End();
             }
         }
@@ -324,16 +324,16 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 return;
             }
-            else if (!_judgableRange.InRange(ThisFrameSec) || !_noteManager.IsCurrentNoteJudgeable(QueueInfo))
+            else if (!JudgableRange.InRange(ThisFrameSec) || !NoteManager.IsCurrentNoteJudgeable(QueueInfo))
             {
                 return;
             }
 
-            if (_noteManager.IsButtonClickedInThisFrame(_buttonPos) && _noteManager.TryUseButtonClickEvent(_buttonPos))
+            if (NoteManager.IsButtonClickedInThisFrame(_buttonPos) && NoteManager.TryUseButtonClickEvent(_buttonPos))
             {
                 Judge(ThisFrameSec);
             }
-            else if (_noteManager.IsSensorClickedInThisFrame(_sensorPos) && _noteManager.TryUseSensorClickEvent(_sensorPos))
+            else if (NoteManager.IsSensorClickedInThisFrame(SensorPos) && NoteManager.TryUseSensorClickEvent(SensorPos))
             {
                 Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
             }
@@ -342,7 +342,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 return;
             }
 
-            if (_isJudged)
+            if (IsJudged)
             {
                 //MajDebug.LogError("Note is judged");
                 End();

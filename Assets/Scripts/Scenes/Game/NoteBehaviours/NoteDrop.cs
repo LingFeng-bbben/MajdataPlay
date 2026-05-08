@@ -92,10 +92,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             protected set => _state = value;
         }
-        public float JudgeTiming
+        public float JudgeTimingWithOffset
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _judgeTiming + USERSETTING_JUDGE_OFFSET_SEC;
+            get => JudgeTiming + USERSETTING_JUDGE_OFFSET_SEC;
         }
         public float ThisFrameSec
         {
@@ -148,23 +148,23 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             private set;
         }
 
-        protected bool _isJudged = false;
+        protected bool IsJudged = false;
         /// <summary>
         /// The answer frame
         /// </summary>
-        protected float _judgeTiming;
-        protected float _judgeDiff = -1;
-        protected Range<float> _judgableRange = new(float.MinValue, float.MinValue + 1, ContainsType.Closed);
-        protected JudgeGrade _judgeResult = JudgeGrade.Miss;
+        protected float JudgeTiming;
+        protected float JudgeDiff = -1;
+        protected Range<float> JudgableRange = new(float.MinValue, float.MinValue + 1, ContainsType.Closed);
+        protected JudgeGrade JudgeResult = JudgeGrade.Miss;
 
-        protected SensorArea _sensorPos;
+        protected SensorArea SensorPos;
 
-        protected ObjectCounter _objectCounter;
-        protected NoteManager _noteManager;
-        protected NoteEffectManager _effectManager;
-        protected NoteAudioManager _audioEffMana;
-        protected GameSetting _settings;
-        protected Random _randomizer;
+        protected ObjectCounter ObjectCounter;
+        protected NoteManager NoteManager;
+        protected NoteEffectManager EffectManager;
+        protected NoteAudioManager AudioEffMana;
+        protected GameSetting Settings;
+        protected Random Randomizer;
 
         protected bool USERSETTING_SLIDE_SKIPPING = false;
         protected float USERSETTING_JUDGE_OFFSET_SEC = 0f;
@@ -213,14 +213,14 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             base.Awake();
 
             var gameInfo = Majdata<GameInfo>.Instance;
-            _settings = MajEnv.Settings;
-            _randomizer = new();
-            _objectCounter = Majdata<ObjectCounter>.Instance!;
-            _noteManager = Majdata<NoteManager>.Instance!;
-            _effectManager = Majdata<NoteEffectManager>.Instance!;
-            _audioEffMana = Majdata<NoteAudioManager>.Instance!;
+            Settings = MajEnv.Settings;
+            Randomizer = new();
+            ObjectCounter = Majdata<ObjectCounter>.Instance!;
+            NoteManager = Majdata<NoteManager>.Instance!;
+            EffectManager = Majdata<NoteEffectManager>.Instance!;
+            AudioEffMana = Majdata<NoteAudioManager>.Instance!;
 
-            USERSETTING_SLIDE_SKIPPING = gameInfo?.ChartSettings.SlideSkipping ?? _settings.Game.SlideSkipping;
+            USERSETTING_SLIDE_SKIPPING = gameInfo?.ChartSettings.SlideSkipping ?? Settings.Game.SlideSkipping;
             USERSETTING_JUDGE_OFFSET_SEC = ((MajInstances.Settings?.Judge.JudgeOffset ?? 0) + (MajInstances.Settings?.Debug.DisplayOffset ?? 0)) * ((MajInstances.Settings?.Debug.OffsetUnit ?? OffsetUnitOption.Second) == OffsetUnitOption.Second ? 1 : FRAME_LENGTH_SEC);
             USERSETTING_TOUCHPANEL_OFFSET_SEC = (MajInstances.Settings?.Judge.TouchPanelOffset ?? 0) * ((MajInstances.Settings?.Debug.OffsetUnit ?? OffsetUnitOption.Second) == OffsetUnitOption.Second ? 1 : FRAME_LENGTH_SEC);
             USERSETTING_TAP_SCALE = MajInstances.Settings?.Display.TapScale ?? 1;
@@ -254,12 +254,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         protected abstract void PlayJudgeSFX(in NoteJudgeResult judgeResult);
         protected virtual void Judge(float currentSec)
         {
-            if (_isJudged)
+            if (IsJudged)
                 return;
 
-            var diffSec = currentSec - JudgeTiming;
+            var diffSec = currentSec - JudgeTimingWithOffset;
             var isFast = diffSec < 0;
-            _judgeDiff = diffSec * 1000;
+            JudgeDiff = diffSec * 1000;
             var diffMSec = MathF.Abs(diffSec * 1000);
             var result = diffMSec switch
             {
@@ -278,28 +278,28 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
 
             ConvertJudgeGrade(ref result);
-            _judgeResult = result;
-            _isJudged = true;
+            JudgeResult = result;
+            IsJudged = true;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected virtual void Autoplay()
         {
-            if (_isJudged || !IsAutoplay)
+            if (IsJudged || !IsAutoplay)
                 return;
             if (GetTimeSpanToArriveTiming() >= -0.016667f)
             {
                 var autoplayGrade = NoteController.AutoplayGrade;
                 if (((int)autoplayGrade).InRange(0, 14))
                 {
-                    _judgeResult = autoplayGrade;
+                    JudgeResult = autoplayGrade;
                 }
                 else
                 {
-                    _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
+                    JudgeResult = (JudgeGrade)Randomizer.Next(0, 15);
                 }
-                ConvertJudgeGrade(ref _judgeResult);
-                _isJudged = true;
-                _judgeDiff = _judgeResult switch
+                ConvertJudgeGrade(ref JudgeResult);
+                IsJudged = true;
+                JudgeDiff = JudgeResult switch
                 {
                     < JudgeGrade.Perfect => 1,
                     > JudgeGrade.Perfect => -1,
@@ -325,9 +325,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         /// <para>If the current moment is ahead of the answer frame, the result is a negative number.</para>
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected float GetTimeSpanToJudgeTiming() => ThisFrameSec - JudgeTiming;
+        protected float GetTimeSpanToJudgeTiming() => ThisFrameSec - JudgeTimingWithOffset;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected float GetTimeSpanToJudgeTiming(float baseTiming) => baseTiming - JudgeTiming;
+        protected float GetTimeSpanToJudgeTiming(float baseTiming) => baseTiming - JudgeTimingWithOffset;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void ConvertJudgeGrade(ref JudgeGrade grade)
         {

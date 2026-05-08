@@ -156,7 +156,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                     {
                         return;
                     }
-                    else if (_isJudged)
+                    else if (IsJudged)
                     {
                         if (GetRemainingTime() == 0)
                         {
@@ -169,15 +169,15 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                         var autoplayGrade = AutoplayGrade;
                         if (((int)autoplayGrade).InRange(0, 14))
                         {
-                            _judgeResult = autoplayGrade;
+                            JudgeResult = autoplayGrade;
                         }
                         else
                         {
-                            _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
+                            JudgeResult = (JudgeGrade)Randomizer.Next(0, 15);
                         }
-                        ConvertJudgeGrade(ref _judgeResult);
-                        _isJudged = true;
-                        _judgeDiff = _judgeResult switch
+                        ConvertJudgeGrade(ref JudgeResult);
+                        IsJudged = true;
+                        JudgeDiff = JudgeResult switch
                         {
                             < JudgeGrade.Perfect => 1,
                             > JudgeGrade.Perfect => -1,
@@ -185,10 +185,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                         };
                         PlayJudgeSFX(new NoteJudgeResult()
                         {
-                            Grade = _judgeResult,
+                            Grade = JudgeResult,
                             IsBreak = IsBreak,
                             IsEX = IsEX,
-                            Diff = _judgeDiff
+                            Diff = JudgeDiff
                         });
                         _lastHoldState = HOLD_STATE_HEAD_JUDGED_AND_NOT_FEEDBACK;
                     }
@@ -206,12 +206,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 return;
             }
-            else if (_isJudged)
+            else if (IsJudged)
             {
-                _noteManager.SimulateSensorPress(_sensorPos);
+                NoteManager.SimulateSensorPress(SensorPos);
                 return;
             }
-            else if (!_noteManager.IsCurrentNoteJudgeable(QueueInfo))
+            else if (!NoteManager.IsCurrentNoteJudgeable(QueueInfo))
             {
                 return;
             }
@@ -219,7 +219,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 return;
             }
-            _noteManager.SimulateSensorClick(_sensorPos);
+            NoteManager.SimulateSensorClick(SensorPos);
         }
         public void Init(TouchHoldPoolingInfo poolingInfo)
         {
@@ -231,7 +231,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             StartPos = poolingInfo.StartPos;
             areaPosition = poolingInfo.AreaPos;
             Timing = poolingInfo.Timing - TOUCH_HOLD_DISPLAY_OFFSET_SEC;
-            _judgeTiming = poolingInfo.Timing;
+            JudgeTiming = poolingInfo.Timing;
             SortOrder = poolingInfo.NoteSortOrder;
             Speed = poolingInfo.Speed;
             IsEach = poolingInfo.IsEach;
@@ -240,22 +240,22 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             QueueInfo = poolingInfo.QueueInfo;
             GroupInfo = poolingInfo.GroupInfo;
             BodyGroupInfo = poolingInfo.TouchHoldGroupInfo;
-            _isJudged = false;
+            IsJudged = false;
             _lastHoldState = HOLD_STATE_HEAD_MISS_OR_NOT_JUDGED;
             Length = poolingInfo.LastFor;
             isFirework = poolingInfo.IsFirework;
-            _sensorPos = poolingInfo.SensorPos;
-            _judgeResult = JudgeGrade.Miss;
-            if (_sensorPos < SensorArea.B1 && _sensorPos >= SensorArea.A1)
+            SensorPos = poolingInfo.SensorPos;
+            JudgeResult = JudgeGrade.Miss;
+            if (SensorPos < SensorArea.B1 && SensorPos >= SensorArea.A1)
             {
-                _buttonPos = _sensorPos.ToButtonZone();
+                _buttonPos = SensorPos.ToButtonZone();
             }
             else
             {
                 _buttonPos = null;
             }
             _playerReleaseTimeSec = 0;
-            _judgableRange = new(JudgeTiming - 0.15f, JudgeTiming + 0.316667f, ContainsType.Closed);
+            JudgableRange = new(JudgeTimingWithOffset - 0.15f, JudgeTimingWithOffset + 0.316667f, ContainsType.Closed);
             _releaseTime = 0;
 
             if (Length <= TOUCH_HOLD_HEAD_IGNORE_LENGTH_SEC + TOUCH_HOLD_TAIL_IGNORE_LENGTH_SEC)
@@ -281,7 +281,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             SetBorderActive(false);
             SetPointActive(false);
 
-            Transform.position = NoteHelper.GetTouchAreaPosition(_sensorPos);
+            Transform.position = NoteHelper.GetTouchAreaPosition(SensorPos);
             SetFansPosition(0.4f);
             RendererState = RendererStatus.Off;
 
@@ -304,43 +304,43 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
 
             State = NoteStatus.End;
-            _multTouchHandler.Unregister(_sensorPos);
+            _multTouchHandler.Unregister(SensorPos);
             BodyGroupInfo?.UnregisterTrigger(InstanceID);
             BodyGroupInfo?.Exit();
-            _judgeResult = HoldEndJudge(_judgeResult, TOUCH_HOLD_HEAD_IGNORE_LENGTH_SEC + TOUCH_HOLD_TAIL_IGNORE_LENGTH_SEC);
-            ConvertJudgeGrade(ref _judgeResult);
+            JudgeResult = HoldEndJudge(JudgeResult, TOUCH_HOLD_HEAD_IGNORE_LENGTH_SEC + TOUCH_HOLD_TAIL_IGNORE_LENGTH_SEC);
+            ConvertJudgeGrade(ref JudgeResult);
             var result = new NoteJudgeResult()
             {
-                Grade = _judgeResult,
+                Grade = JudgeResult,
                 IsBreak = IsBreak,
                 IsEX = IsEX,
-                Diff = _judgeDiff,
+                Diff = JudgeDiff,
             };
             //_pointObject.SetActive(false);
             SetActive(false);
             RendererState = RendererStatus.Off;
 
-            _objectCounter.ReportResult(this, result);
-            if (!_isJudged)
+            ObjectCounter.ReportResult(this, result);
+            if (!IsJudged)
             {
-                _noteManager.NextTouch(QueueInfo);
+                NoteManager.NextTouch(QueueInfo);
             }
             if (isFirework && !result.IsMissOrTooFast)
             {
-                _effectManager.PlayFireworkEffect(transform.position);
+                EffectManager.PlayFireworkEffect(transform.position);
             }
 
             PlayJudgeSFX(new NoteJudgeResult()
             {
-                Grade = _judgeResult,
+                Grade = JudgeResult,
                 IsBreak = false,
                 IsEX = false,
-                Diff = _judgeDiff
+                Diff = JudgeDiff
             });
             _lastHoldState = HOLD_STATE_HEAD_MISS_OR_NOT_JUDGED;
-            _audioEffMana.StopTouchHoldSound();
-            _effectManager.PlayTouchHoldEffect(_sensorPos, result);
-            _effectManager.ResetHoldEffect(_sensorPos);
+            AudioEffMana.StopTouchHoldSound();
+            EffectManager.PlayTouchHoldEffect(SensorPos, result);
+            EffectManager.ResetHoldEffect(SensorPos);
             _notePoolManager.Collect(this);
         }
 
@@ -381,14 +381,14 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         protected override void Judge(float currentSec)
         {
-            if (_isJudged)
+            if (IsJudged)
             {
                 return;
             }
 
-            var diffSec = currentSec - JudgeTiming;
+            var diffSec = currentSec - JudgeTimingWithOffset;
             var isFast = diffSec < 0;
-            _judgeDiff = diffSec * 1000;
+            JudgeDiff = diffSec * 1000;
             var diffMSec = MathF.Abs(diffSec * 1000);
 
             if (isFast && diffMSec > TOUCH_JUDGE_SEG_1ST_PERFECT_MSEC)
@@ -408,8 +408,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             };
 
             ConvertJudgeGrade(ref result);
-            _judgeResult = result;
-            _isJudged = true;
+            JudgeResult = result;
+            IsJudged = true;
             BodyGroupInfo?.RegisterTrigger(InstanceID);
             _lastHoldState = HOLD_STATE_HEAD_JUDGED_AND_NOT_FEEDBACK;
         }
@@ -437,7 +437,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                     case NoteStatus.Inited:
                         if (-timing < wholeDuration)
                         {
-                            _multTouchHandler.Register(_sensorPos, IsEach, IsBreak);
+                            _multTouchHandler.Register(SensorPos, IsEach, IsBreak);
                             SetPointActive(true);
                             SetFanActive(true);
                             RendererState = RendererStatus.On;
@@ -491,17 +491,17 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         void RegisterGrade()
         {
-            if (GroupInfo is not null && !_judgeResult.IsMissOrTooFast())
+            if (GroupInfo is not null && !JudgeResult.IsMissOrTooFast())
             {
-                GroupInfo.JudgeResult = _judgeResult;
-                GroupInfo.JudgeDiff = _judgeDiff;
-                GroupInfo.RegisterResult(_judgeResult);
+                GroupInfo.JudgeResult = JudgeResult;
+                GroupInfo.JudgeDiff = JudgeDiff;
+                GroupInfo.RegisterResult(JudgeResult);
             }
         }
         void TooLateCheck()
         {
             // Too late check
-            if (IsEnded || _isJudged)
+            if (IsEnded || IsJudged)
             {
                 return;
             }
@@ -515,32 +515,32 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 {
                     if (GroupInfo.Percent > 0.5f && GroupInfo.JudgeResult != null)
                     {
-                        _isJudged = true;
-                        _judgeResult = (JudgeGrade)GroupInfo.JudgeResult;
-                        _judgeDiff = GroupInfo.JudgeDiff;
+                        IsJudged = true;
+                        JudgeResult = (JudgeGrade)GroupInfo.JudgeResult;
+                        JudgeDiff = GroupInfo.JudgeDiff;
                         _lastHoldState = HOLD_STATE_HEAD_JUDGED_AND_NOT_FEEDBACK;
-                        _noteManager.NextTouch(QueueInfo);
+                        NoteManager.NextTouch(QueueInfo);
                         BodyGroupInfo?.RegisterTrigger(InstanceID);
                     }
                 }
             }
             else
             {
-                _judgeResult = JudgeGrade.Miss;
-                _isJudged = true;
-                _judgeDiff = TOUCH_JUDGE_GOOD_AREA_MSEC;
+                JudgeResult = JudgeGrade.Miss;
+                IsJudged = true;
+                JudgeDiff = TOUCH_JUDGE_GOOD_AREA_MSEC;
                 _lastHoldState = HOLD_STATE_HEAD_MISS_OR_NOT_JUDGED;
                 _releaseTime = 114514;
-                _noteManager.NextTouch(QueueInfo);
+                NoteManager.NextTouch(QueueInfo);
             }
         }
         void Check()
         {
-            if (IsEnded || !IsInited || _isJudged || AutoplayMode == AutoplayModeOption.Enable)
+            if (IsEnded || !IsInited || IsJudged || AutoplayMode == AutoplayModeOption.Enable)
             {
                 return;
             }
-            else if (!_judgableRange.InRange(ThisFrameSec) || !_noteManager.IsCurrentNoteJudgeable(QueueInfo))
+            else if (!JudgableRange.InRange(ThisFrameSec) || !NoteManager.IsCurrentNoteJudgeable(QueueInfo))
             {
                 return;
             }
@@ -556,12 +556,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
 #else
             if (IsUseButtonRingForTouch &&
-                _noteManager.IsButtonClickedInThisFrame(_buttonPos) &&
-                _noteManager.TryUseButtonClickEvent(_buttonPos))
+                NoteManager.IsButtonClickedInThisFrame(_buttonPos) &&
+                NoteManager.TryUseButtonClickEvent(_buttonPos))
             {
                 Judge(ThisFrameSec);
             }
-            else if (_noteManager.IsSensorClickedInThisFrame(_sensorPos) && _noteManager.TryUseSensorClickEvent(_sensorPos))
+            else if (NoteManager.IsSensorClickedInThisFrame(SensorPos) && NoteManager.TryUseSensorClickEvent(SensorPos))
             {
                 Judge(ThisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
             }
@@ -570,10 +570,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 return;
             }
 #endif
-            if (_isJudged)
+            if (IsJudged)
             {
-                _noteManager.NextTouch(QueueInfo);
-                _effectManager.PlayHoldEffect(_sensorPos, _judgeResult);
+                NoteManager.NextTouch(QueueInfo);
+                EffectManager.PlayHoldEffect(SensorPos, JudgeResult);
                 RegisterGrade();
             }
         }
@@ -585,19 +585,19 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
             if (_lastHoldState is HOLD_STATE_HEAD_JUDGED or HOLD_STATE_PRESSED)
             {
-                _audioEffMana.PlayTouchHoldSound();
+                AudioEffMana.PlayTouchHoldSound();
             }
 
             if (!_bodyCheckRange.InRange(ThisFrameSec) || !NoteController.IsStart)
             {
                 if (_lastHoldState == HOLD_STATE_HEAD_JUDGED_AND_NOT_FEEDBACK && GetRemainingTime() < Length)
                 {
-                    _effectManager.PlayHoldEffect(_sensorPos, _judgeResult);
+                    EffectManager.PlayHoldEffect(SensorPos, JudgeResult);
                     _lastHoldState = HOLD_STATE_HEAD_JUDGED;
                 }
                 return;
             }
-            var on = _noteManager.CheckSensorStatusInThisFrame(_sensorPos, SwitchStatus.On);
+            var on = NoteManager.CheckSensorStatusInThisFrame(SensorPos, SwitchStatus.On);
 
             if(BodyGroupInfo is not null)
             {
@@ -632,7 +632,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         void ForceEndCheck()
         {
-            if (!_isJudged || IsEnded)
+            if (!IsJudged || IsEnded)
             {
                 return;
             }
@@ -713,7 +713,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             //MajDebug.Log($"IsPlaying:{r.IsPlaying}\nCurrent second: {r.CurrentSec}s");
             if (_lastHoldState != HOLD_STATE_PRESSED)
             {
-                _effectManager.PlayHoldEffect(_sensorPos, _judgeResult);
+                EffectManager.PlayHoldEffect(SensorPos, JudgeResult);
                 _borderRenderer.sprite = board_On;
                 if (_lastHoldState < HOLD_STATE_RELEASED)
                 {
@@ -725,7 +725,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         {
             if (_lastHoldState != HOLD_STATE_RELEASED)
             {
-                _effectManager.ResetHoldEffect(_sensorPos);
+                EffectManager.ResetHoldEffect(SensorPos);
                 _borderRenderer.sprite = board_Off;
                 if (_lastHoldState < HOLD_STATE_RELEASED)
                 {
@@ -752,15 +752,15 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         protected override void PlaySFX()
         {
-            _audioEffMana.PlayTouchHoldSound();
+            AudioEffMana.PlayTouchHoldSound();
         }
         protected override void PlayJudgeSFX(in NoteJudgeResult judgeResult)
         {
             if (judgeResult.IsMissOrTooFast)
                 return;
-            _audioEffMana.PlayTapSound(judgeResult);
+            AudioEffMana.PlayTapSound(judgeResult);
             if (isFirework)
-                _audioEffMana.PlayHanabiSound();
+                AudioEffMana.PlayHanabiSound();
         }
 
         RendererStatus _rendererState = RendererStatus.Off;

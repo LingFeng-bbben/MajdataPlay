@@ -36,7 +36,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             var stars = Stars.Span;
             var starTransforms = StarTransforms.Span;
 
-            var slideParent = _noteManager.transform.GetChild(3);
+            var slideParent = NoteManager.transform.GetChild(3);
             var centerStar = Instantiate(SlideStarPrefab, slideParent);
             var leftStar = Instantiate(SlideStarPrefab, slideParent);
             var rightStar = Instantiate(SlideStarPrefab, slideParent);
@@ -123,20 +123,20 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             JudgeQueues[1] = _wifiTable.Center;
             JudgeQueues[2] = _wifiTable.Right;
 
-            _judgeTiming = StartTiming + Length * (1 - wifiConst);
+            JudgeTiming = StartTiming + Length * (1 - wifiConst);
             LastWaitTimeSec = Length * wifiConst;
 
             // 计算Slide淡入时机
             // 在8.0速时应当提前300ms显示Slide
             FadeInTiming = -3.926913f / Speed;
             var fadeInOffset = 0f;
-            if (_settings.Debug.OffsetUnit == OffsetUnitOption.Second)
+            if (Settings.Debug.OffsetUnit == OffsetUnitOption.Second)
             {
-                fadeInOffset = _settings.Game.SlideFadeInOffset;
+                fadeInOffset = Settings.Game.SlideFadeInOffset;
             }
             else
             {
-                fadeInOffset = _settings.Game.SlideFadeInOffset * MajEnv.FRAME_LENGTH_SEC;
+                fadeInOffset = Settings.Game.SlideFadeInOffset * MajEnv.FRAME_LENGTH_SEC;
             }
             FadeInMaxAlpha = 1f;
             FadeInTiming += fadeInOffset;
@@ -251,7 +251,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 for (var i = 0; i < fAreas.Length; i++)
                 {
                     var area = fAreas[i];
-                    var sensorState = _noteManager.GetSensorStatusInThisFrame(area);
+                    var sensorState = NoteManager.GetSensorStatusInThisFrame(area);
                     first.Check(area, sensorState);
                 }
 
@@ -267,7 +267,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                     for (var i = 0; i < sAreas.Length; i++)
                     {
                         var area = sAreas[i];
-                        var sensorState = _noteManager.GetSensorStatusInThisFrame(area);
+                        var sensorState = NoteManager.GetSensorStatusInThisFrame(area);
                         second.Check(area, sensorState);
                     }
 
@@ -305,7 +305,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 IsCheckable = true;
             }
 
-            if (!_isJudged)
+            if (!IsJudged)
             {
                 if (IsFinished)
                 {
@@ -497,12 +497,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                         HideAllBar();
                         var autoplayGrade = AutoplayGrade;
                         if (((int)autoplayGrade).InRange(0, 14))
-                            _judgeResult = autoplayGrade;
+                            JudgeResult = autoplayGrade;
                         else
-                            _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
-                        _isJudged = true;
+                            JudgeResult = (JudgeGrade)Randomizer.Next(0, 15);
+                        IsJudged = true;
                         LastWaitTimeSec = 0;
-                        _judgeDiff = _judgeResult switch
+                        JudgeDiff = JudgeResult switch
                         {
                             < JudgeGrade.Perfect => 1,
                             > JudgeGrade.Perfect => -1,
@@ -560,7 +560,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         protected override void TooLateJudge()
         {
-            if (_isJudged)
+            if (IsJudged)
             {
                 End();
                 return;
@@ -576,20 +576,20 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
             State = NoteStatus.End;
             base.End();
-            ConvertJudgeGrade(ref _judgeResult);
+            ConvertJudgeGrade(ref JudgeResult);
             if (!ModInfo.SubdivideSlideJudgeGrade)
             {
-                JudgeGradeCorrection(ref _judgeResult);
+                JudgeGradeCorrection(ref JudgeResult);
             }
             var result = new NoteJudgeResult()
             {
-                Grade = _judgeResult,
-                Diff = _judgeDiff,
+                Grade = JudgeResult,
+                Diff = JudgeDiff,
                 IsEX = IsEX,
                 IsBreak = IsBreak
             };
 
-            _objectCounter.ReportResult(this, result, Multiple);
+            ObjectCounter.ReportResult(this, result, Multiple);
             if (PlaySlideOK(result))
             {
                 SlideOK!.PlayResult(result);

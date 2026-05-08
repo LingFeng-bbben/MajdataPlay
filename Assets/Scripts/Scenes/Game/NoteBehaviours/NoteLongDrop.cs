@@ -65,10 +65,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected JudgeGrade HoldEndJudge(in JudgeGrade headGrade, in float ingoreTimeSec)
         {
-            if (!_isJudged)
+            if (!IsJudged)
                 return headGrade;
 
-            var offset = (int)_judgeResult > 7 ? 0 : _judgeDiff;
+            var offset = (int)JudgeResult > 7 ? 0 : JudgeDiff;
             var realityHT = (Length - ingoreTimeSec - offset / 1000f).Clamp(0, Length - 0.3f);
             var percent = ((realityHT - _playerReleaseTimeSec) / realityHT).Clamp(0, 1);
 
@@ -120,7 +120,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                         switch (headGrade)
                         {
                             case JudgeGrade.Perfect:
-                                if (_judgeDiff >= 0)
+                                if (JudgeDiff >= 0)
                                 {
                                     return JudgeGrade.LatePerfect2nd;
                                 }
@@ -155,7 +155,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                         switch (headGrade)
                         {
                             case JudgeGrade.Perfect:
-                                if (_judgeDiff >= 0)
+                                if (JudgeDiff >= 0)
                                 {
                                     return JudgeGrade.LateGreat2nd;
                                 }
@@ -189,7 +189,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                         switch (headGrade)
                         {
                             case JudgeGrade.Perfect:
-                                if (_judgeDiff >= 0)
+                                if (JudgeDiff >= 0)
                                 {
                                     return JudgeGrade.LateGood;
                                 }
@@ -221,7 +221,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                         switch (headGrade)
                         {
                             case JudgeGrade.Perfect:
-                                if (_judgeDiff >= 0)
+                                if (JudgeDiff >= 0)
                                 {
                                     return JudgeGrade.LateGood;
                                 }
@@ -256,7 +256,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected JudgeGrade HoldClassicEndJudge(in JudgeGrade headGrade,float offset)
         {
-            if (!_isJudged)
+            if (!IsJudged)
             {
                 return headGrade;
             }

@@ -227,17 +227,17 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 return;
             }
-            else if (_isJudged)
+            else if (IsJudged)
             {
                 return;
             }
             var stayTimeMSec = LastWaitTimeSec * 1000; // 停留时间
 
             // By Minepig
-            var diffSec = currentSec - JudgeTiming;
+            var diffSec = currentSec - JudgeTimingWithOffset;
             var isFast = diffSec < 0;
             var diffMSec = MathF.Abs(diffSec) * 1000;
-            _judgeDiff = diffSec * 1000;
+            JudgeDiff = diffSec * 1000;
             // input latency simulation
             //var ext = MathF.Max(0.05f, MathF.Min(stayTime / 4, 0.36666667f));
             var ext = MathF.Min(stayTimeMSec / 4, SLIDE_JUDGE_MAXIMUM_ALLOWED_EXT_LENGTH_MSEC);
@@ -258,8 +258,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             //MajDebug.Log($"Slide diff : {MathF.Round(diffMSec, 2)} ms");
             ConvertJudgeGrade(ref result);
-            _judgeResult = result;
-            _isJudged = true;
+            JudgeResult = result;
+            IsJudged = true;
 
             var remainingStartTime = ThisFrameSec - ConnectInfo.StartTiming;
             if (remainingStartTime < 0)
@@ -279,13 +279,13 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 return;
             }
-            else if (_isJudged)
+            else if (IsJudged)
             {
                 return;
             }
-            var diffSec = currentSec - JudgeTiming;
+            var diffSec = currentSec - JudgeTimingWithOffset;
             var isFast = diffSec < 0;
-            _judgeDiff = diffSec * 1000;
+            JudgeDiff = diffSec * 1000;
             var diffMSec = MathF.Abs(diffSec) * 1000;
             var judge = JudgeGrade.Miss;
             if (isFast)
@@ -316,8 +316,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
 
             //MajDebug.Log($"Slide diff : {MathF.Round(diffMSec, 2)} ms");
-            _judgeResult = judge;
-            _isJudged = true;
+            JudgeResult = judge;
+            IsJudged = true;
 
             var remainingStartTime = ThisFrameSec - ConnectInfo.StartTiming;
             if (remainingStartTime < 0)
@@ -484,7 +484,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         {
             if (!IsSoundPlayed)
             {
-                _audioEffMana.PlaySlideSound(IsBreak);
+                AudioEffMana.PlaySlideSound(IsBreak);
                 IsSoundPlayed = true;
             }
         }
@@ -494,21 +494,21 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         {
             if (judgeResult.IsBreak && judgeResult.Grade == JudgeGrade.Perfect)
             {
-                _audioEffMana.PlayBreakSlideEndSound();
+                AudioEffMana.PlayBreakSlideEndSound();
             }
         }
         protected virtual void TooLateJudge()
         {
             if (QueueRemaining == 1)
             {
-                _judgeResult = JudgeGrade.LateGood;
+                JudgeResult = JudgeGrade.LateGood;
             }
             else
             {
-                _judgeResult = JudgeGrade.Miss;
+                JudgeResult = JudgeGrade.Miss;
             }
-            ConvertJudgeGrade(ref _judgeResult);
-            _isJudged = true;
+            ConvertJudgeGrade(ref JudgeResult);
+            IsJudged = true;
         }
         protected virtual void End()
         {
@@ -622,18 +622,18 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 {
                     if ((p & (1UL << (i + 12))) != 0)
                     {
-                        _noteManager.SimulateSensorPress((SensorArea)i);
+                        NoteManager.SimulateSensorPress((SensorArea)i);
                     }
                 }
                 if ((p & (0b11 << (16 + 12))) != 0)
                 {
-                    _noteManager.SimulateSensorPress(SensorArea.C);
+                    NoteManager.SimulateSensorPress(SensorArea.C);
                 }
                 for (var i = 18; i < 34; i++)
                 {
                     if ((p & (1UL << (i + 12))) != 0)
                     {
-                        _noteManager.SimulateSensorPress((SensorArea)(i - 1));
+                        NoteManager.SimulateSensorPress((SensorArea)(i - 1));
                     }
                 }
             }
