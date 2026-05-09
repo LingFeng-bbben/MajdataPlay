@@ -82,7 +82,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         protected override void Awake()
         {
             base.Awake();
-            _noteAppearRate = MajInstances.Settings.Debug.NoteAppearRate;
+            _noteAppearRate = MajEnv.Settings.Debug.NoteAppearRate;
             _isStarRotation = Settings.Game.StarRotation;
             _notePoolManager = FindObjectOfType<NotePoolManager>();
             _thisRenderer = GetComponent<SpriteRenderer>();

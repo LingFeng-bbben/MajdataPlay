@@ -17,11 +17,11 @@ namespace MajdataPlay.Scenes.Game
             bool canPlay;
             if (judgeResult.IsBreak)
             {
-                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Settings.Display.BreakJudgeType, judgeResult);
+                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajEnv.Settings.Display.BreakJudgeType, judgeResult);
             }
             else
             {
-                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Settings.Display.TouchJudgeType, judgeResult);
+                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajEnv.Settings.Display.TouchJudgeType, judgeResult);
             }
             if (!canPlay)
             {

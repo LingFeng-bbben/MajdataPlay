@@ -58,7 +58,7 @@ namespace MajdataPlay
         }
         internal void Init()
         {
-            _setting = MajInstances.Settings;
+            _setting = MajEnv.Settings;
             _textDisplayer.enabled = _setting.Debug.DisplayFPS;
             GameObject.SetActive(true);
         }

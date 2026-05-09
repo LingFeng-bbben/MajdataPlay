@@ -121,7 +121,7 @@ namespace MajdataPlay.Scenes.Title
 
             if (!SongStorage.IsEmpty)
             {
-                var setting = MajInstances.Settings;
+                var setting = MajEnv.Settings;
                 var listConfig = MajEnv.RuntimeConfig.List;
                 var dirId = listConfig.SelectedDirGuid;
                 var selectedSongHash = listConfig.SelectedSongHash;
@@ -214,7 +214,7 @@ namespace MajdataPlay.Scenes.Title
             _flag = false;
             MajInstances.AudioManager.StopSFX("bgm_title.mp3");
             MajInstances.AudioManager.StopSFX("MajdataPlay.wav");
-            if (MajInstances.Settings.Online.Enable)
+            if (MajEnv.Settings.Online.Enable)
             {
                 MajInstances.SceneSwitcher.SwitchScene("Login", false);
             }

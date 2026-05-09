@@ -230,7 +230,7 @@ namespace MajdataPlay
                         return _videoPath;
                     }
 
-                    if (MajInstances.Settings.Display.SkipVideoDownload)
+                    if (MajEnv.Settings.Display.SkipVideoDownload)
                     {
                         return string.Empty;
                     }

@@ -77,7 +77,7 @@ namespace MajdataPlay.IO
             {
                 ThrowIfDisposed();
 
-                var volume = value.Clamp(0, 2) * _gain * MajInstances.Settings.Audio.Volume.Global.Clamp(0, 1);
+                var volume = value.Clamp(0, 2) * _gain * MajEnv.Settings.Audio.Volume.Global.Clamp(0, 1);
                 Bass.ChannelSetAttribute(_decode, ChannelAttribute.Volume, volume);
             }
         }

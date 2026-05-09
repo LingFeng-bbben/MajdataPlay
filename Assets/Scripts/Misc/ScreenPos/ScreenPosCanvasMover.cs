@@ -133,7 +133,7 @@ namespace MajdataPlay
 
         void Awake()
         {
-            _displayOptions = MajInstances.Settings?.Display;
+            _displayOptions = MajEnv.Settings?.Display;
             _rt = GetComponent<RectTransform>();
             _transform = transform;
             _parentRt = _transform.parent as RectTransform;
@@ -387,7 +387,7 @@ namespace MajdataPlay
             {
                 case FLAG_NOT_INIT:
                     {
-                        _displayOptions = MajInstances.Settings?.Display;
+                        _displayOptions = MajEnv.Settings?.Display;
                         if (_displayOptions is null)
                         {
                             return;

@@ -82,7 +82,7 @@ namespace MajdataPlay.Scenes.View
         static Sprite? _bgCover = null;
         static string? _videoPath = null;
         //WsServer _httpServer;
-        GameSetting _setting = MajInstances.Settings;
+        GameSetting _setting = MajEnv.Settings;
         NoteLoader _noteLoader;
         NoteManager _noteManager;
         NoteAudioManager _noteAudioManager;

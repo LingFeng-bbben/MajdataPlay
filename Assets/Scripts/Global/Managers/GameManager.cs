@@ -61,7 +61,7 @@ namespace MajdataPlay
 
         public GameSetting Settings
         {
-            get => MajInstances.Settings;
+            get => MajEnv.Settings;
         }
 
         [SerializeField] BuiltInTimeProvider _timer = BuiltInTimeProvider.Winapi;

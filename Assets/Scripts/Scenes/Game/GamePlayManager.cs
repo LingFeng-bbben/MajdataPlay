@@ -194,7 +194,7 @@ namespace MajdataPlay.Scenes.Game
             Majdata<INoteController>.Instance = this;
             Majdata<INoteTimeProvider>.Instance = this;
             _gameInfo = Majdata<GameInfo>.Instance!;
-            _gameSettings = MajInstances.Settings;
+            _gameSettings = MajEnv.Settings;
             _enforceGameFailureCondition = _gameSettings.Game.EnforceGameFailure;
             _gameplaySubScreenClickBehavior = _gameSettings.Game.GameplaySubScreenClickBehavior;
             _isEnforceFastRetry = (int)_enforceGameFailureCondition % 2 == 0;
@@ -665,7 +665,7 @@ namespace MajdataPlay.Scenes.Game
                     _audioTrackStartAt = (float)startAt;
                 }
             }
-            AudioLength = (float)_audioSample.Length.TotalSeconds / MajInstances.Settings.Mod.PlaybackSpeed;
+            AudioLength = (float)_audioSample.Length.TotalSeconds / MajEnv.Settings.Mod.PlaybackSpeed;
         }
         /// <summary>
         /// Parse the chart into memory
@@ -1026,7 +1026,7 @@ namespace MajdataPlay.Scenes.Game
             {
                 return;
             }
-            switch (MajInstances.Settings.Game.BGInfo)
+            switch (MajEnv.Settings.Game.BGInfo)
             {
                 case BGInfoOption.Achievement_101:
                 case BGInfoOption.Achievement_100:

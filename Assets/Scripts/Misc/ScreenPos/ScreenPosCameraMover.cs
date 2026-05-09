@@ -49,7 +49,7 @@ namespace MajdataPlay
         
         void Awake()
         {
-            _displayOptions = MajInstances.Settings?.Display;
+            _displayOptions = MajEnv.Settings?.Display;
             _transform = transform;
             _cam = GetComponent<Camera>();
             _originalCameraY = _transform.position.y; // 保存场景原始相机位置
@@ -97,7 +97,7 @@ namespace MajdataPlay
             {
                 case FLAG_NOT_INIT:
                     {
-                        _displayOptions = MajInstances.Settings?.Display;
+                        _displayOptions = MajEnv.Settings?.Display;
                         if (_displayOptions is null)
                         {
                             return;
@@ -108,7 +108,7 @@ namespace MajdataPlay
                         _lastMainScreenOffset = _displayOptions.MainScreenOffset;
                         _lastMainScreenScale = _displayOptions.MainScreenScale;
                         ApplyTransform();
-                        //transform.position = new Vector3(0, 1.5f + 2.7f * (MajInstances.Settings?.Display.MainScreenPosition ?? 1f), -10); //Original
+                        //transform.position = new Vector3(0, 1.5f + 2.7f * (MajEnv.Settings?.Display.MainScreenPosition ?? 1f), -10); //Original
 
 
                         var aspectratio = (float)Screen.width / (float)Screen.height;

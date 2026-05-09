@@ -26,7 +26,7 @@ namespace MajdataPlay.IO
     {
         public const int TOUCH_ANGLE_SMAPLE_COUNT = 128;
         public const float FINGER_RADIUS_SEGMENT_LENGTH = 0.5f / 4;
-        
+
         // uint64 TouchPosData
         //
         // Button bit (12bit)
@@ -40,9 +40,10 @@ namespace MajdataPlay.IO
         // Flag bit (2 bit)
         // 0: ButtonRing only
         // 1: Sensor only
-        readonly static ulong* _posData = null;
-        readonly static Dictionary<int, ulong> _touchRecorder = new(32);
-        readonly static ReadOnlyMemory<Vector4> _unitCircle = ReadOnlyMemory<Vector4>.Empty;
+
+        static ReadOnlyMemory<Vector4> _unitCircle = ReadOnlyMemory<Vector4>.Empty;
+        static ulong* _posData = null;
+        readonly static Dictionary<int, ulong> _touchRecorder = new(32);        
 
         static ushort _version = 0;
         

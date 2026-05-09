@@ -18,7 +18,7 @@ namespace MajdataPlay.Scenes.Setting
         public bool IsPressed { get; private set; } = false;
         public float PressTime { get; private set; } = 0f;
         public int Direction { get; private set; } = 1;
-        public GameSetting Setting => MajInstances.Settings;
+        public GameSetting Setting => MajEnv.Settings;
 
         public GameObject menuPrefab;
 

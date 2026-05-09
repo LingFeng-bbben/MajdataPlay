@@ -54,7 +54,7 @@ namespace MajdataPlay
             else if (_frameCount == FRAME_DELAY)
             {
                 _frameCount++;
-                _displayOptions = MajInstances.Settings?.Display;
+                _displayOptions = MajEnv.Settings?.Display;
                 RefreshCornersPosition();
                 return;
             }

@@ -116,7 +116,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 if (_gpManager != null && _gpManager.IsClassicMode)
                     obj.transform.GetChild(0).localScale = new Vector3(1.4f, 1.4f, 0);
                 var displayer = obj.GetComponent<TapEffectDisplayer>();
-                displayer.DistanceRatio = MajInstances.Settings.Display.OuterJudgeDistance;
+                displayer.DistanceRatio = MajEnv.Settings.Display.OuterJudgeDistance;
                 displayer.ResetAll();
                 _tapJudgeEffects[i] = displayer;
                 generatedTapEffectDisplayers.Add(displayer);
@@ -130,7 +130,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 var sensorPos = (SensorArea)i;
                 var obj = Instantiate(_touchEffectPrefab, touchParent);
                 var displayer = obj.GetComponent<TouchEffectDisplayer>();
-                displayer.DistanceRatio = MajInstances.Settings.Display.InnerJudgeDistance;
+                displayer.DistanceRatio = MajEnv.Settings.Display.InnerJudgeDistance;
                 obj.name = $"TouchEffect_{sensorPos}";
                 displayer.SensorPos = sensorPos;
                 displayer.ResetAll();
@@ -174,7 +174,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 var rotation = NoteHelper.GetTouchRoation(NoteHelper.GetTouchAreaPosition(sensorPos), sensorPos);
                 var displayer4Hold = obj4Hold.GetComponent<TouchHoldEffectDisplayer>();
                 obj4Hold.transform.rotation = rotation;
-                displayer4Hold.DistanceRatio = MajInstances.Settings.Display.InnerJudgeDistance;
+                displayer4Hold.DistanceRatio = MajEnv.Settings.Display.InnerJudgeDistance;
                 displayer4Hold.LocalPosition = position2;
                 obj4Hold.name = $"TouchHoldEffect_{sensorPos}";
                 displayer4Hold.ResetAll();

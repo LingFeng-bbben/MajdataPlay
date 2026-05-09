@@ -53,6 +53,7 @@ namespace MajdataPlay.IO
                 {
                     return;
                 }
+                MajDebug.LogInfo("[TouchPanel]Start initialization");
                 _isEnabled = MajEnv.Settings.IO.InputDevice.TouchPanel.Enable;
                 if (!_isEnabled)
                 {
@@ -81,6 +82,7 @@ namespace MajdataPlay.IO
                         MajDebug.LogWarning($"Not supported touch panel manufacturer: {MajEnv.Settings.IO.Manufacturer}");
                         break;
                 }
+                MajDebug.LogInfo("[TouchPanel]Initialization completed");
             }
             /// <summary>
             /// Update the touchpanel state of the this frame

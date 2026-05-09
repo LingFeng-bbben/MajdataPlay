@@ -261,13 +261,13 @@ namespace MajdataPlay.Scenes.Game
 
             _subScreenInfoDisplayerObject = _subScreenInfoDisplayerText.gameObject;
 
-            _breakFastLateDisplayOption = MajInstances.Settings.Display.BreakFastLateType;
-            _noteFastLateDisplayOption = MajInstances.Settings.Display.NoteJudgeType;
+            _breakFastLateDisplayOption = MajEnv.Settings.Display.BreakFastLateType;
+            _noteFastLateDisplayOption = MajEnv.Settings.Display.NoteJudgeType;
 
             //clean up
             Clear();
 
-            switch (MajInstances.Settings.Game.TopInfo)
+            switch (MajEnv.Settings.Game.TopInfo)
             {
                 case TopInfoDisplayOption.Judge:
                     _topInfoJudgeParent.SetActive(true);
@@ -1054,7 +1054,7 @@ namespace MajdataPlay.Scenes.Game
             var arraySegment = _sb.AsArraySegment();
             _judgeResultCount.SetCharArray(arraySegment.Array, arraySegment.Offset, arraySegment.Count);
 
-            switch (MajInstances.Settings.Game.TopInfo)
+            switch (MajEnv.Settings.Game.TopInfo)
             {
                 case TopInfoDisplayOption.Judge:
                     {

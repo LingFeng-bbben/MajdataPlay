@@ -25,7 +25,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
 
         Dictionary<SensorArea, TimeSpan> _lastTriggerTimes = new();
 
-        readonly GameSetting _setting = MajInstances.Settings;
+        readonly GameSetting _setting = MajEnv.Settings;
         Range<int> _touchFeedbackLevel = new Range<int>(0, 0, ContainsType.Open);
 
         readonly static int FIREWORK_ANIM_HASH = Animator.StringToHash("Fire");

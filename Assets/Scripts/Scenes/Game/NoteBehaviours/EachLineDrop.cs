@@ -62,7 +62,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             base.Awake();
             _noteController = Majdata<INoteController>.Instance!;
             _poolManager = FindObjectOfType<NotePoolManager>();
-            _gameSetting = MajInstances.Settings;
+            _gameSetting = MajEnv.Settings;
             _noteAppearRate = _gameSetting.Debug.NoteAppearRate;
             _sr = gameObject.GetComponent<SpriteRenderer>();
             _sr.sprite = null!;

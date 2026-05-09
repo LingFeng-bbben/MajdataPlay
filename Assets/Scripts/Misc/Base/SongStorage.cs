@@ -193,7 +193,7 @@ namespace MajdataPlay
             }
             await UniTask.SwitchToThreadPool();
             using var chartListBackup = new RentedList<ISongDetail>(_allCharts);
-            var onlineCollections = MajInstances.Settings.Online.Enable
+            var onlineCollections = MajEnv.Settings.Online.Enable
                 ? Collections.Where(x => x.IsOnline).ToArray()
                 : Array.Empty<SongCollection>();
             try
@@ -273,7 +273,7 @@ namespace MajdataPlay
         }
         internal static async Task RefreshUserOnlineFavAsync(IProgress<string>? progressReporter = null)
         {
-            if (!MajInstances.Settings.Online.Enable)
+            if (!MajEnv.Settings.Online.Enable)
             {
                 return;
             }
@@ -328,7 +328,7 @@ namespace MajdataPlay
         {
             var collections = await GetLocalCollections(rootPath, progressReporter);
             //Online Charts
-            if (MajInstances.Settings.Online.Enable)
+            if (MajEnv.Settings.Online.Enable)
             {
                 foreach (var api in MajEnv.ApiEndpoints.OrderBy(x => x.Name))
                 {

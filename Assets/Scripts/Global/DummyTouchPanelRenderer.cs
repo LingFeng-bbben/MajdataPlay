@@ -63,7 +63,7 @@ namespace MajdataPlay
         }
         bool IsSensorRendererEnabled()
         {
-            return MajInstances.Settings.Debug.DisplaySensor;
+            return MajEnv.Settings.Debug.DisplaySensor;
         }
         class SensorRenderer
         {

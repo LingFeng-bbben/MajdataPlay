@@ -228,15 +228,15 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             AudioEffMana = Majdata<NoteAudioManager>.Instance!;
 
             USERSETTING_SLIDE_SKIPPING = gameInfo?.ChartSettings.SlideSkipping ?? Settings.Game.SlideSkipping;
-            USERSETTING_JUDGE_OFFSET_SEC = ((MajInstances.Settings?.Judge.JudgeOffset ?? 0) + (MajInstances.Settings?.Debug.DisplayOffset ?? 0)) * ((MajInstances.Settings?.Debug.OffsetUnit ?? OffsetUnitOption.Second) == OffsetUnitOption.Second ? 1 : FRAME_LENGTH_SEC);
-            USERSETTING_TOUCHPANEL_OFFSET_SEC = (MajInstances.Settings?.Judge.TouchPanelOffset ?? 0) * ((MajInstances.Settings?.Debug.OffsetUnit ?? OffsetUnitOption.Second) == OffsetUnitOption.Second ? 1 : FRAME_LENGTH_SEC);
-            USERSETTING_TAP_SCALE = MajInstances.Settings?.Display.TapScale ?? 1;
-            USERSETTING_HOLD_SCALE = MajInstances.Settings?.Display.HoldScale ?? 1;
-            USERSETTING_TOUCH_SCALE = MajInstances.Settings?.Display.TouchScale ?? 1;
-            USERSETTING_SLIDE_SCALE = MajInstances.Settings?.Display.SlideScale ?? 1;
-            USERSETTING_DISPLAY_HOLD_HEAD_JUDGE_RESULT = MajInstances.Settings?.Display.DisplayHoldHeadJudgeResult ?? false;
-            USERSETTING_SLIDE_JUDGE_MODE = MajInstances.Settings?.Judge.Mode ?? JudgeModeOption.Modern;
-            USERSETTING_DJAUTO_POLICY = MajInstances.Settings?.Debug.DJAutoPolicy ?? DJAutoPolicyOption.Strict;
+            USERSETTING_JUDGE_OFFSET_SEC = ((MajEnv.Settings?.Judge.JudgeOffset ?? 0) + (MajEnv.Settings?.Debug.DisplayOffset ?? 0)) * ((MajEnv.Settings?.Debug.OffsetUnit ?? OffsetUnitOption.Second) == OffsetUnitOption.Second ? 1 : FRAME_LENGTH_SEC);
+            USERSETTING_TOUCHPANEL_OFFSET_SEC = (MajEnv.Settings?.Judge.TouchPanelOffset ?? 0) * ((MajEnv.Settings?.Debug.OffsetUnit ?? OffsetUnitOption.Second) == OffsetUnitOption.Second ? 1 : FRAME_LENGTH_SEC);
+            USERSETTING_TAP_SCALE = MajEnv.Settings?.Display.TapScale ?? 1;
+            USERSETTING_HOLD_SCALE = MajEnv.Settings?.Display.HoldScale ?? 1;
+            USERSETTING_TOUCH_SCALE = MajEnv.Settings?.Display.TouchScale ?? 1;
+            USERSETTING_SLIDE_SCALE = MajEnv.Settings?.Display.SlideScale ?? 1;
+            USERSETTING_DISPLAY_HOLD_HEAD_JUDGE_RESULT = MajEnv.Settings?.Display.DisplayHoldHeadJudgeResult ?? false;
+            USERSETTING_SLIDE_JUDGE_MODE = MajEnv.Settings?.Judge.Mode ?? JudgeModeOption.Modern;
+            USERSETTING_DJAUTO_POLICY = MajEnv.Settings?.Debug.DJAutoPolicy ?? DJAutoPolicyOption.Strict;
 
             _noteController = Majdata<INoteController>.Instance!;
             ModInfo = _noteController.ModInfo;

@@ -38,7 +38,7 @@ namespace MajdataPlay.IO
         static CabinetLed()
         {
 #if UNITY_STANDALONE
-            _isEnabled = MajInstances.Settings.IO.OutputDevice.Led.Enable;
+            _isEnabled = MajEnv.Settings.IO.OutputDevice.Led.Enable;
 #else
             _isEnabled = false;
 #endif

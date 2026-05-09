@@ -1,18 +1,19 @@
-﻿using MajdataPlay.Numerics;
-using MajdataPlay.Settings;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Diagnostics;
-using System.IO;
 using System.IO.Ports;
 using System.Linq;
-using System.Runtime.CompilerServices;
+using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MajdataPlay.Settings;
+using MajdataPlay.Numerics;
 using UnityEngine;
 #if UNITY_STANDALONE
 using HidSharp;
+
 namespace MajdataPlay.IO
 {
     public static partial class OutputManager
@@ -39,6 +40,7 @@ namespace MajdataPlay.IO
                 {
                     return;
                 }
+                MajDebug.LogInfo("[Led]Start initialization");
                 _isEnabled = MajEnv.Settings.IO.OutputDevice.Led.Enable;
                 _isThrottlerEnabled = MajEnv.Settings.IO.OutputDevice.Led.Throttler;
                 if (MajEnv.Settings.IO.OutputDevice.Led.RefreshRateMs <= 16)
@@ -79,13 +81,14 @@ namespace MajdataPlay.IO
                     //MajDebug.LogWarning($"Cannot open {comPortStr}, using dummy lights");
                     IsConnected = false;
                 }
+                MajDebug.LogInfo("[Led]Initialization completed");
             }
             static void SerialPortUpdateLoop()
             {
                 var currentThread = Thread.CurrentThread;
                 var serialPortOptions = IODetector.LedDeviceSerialConnInfo;
                 var token = MajEnv.GlobalCT;
-                var refreshRate = TimeSpan.FromMilliseconds(MajInstances.Settings.IO.OutputDevice.Led.RefreshRateMs);
+                var refreshRate = TimeSpan.FromMilliseconds(MajEnv.Settings.IO.OutputDevice.Led.RefreshRateMs);
                 var stopwatch = new Stopwatch();
                 var t1 = stopwatch.Elapsed;
                 var ledRingColors = _ledRingColors.AsSpan();
@@ -455,27 +458,3 @@ namespace MajdataPlay.IO
     }
 }
 #endif
-namespace MajdataPlay.IO
-{
-    public static partial class OutputManager
-    {
-        static byte _cabinetLightBrightness = 255;
-        readonly static Color[] _ledRingColors = new Color[8];
-
-        
-        public static void Init()
-        {
-#if UNITY_STANDALONE
-            LedDevice.Init();
-#endif
-        }
-        public static void SetLedRingColorData(ReadOnlySpan<Color> colors)
-        {
-            colors.CopyTo(_ledRingColors);
-        }
-        public static void SetCabinetLightBrightness(float brightness)
-        {
-            _cabinetLightBrightness = (byte)Mathf.RoundToInt(Mathf.Clamp01(brightness) * 255f);
-        }
-    }
-}

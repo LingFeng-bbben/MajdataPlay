@@ -58,8 +58,9 @@ namespace MajdataPlay.IO
                 {
                     return;
                 }
+                MajDebug.LogInfo("[ButtonRing]Start initialization");
 #if UNITY_STANDALONE
-                _isEnabled = MajEnv.Settings.IO.InputDevice.TouchPanel.Enable;
+                _isEnabled = MajEnv.Settings.IO.InputDevice.ButtonRing.Enable;
                 if (!_isEnabled)
                 {
                     MajDebug.LogInfo("[ButtonRing]Disabled");
@@ -105,6 +106,7 @@ namespace MajdataPlay.IO
 #elif UNITY_ANDROID || UNITY_IOS
                 _mobileExternalbuttonRingOption = MajEnv.Settings.IO.InputDevice.ExternalButtonRing;
 #endif
+                MajDebug.LogInfo("[ButtonRing]Initialization completed");
             }
             /// <summary>
             /// Update the button ring state of the this frame

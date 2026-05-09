@@ -128,10 +128,10 @@ namespace MajdataPlay.IO
 
         public static event EventHandler<InputEventArgs>? OnAnyAreaTrigger;
 
-        readonly static TimeSpan _btnDebounceThresholdMs = TimeSpan.Zero;
-        readonly static TimeSpan _sensorDebounceThresholdMs = TimeSpan.Zero;
-        readonly static TimeSpan _btnPollingRateMs = TimeSpan.Zero;
-        readonly static TimeSpan _sensorPollingRateMs = TimeSpan.Zero;
+        static TimeSpan _btnDebounceThresholdMs = TimeSpan.Zero;
+        static TimeSpan _sensorDebounceThresholdMs = TimeSpan.Zero;
+        static TimeSpan _btnPollingRateMs = TimeSpan.Zero;
+        static TimeSpan _sensorPollingRateMs = TimeSpan.Zero;
 
         readonly static ConcurrentQueue<InputDeviceReport> _touchPanelInputBuffer = new();
         readonly static ConcurrentQueue<InputDeviceReport> _buttonRingInputBuffer = new();
@@ -314,27 +314,36 @@ namespace MajdataPlay.IO
         readonly static int[] _btnClickedCountInThisFrame = new int[8];
         readonly static int[] _sensorClickedCountInThisFrame = new int[33];
 #endif
-
+        static bool _isInited = false;
         static bool _useDummy = false;
-        readonly static bool _isBtnDebounceEnabled = false;
-        readonly static bool _isSensorDebounceEnabled = false;
-        readonly static bool _isSensorRendererEnabled = false;
+        static bool _isBtnDebounceEnabled = false;
+        static bool _isSensorDebounceEnabled = false;
+        static bool _isSensorRendererEnabled = false;
 
         static IReadOnlyDictionary<int, int> _instanceID2SensorIndexMappingTable = new Dictionary<int, int>();
 
 #if UNITY_STANDALONE
         readonly static IOThreadSynchronization _ioThreadSync = new IOThreadSynchronization();     
 #endif
-        static InputManager()
+        internal static void Init(IReadOnlyDictionary<int, int> instanceID2SensorIndexMappingTable)
         {
+            if(_isInited)
+            {
+                return;
+            }
+            MajDebug.LogInfo("[InputManager]Start initialization");
+            _isInited = true;
+            Input.multiTouchEnabled = true;
+            EnhancedTouchSupport.Enable();
+            MajDebug.LogDebug("[InputManager]Reading config from game settings");
             _isSensorRendererEnabled = MajEnv.Settings.Debug.DisplaySensor;
 #if UNITY_STANDALONE
-            _btnDebounceThresholdMs = TimeSpan.FromMilliseconds(MajInstances.Settings.IO.InputDevice.ButtonRing.DebounceThresholdMs);
-            _btnPollingRateMs = TimeSpan.FromMilliseconds(MajInstances.Settings.IO.InputDevice.ButtonRing.PollingRateMs);
-            _sensorDebounceThresholdMs = TimeSpan.FromMilliseconds(MajInstances.Settings.IO.InputDevice.TouchPanel.DebounceThresholdMs);
-            _sensorPollingRateMs = TimeSpan.FromMilliseconds(MajInstances.Settings.IO.InputDevice.TouchPanel.PollingRateMs);
-            _isBtnDebounceEnabled = MajInstances.Settings.IO.InputDevice.ButtonRing.Debounce;
-            _isSensorDebounceEnabled = MajInstances.Settings.IO.InputDevice.TouchPanel.Debounce;
+            _btnDebounceThresholdMs = TimeSpan.FromMilliseconds(MajEnv.Settings.IO.InputDevice.ButtonRing.DebounceThresholdMs);
+            _btnPollingRateMs = TimeSpan.FromMilliseconds(MajEnv.Settings.IO.InputDevice.ButtonRing.PollingRateMs);
+            _sensorDebounceThresholdMs = TimeSpan.FromMilliseconds(MajEnv.Settings.IO.InputDevice.TouchPanel.DebounceThresholdMs);
+            _sensorPollingRateMs = TimeSpan.FromMilliseconds(MajEnv.Settings.IO.InputDevice.TouchPanel.PollingRateMs);
+            _isBtnDebounceEnabled = MajEnv.Settings.IO.InputDevice.ButtonRing.Debounce;
+            _isSensorDebounceEnabled = MajEnv.Settings.IO.InputDevice.TouchPanel.Debounce;
 #else
             _btnDebounceThresholdMs = TimeSpan.Zero;
             _btnPollingRateMs = TimeSpan.Zero;
@@ -362,28 +371,24 @@ namespace MajdataPlay.IO
             }
 
             _unitCircle = samples;
-            //for (var i = 0; i < 8; i++)
-            //{
-            //    _touchRecords.Add((SensorArea)i, new(10));
-            //}
             GameManager.OnAppQuit += OnApplicationQuit;
-        }
-        internal static void Init(IReadOnlyDictionary<int, int> instanceID2SensorIndexMappingTable)
-        {
-            Input.multiTouchEnabled = true;
-            EnhancedTouchSupport.Enable();
             _instanceID2SensorIndexMappingTable = instanceID2SensorIndexMappingTable;
             _lastScreenHeight = Screen.height;
             _lastScreenWidth = Screen.width;
-
+            MajDebug.LogDebug("[InputManager]Screen dimensions initialized");
+            MajDebug.LogDebug("[InputManager]Start generating sensor map");
             for (var x = -540; x <= 540; x++)
             {
+                if ((x + 540) % 100 == 0)
+                {
+                    MajDebug.LogDebug($"[InputManager]Progress: {x + 540}/1080");
+                }
                 for (var y = -540; y <= 540; y++)
                 {
                     var point = new Vector3(x / 100f, y / 100f, -10);
                     var ray = new Ray(point, Vector3.forward);
                     var ishit = Physics.Raycast(ray, out var hitInfom);
-                    ref var posData = ref _posData[(x + 540) * 1280 + (y + 540)];
+                    ref var posData = ref _posData[((x + 540) * 1280) + y + 540];
                     if (ishit)
                     {
                         var id = hitInfom.colliderInstanceID;
@@ -391,15 +396,21 @@ namespace MajdataPlay.IO
                         {
                             posData |= 1UL << (index + 12);
                         }
+                        else
+                        {
+                            MajDebug.LogWarning($"[InputManager]Unknown collider instance id: {id}");
+                        }
                     }
                 }
             }
+            MajDebug.LogDebug($"[InputManager]Sensor map generate finished");
 #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS
             ButtonRing.Init();
 #endif
 #if UNITY_STANDALONE
             TouchPanel.Init();
 #endif
+            MajDebug.LogInfo("[InputManager]Initialization completed");
         }
         internal static void OnFixedUpdate()
         {

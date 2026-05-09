@@ -39,7 +39,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         protected override void Awake()
         {
             base.Awake();
-            _displayCP = MajInstances.Settings.Display.DisplayCriticalPerfect;
+            _displayCP = MajEnv.Settings.Display.DisplayCriticalPerfect;
             _spriteRenderer = GetComponent<SpriteRenderer>();
             _animator = GetComponent<Animator>();
             _defaultMaterial = _spriteRenderer.sharedMaterial;

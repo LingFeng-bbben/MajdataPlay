@@ -95,7 +95,7 @@ namespace MajdataPlay
         internal async Task InitAsync()
         {
             var path = MajEnv.SkinPath;
-            var selectedSkinName = MajInstances.Settings.Display.Skin;
+            var selectedSkinName = MajEnv.Settings.Display.Skin;
             var dicts = Directory.GetDirectories(path);
             foreach (var (i, skinPath) in dicts.WithIndex())
             {
@@ -119,7 +119,7 @@ namespace MajdataPlay
                 targetSkin = _loadedSkins[0];
                 if(targetSkin.Name != CustomSkin.Empty.Name)
                 {
-                    MajInstances.Settings.Display.Skin = targetSkin.Name;
+                    MajEnv.Settings.Display.Skin = targetSkin.Name;
                     await targetSkin.LoadAsync();
                 }
             }

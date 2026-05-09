@@ -444,7 +444,7 @@ namespace MajdataPlay.Scenes.Game
                 }
                 var time = (float)timing.Timing;
                 var speed = NoteSpeed * timing.HSpeed;
-                var scaleRate = MajInstances.Settings.Debug.NoteAppearRate;
+                var scaleRate = MajEnv.Settings.Debug.NoteAppearRate;
                 var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (speed * scaleRate);
                 var appearTiming = time + appearDiff;
 
@@ -489,7 +489,7 @@ namespace MajdataPlay.Scenes.Game
                 var startPos = note.StartPosition;
                 var noteTiming = (float)timing.Timing;
                 var speed = NoteSpeed * timing.HSpeed;
-                var scaleRate = MajInstances.Settings.Debug.NoteAppearRate;
+                var scaleRate = MajEnv.Settings.Debug.NoteAppearRate;
                 var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (Math.Abs(speed) * scaleRate);
                 var appearTiming = Math.Min(noteTiming + appearDiff, noteTiming - 0.15f);
                 var sortOrder = _noteSortOrder;
@@ -548,7 +548,7 @@ namespace MajdataPlay.Scenes.Game
                 var startPos = note.StartPosition;
                 var noteTiming = (float)timing.Timing;
                 var speed = Math.Abs(NoteSpeed * timing.HSpeed);
-                var scaleRate = MajInstances.Settings.Debug.NoteAppearRate;
+                var scaleRate = MajEnv.Settings.Debug.NoteAppearRate;
                 var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (speed * scaleRate);
                 var appearTiming = Math.Min(noteTiming + appearDiff, noteTiming - 0.15f);
                 var sortOrder = _noteSortOrder;
@@ -606,8 +606,8 @@ namespace MajdataPlay.Scenes.Game
             {
                 var noteTiming = (float)timing.Timing;
                 var speed = NoteSpeed * timing.HSpeed;
-                var scaleRate = MajInstances.Settings.Debug.NoteAppearRate;
-                var slideFadeInTiming = (-3.926913f / speed) + MajInstances.Settings.Game.SlideFadeInOffset + (float)timing.Timing;
+                var scaleRate = MajEnv.Settings.Debug.NoteAppearRate;
+                var slideFadeInTiming = (-3.926913f / speed) + MajEnv.Settings.Game.SlideFadeInOffset + (float)timing.Timing;
                 var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (Math.Abs(speed) * scaleRate);
                 var appearTiming = Math.Min(noteTiming + appearDiff, noteTiming - 0.15f);
                 var sortOrder = _noteSortOrder;
@@ -1232,8 +1232,8 @@ namespace MajdataPlay.Scenes.Game
         void AddSlideToQueue<T>(SimaiTimingPoint timing, T SliCompo) where T : SlideBase
         {
             var speed = NoteSpeed * timing.HSpeed;
-            var scaleRate = MajInstances.Settings.Debug.NoteAppearRate;
-            var slideFadeInTiming = Math.Max((-3.926913f / speed) + MajInstances.Settings.Game.SlideFadeInOffset + (float)timing.Timing, -5f);
+            var scaleRate = MajEnv.Settings.Debug.NoteAppearRate;
+            var slideFadeInTiming = Math.Max((-3.926913f / speed) + MajEnv.Settings.Game.SlideFadeInOffset + (float)timing.Timing, -5f);
             var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (Math.Abs(speed) * scaleRate);
             var appearTiming = (float)timing.Timing + appearDiff;
             _slideQueueInfos.Add(new()
@@ -1337,7 +1337,7 @@ namespace MajdataPlay.Scenes.Game
             SliCompo.Multiple = multiple;
             //SliCompo.sortIndex = -7000 + (int)((lastNoteTime - timing.Timing) * -100) + sort * 5;
             var slideBarCount = slide.transform.childCount - 1;
-            if (MajInstances.Settings.Display.SlideSortOrder == JudgeModeOption.Classic)
+            if (MajEnv.Settings.Display.SlideSortOrder == JudgeModeOption.Classic)
             {
                 _slideLayer += slideBarCount;
                 SliCompo.SortOrder = _slideLayer;
@@ -1427,7 +1427,7 @@ namespace MajdataPlay.Scenes.Game
             //    leftStar
             //};
             var slideBarCount = slideWifi.transform.childCount - 1;
-            if (MajInstances.Settings.Display.SlideSortOrder == JudgeModeOption.Classic)
+            if (MajEnv.Settings.Display.SlideSortOrder == JudgeModeOption.Classic)
             {
                 _slideLayer += slideBarCount;
                 WifiCompo.SortOrder = _slideLayer;

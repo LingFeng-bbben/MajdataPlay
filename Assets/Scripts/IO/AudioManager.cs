@@ -111,11 +111,11 @@ namespace MajdataPlay.IO
                                                                  .Select(x => x.Name)
                                                                  .ToArray();
 
-                var backend = MajInstances.Settings.Audio.Backend;
+                var backend = MajEnv.Settings.Audio.Backend;
                 var isBass = backend is (SoundBackendOption.BassSimple or SoundBackendOption.Asio or SoundBackendOption.Wasapi);
 #if UNITY_STANDALONE
-                var wasapiOptions = MajInstances.Settings.Audio.Wasapi;
-                var asioOptions = MajInstances.Settings.Audio.Asio;
+                var wasapiOptions = MajEnv.Settings.Audio.Wasapi;
+                var asioOptions = MajEnv.Settings.Audio.Asio;
                 var isExclusiveRequest = wasapiOptions.Exclusive;
                 var deviceIndex = asioOptions.DeviceIndex;
                 var isRawMode = wasapiOptions.RawMode;
@@ -140,7 +140,7 @@ namespace MajdataPlay.IO
 #else
                         backend = SoundBackendOption.Unity;
 #endif
-                        MajInstances.Settings.Audio.Backend = backend;
+                        MajEnv.Settings.Audio.Backend = backend;
                         MajDebug.LogDebug($"Fallback to {backend}");
                         break;
                 }
@@ -232,7 +232,7 @@ namespace MajdataPlay.IO
                     case SoundBackendOption.BassSimple:
                         {
 #if UNITY_ANDROID || UNITY_IOS
-                            var mobileOptions = MajInstances.Settings.Audio.Mobile;
+                            var mobileOptions = MajEnv.Settings.Audio.Mobile;
                             mobileOptions.UpdatePeriodMs = mobileOptions.UpdatePeriodMs.Clamp(5, 100);
                             mobileOptions.BufferLengthMs = mobileOptions.BufferLengthMs.Clamp(mobileOptions.UpdatePeriodMs + 1, 5000);
                             mobileOptions.DeviceUpdatePeriodMs = mobileOptions.DeviceUpdatePeriodMs.Clamp(1, int.MaxValue);
@@ -377,9 +377,9 @@ namespace MajdataPlay.IO
         private void OnDestroy()
         {
             GameManager.OnAppFocus -= OnAppFocus;
-            if (MajInstances.Settings.Audio.Backend == SoundBackendOption.Wasapi
-                || MajInstances.Settings.Audio.Backend == SoundBackendOption.Asio ||
-                MajInstances.Settings.Audio.Backend == SoundBackendOption.BassSimple)
+            if (MajEnv.Settings.Audio.Backend == SoundBackendOption.Wasapi
+                || MajEnv.Settings.Audio.Backend == SoundBackendOption.Asio ||
+                MajEnv.Settings.Audio.Backend == SoundBackendOption.BassSimple)
             {
                 foreach (var sample in SFXSamples)
                 {
@@ -422,7 +422,7 @@ namespace MajdataPlay.IO
         }
         public void ReadVolumeFromSettings()
         {
-            var volume = MajInstances.Settings.Audio.Volume;
+            var volume = MajEnv.Settings.Audio.Volume;
             foreach (var sample in SFXSamples)
             {
                 if (sample is null || sample.IsEmpty)
@@ -449,7 +449,7 @@ namespace MajdataPlay.IO
         public AudioSampleWrap LoadMusic(string path, bool normalize = true, bool speedChange = false)
         {
             MajDebug.LogInfo($"Try creating channel from file: {path}");
-            var backend = MajInstances.Settings.Audio.Backend;
+            var backend = MajEnv.Settings.Audio.Backend;
             if (File.Exists(path))
             {
                 var sample = default(AudioSampleWrap);
@@ -481,7 +481,7 @@ namespace MajdataPlay.IO
         public AudioSampleWrap LoadMusicFromUri(Uri uri)
         {
             MajDebug.LogInfo($"Try creating channel from uri: {uri}");
-            var backend = MajInstances.Settings.Audio.Backend;
+            var backend = MajEnv.Settings.Audio.Backend;
             var sample = default(AudioSampleWrap);
             switch (backend)
             {
@@ -506,7 +506,7 @@ namespace MajdataPlay.IO
         {
             MajDebug.LogInfo($"Try creating channel from file: {path}");
             await UniTask.SwitchToThreadPool();
-            var backend = MajInstances.Settings.Audio.Backend;
+            var backend = MajEnv.Settings.Audio.Backend;
             if (File.Exists(path))
             {
                 var sample = default(AudioSampleWrap);
@@ -540,7 +540,7 @@ namespace MajdataPlay.IO
         {
             MajDebug.LogInfo($"Try creating channel from uri: {uri}");
             await UniTask.SwitchToThreadPool();
-            var backend = MajInstances.Settings.Audio.Backend;
+            var backend = MajEnv.Settings.Audio.Backend;
             var sample = default(AudioSampleWrap);
             switch (backend)
             {
@@ -616,7 +616,7 @@ namespace MajdataPlay.IO
         public void OpenAsioPannel()
         {
 #if UNITY_STANDALONE_WIN
-            if(MajInstances.Settings.Audio.Backend == SoundBackendOption.Asio)
+            if(MajEnv.Settings.Audio.Backend == SoundBackendOption.Asio)
             {
                 BassAsio.ControlPanel();
             }
@@ -646,7 +646,7 @@ namespace MajdataPlay.IO
 
             float[,] matrix;
 
-            var isForceMono = MajInstances.Settings.Audio.ForceMono;
+            var isForceMono = MajEnv.Settings.Audio.ForceMono;
 #if UNITY_ANDROID || UNITY_IOS
             var volumeSettings = new
             {
@@ -656,7 +656,7 @@ namespace MajdataPlay.IO
                 RearVolume = 1f
             };
 #else
-            var volumeSettings = MajInstances.Settings.Audio.Channel;
+            var volumeSettings = MajEnv.Settings.Audio.Channel;
 #endif
             if (isForceMono)
             {
