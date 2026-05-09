@@ -93,6 +93,7 @@ namespace MajdataPlay.IO
             _cabinetLight.UpdateFunction.Update(deltaMs);
             OutputManager.SetLedRingColorData(ledColors);
             OutputManager.SetCabinetLightBrightness(_cabinetLight.Color.grayscale);
+            DummyLedRenderer.SetLedRingColorData(ledColors);
         }
         #region Cabinet light
         [Conditional("UNITY_STANDALONE")]

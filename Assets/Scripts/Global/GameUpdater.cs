@@ -77,7 +77,6 @@ namespace MajdataPlay
             MajTimeline.OnPreUpdate();
             InputManager.OnPreUpdate();
             _dummyTouchPanelRenderer.OnPreUpdate();
-            _dummyLedRenderer.OnPreUpdate();
             try
             {
                 switch (SceneSwitcher.CurrentScene)
@@ -143,6 +142,8 @@ namespace MajdataPlay
                         _gpManagerRef.Target?.OnLateUpdate();
                         break;
                 }
+                CabinetLed.OnLateUpdate();
+                _dummyLedRenderer.OnLateUpdate();
             }
             catch (Exception e)
             {
