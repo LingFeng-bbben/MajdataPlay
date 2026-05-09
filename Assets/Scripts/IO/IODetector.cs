@@ -1,4 +1,5 @@
 ﻿using LibUsbDotNet;
+using LibUsbDotNet.Main;
 using MajdataPlay.Settings;
 using System;
 using System.Collections.Generic;
