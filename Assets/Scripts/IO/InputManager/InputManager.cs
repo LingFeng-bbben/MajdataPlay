@@ -478,9 +478,9 @@ namespace MajdataPlay.IO
                     else
                     {
                         _lastMainScreenOffset = 1f;
-                    }                    
-                }
-                _version++;
+                    }
+                    _version++;
+                }                
                 UpdateMousePosition();
                 UpdateButtonState();
                 UpdateSensorState();
