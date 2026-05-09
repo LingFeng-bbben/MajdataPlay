@@ -14,11 +14,7 @@ namespace MajdataPlay.IO
         public static bool IsEnabled
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                return _isEnabled;
-            }
-        }
+            get; private set; } = false;
         public static bool IsConnected
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -27,18 +23,19 @@ namespace MajdataPlay.IO
         }
 
         static TimeSpan _lastUpdateTime = TimeSpan.Zero;
+        static Led _cabinetLight;
+
         readonly static Color[] _ledColors = new Color[8];
         readonly static Led[] _ledRingDevices = new Led[8];
-        readonly static Led _cabinetLight;
+        
         readonly static LedCommonUpdateFunction[] _ledCommFuncs = new LedCommonUpdateFunction[9];
         readonly static LedLinearUpdateFunction[] _ledLinearFuncs = new LedLinearUpdateFunction[9];
         readonly static LedSineUpdateFunction[] _ledSineFuncs = new LedSineUpdateFunction[9];
-        readonly static bool _isEnabled = true;
-
-        static CabinetLed()
+        
+        public static void Init()
         {
 #if UNITY_STANDALONE
-            _isEnabled = MajEnv.Settings.IO.OutputDevice.Led.Enable;
+            IsEnabled = MajEnv.Settings.IO.OutputDevice.Led.Enable;
 #else
             _isEnabled = false;
 #endif
@@ -64,7 +61,7 @@ namespace MajdataPlay.IO
             {
                 Index = 8,
             };
-            if (!_isEnabled)
+            if (!IsEnabled)
             {
                 for (var i = 0; i < 9; i++)
                 {
@@ -118,7 +115,7 @@ namespace MajdataPlay.IO
         [Conditional("UNITY_STANDALONE")]
         public static void SetCabinetLightSineFunc(float brightness, long T_Ms, float phi = 0.5f)
         {
-            if (!_isEnabled)
+            if (!IsEnabled)
             {
                 return;
             }
@@ -127,7 +124,7 @@ namespace MajdataPlay.IO
         [Conditional("UNITY_STANDALONE")]
         public static void SetCabinetLightSineFunc(float brightness, TimeSpan T, float phi = 0.5f)
         {
-            if (!_isEnabled)
+            if (!IsEnabled)
             {
                 return;
             }
@@ -141,7 +138,7 @@ namespace MajdataPlay.IO
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SetAllLight(Color lightColor)
         {
-            if (!_isEnabled)
+            if (!IsEnabled)
             {
                 return;
             }
@@ -156,7 +153,7 @@ namespace MajdataPlay.IO
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SetAllLightLinearTo(Color from, Color to, long durationMs)
         {
-            if (!_isEnabled)
+            if (!IsEnabled)
             {
                 return;
             }
@@ -166,7 +163,7 @@ namespace MajdataPlay.IO
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SetAllLightLinearTo(Color from, Color to, TimeSpan duration)
         {
-            if (!_isEnabled)
+            if (!IsEnabled)
             {
                 return;
             }
@@ -181,7 +178,7 @@ namespace MajdataPlay.IO
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SetAllLightSineFunc(Color color, long T_Ms, float phi = 0.5f)
         {
-            if (!_isEnabled)
+            if (!IsEnabled)
             {
                 return;
             }
@@ -191,7 +188,7 @@ namespace MajdataPlay.IO
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SetAllLightSineFunc(Color color, TimeSpan T, float phi = 0.5f)
         {
-            if (!_isEnabled)
+            if (!IsEnabled)
             {
                 return;
             }
@@ -206,7 +203,7 @@ namespace MajdataPlay.IO
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SetAllLightUpdateFunc(ReadOnlySpan<ILedUpdateFunction> funcs)
         {
-            if (!_isEnabled)
+            if (!IsEnabled)
             {
                 return;
             }
@@ -222,7 +219,7 @@ namespace MajdataPlay.IO
         [Conditional("UNITY_STANDALONE")]
         public static void SetButtonLight(Color lightColor, int button)
         {
-            if (!_isEnabled)
+            if (!IsEnabled)
             {
                 return;
             }
@@ -233,7 +230,7 @@ namespace MajdataPlay.IO
         [Conditional("UNITY_STANDALONE")]
         public static void SetButtonLightWithTimeout(Color lightColor, int button, long durationMs = 500)
         {
-            if (!_isEnabled)
+            if (!IsEnabled)
             {
                 return;
             }
@@ -244,7 +241,7 @@ namespace MajdataPlay.IO
         [Conditional("UNITY_STANDALONE")]
         public static void SetButtonLightWithTimeout(Color lightColor, int button, TimeSpan duration)
         {
-            if (!_isEnabled)
+            if (!IsEnabled)
             {
                 return;
             }
@@ -255,7 +252,7 @@ namespace MajdataPlay.IO
         [Conditional("UNITY_STANDALONE")]
         public static void LinearTo(int button, Color from, Color to, long durationMs)
         {
-            if (!_isEnabled)
+            if (!IsEnabled)
             {
                 return;
             }
@@ -264,7 +261,7 @@ namespace MajdataPlay.IO
         [Conditional("UNITY_STANDALONE")]
         public static void LinearTo(int button, Color from, Color to, TimeSpan duration)
         {
-            if (!_isEnabled)
+            if (!IsEnabled)
             {
                 return;
             }
@@ -275,7 +272,7 @@ namespace MajdataPlay.IO
         [Conditional("UNITY_STANDALONE")]
         public static void SetSineFunc(int button, Color color, long T_Ms, float phi = 0.5f)
         {
-            if (!_isEnabled)
+            if (!IsEnabled)
             {
                 return;
             }
@@ -284,7 +281,7 @@ namespace MajdataPlay.IO
         [Conditional("UNITY_STANDALONE")]
         public static void SetSineFunc(int button, Color color, TimeSpan T, float phi = 0.5f)
         {
-            if (!_isEnabled)
+            if (!IsEnabled)
             {
                 return;
             }
@@ -295,7 +292,7 @@ namespace MajdataPlay.IO
         [Conditional("UNITY_STANDALONE")]
         public static void SetUpdateFunc(int button, ILedUpdateFunction func)
         {
-            if (!_isEnabled)
+            if (!IsEnabled)
             {
                 return;
             }
