@@ -37,7 +37,7 @@ namespace MajdataPlay.IO
 #if UNITY_STANDALONE
             IsEnabled = MajEnv.Settings.IO.OutputDevice.Led.Enable;
 #else
-            _isEnabled = false;
+            IsEnabled = false;
 #endif
             var ledDevices = _ledRingDevices;
             var ledCommFuncs = _ledCommFuncs;
