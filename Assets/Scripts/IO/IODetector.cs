@@ -39,7 +39,7 @@ namespace MajdataPlay.IO
         [Conditional("UNITY_STANDALONE")]
         public static void Init()
         {
-#if UNITY_STANDLONE
+#if UNITY_STANDALONE
             if (_isInited)
             {
                 return;
