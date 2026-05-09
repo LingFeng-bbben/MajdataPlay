@@ -1443,44 +1443,45 @@ namespace MajdataPlay.IO
                         {
                             bool isInsidePolygon;
                             var sensor = _sensors[i];
-                            var radius = i switch
-                            {
-                                0 => _radius + _radiusOffset.A,
-                                1 => _radius + _radiusOffset.A,
-                                2 => _radius + _radiusOffset.A,
-                                3 => _radius + _radiusOffset.A,
-                                4 => _radius + _radiusOffset.A,
-                                5 => _radius + _radiusOffset.A,
-                                6 => _radius + _radiusOffset.A,
-                                7 => _radius + _radiusOffset.A,
-                                8 => _radius + _radiusOffset.B,
-                                9 => _radius + _radiusOffset.B,
-                                10 => _radius + _radiusOffset.B,
-                                11 => _radius + _radiusOffset.B,
-                                12 => _radius + _radiusOffset.B,
-                                13 => _radius + _radiusOffset.B,
-                                14 => _radius + _radiusOffset.B,
-                                15 => _radius + _radiusOffset.B,
-                                16 => _radius + _radiusOffset.C,
-                                17 => _radius + _radiusOffset.C,
-                                18 => _radius + _radiusOffset.D,
-                                19 => _radius + _radiusOffset.D,
-                                20 => _radius + _radiusOffset.D,
-                                21 => _radius + _radiusOffset.D,
-                                22 => _radius + _radiusOffset.D,
-                                23 => _radius + _radiusOffset.D,
-                                24 => _radius + _radiusOffset.D,
-                                25 => _radius + _radiusOffset.D,
-                                26 => _radius + _radiusOffset.E,
-                                27 => _radius + _radiusOffset.E,
-                                28 => _radius + _radiusOffset.E,
-                                29 => _radius + _radiusOffset.E,
-                                30 => _radius + _radiusOffset.E,
-                                31 => _radius + _radiusOffset.E,
-                                32 => _radius + _radiusOffset.E,
-                                33 => _radius + _radiusOffset.E,
-                                _ => _radius
-                            };
+                            var radius = _radius;
+                            //var radius = i switch
+                            //{
+                            //    0 => _radius + _radiusOffset.A,
+                            //    1 => _radius + _radiusOffset.A,
+                            //    2 => _radius + _radiusOffset.A,
+                            //    3 => _radius + _radiusOffset.A,
+                            //    4 => _radius + _radiusOffset.A,
+                            //    5 => _radius + _radiusOffset.A,
+                            //    6 => _radius + _radiusOffset.A,
+                            //    7 => _radius + _radiusOffset.A,
+                            //    8 => _radius + _radiusOffset.B,
+                            //    9 => _radius + _radiusOffset.B,
+                            //    10 => _radius + _radiusOffset.B,
+                            //    11 => _radius + _radiusOffset.B,
+                            //    12 => _radius + _radiusOffset.B,
+                            //    13 => _radius + _radiusOffset.B,
+                            //    14 => _radius + _radiusOffset.B,
+                            //    15 => _radius + _radiusOffset.B,
+                            //    16 => _radius + _radiusOffset.C,
+                            //    17 => _radius + _radiusOffset.C,
+                            //    18 => _radius + _radiusOffset.D,
+                            //    19 => _radius + _radiusOffset.D,
+                            //    20 => _radius + _radiusOffset.D,
+                            //    21 => _radius + _radiusOffset.D,
+                            //    22 => _radius + _radiusOffset.D,
+                            //    23 => _radius + _radiusOffset.D,
+                            //    24 => _radius + _radiusOffset.D,
+                            //    25 => _radius + _radiusOffset.D,
+                            //    26 => _radius + _radiusOffset.E,
+                            //    27 => _radius + _radiusOffset.E,
+                            //    28 => _radius + _radiusOffset.E,
+                            //    29 => _radius + _radiusOffset.E,
+                            //    30 => _radius + _radiusOffset.E,
+                            //    31 => _radius + _radiusOffset.E,
+                            //    32 => _radius + _radiusOffset.E,
+                            //    33 => _radius + _radiusOffset.E,
+                            //    _ => _radius
+                            //};
 
                             if (radius > 0)
                             {
