@@ -909,10 +909,6 @@ namespace MajdataPlay.IO
             return (int)area;
         }
 #if UNITY_STANDALONE
-        static string WinSerialPortToLinuxPortName(int port)
-        {
-            return $"/dev/ttyUSB{port - 1}";
-        }
         class IOThreadSynchronization
         {
             public ReadOnlySpan<byte> ReadBuffer

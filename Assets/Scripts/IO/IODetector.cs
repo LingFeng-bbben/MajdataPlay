@@ -411,6 +411,10 @@ namespace MajdataPlay.IO
             }
 #endif
         }
+        static string WinSerialPortToLinuxPortName(int port)
+        {
+            return $"/dev/ttyUSB{port - 1}";
+        }
         public readonly struct HidConnInfo
         {
             public string DeviceName { get; init; }
