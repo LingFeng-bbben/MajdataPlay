@@ -443,7 +443,7 @@ namespace MajdataPlay.IO
             // we consider it as sensor only.
             if (UseGameplayTouchEnhancementFeatures)
             {
-                isSensorOnly = isAnySensorTriggered;
+                isSensorOnly |= isAnySensorTriggered;
             }
 
 
