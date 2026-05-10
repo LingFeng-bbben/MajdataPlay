@@ -290,7 +290,7 @@ namespace MajdataPlay.Scenes.Game
             }
 
             _breakFastLateDisplayOption = MajEnv.Settings.Display.BreakFastLateType;
-            _noteFastLateDisplayOption = MajEnv.Settings.Display.NoteJudgeType;
+            _noteFastLateDisplayOption = MajEnv.Settings.Display.FastLateType;
             _centerInfoDisplayOption = MajEnv.Settings.Game.BGInfo;
             _secondaryInfoDisplayOption = MajEnv.Settings.Game.SecondaryBGInfo;
             _subScreenInfoDisplayOption = MajEnv.Settings.Game.SubScreenBGInfo;
