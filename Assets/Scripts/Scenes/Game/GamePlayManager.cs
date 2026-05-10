@@ -337,6 +337,7 @@ namespace MajdataPlay.Scenes.Game
             }
 #if UNITY_ANDROID || UNITY_IOS
             InputManager.UseOuterTouchAsSensor = _gameSettings.Game.ButtonRingForTouch;
+            InputManager.UseGameplayTouchEnhancementFeatures = true;
 #endif
             InputManager.TouchButtonRingEdge = 5.4f;
             MajInstances.SceneSwitcher.HideMV();
@@ -1714,6 +1715,7 @@ namespace MajdataPlay.Scenes.Game
             {
                 Cursor.visible = true;
                 InputManager.UseOuterTouchAsSensor = false;
+                InputManager.UseGameplayTouchEnhancementFeatures = false;
                 MajInstances.SceneSwitcher.ShowMV();
             }
         }
