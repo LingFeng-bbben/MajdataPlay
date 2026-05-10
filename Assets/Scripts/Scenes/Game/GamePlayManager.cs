@@ -1183,6 +1183,7 @@ namespace MajdataPlay.Scenes.Game
                     _noteAudioManager.OnPreUpdate();
                     _noteManager.OnPreUpdate();
                     _notePoolManager.OnPreUpdate();
+                    _objectCounter.OnPreUpdate();
                     break;
             }
             Profiler.BeginSample("TimeDisplayer.OnPreUpdate");

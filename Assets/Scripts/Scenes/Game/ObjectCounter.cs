@@ -44,6 +44,13 @@ namespace MajdataPlay.Scenes.Game
         public Color EarlyDiffColor;
         public Color LateDiffColor;
 
+        [SerializeField]
+        [FormerlySerializedAs("mainScreenInfoDisplayerColorPalette")]
+        Color[] _mainScreenInfoDisplayerColorPalette = Array.Empty<Color>();
+        [SerializeField]
+        [FormerlySerializedAs("subScreenInfoDisplayerColorPalette")]
+        Color[] _subScreenInfoDisplayerColorPalette = Array.Empty<Color>();
+
         const string DX_ACC_RATE_STRING = "{0:F4}%";
         const string CLASSIC_ACC_RATE_STRING = "{0:F2}%";
         const string COMBO_OR_DXSCORE_STRING = "{0}";
@@ -152,7 +159,7 @@ namespace MajdataPlay.Scenes.Game
         long _cPCombo = 0; // Critical Perfect
 
 
-        readonly static List<float> _noteJudgeDiffList = new(2048);
+        List<float> _noteJudgeDiffList = new();
 
         readonly static int[] _judgedTapCount = new int[15];
         readonly static int[] _judgedHoldCount = new int[15];
@@ -219,20 +226,32 @@ namespace MajdataPlay.Scenes.Game
         [SerializeField]
         TextMeshProUGUI _topInfoLate;
 
+        [SerializeField]
+        [FormerlySerializedAs("judgeTimingGaugeParent")]
+        GameObject _judgeTimingGaugeParent;
+        [SerializeField]
+        [FormerlySerializedAs("judgeTimingGaugeScaleParent")]
+        GameObject _judgeTimingGaugeScaleParent;
+
+        [SerializeField]
+        [FormerlySerializedAs("judgeTimingGaugeCursor")]
+        RectTransform _judgeTimingGaugeCursor;
+
+        GameObject[] _judgeTimingGaugeScales = Array.Empty<GameObject>();
+        RectTransform[] _judgeTimingGaugeScaleTransforms = Array.Empty<RectTransform>();
+        GaugeScaleBinding[] _gaugeScaleBindings = Array.Empty<GaugeScaleBinding>();
+
         #endregion
 
+        float _judgeTimingGaugeAvg = 0f;
+        int _gaugeScaleBindingCursor = 0;
+        int _judgeTimingGaugeScaleCount = 0;
+        bool _isOutlinePlayRequested = false;
+        bool _isJudgeTimingGaugeEnabled = false;
         BGInfoOption _centerInfoDisplayOption = BGInfoOption.None;
         BGInfoOption _secondaryInfoDisplayOption = BGInfoOption.None;
         BGInfoOption _subScreenInfoDisplayOption = BGInfoOption.None;
 
-        [SerializeField]
-        [FormerlySerializedAs("mainScreenInfoDisplayerColorPalette")]
-        Color[] _mainScreenInfoDisplayerColorPalette = Array.Empty<Color>();
-        [SerializeField]
-        [FormerlySerializedAs("subScreenInfoDisplayerColorPalette")]
-        Color[] _subScreenInfoDisplayerColorPalette = Array.Empty<Color>();
-
-        bool _isOutlinePlayRequested = false;
         XxlbDanceRequest _xxlbDanceRequest = new();
 
         GameInfo _gameInfo = Majdata<GameInfo>.Instance!;
@@ -249,10 +268,6 @@ namespace MajdataPlay.Scenes.Game
             _judgeResultCount = GameObject.Find("JudgeResultCount").GetComponent<TextMeshProUGUI>();
             _rate = GameObject.Find("ObjectRate").GetComponent<TextMeshProUGUI>();
 
-            _centerInfoDisplayOption = MajEnv.Settings.Game.BGInfo;
-            _secondaryInfoDisplayOption = MajEnv.Settings.Game.SecondaryBGInfo;
-            _subScreenInfoDisplayOption = MajEnv.Settings.Game.SubScreenBGInfo;
-
             _centerInfoDisplayerObject = _centerInfoDisplayerText.gameObject;
             _centerInfoDisplayerHeaderObject = _centerInfoDisplayerHeader.gameObject;
 
@@ -261,8 +276,34 @@ namespace MajdataPlay.Scenes.Game
 
             _subScreenInfoDisplayerObject = _subScreenInfoDisplayerText.gameObject;
 
+            _judgeTimingGaugeScaleCount = _judgeTimingGaugeScaleParent.transform.childCount;
+            _judgeTimingGaugeScales = new GameObject[_judgeTimingGaugeScaleCount];
+            _judgeTimingGaugeScaleTransforms = new RectTransform[_judgeTimingGaugeScaleCount];
+            _gaugeScaleBindings = new GaugeScaleBinding[_judgeTimingGaugeScaleCount];
+            for (var i = 0; i < _judgeTimingGaugeScales.Length; i++)
+            {
+                _judgeTimingGaugeScales[i] = _judgeTimingGaugeScaleParent.transform.GetChild(i).gameObject;
+                _judgeTimingGaugeScaleTransforms[i] = _judgeTimingGaugeScales[i].GetComponent<RectTransform>();
+                var scaleImage = _judgeTimingGaugeScales[i].GetComponent<RawImage>();
+                scaleImage.enabled = false;
+                _gaugeScaleBindings[i] = new(_judgeTimingGaugeScaleTransforms[i], scaleImage);
+            }
+
             _breakFastLateDisplayOption = MajEnv.Settings.Display.BreakFastLateType;
             _noteFastLateDisplayOption = MajEnv.Settings.Display.NoteJudgeType;
+            _centerInfoDisplayOption = MajEnv.Settings.Game.BGInfo;
+            _secondaryInfoDisplayOption = MajEnv.Settings.Game.SecondaryBGInfo;
+            _subScreenInfoDisplayOption = MajEnv.Settings.Game.SubScreenBGInfo;
+            _isJudgeTimingGaugeEnabled = MajEnv.Settings.Game.EnableJudgeTimingGauge;
+
+            if (_isJudgeTimingGaugeEnabled)
+            {
+                _secondaryInfoDisplayOption = BGInfoOption.None;
+            }
+            else
+            {
+                _judgeTimingGaugeParent.SetActive(false);
+            }
 
             //clean up
             Clear();
@@ -330,6 +371,21 @@ namespace MajdataPlay.Scenes.Game
                 _centerInfoDisplayerHeader.text = "AUTOPLAY";
             }
         }
+        internal void OnPreUpdate()
+        {
+            using (UnityProfiler.Create("ObjectCounter.OnPreUpdate"))
+            {
+                if (_isJudgeTimingGaugeEnabled)
+                {
+                    var deltaTime = MajTimeline.DeltaTime;
+                    for (var i = 0; i < _gaugeScaleBindings.Length; i++)
+                    {
+                        ref var binding = ref _gaugeScaleBindings[i];
+                        binding.OnPreUpdate(deltaTime);
+                    }
+                }
+            } 
+        }
 
         internal void OnLateUpdate()
         {
@@ -352,6 +408,20 @@ namespace MajdataPlay.Scenes.Game
                 {
                     _outline.Play();
                     _isOutlinePlayRequested = false;
+                }
+                if(_isJudgeTimingGaugeEnabled)
+                {
+                    var diffSum = 0f;
+                    for (var i = 0; i < _gaugeScaleBindings.Length; i++)
+                    {
+                        ref var binding = ref _gaugeScaleBindings[i];
+                        diffSum += binding.DiffMSec;
+                    }
+                    var sampleCount = Mathf.Min(_judgeTimingGaugeScaleCount, _noteJudgeDiffList.Count);
+                    var diffAvg = diffSum / sampleCount;
+                    var percent = Mathf.Clamp(diffAvg / 150f, -1, 1);
+                    var posX = 282.5f * percent;
+                    _judgeTimingGaugeCursor.anchoredPosition = new Vector2(posX, -30);
                 }
             }
         }
@@ -567,6 +637,7 @@ namespace MajdataPlay.Scenes.Game
                 TotalNoteBaseScore = (TapSum + TouchSum) * 500 + HoldSum * 1000 + SlideSum * 1500 + BreakSum * 2500;
                 TotalNoteExtraScore = BreakSum * 100;
                 _totalDXScore = NoteSum * 3;
+                _noteJudgeDiffList = new(NoteSum);
             });
         }
         internal void ReportResult<T>(T note, in NoteJudgeResult judgeResult, int multiple = 1) where T : NoteDrop
@@ -588,7 +659,13 @@ namespace MajdataPlay.Scenes.Game
                     case TapDrop:
                     case HoldDrop:
                         _isOutlinePlayRequested = true;
-                        _noteJudgeDiffList.Add(judgeResult.Diff);
+                        var diffMSec = judgeResult.Diff;
+                        _noteJudgeDiffList.Add(diffMSec);
+                        if(_isJudgeTimingGaugeEnabled)
+                        {
+                            ref var binding = ref _gaugeScaleBindings[_gaugeScaleBindingCursor++ % _judgeTimingGaugeScaleCount];
+                            binding.DiffMSec = diffMSec;
+                        }
                         break;
                 }
             }
@@ -1579,6 +1656,63 @@ namespace MajdataPlay.Scenes.Game
 
             public long TotalFastCount;
             public long TotalLateCount;
+        }
+
+        struct GaugeScaleBinding
+        {
+            const float FADE_OUT_DURATION_SEC = 5f;
+            public float DiffMSec
+            {
+                get
+                {
+                    return _diffMSec;
+                }
+                set
+                {
+                    if(_scaleTransform is not null)
+                    {
+                        var percent = Mathf.Clamp(value / 150f, -1, 1);
+                        var posX = 282.5f * percent;
+                        _diffMSec = 150f * percent;
+                        if (!_isActive)
+                        {
+                            _scaleImage!.enabled = true;
+                            _isActive = true;
+                        }
+                        _fadeOutTimer = 0f;
+                        _scaleImage!.color = Color.white;
+                        _scaleTransform.SetAsLastSibling();
+                        _scaleTransform.anchoredPosition = new Vector2(posX, 0);
+                    }
+                }
+            }
+            
+            bool _isActive;
+            float _diffMSec;
+            float _fadeOutTimer;
+            RawImage? _scaleImage;
+            GameObject? _scaleObject;
+            RectTransform? _scaleTransform;
+
+            public GaugeScaleBinding(RectTransform scaleTransform, RawImage scaleImage)
+            {
+                _scaleObject = scaleTransform.gameObject;
+                _scaleTransform = scaleTransform;
+                _scaleImage = scaleImage;
+                _fadeOutTimer = FADE_OUT_DURATION_SEC;
+            }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void OnPreUpdate(float deltaTime)
+            {
+                if(_fadeOutTimer == FADE_OUT_DURATION_SEC)
+                {
+                    return;
+                }
+                _fadeOutTimer += deltaTime;
+                _fadeOutTimer = Mathf.Clamp(_fadeOutTimer, 0f, FADE_OUT_DURATION_SEC);
+                var newColor = Color.white * (1 - (_fadeOutTimer / FADE_OUT_DURATION_SEC));
+                _scaleImage!.color = newColor;
+            }
         }
     }
 }

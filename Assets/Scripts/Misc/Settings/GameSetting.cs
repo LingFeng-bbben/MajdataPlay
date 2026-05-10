@@ -58,7 +58,8 @@ namespace MajdataPlay.Settings
         public BGInfoOption SubScreenBGInfo { get; set; } = BGInfoOption.Achievement;
         
         public TopInfoDisplayOption TopInfo { get; set; } = TopInfoDisplayOption.None;
-        
+        public bool EnableJudgeTimingGauge { get; set; } = false;
+
         public bool TrackSkip { get; set; } = true;
 
         public EnforceGameFailureCondition EnforceGameFailure { get; set; } = EnforceGameFailureCondition.Disabled;

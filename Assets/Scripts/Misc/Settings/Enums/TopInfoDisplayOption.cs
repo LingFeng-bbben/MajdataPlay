@@ -12,7 +12,6 @@ namespace MajdataPlay.Settings
     {
         None,
         Judge,
-        Timing,
-        TimingGauge
+        Timing
     }
 }

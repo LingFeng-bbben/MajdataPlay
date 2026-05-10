@@ -37,6 +37,7 @@ namespace MajdataPlay
     {
         public const int DEFAULT_LAYER = 0;
         public const int HIDDEN_LAYER = 3;
+        public const int UI_LAYER = 5;
         public const int HTTP_BUFFER_SIZE = 8192;
         public const int HTTP_REQUEST_MAX_RETRY = 4;
         public const int HTTP_TIMEOUT_MS = 10000;
