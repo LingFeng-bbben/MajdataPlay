@@ -96,6 +96,8 @@
     "MAJSETTING_PROPERTY_DisplaySensor_DESC": "开启后，被触发的传感器会被渲染",
     "MAJSETTING_PROPERTY_Ex": "Ex判定音",
     "MAJSETTING_PROPERTY_Ex_DESC": "控制 Ex Tap/Hold 的判定音量",
+    "MAJSETTING_PROPERTY_EnableJudgeTimingGauge": "显示判定偏移指示器",
+    "MAJSETTING_PROPERTY_EnableJudgeTimingGauge_DESC": "",
     "MAJSETTING_PROPERTY_FPSLimit": "帧率限制",
     "MAJSETTING_PROPERTY_FPSLimit_DESC": "限制游戏最高FPS",
     "MAJSETTING_PROPERTY_FastLateType": "Fast/Late显示等级",
