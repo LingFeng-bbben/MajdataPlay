@@ -1660,7 +1660,7 @@ namespace MajdataPlay.Scenes.Game
 
         struct GaugeScaleBinding
         {
-            const float FADE_OUT_DURATION_SEC = 5f;
+            const float FADE_OUT_DURATION_SEC = 2.5f;
             public float DiffMSec
             {
                 get
@@ -1710,7 +1710,7 @@ namespace MajdataPlay.Scenes.Game
                 }
                 _fadeOutTimer += deltaTime;
                 _fadeOutTimer = Mathf.Clamp(_fadeOutTimer, 0f, FADE_OUT_DURATION_SEC);
-                var newColor = Color.white * (1 - (_fadeOutTimer / FADE_OUT_DURATION_SEC));
+                var newColor = new Color(1f, 1f, 1f, 1 - (_fadeOutTimer / FADE_OUT_DURATION_SEC));
                 _scaleImage!.color = newColor;
             }
         }
