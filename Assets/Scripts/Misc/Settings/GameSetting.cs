@@ -65,7 +65,9 @@ namespace MajdataPlay.Settings
         public EnforceGameFailureCondition EnforceGameFailure { get; set; } = EnforceGameFailureCondition.Disabled;
         
         public bool FastRetry { get; set; } = true;
-        
+
+        public bool FastPractice { get; set; } = false;
+
         public GameplaySubScreenClickBehaviorOption GameplaySubScreenClickBehavior { get; set; } = DEFAULT_GameplaySubScreenClickBehavior;
         
         public MirrorOption Mirror { get; set; } = MirrorOption.Off;
