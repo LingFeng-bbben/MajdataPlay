@@ -441,7 +441,7 @@ namespace MajdataPlay.IO
             isAnySensorTriggered |= (newP & SENSOR_BIT_MASK) > (1 << 11);
             // if there is any sensor bit triggered,
             // we consider it as sensor only.
-            if (UseGameplayTouchEnhancementFeatures)
+            if (useGameplayTouchEnhancementFeatures)
             {
                 isSensorOnly |= isAnySensorTriggered;
             }
