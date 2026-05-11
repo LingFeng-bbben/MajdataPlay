@@ -85,6 +85,7 @@ namespace MajdataPlay.Settings
         
         public RecordModeOption RecordMode { get; set; } = RecordModeOption.Disable;
 #endif
+        public bool ManualStartGame { get; set; } = false;
     }
     
     public class JudgeOptions

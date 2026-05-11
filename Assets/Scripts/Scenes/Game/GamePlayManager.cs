@@ -128,6 +128,7 @@ namespace MajdataPlay.Scenes.Game
         bool _isTrackSkipAvailable = false;
         bool _isFastRetryAvailable = false;
         bool _isEnforceFastRetry = false;
+        bool _isManualStartGame = false;
         float? _allNotesFinishedTiming = null;
         EnforceGameFailureCondition _enforceGameFailureCondition = EnforceGameFailureCondition.Disabled;
         GameplaySubScreenClickBehaviorOption _gameplaySubScreenClickBehavior = GameOptions.DEFAULT_GameplaySubScreenClickBehavior;
@@ -200,6 +201,7 @@ namespace MajdataPlay.Scenes.Game
             _isEnforceFastRetry = (int)_enforceGameFailureCondition % 2 == 0;
             _isTrackSkipAvailable = _gameSettings.Game.TrackSkip;
             _isFastRetryAvailable = _gameSettings.Game.FastRetry;
+            _isManualStartGame = _gameSettings.Game.ManualStartGame;
             BreakMaterial = MajEnv.BreakMaterial;
             DefaultMaterial = MajEnv.DefaultMaterial;
             HoldShineMaterial = MajEnv.HoldShineMaterial;
@@ -896,10 +898,7 @@ namespace MajdataPlay.Scenes.Game
             if (FirstNoteAppearTiming < 0f)
             {
                 extraTime = MathF.Min(extraTime, (-FirstNoteAppearTiming + 5f));
-            }
-            _audioStartTime = (float)(_timer.ElapsedSecondsAsFloat + _audioSample.CurrentSec) + extraTime;
-            _thisFrameSec = -extraTime;
-            _thisFixedUpdateSec = _thisFrameSec;
+            }            
 
             await _noteManager.InitAsync();
             while (!_generateAnswerSFXTask.IsCompleted)
@@ -940,12 +939,25 @@ namespace MajdataPlay.Scenes.Game
                 throw wait4Recorder.Exception.GetBaseException();
             }
             await UniTask.SwitchToMainThread();
-            _sceneSwitcher.SetLoadingText($"{"Loading".i18n()}...");
+            _sceneSwitcher.SetLoadingText("Loading...");
             MajInstances.GameManager.DisableGC();
 
             await UniTask.Delay(1000, cancellationToken: token);
-            MajInstances.SceneSwitcher.FadeOut();
-            await UniTask.Delay(100, cancellationToken: token); //wait the animation
+            if (_isManualStartGame)
+            {
+                _sceneSwitcher.SetLoadingText($"{"MAJTEXT_GAME_PRESS_4TH_BUTTON_TO_CONTINUE".i18n()}...");
+                while (!InputManager.IsButtonClickedInThisFrame(ButtonZone.A4))
+                {
+                    await UniTask.Yield(token);
+                }
+                _sceneSwitcher.SetLoadingText("Loading...");
+                await UniTask.Yield(token);
+            }
+            await MajInstances.SceneSwitcher.FadeOutAsync(); //wait the animation
+
+            _audioStartTime = (float)(_timer.ElapsedSecondsAsFloat + _audioSample.CurrentSec) + extraTime;
+            _thisFrameSec = -extraTime;
+            _thisFixedUpdateSec = _thisFrameSec;
 
             State = GamePlayStatus.Running;
             IsStart = true;
