@@ -230,10 +230,11 @@ namespace MajdataPlay.Settings
 #if !(UNITY_ANDROID || UNITY_IOS)
         
         public WasapiOptions Wasapi { get; set; } = new();
-        
+
         public AsioOptions Asio { get; set; } = new();
-        
-        public ChannelOptions Channel { get; set; } = new();
+
+        [HideInSettingUI]
+        public MixingMatrixConfig MixingMatrix { get; set; } = new();
 #else
         public MobileAudioOptions Mobile { get; set; } = new();
 #endif
@@ -653,18 +654,11 @@ namespace MajdataPlay.Settings
         public int E { get; set; }
     }
 
-    public class ChannelOptions
+    public class MixingMatrixConfig
     {
-        // Front (LF / RF)
-        // Rear (LR / RR)
-        // Side (LS / RS) (rear center)
-        // CenterAndLFE (LFE / Center)
-        public float FrontVolume { get; set; } = 1f;
-        public float CenterAndLFEVolume { get; set; } = 1f;
-        public float SideVolume { get; set; } = 1f;
-        public float RearVolume { get; set; } = 1f;
-
+        public Dictionary<string, float[,]> ByChannelCount { get; set; } = new();
     }
+
     public class AsioOptions
     {
         public int DeviceIndex { get; set; } = 0;
