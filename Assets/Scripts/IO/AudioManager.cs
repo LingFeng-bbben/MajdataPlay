@@ -159,7 +159,7 @@ namespace MajdataPlay.IO
                             }
 
                             MajDebug.LogInfo("Asio Init: " + BassAsio.Init(deviceIndex, AsioInitFlags.Thread));
-                            MajDebug.LogInfo(BassAsio.LastError);
+                            MajDebug.LogInfo($"[BassAsio] LastError = {Bass.LastError}");
                             var asioInfo = BassAsio.Info;
                             var deviceInfo = BassAsio.GetDeviceInfo(BassAsio.CurrentDevice);
                             BassAsio.Rate = asioOptions.SampleRate;
@@ -189,36 +189,67 @@ namespace MajdataPlay.IO
                         break;
                     case SoundBackendOption.Wasapi:
                         {
-                            //Bass.Init(-1, sampleRate);
                             MajDebug.LogInfo("Bass Init: " + Bass.Init(Bass.NoSoundDevice));
 
-                            bool isExclusiveSuccess = false;
-                            var rawFlag = WasapiInitFlags.Raw;
-                            if(!isRawMode)
+                            bool wasapiOk = false;
+                            // Priority order: exclusive+raw > exclusive > shared+raw > shared
+                            // Start from user config, fall through on failure.
+                            var combos = new (bool exclusive, bool raw)[]
                             {
-                                rawFlag = 0;
-                            }
-                            if (isExclusiveRequest)
+                                (true,  true),
+                                (true,  false),
+                                (false, true),
+                                (false, false),
+                            };
+                            int startIdx = 0;
+                            for (int i = 0; i < combos.Length; i++)
                             {
-                                isExclusiveSuccess = BassWasapi.Init(
-                                    -1, 0, 0,
-                                    WasapiInitFlags.Exclusive | WasapiInitFlags.EventDriven | WasapiInitFlags.Async | rawFlag,
-                                    wasapiOptions.BufferSize, //buffer
-                                    wasapiOptions.Period, //peried
-                                    _wasapiProcedure);
-                                MajDebug.LogInfo($"Wasapi Exclusive Init: {isExclusiveSuccess}");
+                                if (combos[i].exclusive == isExclusiveRequest && combos[i].raw == isRawMode)
+                                {
+                                    startIdx = i;
+                                    break;
+                                }
                             }
 
-                            if (!isExclusiveRequest || !isExclusiveSuccess)
+                            int successIdx = -1;
+                            for (int i = startIdx; i < combos.Length; i++)
                             {
-                                MajDebug.LogInfo("Wasapi Shared Init: " + BassWasapi.Init(
-                                    -1, 0, 0,
-                                    WasapiInitFlags.Shared | WasapiInitFlags.EventDriven | rawFlag,
-                                    0, //buffer
-                                    0, //peried
-                                    _wasapiProcedure));
+                                var (exclusive, raw) = combos[i];
+                                var flags = WasapiInitFlags.EventDriven;
+                                if (exclusive)
+                                {
+                                    flags |= WasapiInitFlags.Exclusive | WasapiInitFlags.Async;
+                                }
+                                else
+                                {
+                                    flags |= WasapiInitFlags.Shared;
+                                }
+                                if (raw)
+                                {
+                                    flags |= WasapiInitFlags.Raw;
+                                }
+                                float buffer = exclusive ? wasapiOptions.BufferSize : 0f;
+                                float period = exclusive ? wasapiOptions.Period : 0f;
+                                wasapiOk = BassWasapi.Init(-1, 0, 0, flags, buffer, period, _wasapiProcedure);
+                                MajDebug.LogInfo($"Wasapi Init (exclusive={exclusive}, raw={raw}): {wasapiOk} (LastError={Bass.LastError})");
+                                if (wasapiOk)
+                                {
+                                    successIdx = i;
+                                    break;
+                                }
+                                BassWasapi.Free();
                             }
-                            MajDebug.LogInfo(Bass.LastError);
+
+                            if (!wasapiOk)
+                            {
+                                MajDebug.LogError("All WASAPI init combinations failed");
+                            }
+                            else if (successIdx != startIdx)
+                            {
+                                var (exclusive, raw) = combos[successIdx];
+                                MajDebug.LogWarning($"WASAPI fallback: config requested (exclusive={isExclusiveRequest}, raw={isRawMode}) but succeeded with (exclusive={exclusive}, raw={raw})");
+                            }
+
                             BassWasapi.GetInfo(out var wasapiInfo);
                             BassGlobalMixer = BassMix.CreateMixerStream(wasapiInfo.Frequency, wasapiInfo.Channels, BassFlags.MixerNonStop | BassFlags.Decode | BassFlags.Float);
                             Bass.ChannelSetAttribute(BassGlobalMixer, ChannelAttribute.Buffer, 0);
@@ -252,7 +283,7 @@ namespace MajdataPlay.IO
                             MajDebug.LogInfo($"[Bass] Set DeviceBufferLength: {@return}");
 #endif
                             MajDebug.LogInfo("Bass Init: " + Bass.Init());
-                            MajDebug.LogInfo(Bass.LastError);
+                            MajDebug.LogInfo($"[Bass] LastError = {Bass.LastError}");
                             var info = Bass.Info;
                             MajDebug.LogInfo($"[Bass] Min playback buffer length: {info.MinBufferLength}");
                             MajDebug.LogInfo($"[Bass] Current device buffer length: {Bass.GetConfig(Configuration.DeviceBufferLength)}");
