@@ -181,6 +181,7 @@ namespace MajdataPlay.Net
             {
                 return new()
                 {
+                    Endpoint = apiEndpoint.Url,
                     IsSuccessfully = false,
                     IsDeserializable = false,
                     StatusCode = HttpStatusCode.NotFound,
@@ -205,6 +206,7 @@ namespace MajdataPlay.Net
                     statistics.IsMachineRegistered = false;
                     return new()
                     {
+                        Endpoint = apiEndpoint.Url,
                         IsSuccessfully = false,
                         IsDeserializable = false,
                         StatusCode = HttpStatusCode.NotFound,
@@ -223,6 +225,7 @@ namespace MajdataPlay.Net
                     statistics.IsMachineRegistered = false;
                     return new()
                     {
+                        Endpoint = apiEndpoint.Url,
                         IsSuccessfully = false,
                         IsDeserializable = false,
                         StatusCode = HttpStatusCode.NotFound,
@@ -243,6 +246,7 @@ namespace MajdataPlay.Net
             {
                 return new()
                 {
+                    Endpoint = apiEndpoint.Url,
                     IsSuccessfully = false,
                     IsDeserializable = false,
                     StatusCode = HttpStatusCode.NotFound,
@@ -265,6 +269,7 @@ namespace MajdataPlay.Net
             {
                 return new(rsp.AsMemory(), _defaultJsonSerializer, _defaultJsonSerializerSettings)
                 {
+                    Endpoint = apiEndpoint.Url,
                     IsSuccessfully = true,
                     IsDeserializable = true,
                     StatusCode = rsp.StatusCode,
@@ -277,6 +282,7 @@ namespace MajdataPlay.Net
             {
                 return new()
                 {
+                    Endpoint = apiEndpoint.Url,
                     IsSuccessfully = false,
                     IsDeserializable = false,
                     StatusCode = rsp.StatusCode,
@@ -293,6 +299,7 @@ namespace MajdataPlay.Net
             {
                 return new()
                 {
+                    Endpoint = apiEndpoint.Url,
                     IsSuccessfully = false,
                     IsDeserializable = false,
                     StatusCode = HttpStatusCode.NotFound,
@@ -317,6 +324,7 @@ namespace MajdataPlay.Net
             {
                 return new()
                 {
+                    Endpoint = apiEndpoint.Url,
                     IsSuccessfully = false,
                     IsDeserializable = false,
                     StatusCode = HttpStatusCode.NotFound,
@@ -351,6 +359,7 @@ namespace MajdataPlay.Net
             {
                 return new()
                 {
+                    Endpoint = apiEndpoint.Url,
                     IsSuccessfully = true,
                     IsDeserializable = false,
                     StatusCode = HttpStatusCode.OK,
@@ -363,6 +372,7 @@ namespace MajdataPlay.Net
             {
                 return new EndpointResponse()
                 {
+                    Endpoint = apiEndpoint.Url,
                     ErrorCode = HttpErrorCode.InvalidRequest,
                     IsSuccessfully = false,
                     IsDeserializable = false,
@@ -391,6 +401,7 @@ namespace MajdataPlay.Net
             {
                 rsp = new(rsp.AsMemory(), _defaultJsonSerializer, _defaultJsonSerializerSettings)
                 {
+                    Endpoint = apiEndpoint.Url,
                     StatusCode = rsp.StatusCode,
                     ErrorCode = rsp.ErrorCode,
                     IsSuccessfully = rsp.IsSuccessfully,
@@ -865,6 +876,7 @@ namespace MajdataPlay.Net
 
                 return new EndpointResponse(buffer, _defaultJsonSerializer, _defaultJsonSerializerSettings)
                 {
+                    Endpoint = uri,
                     IsSuccessfully = true,
                     IsDeserializable = true && buffer.Length != 0,
                     ErrorCode = default,
@@ -878,6 +890,7 @@ namespace MajdataPlay.Net
                 MajDebug.LogException(httpE);
                 return new EndpointResponse(Array.Empty<byte>(), _defaultJsonSerializer, _defaultJsonSerializerSettings)
                 {
+                    Endpoint = uri,
                     IsSuccessfully = false,
                     IsDeserializable = false,
                     ErrorCode = httpE.ErrorCode,
@@ -891,6 +904,7 @@ namespace MajdataPlay.Net
                 MajDebug.LogException(e);
                 return new EndpointResponse(Array.Empty<byte>(), _defaultJsonSerializer, _defaultJsonSerializerSettings)
                 {
+                    Endpoint = uri,
                     IsSuccessfully = false,
                     IsDeserializable = false,
                     ErrorCode = HttpErrorCode.Unreachable,
@@ -908,6 +922,7 @@ namespace MajdataPlay.Net
                 {
                     return new EndpointResponse(Array.Empty<byte>(), _defaultJsonSerializer, _defaultJsonSerializerSettings)
                     {
+                        Endpoint = uri,
                         IsSuccessfully = false,
                         IsDeserializable = false,
                         ErrorCode = HttpErrorCode.Unsuccessful,
@@ -919,6 +934,7 @@ namespace MajdataPlay.Net
                 var buffer = await rsp.Content.ReadAsByteArrayAsync();
                 return new EndpointResponse(buffer, _defaultJsonSerializer, _defaultJsonSerializerSettings)
                 {
+                    Endpoint = uri,
                     IsSuccessfully = true,
                     IsDeserializable = true,
                     ErrorCode = HttpErrorCode.NoError,
@@ -936,6 +952,7 @@ namespace MajdataPlay.Net
                 }
                 return new EndpointResponse(Array.Empty<byte>(), _defaultJsonSerializer, _defaultJsonSerializerSettings)
                 {
+                    Endpoint = uri,
                     IsSuccessfully = false,
                     IsDeserializable = false,
                     ErrorCode = errorCode,
@@ -948,6 +965,7 @@ namespace MajdataPlay.Net
                 MajDebug.LogException(e);
                 return new EndpointResponse(Array.Empty<byte>(), _defaultJsonSerializer, _defaultJsonSerializerSettings)
                 {
+                    Endpoint = uri,
                     IsSuccessfully = false,
                     IsDeserializable = false,
                     ErrorCode = HttpErrorCode.Unreachable,
@@ -991,6 +1009,7 @@ namespace MajdataPlay.Net
                     }
                     return new EndpointResponse(buffer, _defaultJsonSerializer, _defaultJsonSerializerSettings)
                     {
+                        Endpoint = uri,
                         IsSuccessfully = true,
                         IsDeserializable = true && buffer.Length != 0,
                         ErrorCode = default,
@@ -1004,6 +1023,7 @@ namespace MajdataPlay.Net
                     MajDebug.LogException(httpE);
                     return new EndpointResponse(Array.Empty<byte>(), _defaultJsonSerializer, _defaultJsonSerializerSettings)
                     {
+                        Endpoint = uri,
                         IsSuccessfully = false,
                         IsDeserializable = false,
                         ErrorCode = httpE.ErrorCode,
@@ -1017,6 +1037,7 @@ namespace MajdataPlay.Net
                     MajDebug.LogException(e);
                     return new EndpointResponse(Array.Empty<byte>(), _defaultJsonSerializer, _defaultJsonSerializerSettings)
                     {
+                        Endpoint = uri,
                         IsSuccessfully = false,
                         IsDeserializable = false,
                         ErrorCode = HttpErrorCode.Unreachable,
@@ -1059,6 +1080,7 @@ namespace MajdataPlay.Net
 
                     return new EndpointResponse(buffer, _defaultJsonSerializer, _defaultJsonSerializerSettings)
                     {
+                        Endpoint = uri,
                         IsSuccessfully = true,
                         IsDeserializable = true && buffer.Length != 0,
                         ErrorCode = default,
@@ -1072,6 +1094,7 @@ namespace MajdataPlay.Net
                     MajDebug.LogException(httpE);
                     return new EndpointResponse(Array.Empty<byte>(), _defaultJsonSerializer, _defaultJsonSerializerSettings)
                     {
+                        Endpoint = uri,
                         IsSuccessfully = false,
                         IsDeserializable = false,
                         ErrorCode = httpE.ErrorCode,
@@ -1085,6 +1108,7 @@ namespace MajdataPlay.Net
                     MajDebug.LogException(e);
                     return new EndpointResponse(Array.Empty<byte>(), _defaultJsonSerializer, _defaultJsonSerializerSettings)
                     {
+                        Endpoint = uri,
                         IsSuccessfully = false,
                         IsDeserializable = false,
                         ErrorCode = HttpErrorCode.Unreachable,
@@ -1120,7 +1144,8 @@ namespace MajdataPlay.Net
                 var rsp = await (content is null ? client.PostAsync(uri, new StringContent(string.Empty, Encoding.UTF8, "application/json"), token) : client.PostAsync(uri, content, token));
                 var buffer = await rsp.Content.ReadAsByteArrayAsync();
                 return new EndpointResponse(buffer, _defaultJsonSerializer, _defaultJsonSerializerSettings) 
-                { 
+                {
+                    Endpoint = uri,
                     IsSuccessfully = rsp.StatusCode == HttpStatusCode.OK, 
                     IsDeserializable = rsp.StatusCode == HttpStatusCode.OK,
                     ErrorCode = rsp.StatusCode == HttpStatusCode.OK ? HttpErrorCode.NoError : HttpErrorCode.Unsuccessful,
@@ -1138,6 +1163,7 @@ namespace MajdataPlay.Net
                 }
                 return new EndpointResponse(Array.Empty<byte>(), _defaultJsonSerializer, _defaultJsonSerializerSettings)
                 {
+                    Endpoint = uri,
                     IsSuccessfully = false,
                     IsDeserializable = false,
                     ErrorCode = errorCode,
@@ -1150,6 +1176,7 @@ namespace MajdataPlay.Net
                 MajDebug.LogException(e);
                 return new EndpointResponse(Array.Empty<byte>(), _defaultJsonSerializer, _defaultJsonSerializerSettings)
                 {
+                    Endpoint = uri,
                     IsSuccessfully = false,
                     IsDeserializable = false,
                     ErrorCode = HttpErrorCode.Unreachable,

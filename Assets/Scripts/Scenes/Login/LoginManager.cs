@@ -579,7 +579,7 @@ namespace MajdataPlay.Scenes.Login
                 throw _exception;
             }
             var location = string.Empty;
-            if (rsp.Headers.TryGetValue("Location", out var headers))
+            if (rsp.Headers.TryGetValue("Location", out var headers) || rsp.Headers.TryGetValue("location", out headers))
             {
                 location = headers.FirstOrDefault() ?? string.Empty;
             }

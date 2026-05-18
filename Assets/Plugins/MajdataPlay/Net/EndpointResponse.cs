@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 #nullable enable
@@ -12,6 +13,7 @@ namespace MajdataPlay.Net
 {
     public readonly struct EndpointResponse
     {
+        public required Uri Endpoint { get; init; }
         public long Length { get; }
         public required bool IsSuccessfully { get; init; }
         public required bool IsDeserializable { get; init; }
@@ -128,7 +130,7 @@ namespace MajdataPlay.Net
         }
         public override string ToString()
         {
-            return $"StatusCode: {StatusCode}\nErrorCode: {ErrorCode}\nIsDeserializable: {IsDeserializable}\nMessage:{Message}\nHeaders:\n" + string.Join('\n', Headers.Select(x => $"{x.Key}: {string.Join(';', x.Value)}"));
+            return $"Endpoint: {Endpoint}\nStatusCode: {StatusCode}\nErrorCode: {ErrorCode}\nIsDeserializable: {IsDeserializable}\nMessage:{Message}\nHeaders:\n" + string.Join('\n', Headers.Select(x => $"{x.Key}: {string.Join(';', x.Value)}"));
         }
     }
     public readonly struct EndpointResponse<T>
