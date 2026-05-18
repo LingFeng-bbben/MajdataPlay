@@ -544,23 +544,26 @@ namespace MajdataPlay.Scenes.Login
         {
             await UniTask.SwitchToThreadPool();
             var rsp = default(EndpointResponse);
-            try
+            if (!Online.IsMachineRegistered(endpoint))
             {
-                rsp = await Online.RegisterAsync(endpoint, new()
+                try
                 {
-                    Name = "MajdataPlay Client",
-                    Description = "MajdataPlay Client QR Code Authentication",
-                }, token);
-            }
-            catch
-            {
-                MajDebug.LogError("Failed to register QR Code login session");
-                throw;
-            }
+                    rsp = await Online.RegisterAsync(endpoint, new()
+                    {
+                        Name = "MajdataPlay Client",
+                        Description = "MajdataPlay Client QR Code Authentication",
+                    }, token);
+                }
+                catch
+                {
+                    MajDebug.LogError("Failed to register QR Code login session");
+                    throw;
+                }
+            }            
             if(!rsp.IsSuccessfully)
             {
                 MajDebug.LogError("Failed to register QR Code login session");
-                MajDebug.LogError($"StatusCode:{rsp.StatusCode}\nErrorCode:{rsp.ErrorCode}\nMessage:{rsp.Message}");
+                MajDebug.LogError(rsp);
                 throw _exception;
             }
             try
@@ -575,18 +578,18 @@ namespace MajdataPlay.Scenes.Login
             if (!rsp.IsDeserializable || rsp.StatusCode != HttpStatusCode.Created)
             {
                 MajDebug.LogError("Attempt to request authorization session failed");
-                MajDebug.LogError($"StatusCode:{rsp.StatusCode}\nErrorCode:{rsp.ErrorCode}\nMessage:{rsp.Message}");
+                MajDebug.LogError(rsp);
                 throw _exception;
             }
             var location = string.Empty;
-            if (rsp.Headers.TryGetValue("Location", out var headers) || rsp.Headers.TryGetValue("location", out headers))
+            if (rsp.Headers.TryGetValue("location", out var headers))
             {
                 location = headers.FirstOrDefault() ?? string.Empty;
             }
             var e = default(Exception?);
             if (string.IsNullOrEmpty(location) || !rsp.TryDeserialize<AuthRequestResponse?>(out var authRsp, out e) || authRsp is null)
             {
-                MajDebug.LogError($"The server returned an invalid response\nEndpoint: {endpoint.Url}\nStatusCode: {rsp.StatusCode}\nErrorCode: {rsp.ErrorCode}\nIsDeserializable: {rsp.IsDeserializable}\nHeaders:\n" + string.Join('\n', rsp.Headers.Select(x => $"{x.Key}: {string.Join(';', x.Value)}")+ $"\nException: {e}"));
+                MajDebug.LogError($"The server returned an invalid response\n{rsp}\nException: {e}");
                 throw _exception;
             }
             return (location, (AuthRequestResponse)authRsp);
