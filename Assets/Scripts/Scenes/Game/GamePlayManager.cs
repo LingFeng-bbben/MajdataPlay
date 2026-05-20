@@ -953,6 +953,8 @@ namespace MajdataPlay.Scenes.Game
                 _sceneSwitcher.SetLoadingText("Loading...");
                 await UniTask.Yield(token);
             }
+            _sceneSwitcher.SetLoadingText(string.Empty);
+           
             await MajInstances.SceneSwitcher.FadeOutAsync(); //wait the animation
 
             _audioStartTime = (float)(_timer.ElapsedSecondsAsFloat + _audioSample.CurrentSec) + extraTime;

@@ -1,4 +1,5 @@
 using Cysharp.Text;
+using Cysharp.Threading.Tasks;
 using MajdataPlay.Buffers;
 using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
@@ -639,6 +640,9 @@ namespace MajdataPlay.Scenes.Game
                 _totalDXScore = NoteSum * 3;
                 _noteJudgeDiffList = new(NoteSum);
             });
+            await UniTask.SwitchToMainThread();
+            UpdateAccRate();
+            UpdateOutput();
         }
         internal void ReportResult<T>(T note, in NoteJudgeResult judgeResult, int multiple = 1) where T : NoteDrop
         {

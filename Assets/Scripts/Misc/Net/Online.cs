@@ -554,7 +554,6 @@ namespace MajdataPlay.Net
                     }
                     else
                     {
-                        MajDebug.LogError(rsp);
                         MajDebug.LogError($"Failed to get chart interact: {e?.Message ?? "Unknown error"}");
                     }
                     if (rsp.ErrorCode == HttpErrorCode.Canceled)
@@ -612,8 +611,9 @@ namespace MajdataPlay.Net
                 }
                 else
                 {
-                    MajDebug.LogError(rsp);
+                    MajDebug.LogError("Failed to post like interact");
                 }
+
                 if (rsp.ErrorCode == HttpErrorCode.Canceled)
                 {
                     break;
@@ -660,7 +660,7 @@ namespace MajdataPlay.Net
                 }
                 else
                 {
-                    MajDebug.LogError(rsp);
+                    MajDebug.LogError("Failed to post score");
                 }
                 if (rsp.ErrorCode == HttpErrorCode.Canceled)
                 {
@@ -697,7 +697,6 @@ namespace MajdataPlay.Net
                 }
                 else
                 {
-                    MajDebug.LogError(rsp);
                     MajDebug.LogError($"Failed to get chart list: {e?.Message ?? "Unknown error"}");
                 }
                 if (rsp.ErrorCode == HttpErrorCode.Canceled)
@@ -735,7 +734,6 @@ namespace MajdataPlay.Net
                 }
                 else
                 {
-                    MajDebug.LogError(rsp);
                     MajDebug.LogError($"Failed to get dan list: {e?.Message ?? "Unknown error"}");
                 }
                 if (rsp.ErrorCode == HttpErrorCode.Canceled)
@@ -777,7 +775,6 @@ namespace MajdataPlay.Net
                     if (!rsp.IsSuccessfully)
                     {
                         MajDebug.LogError("Failed to download user icon");
-                        MajDebug.LogError($"Url:{url}\nStatusCode:{rsp.StatusCode}\nErrorCode:{rsp.ErrorCode}\nMessage:{rsp.Message}");
                         if (rsp.StatusCode is HttpStatusCode.Unauthorized)
                         {
                             using (await statistic.LockAsync(token))
@@ -844,7 +841,6 @@ namespace MajdataPlay.Net
                 else if (!rsp.IsSuccessfully || !rsp.IsDeserializable)
                 {
                     MajDebug.LogError("Failed to get user info");
-                    MajDebug.LogError($"Url:{uri}\nStatusCode:{rsp.StatusCode}\nErrorCode:{rsp.ErrorCode}\nMessage:{rsp.Message}");
                     continue;
                 }
                 return new EndpointResponse<UserSummary>(rsp);
