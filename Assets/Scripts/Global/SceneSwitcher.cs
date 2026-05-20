@@ -160,7 +160,7 @@ namespace MajdataPlay
         async UniTask SwitchSceneInternal(string sceneName, bool autoFadeOut)
         {
             InputManager.ClearAllSubscriber();
-            SubImage.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
+            SubImage.sprite = MajInstances.SkinManager?.SelectedSkin?.SubDisplay!;
             //MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
             loadingText.text = "";
             loadingText.gameObject.SetActive(true);
@@ -192,7 +192,7 @@ namespace MajdataPlay
         async UniTask SwitchSceneInternalAsync(string sceneName, Task taskToRun)
         {
             InputManager.ClearAllSubscriber();
-            SubImage.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
+            SubImage.sprite = MajInstances.SkinManager?.SelectedSkin?.SubDisplay!;
             //MainImage.sprite = MajInstances.SkinManager.SelectedSkin.LoadingSplash;
             animator.SetBool("In", true);
             await UniTask.Delay(SWITCH_ELAPSED_MS);
