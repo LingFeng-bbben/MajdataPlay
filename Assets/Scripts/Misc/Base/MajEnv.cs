@@ -105,6 +105,11 @@ namespace MajdataPlay
         [Preserve] public static Material DefaultMaterial { get; }
         [Preserve] public static Material HoldShineMaterial { get; }
         public static bool IsLowMemoryDevice { get; private set; }
+        public static MachineInfo MachineInfo { get; private set; } = new()
+        {
+            Name = "MajdataPlay Client",
+            Description = "MajdataPlay Client QR Code Authentication",
+        };
         public static Thread MainThread { get; } = Thread.CurrentThread;
         public static Process GameProcess { get; } = Process.GetCurrentProcess();
 
@@ -271,6 +276,7 @@ namespace MajdataPlay
 
             var netCachePath = Path.Combine(CachePath, "Net");
             var runtimeCachePath = Path.Combine(CachePath, "Runtime");
+            var machineDescriptionPath = Path.Combine(RootPath, "machine_description.json");
             TempPath = Path.Combine(CachePath, "Temp");
 
             CreateDirectoryIfNotExists(CachePath);
@@ -444,6 +450,26 @@ namespace MajdataPlay
 
                 var json = Serializer.Json.Serialize(RuntimeConfig, UserJsonReaderOption);
                 File.WriteAllText(_runtimeConfigPath, json);
+            }
+
+            if(File.Exists(machineDescriptionPath))
+            {
+                var js = File.ReadAllText(machineDescriptionPath);
+                MachineInfo? machineInfo;
+
+                if (!Serializer.Json.TryDeserialize(js, out machineInfo, out var e, UserJsonReaderOption) || machineInfo is null)
+                {
+                    MajDebug.LogError($"Failed to read machine description from file\nException: {e}");
+                }
+                else
+                {
+                    MachineInfo = machineInfo;
+                }
+            }
+            else 
+            {
+                var json = Serializer.Json.Serialize(MachineInfo, UserJsonReaderOption);
+                File.WriteAllText(machineDescriptionPath, json);
             }
 
 #if UNITY_STANDALONE
