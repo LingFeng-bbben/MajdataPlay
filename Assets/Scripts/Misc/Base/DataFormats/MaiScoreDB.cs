@@ -66,7 +66,7 @@ namespace MajdataPlay
                 Fast = Fast,
                 Late = Late,
                 PlayCount = PlayCount,
-                JudgeDeatil = judgeDetail ?? JudgeDetail.Empty,
+                JudgeDetail = judgeDetail ?? JudgeDetail.Empty,
                 Timestamp = new DateTime(TimestampTicks, DateTimeKind.Local),
                 ComboState = (ComboState)ComboStateInt,
             };
@@ -75,11 +75,11 @@ namespace MajdataPlay
         public static MaiScoreDB FromMaiScore(MaiScore score)
         {
             string? judgeJson = null;
-            if (score.JudgeDeatil is not null)
+            if (score.JudgeDetail is not null)
             {
                 try
                 {
-                    judgeJson = JsonConvert.SerializeObject(score.JudgeDeatil, _jsonSettings);
+                    judgeJson = JsonConvert.SerializeObject(score.JudgeDetail, _jsonSettings);
                 }
                 catch
                 {

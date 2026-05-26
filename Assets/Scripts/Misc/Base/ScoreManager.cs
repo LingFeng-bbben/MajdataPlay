@@ -206,7 +206,7 @@ namespace MajdataPlay
                 record.DXScore = result.DXScore > record.DXScore ? result.DXScore : record.DXScore;
                 record.TotalDXScore = result.TotalDXScore;
 
-                record.JudgeDeatil = result.JudgeRecord;
+                record.JudgeDetail = result.JudgeRecord;
                 record.Fast = result.Fast;
                 record.Late = result.Late;
                 record.ComboState = result.ComboState > record.ComboState ? result.ComboState : record.ComboState;

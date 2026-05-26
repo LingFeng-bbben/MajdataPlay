@@ -17,7 +17,7 @@ namespace MajdataPlay
         public ChartLevel ChartLevel { get; init; } = ChartLevel.Easy;
         public string? Hash { get; init; } = null;
         public long PlayCount { get; set; } = 0;
-        public JudgeDetail? JudgeDeatil { get; set; } = null;
+        public JudgeDetail? JudgeDetail { get; set; } = null;
         public DateTime Timestamp { get; set; } = DateTime.MinValue;
         public ComboState ComboState { get; set; } = ComboState.None;
         public static MaiScore CreateFromResult(in GameResult result, ChartLevel level)
@@ -34,7 +34,7 @@ namespace MajdataPlay
             record.DXScore = result.DXScore;
             record.TotalDXScore = result.TotalDXScore;
 
-            record.JudgeDeatil = result.JudgeRecord;
+            record.JudgeDetail = result.JudgeRecord;
             record.Fast = result.Fast;
             record.Late = result.Late;
             record.ComboState = result.ComboState > record.ComboState ? result.ComboState : record.ComboState;
