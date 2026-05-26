@@ -17,6 +17,7 @@
 /settings.json
 /ModSettings.json
 /MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db
+/MajScores.db
 # MemoryCaptures can get excessive in size.
 # They also could contain extremely sensitive data
 /[Mm]emoryCaptures/
@@ -95,3 +96,4 @@ out.log
 /ChartSetting.db
 /android-publish.keystore
 *.slnx
+machine_description.json

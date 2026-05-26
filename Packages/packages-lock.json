@@ -1,5 +1,12 @@
 {
   "dependencies": {
+    "com.gilzoide.sqlite-net": {
+      "version": "https://github.com/gilzoide/unity-sqlite-net.git#1.3.2",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "08248bd5884d8eb932a837aa56d4ff456daf913f"
+    },
     "com.github-glitchenzo.nugetforunity": {
       "version": "https://github.com/GlitchEnzo/NuGetForUnity.git?path=/src/NuGetForUnity",
       "depth": 0,

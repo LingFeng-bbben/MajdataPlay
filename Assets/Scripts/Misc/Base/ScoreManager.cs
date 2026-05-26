@@ -1,7 +1,8 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using MajdataPlay.Json;
 using MajdataPlay.Utils;
 using Newtonsoft.Json;
+using SQLite;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -22,16 +23,17 @@ namespace MajdataPlay
 
         readonly static Dictionary<string, SongScores> _buckets = new();
 
-        readonly static JsonSerializer _serializer = JsonSerializer.Create(new()
+        static SQLiteAsyncConnection? _db;
+
+        readonly static JsonSerializerSettings _jsonReadSettings = new()
         {
-            ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-            DefaultValueHandling = DefaultValueHandling.Populate,
+            ObjectCreationHandling = ObjectCreationHandling.Replace,
             Converters = new List<JsonConverter>
             {
                 new JudgeDetailConverter(),
                 new JudgeInfoConverter(),
             }
-        });
+        };
 
         internal static async UniTask InitAsync()
         {
@@ -42,110 +44,114 @@ namespace MajdataPlay
             _isInited = true;
             try
             {
-                var path = MajEnv.ScoreDBPath;
+                var dbPath = MajEnv.ScoreDBPath;
+                _db = new SQLiteAsyncConnection(dbPath, SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.Create | SQLiteOpenFlags.FullMutex);
 
-                if (!File.Exists(path))
+                await _db.CreateTableAsync<MaiScoreDB>();
+
+                // Migrate from legacy JSON file
+                var legacyPath = MajEnv.LegacyScoreDBPath;
+                if (File.Exists(legacyPath))
                 {
-                    var songScores = _buckets.Select(x => x.Value);
-                    var scores = Array.Empty<MaiScore>()
-                                      .Concat(songScores.Select(x => x.Easy))
-                                      .Concat(songScores.Select(x => x.Basic))
-                                      .Concat(songScores.Select(x => x.Advance))
-                                      .Concat(songScores.Select(x => x.Expert))
-                                      .Concat(songScores.Select(x => x.Master))
-                                      .Concat(songScores.Select(x => x.ReMaster))
-                                      .Concat(songScores.Select(x => x.UTAGE))
-                                      .ToArray();
-                    var json = await Serializer.Json.SerializeAsync(scores);
-                    await File.WriteAllTextAsync(path, json);
-                    return;
+                    var migrated = await MigrateFromJsonAsync(legacyPath);
+                    if (migrated)
+                    {
+                        try
+                        {
+                            File.Delete(legacyPath);
+                            MajDebug.LogInfo("Migrated scores from legacy JSON to SQLite, old file deleted.");
+                        }
+                        catch (Exception ex)
+                        {
+                            MajDebug.LogError($"Failed to delete legacy score file: {ex.Message}");
+                        }
+                    }
                 }
-                using var storageStream = File.OpenRead(path);
-                List<MaiScore>? result = await Serializer.Json.DeserializeAsync<List<MaiScore>>(storageStream, _serializer);
-                //shoud do some warning here, or all score will be lost and overwirtten
-                var grouped = result.GroupBy(x => x.Hash);
-                var dicts = grouped.Select(x => (x.Key ,x.ToDictionary(x => x.ChartLevel, x => x)));
-                foreach(var (hash, dict) in dicts)
+
+                // Load from SQLite
+                var rows = await _db.QueryAsync<MaiScoreDB>("SELECT * FROM MaiScores WHERE PlayCount > 0");
+                var grouped = rows.Select(x => x.ToMaiScore()).GroupBy(x => x.Hash);
+                foreach (var group in grouped)
                 {
-                    if(string.IsNullOrEmpty(hash))
+                    var hash = group.Key;
+                    if (string.IsNullOrEmpty(hash))
                     {
                         continue;
                     }
-                    if(!dict.TryGetValue(ChartLevel.Easy,out var easy))
-                    {
-                        easy = new MaiScore()
-                        {
-                            Hash = hash,
-                            PlayCount = 0
-                        };
-                    }
-                    if (!dict.TryGetValue(ChartLevel.Basic, out var basic))
-                    {
-                        basic = new MaiScore()
-                        {
-                            Hash = hash,
-                            PlayCount = 0
-                        };
-                    }
-                    if (!dict.TryGetValue(ChartLevel.Advance, out var advance))
-                    {
-                        advance = new MaiScore()
-                        {
-                            Hash = hash,
-                            PlayCount = 0
-                        };
-                    }
-                    if (!dict.TryGetValue(ChartLevel.Expert, out var expert))
-                    {
-                        expert = new MaiScore()
-                        {
-                            Hash = hash,
-                            PlayCount = 0
-                        };
-                    }
-                    if (!dict.TryGetValue(ChartLevel.Master, out var master))
-                    {
-                        master = new MaiScore()
-                        {
-                            Hash = hash,
-                            PlayCount = 0
-                        };
-                    }
-                    if (!dict.TryGetValue(ChartLevel.ReMaster, out var remas))
-                    {
-                        remas = new MaiScore()
-                        {
-                            Hash = hash,
-                            PlayCount = 0
-                        };
-                    }
-                    if (!dict.TryGetValue(ChartLevel.UTAGE, out var utage))
-                    {
-                        utage = new MaiScore()
-                        {
-                            Hash = hash,
-                            PlayCount = 0
-                        };
-                    }
+                    var dict = group.ToDictionary(x => x.ChartLevel, x => x);
 
                     var scores = new SongScores()
                     {
-                        Easy = easy,
-                        Basic = basic,
-                        Advance = advance,
-                        Expert = expert,
-                        Master = master,
-                        ReMaster = remas,
-                        UTAGE = utage
+                        Easy = GetOrCreate(dict, hash, ChartLevel.Easy),
+                        Basic = GetOrCreate(dict, hash, ChartLevel.Basic),
+                        Advance = GetOrCreate(dict, hash, ChartLevel.Advance),
+                        Expert = GetOrCreate(dict, hash, ChartLevel.Expert),
+                        Master = GetOrCreate(dict, hash, ChartLevel.Master),
+                        ReMaster = GetOrCreate(dict, hash, ChartLevel.ReMaster),
+                        UTAGE = GetOrCreate(dict, hash, ChartLevel.UTAGE),
                     };
-                    _buckets.Add(hash!, scores);
+                    _buckets.Add(hash, scores);
                 }
+            }
+            catch(Exception e)
+            {
+                MajDebug.LogError(e);
             }
             finally
             {
                 await UniTask.Yield();
             }
         }
+
+        static MaiScore GetOrCreate(Dictionary<ChartLevel, MaiScore> dict, string hash, ChartLevel level)
+        {
+            if (dict.TryGetValue(level, out var score))
+            {
+                return score;
+            }
+            return new MaiScore()
+            {
+                Hash = hash,
+                ChartLevel = level,
+                PlayCount = 0,
+            };
+        }
+
+        static async Task<bool> MigrateFromJsonAsync(string legacyPath)
+        {
+            try
+            {
+                var json = await File.ReadAllTextAsync(legacyPath);
+                var scores = JsonConvert.DeserializeObject<List<MaiScore>>(json, _jsonReadSettings);
+                if (scores is null || scores.Count == 0)
+                {
+                    return true; // nothing to migrate
+                }
+
+                var dbRows = new List<MaiScoreDB>(scores.Count);
+                foreach (var score in scores)
+                {
+                    if (string.IsNullOrEmpty(score.Hash) || score.PlayCount == 0)
+                    {
+                        continue;
+                    }
+                    dbRows.Add(MaiScoreDB.FromMaiScore(score));
+                }
+
+                if (dbRows.Count > 0 && _db is not null)
+                {
+                    await _db.InsertAllAsync(dbRows, runInTransaction: true);
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MajDebug.LogError($"Failed to migrate legacy scores: {ex.Message}");
+                return false;
+            }
+        }
+
         public static MaiScore GetScore(ISongDetail song, ChartLevel level)
         {
             var hash = song.Hash;
@@ -207,23 +213,15 @@ namespace MajdataPlay
                 record.Timestamp = DateTime.Now;
                 record.PlayCount++;
 
-                using var stream = File.Create(MajEnv.ScoreDBPath);
-                var songScores = _buckets.Select(x => x.Value);
-                var scores = Array.Empty<MaiScore>()
-                                  .Concat(songScores.Select(x => x.Easy))
-                                  .Concat(songScores.Select(x => x.Basic))
-                                  .Concat(songScores.Select(x => x.Advance))
-                                  .Concat(songScores.Select(x => x.Expert))
-                                  .Concat(songScores.Select(x => x.Master))
-                                  .Concat(songScores.Select(x => x.ReMaster))
-                                  .Concat(songScores.Select(x => x.UTAGE))
-                                  .Where(x => x.PlayCount != 0)
-                                  .ToArray();
-                await Serializer.Json.SerializeAsync(stream, scores, _serializer);
+                if (_db is not null)
+                {
+                    var dbRow = MaiScoreDB.FromMaiScore(record);
+                    await _db.InsertOrReplaceAsync(dbRow);
+                }
 
                 return true;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 MajDebug.LogError(ex);
                 return false;
@@ -244,13 +242,13 @@ namespace MajdataPlay
                 for (var i = 0; i < scores.Length; i++)
                 {
                     var score = scores[i];
-                    if(!_onlineBuckets.TryGetValue(score.Hash, out var scoreRecord))
+                    if (!_onlineBuckets.TryGetValue(score.Hash, out var scoreRecord))
                     {
                         scoreRecord = SongScores.Create(score.Hash);
                         _onlineBuckets.Add(score.Hash, scoreRecord);
                     }
                     var maiScore = default(MaiScore);
-                    switch(score.ChartLevel)
+                    switch (score.ChartLevel)
                     {
                         case ChartLevel.Easy:
                             maiScore = scoreRecord.Easy;
@@ -329,7 +327,7 @@ namespace MajdataPlay
             }
             finally
             {
-                if(isLocked)
+                if (isLocked)
                 {
                     @lock.Exit();
                 }
