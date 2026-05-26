@@ -96,4 +96,4 @@ out.log
 /ChartSetting.db
 /android-publish.keystore
 *.slnx
-machine_description.json
+/machine_description.json
