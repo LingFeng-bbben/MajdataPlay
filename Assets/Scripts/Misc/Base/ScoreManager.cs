@@ -199,6 +199,20 @@ namespace MajdataPlay
 
             return CheckAndGetSongScores(hash, song.IsOnline);
         }
+
+        public static void UpdateJudgeInfoDB(this SQLiteConnection conn, int? majScoreID, JudgeInfoRecordDB record)
+        {
+            if (majScoreID is int id)
+            {
+                record.Id = id;
+                conn.Update(record);
+            }
+            else
+            {
+                conn.Insert(record);
+            }
+        }
+
         public static async Task<bool> SaveScore(GameResult result, ChartLevel level)
         {
             try
@@ -245,56 +259,11 @@ namespace MajdataPlay
 
                         // Look up existing score row to get FK ids
                         var oldRow = conn.Find<MajScoreDB>(scoreKey);
-
-                        if (oldRow?.TapDetailId is not null)
-                        {
-                            tapRecord.Id = oldRow.TapDetailId.Value;
-                            conn.Update(tapRecord);
-                        }
-                        else
-                        {
-                            conn.Insert(tapRecord);
-                        }
-
-                        if (oldRow?.HoldDetailId is not null)
-                        {
-                            holdRecord.Id = oldRow.HoldDetailId.Value;
-                            conn.Update(holdRecord);
-                        }
-                        else
-                        {
-                            conn.Insert(holdRecord);
-                        }
-
-                        if (oldRow?.SlideDetailId is not null)
-                        {
-                            slideRecord.Id = oldRow.SlideDetailId.Value;
-                            conn.Update(slideRecord);
-                        }
-                        else
-                        {
-                            conn.Insert(slideRecord);
-                        }
-
-                        if (oldRow?.BreakDetailId is not null)
-                        {
-                            breakRecord.Id = oldRow.BreakDetailId.Value;
-                            conn.Update(breakRecord);
-                        }
-                        else
-                        {
-                            conn.Insert(breakRecord);
-                        }
-
-                        if (oldRow?.TouchDetailId is not null)
-                        {
-                            touchRecord.Id = oldRow.TouchDetailId.Value;
-                            conn.Update(touchRecord);
-                        }
-                        else
-                        {
-                            conn.Insert(touchRecord);
-                        }
+                        conn.UpdateJudgeInfoDB(oldRow?.TapDetailId, tapRecord);
+                        conn.UpdateJudgeInfoDB(oldRow?.HoldDetailId, holdRecord);
+                        conn.UpdateJudgeInfoDB(oldRow?.SlideDetailId, slideRecord);
+                        conn.UpdateJudgeInfoDB(oldRow?.BreakDetailId, breakRecord);
+                        conn.UpdateJudgeInfoDB(oldRow?.TouchDetailId, touchRecord);
 
                         // Upsert MajScores with FK ids
                         var dbRow = MajScoreDB.FromMaiScore(record);
