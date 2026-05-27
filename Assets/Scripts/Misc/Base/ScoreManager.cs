@@ -48,29 +48,31 @@ namespace MajdataPlay
             try
             {
                 var dbPath = MajEnv.ScoreDBPath;
+                if (!File.Exists(dbPath))
+                {
+                    // Migrate from legacy JSON file
+                    var legacyPath = MajEnv.LegacyScoreDBPath;
+                    if (File.Exists(legacyPath))
+                    {
+                        var migrated = await MigrateFromJsonAsync(legacyPath);
+                        if (migrated)
+                        {
+                            try
+                            {
+                                File.Delete(legacyPath);
+                                MajDebug.LogInfo("Migrated scores from legacy JSON to SQLite, old file deleted.");
+                            }
+                            catch (Exception ex)
+                            {
+                                MajDebug.LogError($"Failed to delete legacy score file: {ex.Message}");
+                            }
+                        }
+                    }
+                }
                 _db = new SQLiteAsyncConnection(dbPath, SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.Create | SQLiteOpenFlags.FullMutex);
 
                 await _db.CreateTableAsync<MajScoreDB>();
                 await _db.CreateTableAsync<JudgeInfoRecordDB>();
-
-                // Migrate from legacy JSON file
-                var legacyPath = MajEnv.LegacyScoreDBPath;
-                if (File.Exists(legacyPath))
-                {
-                    var migrated = await MigrateFromJsonAsync(legacyPath);
-                    if (migrated)
-                    {
-                        try
-                        {
-                            File.Delete(legacyPath);
-                            MajDebug.LogInfo("Migrated scores from legacy JSON to SQLite, old file deleted.");
-                        }
-                        catch (Exception ex)
-                        {
-                            MajDebug.LogError($"Failed to delete legacy score file: {ex.Message}");
-                        }
-                    }
-                }
 
                 // Load from SQLite
                 var rows = await _db.QueryAsync<MajScoreDB>("SELECT * FROM MajScores WHERE PlayCount > 0");
@@ -112,70 +114,7 @@ namespace MajdataPlay
             }
         }
 
-        static MaiScore GetOrCreate(Dictionary<ChartLevel, MaiScore> dict, string hash, ChartLevel level)
-        {
-            return dict.TryGetValue(level, out var score)
-                ? score
-                : new MaiScore()
-            {
-                Hash = hash,
-                ChartLevel = level,
-                PlayCount = 0,
-            };
-        }
-
-        static async Task<bool> MigrateFromJsonAsync(string legacyPath)
-        {
-            try
-            {
-                var json = await File.ReadAllTextAsync(legacyPath);
-                // Fix legacy typo: "JudgeDeatil" → "JudgeDetail"
-                json = json.Replace("\"JudgeDeatil\"", "\"JudgeDetail\"");
-                var scores = JsonConvert.DeserializeObject<List<MaiScore>>(json, _jsonReadSettings);
-                if (scores is null || scores.Count == 0)
-                {
-                    return true; // nothing to migrate
-                }
-
-                foreach (var score in scores)
-                {
-                    if (string.IsNullOrEmpty(score.Hash) || score.PlayCount == 0)
-                    {
-                        continue;
-                    }
-
-                    // Insert JudgeInfoRecords first
-                    var detail = score.JudgeDetail ?? JudgeDetail.Empty;
-                    var tapRecord = JudgeInfoRecordDB.FromJudgeInfo(detail[ScoreNoteType.Tap]);
-                    var holdRecord = JudgeInfoRecordDB.FromJudgeInfo(detail[ScoreNoteType.Hold]);
-                    var slideRecord = JudgeInfoRecordDB.FromJudgeInfo(detail[ScoreNoteType.Slide]);
-                    var breakRecord = JudgeInfoRecordDB.FromJudgeInfo(detail[ScoreNoteType.Break]);
-                    var touchRecord = JudgeInfoRecordDB.FromJudgeInfo(detail[ScoreNoteType.Touch]);
-
-                    await _db!.InsertAsync(tapRecord);
-                    await _db.InsertAsync(holdRecord);
-                    await _db.InsertAsync(slideRecord);
-                    await _db.InsertAsync(breakRecord);
-                    await _db.InsertAsync(touchRecord);
-
-                    // Insert MajScoreDB with FK references
-                    var dbRow = MajScoreDB.FromMaiScore(score);
-                    dbRow.TapDetailId = tapRecord.Id;
-                    dbRow.HoldDetailId = holdRecord.Id;
-                    dbRow.SlideDetailId = slideRecord.Id;
-                    dbRow.BreakDetailId = breakRecord.Id;
-                    dbRow.TouchDetailId = touchRecord.Id;
-                    await _db.InsertAsync(dbRow);
-                }
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                MajDebug.LogError($"Failed to migrate legacy scores: {ex.Message}");
-                return false;
-            }
-        }
+        
 
         public static MaiScore GetScore(ISongDetail song, ChartLevel level)
         {
@@ -199,20 +138,6 @@ namespace MajdataPlay
 
             return CheckAndGetSongScores(hash, song.IsOnline);
         }
-
-        public static void UpdateJudgeInfoDB(this SQLiteConnection conn, int? majScoreID, JudgeInfoRecordDB record)
-        {
-            if (majScoreID is int id)
-            {
-                record.Id = id;
-                conn.Update(record);
-            }
-            else
-            {
-                conn.Insert(record);
-            }
-        }
-
         public static async Task<bool> SaveScore(GameResult result, ChartLevel level)
         {
             try
@@ -349,6 +274,83 @@ namespace MajdataPlay
                 }
             }
         }
+
+
+        static MaiScore GetOrCreate(Dictionary<ChartLevel, MaiScore> dict, string hash, ChartLevel level)
+        {
+            return dict.TryGetValue(level, out var score)
+                ? score
+                : new MaiScore()
+                {
+                    Hash = hash,
+                    ChartLevel = level,
+                    PlayCount = 0,
+                };
+        }
+        static async Task<bool> MigrateFromJsonAsync(string legacyPath)
+        {
+            try
+            {
+                var json = await File.ReadAllTextAsync(legacyPath);
+                // Fix legacy typo: "JudgeDeatil" → "JudgeDetail"
+                json = json.Replace("\"JudgeDeatil\"", "\"JudgeDetail\"");
+                var scores = JsonConvert.DeserializeObject<List<MaiScore>>(json, _jsonReadSettings);
+                if (scores is null || scores.Count == 0)
+                {
+                    return true; // nothing to migrate
+                }
+
+                foreach (var score in scores)
+                {
+                    if (string.IsNullOrEmpty(score.Hash) || score.PlayCount == 0)
+                    {
+                        continue;
+                    }
+
+                    // Insert JudgeInfoRecords first
+                    var detail = score.JudgeDetail ?? JudgeDetail.Empty;
+                    var tapRecord = JudgeInfoRecordDB.FromJudgeInfo(detail[ScoreNoteType.Tap]);
+                    var holdRecord = JudgeInfoRecordDB.FromJudgeInfo(detail[ScoreNoteType.Hold]);
+                    var slideRecord = JudgeInfoRecordDB.FromJudgeInfo(detail[ScoreNoteType.Slide]);
+                    var breakRecord = JudgeInfoRecordDB.FromJudgeInfo(detail[ScoreNoteType.Break]);
+                    var touchRecord = JudgeInfoRecordDB.FromJudgeInfo(detail[ScoreNoteType.Touch]);
+
+                    await _db!.InsertAsync(tapRecord);
+                    await _db.InsertAsync(holdRecord);
+                    await _db.InsertAsync(slideRecord);
+                    await _db.InsertAsync(breakRecord);
+                    await _db.InsertAsync(touchRecord);
+
+                    // Insert MajScoreDB with FK references
+                    var dbRow = MajScoreDB.FromMaiScore(score);
+                    dbRow.TapDetailId = tapRecord.Id;
+                    dbRow.HoldDetailId = holdRecord.Id;
+                    dbRow.SlideDetailId = slideRecord.Id;
+                    dbRow.BreakDetailId = breakRecord.Id;
+                    dbRow.TouchDetailId = touchRecord.Id;
+                    await _db.InsertAsync(dbRow);
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MajDebug.LogError($"Failed to migrate legacy scores: {ex.Message}");
+                return false;
+            }
+        }
+        static void UpdateJudgeInfoDB(this SQLiteConnection conn, int? majScoreID, JudgeInfoRecordDB record)
+        {
+            if (majScoreID is int id)
+            {
+                record.Id = id;
+                conn.Update(record);
+            }
+            else
+            {
+                conn.Insert(record);
+            }
+        }
         static SongScores CheckAndGetSongScores(string hash, bool isOnline)
         {
             ref var @lock = ref _lock;
@@ -378,7 +380,7 @@ namespace MajdataPlay
         }
 
         [Table("MajScores")]
-        public class MajScoreDB
+        class MajScoreDB
         {
             [PrimaryKey]
             public string Key { get; set; } = string.Empty;
@@ -463,7 +465,7 @@ namespace MajdataPlay
         }
 
         [Table("JudgeInfoRecords")]
-        public class JudgeInfoRecordDB
+        class JudgeInfoRecordDB
         {
             [PrimaryKey, AutoIncrement]
             public int Id { get; set; }
