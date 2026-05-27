@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using MajdataPlay.Collections;
 using MajdataPlay.Json;
 using MajdataPlay.Scenes.Game;
+using MajdataPlay.Scenes.Game.Notes;
 using MajdataPlay.Utils;
 using Newtonsoft.Json;
 using SQLite;
@@ -49,7 +50,8 @@ namespace MajdataPlay
                 var dbPath = MajEnv.ScoreDBPath;
                 _db = new SQLiteAsyncConnection(dbPath, SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.Create | SQLiteOpenFlags.FullMutex);
 
-                await _db.CreateTableAsync<MaiScoreDB>();
+                await _db.CreateTableAsync<MajScoreDB>();
+                await _db.CreateTableAsync<JudgeInfoRecordDB>();
 
                 // Migrate from legacy JSON file
                 var legacyPath = MajEnv.LegacyScoreDBPath;
@@ -71,8 +73,13 @@ namespace MajdataPlay
                 }
 
                 // Load from SQLite
-                var rows = await _db.QueryAsync<MaiScoreDB>("SELECT * FROM MaiScores WHERE PlayCount > 0");
-                var grouped = rows.Select(x => x.ToMaiScore()).GroupBy(x => x.Hash);
+                var rows = await _db.QueryAsync<MajScoreDB>("SELECT * FROM MajScores WHERE PlayCount > 0");
+
+                // Load all JudgeInfoRecords into an id→JudgeInfo lookup
+                var allJudgeRecords = await _db.Table<JudgeInfoRecordDB>().ToListAsync();
+                var judgeInfoLookup = allJudgeRecords.ToDictionary(r => r.Id, r => r.ToJudgeInfo());
+
+                var grouped = rows.Select(x => x.ToMaiScore(judgeInfoLookup)).GroupBy(x => x.Hash);
                 foreach (var group in grouped)
                 {
                     var hash = group.Key;
@@ -107,11 +114,9 @@ namespace MajdataPlay
 
         static MaiScore GetOrCreate(Dictionary<ChartLevel, MaiScore> dict, string hash, ChartLevel level)
         {
-            if (dict.TryGetValue(level, out var score))
-            {
-                return score;
-            }
-            return new MaiScore()
+            return dict.TryGetValue(level, out var score)
+                ? score
+                : new MaiScore()
             {
                 Hash = hash,
                 ChartLevel = level,
@@ -124,25 +129,43 @@ namespace MajdataPlay
             try
             {
                 var json = await File.ReadAllTextAsync(legacyPath);
+                // Fix legacy typo: "JudgeDeatil" → "JudgeDetail"
+                json = json.Replace("\"JudgeDeatil\"", "\"JudgeDetail\"");
                 var scores = JsonConvert.DeserializeObject<List<MaiScore>>(json, _jsonReadSettings);
                 if (scores is null || scores.Count == 0)
                 {
                     return true; // nothing to migrate
                 }
 
-                var dbRows = new List<MaiScoreDB>(scores.Count);
                 foreach (var score in scores)
                 {
                     if (string.IsNullOrEmpty(score.Hash) || score.PlayCount == 0)
                     {
                         continue;
                     }
-                    dbRows.Add(MaiScoreDB.FromMaiScore(score));
-                }
 
-                if (dbRows.Count > 0 && _db is not null)
-                {
-                    await _db.InsertAllAsync(dbRows, runInTransaction: true);
+                    // Insert JudgeInfoRecords first
+                    var detail = score.JudgeDetail ?? JudgeDetail.Empty;
+                    var tapRecord = JudgeInfoRecordDB.FromJudgeInfo(detail[ScoreNoteType.Tap]);
+                    var holdRecord = JudgeInfoRecordDB.FromJudgeInfo(detail[ScoreNoteType.Hold]);
+                    var slideRecord = JudgeInfoRecordDB.FromJudgeInfo(detail[ScoreNoteType.Slide]);
+                    var breakRecord = JudgeInfoRecordDB.FromJudgeInfo(detail[ScoreNoteType.Break]);
+                    var touchRecord = JudgeInfoRecordDB.FromJudgeInfo(detail[ScoreNoteType.Touch]);
+
+                    await _db!.InsertAsync(tapRecord);
+                    await _db.InsertAsync(holdRecord);
+                    await _db.InsertAsync(slideRecord);
+                    await _db.InsertAsync(breakRecord);
+                    await _db.InsertAsync(touchRecord);
+
+                    // Insert MajScoreDB with FK references
+                    var dbRow = MajScoreDB.FromMaiScore(score);
+                    dbRow.TapDetailId = tapRecord.Id;
+                    dbRow.HoldDetailId = holdRecord.Id;
+                    dbRow.SlideDetailId = slideRecord.Id;
+                    dbRow.BreakDetailId = breakRecord.Id;
+                    dbRow.TouchDetailId = touchRecord.Id;
+                    await _db.InsertAsync(dbRow);
                 }
 
                 return true;
@@ -158,25 +181,17 @@ namespace MajdataPlay
         {
             var hash = song.Hash;
             var records = CheckAndGetSongScores(hash, song.IsOnline);
-            switch (level)
+            return level switch
             {
-                case ChartLevel.Easy:
-                    return records.Easy;
-                case ChartLevel.Basic:
-                    return records.Basic;
-                case ChartLevel.Advance:
-                    return records.Advance;
-                case ChartLevel.Expert:
-                    return records.Expert;
-                case ChartLevel.Master:
-                    return records.Master;
-                case ChartLevel.ReMaster:
-                    return records.ReMaster;
-                case ChartLevel.UTAGE:
-                    return records.UTAGE;
-                default:
-                    throw new ArgumentOutOfRangeException("sb");
-            }
+                ChartLevel.Easy => records.Easy,
+                ChartLevel.Basic => records.Basic,
+                ChartLevel.Advance => records.Advance,
+                ChartLevel.Expert => records.Expert,
+                ChartLevel.Master => records.Master,
+                ChartLevel.ReMaster => records.ReMaster,
+                ChartLevel.UTAGE => records.UTAGE,
+                _ => throw new ArgumentOutOfRangeException("sb"),
+            };
         }
         public static SongScores GetSongScores(ISongDetail song)
         {
@@ -184,6 +199,20 @@ namespace MajdataPlay
 
             return CheckAndGetSongScores(hash, song.IsOnline);
         }
+
+        public static void UpdateJudgeInfoDB(this SQLiteConnection conn, int? majScoreID, JudgeInfoRecordDB record)
+        {
+            if (majScoreID is int id)
+            {
+                record.Id = id;
+                conn.Update(record);
+            }
+            else
+            {
+                conn.Insert(record);
+            }
+        }
+
         public static async Task<bool> SaveScore(GameResult result, ChartLevel level)
         {
             try
@@ -217,8 +246,34 @@ namespace MajdataPlay
 
                 if (_db is not null)
                 {
-                    var dbRow = MaiScoreDB.FromMaiScore(record);
-                    await _db.InsertOrReplaceAsync(dbRow);
+                    var scoreKey = MajScoreDB.MakeKey(record.Hash ?? string.Empty, record.ChartLevel);
+
+                    await _db.RunInTransactionAsync(conn =>
+                    {
+                        var detail = record.JudgeDetail ?? JudgeDetail.Empty;
+                        var tapRecord = JudgeInfoRecordDB.FromJudgeInfo(detail[ScoreNoteType.Tap]);
+                        var holdRecord = JudgeInfoRecordDB.FromJudgeInfo(detail[ScoreNoteType.Hold]);
+                        var slideRecord = JudgeInfoRecordDB.FromJudgeInfo(detail[ScoreNoteType.Slide]);
+                        var breakRecord = JudgeInfoRecordDB.FromJudgeInfo(detail[ScoreNoteType.Break]);
+                        var touchRecord = JudgeInfoRecordDB.FromJudgeInfo(detail[ScoreNoteType.Touch]);
+
+                        // Look up existing score row to get FK ids
+                        var oldRow = conn.Find<MajScoreDB>(scoreKey);
+                        conn.UpdateJudgeInfoDB(oldRow?.TapDetailId, tapRecord);
+                        conn.UpdateJudgeInfoDB(oldRow?.HoldDetailId, holdRecord);
+                        conn.UpdateJudgeInfoDB(oldRow?.SlideDetailId, slideRecord);
+                        conn.UpdateJudgeInfoDB(oldRow?.BreakDetailId, breakRecord);
+                        conn.UpdateJudgeInfoDB(oldRow?.TouchDetailId, touchRecord);
+
+                        // Upsert MajScores with FK ids
+                        var dbRow = MajScoreDB.FromMaiScore(record);
+                        dbRow.TapDetailId = tapRecord.Id;
+                        dbRow.HoldDetailId = holdRecord.Id;
+                        dbRow.SlideDetailId = slideRecord.Id;
+                        dbRow.BreakDetailId = breakRecord.Id;
+                        dbRow.TouchDetailId = touchRecord.Id;
+                        conn.InsertOrReplace(dbRow);
+                    });
                 }
 
                 return true;
@@ -229,6 +284,7 @@ namespace MajdataPlay
                 return false;
             }
         }
+
         public static void LoadOnlineScores(ReadOnlySpan<MajNetAccountSongScore> scores)
         {
             ref var @lock = ref _lock;
@@ -250,32 +306,17 @@ namespace MajdataPlay
                         _onlineBuckets.Add(score.Hash, scoreRecord);
                     }
                     var maiScore = default(MaiScore);
-                    switch (score.ChartLevel)
+                    maiScore = score.ChartLevel switch
                     {
-                        case ChartLevel.Easy:
-                            maiScore = scoreRecord.Easy;
-                            break;
-                        case ChartLevel.Basic:
-                            maiScore = scoreRecord.Basic;
-                            break;
-                        case ChartLevel.Advance:
-                            maiScore = scoreRecord.Advance;
-                            break;
-                        case ChartLevel.Expert:
-                            maiScore = scoreRecord.Expert;
-                            break;
-                        case ChartLevel.Master:
-                            maiScore = scoreRecord.Master;
-                            break;
-                        case ChartLevel.ReMaster:
-                            maiScore = scoreRecord.ReMaster;
-                            break;
-                        case ChartLevel.UTAGE:
-                            maiScore = scoreRecord.UTAGE;
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException(nameof(score.ChartLevel), score.ChartLevel, null);
-                    }
+                        ChartLevel.Easy => scoreRecord.Easy,
+                        ChartLevel.Basic => scoreRecord.Basic,
+                        ChartLevel.Advance => scoreRecord.Advance,
+                        ChartLevel.Expert => scoreRecord.Expert,
+                        ChartLevel.Master => scoreRecord.Master,
+                        ChartLevel.ReMaster => scoreRecord.ReMaster,
+                        ChartLevel.UTAGE => scoreRecord.UTAGE,
+                        _ => throw new ArgumentOutOfRangeException(nameof(score.ChartLevel), score.ChartLevel, null),
+                    };
                     maiScore.Acc = score.Acc;
                     maiScore.DXScore = score.DXScore;
                     maiScore.ComboState = score.ComboState;
@@ -335,8 +376,9 @@ namespace MajdataPlay
                 }
             }
         }
-        [Table("MaiScores")]
-        public class MaiScoreDB
+
+        [Table("MajScores")]
+        public class MajScoreDB
         {
             [PrimaryKey]
             public string Key { get; set; } = string.Empty;
@@ -353,36 +395,29 @@ namespace MajdataPlay
             public long Fast { get; set; }
             public long Late { get; set; }
             public long PlayCount { get; set; }
-            public string? JudgeDetailJson { get; set; }
             public long TimestampTicks { get; set; }
             public int ComboStateInt { get; set; }
 
-            static readonly JsonSerializerSettings _jsonSettings = new()
-            {
-                Converters = new List<JsonConverter>
-                {
-                    new JudgeDetailConverter(),
-                    new JudgeInfoConverter(),
-                }
-            };
+            // FK to JudgeInfoRecords
+            public int? TapDetailId { get; set; }
+            public int? HoldDetailId { get; set; }
+            public int? SlideDetailId { get; set; }
+            public int? BreakDetailId { get; set; }
+            public int? TouchDetailId { get; set; }
 
             public static string MakeKey(string hash, ChartLevel level) => $"{hash}|{(int)level}";
             public static string MakeKey(string hash, int levelInt) => $"{hash}|{levelInt}";
 
-            public MaiScore ToMaiScore()
+            public MaiScore ToMaiScore(Dictionary<int, JudgeInfo> judgeInfoLookup)
             {
-                JudgeDetail? judgeDetail = null;
-                if (!string.IsNullOrEmpty(JudgeDetailJson))
+                var dict = new Dictionary<ScoreNoteType, JudgeInfo>
                 {
-                    try
-                    {
-                        judgeDetail = JsonConvert.DeserializeObject<JudgeDetail>(JudgeDetailJson, _jsonSettings);
-                    }
-                    catch
-                    {
-                        judgeDetail = JudgeDetail.Empty;
-                    }
-                }
+                    { ScoreNoteType.Tap, ResolveJudgeInfo(TapDetailId, judgeInfoLookup) },
+                    { ScoreNoteType.Hold, ResolveJudgeInfo(HoldDetailId, judgeInfoLookup) },
+                    { ScoreNoteType.Slide, ResolveJudgeInfo(SlideDetailId, judgeInfoLookup) },
+                    { ScoreNoteType.Break, ResolveJudgeInfo(BreakDetailId, judgeInfoLookup) },
+                    { ScoreNoteType.Touch, ResolveJudgeInfo(TouchDetailId, judgeInfoLookup) },
+                };
 
                 return new MaiScore()
                 {
@@ -394,30 +429,22 @@ namespace MajdataPlay
                     Fast = Fast,
                     Late = Late,
                     PlayCount = PlayCount,
-                    JudgeDetail = judgeDetail ?? JudgeDetail.Empty,
+                    JudgeDetail = new JudgeDetail(dict),
                     Timestamp = new DateTime(TimestampTicks, DateTimeKind.Local),
                     ComboState = (ComboState)ComboStateInt,
                 };
             }
 
-            public static MaiScoreDB FromMaiScore(MaiScore score)
+            static JudgeInfo ResolveJudgeInfo(int? fkId, Dictionary<int, JudgeInfo> lookup)
             {
-                string? judgeJson = null;
-                if (score.JudgeDetail is not null)
-                {
-                    try
-                    {
-                        judgeJson = JsonConvert.SerializeObject(score.JudgeDetail, _jsonSettings);
-                    }
-                    catch
-                    {
-                        judgeJson = null;
-                    }
-                }
+                return fkId.HasValue && lookup.TryGetValue(fkId.Value, out var info) ? info : JudgeInfo.Empty;
+            }
 
+            public static MajScoreDB FromMaiScore(MaiScore score)
+            {
                 var hash = score.Hash ?? string.Empty;
 
-                return new MaiScoreDB()
+                return new MajScoreDB()
                 {
                     Key = MakeKey(hash, score.ChartLevel),
                     Hash = hash,
@@ -429,9 +456,76 @@ namespace MajdataPlay
                     Fast = score.Fast,
                     Late = score.Late,
                     PlayCount = score.PlayCount,
-                    JudgeDetailJson = judgeJson,
                     TimestampTicks = score.Timestamp.Ticks,
                     ComboStateInt = (int)score.ComboState,
+                };
+            }
+        }
+
+        [Table("JudgeInfoRecords")]
+        public class JudgeInfoRecordDB
+        {
+            [PrimaryKey, AutoIncrement]
+            public int Id { get; set; }
+
+            public int Miss { get; set; }
+            public int LateGood { get; set; }
+            public int LateGreat3rd { get; set; }
+            public int LateGreat2nd { get; set; }
+            public int LateGreat { get; set; }
+            public int LatePerfect3rd { get; set; }
+            public int LatePerfect2nd { get; set; }
+            public int Perfect { get; set; }
+            public int FastPerfect2nd { get; set; }
+            public int FastPerfect3rd { get; set; }
+            public int FastGreat { get; set; }
+            public int FastGreat2nd { get; set; }
+            public int FastGreat3rd { get; set; }
+            public int FastGood { get; set; }
+            public int TooFast { get; set; }
+
+            public JudgeInfo ToJudgeInfo()
+            {
+                var dict = new Dictionary<JudgeGrade, int>
+                {
+                    { JudgeGrade.Miss, Miss },
+                    { JudgeGrade.LateGood, LateGood },
+                    { JudgeGrade.LateGreat3rd, LateGreat3rd },
+                    { JudgeGrade.LateGreat2nd, LateGreat2nd },
+                    { JudgeGrade.LateGreat, LateGreat },
+                    { JudgeGrade.LatePerfect3rd, LatePerfect3rd },
+                    { JudgeGrade.LatePerfect2nd, LatePerfect2nd },
+                    { JudgeGrade.Perfect, Perfect },
+                    { JudgeGrade.FastPerfect2nd, FastPerfect2nd },
+                    { JudgeGrade.FastPerfect3rd, FastPerfect3rd },
+                    { JudgeGrade.FastGreat, FastGreat },
+                    { JudgeGrade.FastGreat2nd, FastGreat2nd },
+                    { JudgeGrade.FastGreat3rd, FastGreat3rd },
+                    { JudgeGrade.FastGood, FastGood },
+                    { JudgeGrade.TooFast, TooFast },
+                };
+                return new JudgeInfo(dict);
+            }
+
+            public static JudgeInfoRecordDB FromJudgeInfo(JudgeInfo info)
+            {
+                return new JudgeInfoRecordDB
+                {
+                    Miss = info[JudgeGrade.Miss],
+                    LateGood = info[JudgeGrade.LateGood],
+                    LateGreat3rd = info[JudgeGrade.LateGreat3rd],
+                    LateGreat2nd = info[JudgeGrade.LateGreat2nd],
+                    LateGreat = info[JudgeGrade.LateGreat],
+                    LatePerfect3rd = info[JudgeGrade.LatePerfect3rd],
+                    LatePerfect2nd = info[JudgeGrade.LatePerfect2nd],
+                    Perfect = info[JudgeGrade.Perfect],
+                    FastPerfect2nd = info[JudgeGrade.FastPerfect2nd],
+                    FastPerfect3rd = info[JudgeGrade.FastPerfect3rd],
+                    FastGreat = info[JudgeGrade.FastGreat],
+                    FastGreat2nd = info[JudgeGrade.FastGreat2nd],
+                    FastGreat3rd = info[JudgeGrade.FastGreat3rd],
+                    FastGood = info[JudgeGrade.FastGood],
+                    TooFast = info[JudgeGrade.TooFast],
                 };
             }
         }
