@@ -48,7 +48,9 @@ namespace MajdataPlay
             try
             {
                 var dbPath = MajEnv.ScoreDBPath;
-                if (!File.Exists(dbPath))
+                var isDbExists = File.Exists(dbPath);
+                _db = new SQLiteAsyncConnection(dbPath, SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.Create | SQLiteOpenFlags.FullMutex);
+                if (!isDbExists)
                 {
                     // Migrate from legacy JSON file
                     var legacyPath = MajEnv.LegacyScoreDBPath;
@@ -68,8 +70,7 @@ namespace MajdataPlay
                             }
                         }
                     }
-                }
-                _db = new SQLiteAsyncConnection(dbPath, SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.Create | SQLiteOpenFlags.FullMutex);
+                }                
 
                 await _db.CreateTableAsync<MajScoreDB>();
                 await _db.CreateTableAsync<JudgeInfoRecordDB>();
