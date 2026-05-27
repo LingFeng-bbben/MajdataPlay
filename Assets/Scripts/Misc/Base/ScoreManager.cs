@@ -50,6 +50,9 @@ namespace MajdataPlay
                 var dbPath = MajEnv.ScoreDBPath;
                 var isDbExists = File.Exists(dbPath);
                 _db = new SQLiteAsyncConnection(dbPath, SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.Create | SQLiteOpenFlags.FullMutex);
+                GameManager.OnAppQuit += OnAppQuit;
+                await _db.CreateTableAsync<MajScoreDB>();
+                await _db.CreateTableAsync<JudgeInfoRecordDB>();
                 if (!isDbExists)
                 {
                     // Migrate from legacy JSON file
@@ -71,9 +74,6 @@ namespace MajdataPlay
                         }
                     }
                 }                
-
-                await _db.CreateTableAsync<MajScoreDB>();
-                await _db.CreateTableAsync<JudgeInfoRecordDB>();
 
                 // Load from SQLite
                 var rows = await _db.QueryAsync<MajScoreDB>("SELECT * FROM MajScores WHERE PlayCount > 0");
@@ -336,7 +336,7 @@ namespace MajdataPlay
             }
             catch (Exception ex)
             {
-                MajDebug.LogError($"Failed to migrate legacy scores: {ex.Message}");
+                MajDebug.LogError($"Failed to migrate legacy scores: {ex.Message}\n{ex.StackTrace}");
                 return false;
             }
         }
@@ -378,6 +378,11 @@ namespace MajdataPlay
                     @lock.Exit();
                 }
             }
+        }
+        static void OnAppQuit(object? sender, EventArgs? args)
+        {
+            GameManager.OnAppQuit -= OnAppQuit;
+            _db?.CloseAsync().Wait();
         }
 
         [Table("MajScores")]
