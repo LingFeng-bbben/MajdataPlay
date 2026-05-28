@@ -426,55 +426,21 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         void LoadTapSkin()
         {
             var skin = MajInstances.SkinManager.GetTapSkin();
-            //var _thisRenderer = GetComponent<SpriteRenderer>();
-            //var _exRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
-            //var _tapLineRenderer = _tapLineObject.GetComponent<SpriteRenderer>();
 
-            _thisRenderer.sprite = skin.Normal;
-            _thisRenderer.sharedMaterial = DefaultMaterial;
-            _exRenderer.sprite = skin.Ex;
-            _exRenderer.color = skin.ExEffects[0];
-            _tapLineRenderer.sprite = skin.GuideLines[0];
-
-            if (IsEach)
+            if (IsMine)
             {
-                _thisRenderer.sprite = skin.Each;
-                _tapLineRenderer.sprite = skin.GuideLines[1];
-                _exRenderer.color = skin.ExEffects[1];
-            }
-
-            if (IsBreak)
-            {
-                _thisRenderer.sprite = skin.Break;
-                _thisRenderer.sharedMaterial = BreakMaterial;
-                _tapLineRenderer.sprite = skin.GuideLines[2];
-                _exRenderer.color = skin.ExEffects[2];
-            }
-        }
-        void LoadStarSkin()
-        {
-            //var _thisRenderer = GetComponent<SpriteRenderer>();
-            //var _exRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
-            //var _tapLineRenderer = _tapLineObject.GetComponent<SpriteRenderer>();
-            var skin = MajInstances.SkinManager.GetStarSkin();
-            _thisRenderer.sharedMaterial = DefaultMaterial;
-            _exRenderer.color = skin.ExEffects[0];
-            _tapLineRenderer.sprite = skin.GuideLines[0];
-
-            if (IsDouble)
-            {
-                _thisRenderer.sprite = skin.Double;
-                _exRenderer.sprite = skin.ExDouble;
-
+                _thisRenderer.sprite = skin.Mine;
+                _thisRenderer.sharedMaterial = DefaultMaterial;
+                _exRenderer.sprite = skin.Ex;
+                _exRenderer.color = skin.ExEffects[0];
+                _tapLineRenderer.sprite = skin.GuideLines[0];
                 if (IsEach)
                 {
-                    _thisRenderer.sprite = skin.EachDouble;
                     _tapLineRenderer.sprite = skin.GuideLines[1];
-                    _exRenderer.color = skin.ExEffects[1];
                 }
                 if (IsBreak)
                 {
-                    _thisRenderer.sprite = skin.BreakDouble;
+                    _thisRenderer.sprite = skin.BreakMine;
                     _thisRenderer.sharedMaterial = BreakMaterial;
                     _tapLineRenderer.sprite = skin.GuideLines[2];
                     _exRenderer.color = skin.ExEffects[2];
@@ -483,8 +449,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             else
             {
                 _thisRenderer.sprite = skin.Normal;
+                _thisRenderer.sharedMaterial = DefaultMaterial;
                 _exRenderer.sprite = skin.Ex;
-
+                _exRenderer.color = skin.ExEffects[0];
+                _tapLineRenderer.sprite = skin.GuideLines[0];
                 if (IsEach)
                 {
                     _thisRenderer.sprite = skin.Each;
@@ -497,6 +465,83 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                     _thisRenderer.sharedMaterial = BreakMaterial;
                     _tapLineRenderer.sprite = skin.GuideLines[2];
                     _exRenderer.color = skin.ExEffects[2];
+                }
+            }
+        }
+        void LoadStarSkin()
+        {
+            var skin = MajInstances.SkinManager.GetStarSkin();
+            _thisRenderer.sharedMaterial = DefaultMaterial;
+            _exRenderer.color = skin.ExEffects[0];
+            _tapLineRenderer.sprite = skin.GuideLines[0];
+
+            if (IsMine)
+            {
+                if (IsDouble)
+                {
+                    _thisRenderer.sprite = skin.DoubleMine;
+                    _exRenderer.sprite = skin.ExDouble;
+                    if (IsBreak)
+                    {
+                        _thisRenderer.sprite = skin.BreakDoubleMine;
+                        _thisRenderer.sharedMaterial = BreakMaterial;
+                        _tapLineRenderer.sprite = skin.GuideLines[2];
+                        _exRenderer.color = skin.ExEffects[2];
+                    }
+                }
+                else
+                {
+                    _thisRenderer.sprite = skin.Mine;
+                    _exRenderer.sprite = skin.Ex;
+
+                    if (IsBreak)
+                    {
+                        _thisRenderer.sprite = skin.BreakMine;
+                        _thisRenderer.sharedMaterial = BreakMaterial;
+                        _tapLineRenderer.sprite = skin.GuideLines[2];
+                        _exRenderer.color = skin.ExEffects[2];
+                    }
+                }
+            }
+            else
+            {
+                if (IsDouble)
+                {
+                    _thisRenderer.sprite = skin.Double;
+                    _exRenderer.sprite = skin.ExDouble;
+
+                    if (IsEach)
+                    {
+                        _thisRenderer.sprite = skin.EachDouble;
+                        _tapLineRenderer.sprite = skin.GuideLines[1];
+                        _exRenderer.color = skin.ExEffects[1];
+                    }
+                    if (IsBreak)
+                    {
+                        _thisRenderer.sprite = skin.BreakDouble;
+                        _thisRenderer.sharedMaterial = BreakMaterial;
+                        _tapLineRenderer.sprite = skin.GuideLines[2];
+                        _exRenderer.color = skin.ExEffects[2];
+                    }
+                }
+                else
+                {
+                    _thisRenderer.sprite = skin.Normal;
+                    _exRenderer.sprite = skin.Ex;
+
+                    if (IsEach)
+                    {
+                        _thisRenderer.sprite = skin.Each;
+                        _tapLineRenderer.sprite = skin.GuideLines[1];
+                        _exRenderer.color = skin.ExEffects[1];
+                    }
+                    if (IsBreak)
+                    {
+                        _thisRenderer.sprite = skin.Break;
+                        _thisRenderer.sharedMaterial = BreakMaterial;
+                        _tapLineRenderer.sprite = skin.GuideLines[2];
+                        _exRenderer.color = skin.ExEffects[2];
+                    }
                 }
             }
         }

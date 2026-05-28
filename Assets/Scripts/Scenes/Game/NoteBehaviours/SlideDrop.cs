@@ -834,16 +834,30 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             var starSprite = skin.Star.Normal;
             Material? breakMaterial = null;
 
-            if (IsEach)
+            if (IsMine)
             {
-                barSprite = skin.Each;
-                starSprite = skin.Star.Each;
+                barSprite = skin.Mine;
+                starSprite = skin.Star.Mine;
+                if (IsBreak)
+                {
+                    barSprite = skin.BreakMine;
+                    starSprite = skin.Star.BreakMine;
+                    breakMaterial = BreakMaterial;
+                }
             }
-            if (IsBreak)
+            else
             {
-                barSprite = skin.Break;
-                starSprite = skin.Star.Break;
-                breakMaterial = BreakMaterial;
+                if (IsEach)
+                {
+                    barSprite = skin.Each;
+                    starSprite = skin.Star.Each;
+                }
+                if (IsBreak)
+                {
+                    barSprite = skin.Break;
+                    starSprite = skin.Star.Break;
+                    breakMaterial = BreakMaterial;
+                }
             }
 
             foreach (var renderer in barRenderers)

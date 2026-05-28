@@ -350,34 +350,62 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             var skin = MajInstances.SkinManager.GetTouchHoldSkin();
 
             SetFansMaterial(DefaultMaterial);
-            if (IsBreak)
+            if(IsMine)
             {
-                for (var i = 0; i < 4; i++)
+                if (IsBreak)
                 {
-                    _fanRenderers[i].sprite = skin.Fans_Break[i];
-                }
-                _borderRenderer.sprite = skin.Boader_Break; // TouchHold Border
-                _pointRenderer.sprite = skin.Point_Break;
-                board_On = skin.Boader_Break;
-                SetFansMaterial(BreakMaterial);
-            }
-            else
-            {
-                for (var i = 0; i < 4; i++)
-                {
-                    _fanRenderers[i].sprite = skin.Fans[i];
-                }
-                _borderRenderer.sprite = skin.Boader; // TouchHold Border
-                if(IsEach)
-                {
-                    _pointRenderer.sprite = skin.Point_Each;
+                    for (var i = 0; i < 4; i++)
+                    {
+                        _fanRenderers[i].sprite = skin.Fans_Break_Mine[i];
+                    }
+                    _borderRenderer.sprite = skin.Boader_Break_Mine; // TouchHold Border
+                    _pointRenderer.sprite = skin.Point_Break_Mine;
+                    board_On = skin.Boader_Break_Mine;
+                    SetFansMaterial(BreakMaterial);
                 }
                 else
                 {
-                    _pointRenderer.sprite = skin.Point;
+                    for (var i = 0; i < 4; i++)
+                    {
+                        _fanRenderers[i].sprite = skin.Fans_Mine[i];
+                    }
+                    _borderRenderer.sprite = skin.Boader_Mine; // TouchHold Border
+                    _pointRenderer.sprite = skin.Point_Mine;
+                    board_On = skin.Boader_Mine;
                 }
-                board_On = skin.Boader;
             }
+            else
+            {
+                if (IsBreak)
+                {
+                    for (var i = 0; i < 4; i++)
+                    {
+                        _fanRenderers[i].sprite = skin.Fans_Break[i];
+                    }
+                    _borderRenderer.sprite = skin.Boader_Break; // TouchHold Border
+                    _pointRenderer.sprite = skin.Point_Break;
+                    board_On = skin.Boader_Break;
+                    SetFansMaterial(BreakMaterial);
+                }
+                else
+                {
+                    for (var i = 0; i < 4; i++)
+                    {
+                        _fanRenderers[i].sprite = skin.Fans[i];
+                    }
+                    _borderRenderer.sprite = skin.Boader; // TouchHold Border
+                    if (IsEach)
+                    {
+                        _pointRenderer.sprite = skin.Point_Each;
+                    }
+                    else
+                    {
+                        _pointRenderer.sprite = skin.Point;
+                    }
+                    board_On = skin.Boader;
+                }
+            }
+            
             board_Off = skin.Off;
         }
         protected override void Judge(float currentSec)

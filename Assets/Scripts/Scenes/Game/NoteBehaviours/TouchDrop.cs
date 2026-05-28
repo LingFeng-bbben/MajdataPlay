@@ -231,23 +231,39 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             var skin = MajInstances.SkinManager.GetTouchSkin();
 
             SetFansMaterial(DefaultMaterial);
-            if (IsBreak)
+            if (IsMine)
             {
-                SetFansSprite(skin.Break);
-                SetFansMaterial(BreakMaterial);
-                _pointRenderer.sprite = skin.Point_Break;
-            }
-            else if (IsEach)
-            {
-                SetFansSprite(skin.Each);
-                _pointRenderer.sprite = skin.Point_Each;
+                if (IsBreak)
+                {
+                    SetFansSprite(skin.BreakMine);
+                    SetFansMaterial(BreakMaterial);
+                    _pointRenderer.sprite = skin.Point_Break_Mine;
+                }
+                else
+                {
+                    SetFansSprite(skin.Mine);
+                    _pointRenderer.sprite = skin.Point_Normal_Mine;
+                }
             }
             else
             {
-                SetFansSprite(skin.Normal);
-                _pointRenderer.sprite = skin.Point_Normal;
+                if (IsBreak)
+                {
+                    SetFansSprite(skin.Break);
+                    SetFansMaterial(BreakMaterial);
+                    _pointRenderer.sprite = skin.Point_Break;
+                }
+                else if (IsEach)
+                {
+                    SetFansSprite(skin.Each);
+                    _pointRenderer.sprite = skin.Point_Each;
+                }
+                else
+                {
+                    SetFansSprite(skin.Normal);
+                    _pointRenderer.sprite = skin.Point_Normal;
+                }
             }
-
             _justBorderRenderer.sprite = skin.JustBorder;
         }
         void TooLateCheck()

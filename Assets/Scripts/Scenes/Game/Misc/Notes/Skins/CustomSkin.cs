@@ -23,15 +23,23 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
         public Sprite Tap_Each { get; private set; }
         public Sprite Tap_Break { get; private set; }
         public Sprite Tap_Ex { get; private set; }
+        public Sprite Tap_Mine { get; private set; }
+        public Sprite Tap_Break_Mine { get; private set; }
 
         public Sprite Slide { get; private set; }
         public Sprite Slide_Each { get; private set; }
         public Sprite Slide_Break { get; private set; }
+        public Sprite Slide_Mine { get; private set; }
+        public Sprite Slide_Break_Mine { get; private set; }
         public Sprite[] Wifi { get; private set; } = new Sprite[11];
         public Sprite[] Wifi_Each { get; private set; } = new Sprite[11];
         public Sprite[] Wifi_Break { get; private set; } = new Sprite[11];
+        public Sprite[] Wifi_Mine { get; private set; } = new Sprite[11];
+        public Sprite[] Wifi_Break_Mine { get; private set; } = new Sprite[11];
+
 
         public Sprite Star { get; private set; }
+        
         public Sprite Star_Double { get; private set; }
         public Sprite Star_Each { get; private set; }
         public Sprite Star_Each_Double { get; private set; }
@@ -39,6 +47,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
         public Sprite Star_Break_Double { get; private set; }
         public Sprite Star_Ex { get; private set; }
         public Sprite Star_Ex_Double { get; private set; }
+        public Sprite Star_Mine { get; private set; }
+        public Sprite Star_Double_Mine { get; private set; }
+        public Sprite Star_Break_Mine { get; private set; }
+        public Sprite Star_Break_Double_Mine { get; private set; }
 
         public Sprite Hold { get; private set; }
         public Sprite Hold_On { get; private set; }
@@ -46,6 +58,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
         public Sprite Hold_Each { get; private set; }
         public Sprite Hold_Each_On { get; private set; }
         public Sprite Hold_Ex { get; private set; }
+        public Sprite Hold_Mine { get; private set; }
+        public Sprite Hold_Mine_On { get; private set; }
+        public Sprite Hold_Break_Mine { get; private set; }
+        public Sprite Hold_Break_Mine_On { get; private set; }
         public Sprite Hold_Break { get; private set; }
         public Sprite Hold_Break_On { get; private set; }
 
@@ -101,16 +117,24 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
         public Sprite Touch { get; private set; }
         public Sprite Touch_Each { get; private set; }
         public Sprite Touch_Break { get; private set; }
+        public Sprite Touch_Mine { get; private set; }
+        public Sprite Touch_Break_Mine { get; private set; }
         public Sprite TouchPoint { get; private set; }
         public Sprite TouchPoint_Each { get; private set; }
         public Sprite TouchPoint_Break { get; private set; }
+        public Sprite TouchPoint_Mine { get; private set; }
+        public Sprite TouchPoint_Break_Mine { get; private set; }
         public Sprite TouchJust { get; private set; }
         public Sprite[] TouchBorder { get; private set; } = new Sprite[2];
         public Sprite[] TouchBorder_Each { get; private set; } = new Sprite[2];
         public Sprite[] TouchBorder_Break { get; private set; } = new Sprite[2];
+        public Sprite[] TouchBorder_Mine { get; private set; } = new Sprite[2];
+        public Sprite[] TouchBorder_Break_Mine { get; private set; } = new Sprite[2];
 
         public Sprite[] TouchHold { get; private set; } = new Sprite[5];
         public Sprite[] TouchHold_Break { get; private set; } = new Sprite[5];
+        public Sprite[] TouchHold_Mine { get; private set; } = new Sprite[5];
+        public Sprite[] TouchHold_Break_Mine { get; private set; } = new Sprite[5];
         public Sprite TouchHold_Off { get; private set; }
 
         public Sprite LoadingSplash { get; private set; }
@@ -126,6 +150,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
         public Sprite HoldEndPoint_Normal { get; private set; }
         public Sprite HoldEndPoint_Each { get; private set; }
         public Sprite HoldEndPoint_Break { get; private set; }
+        public Sprite HoldEndPoint_Mine { get; private set; }
 
         public static readonly CustomSkin Empty;
         static readonly Sprite _dummySprite = Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
@@ -846,33 +871,45 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
                 Tap = SpriteLoader.Load(skinCollectionPath + "/TapSkins/tap.png");
                 Tap_Each = SpriteLoader.Load(skinCollectionPath + "/TapSkins/tap_each.png");
                 Tap_Break = SpriteLoader.Load(skinCollectionPath + "/TapSkins/tap_break.png");
+                Tap_Break_Mine = SpriteLoader.Load(skinCollectionPath + "/TapSkins/tap_break_mine.png");
+                Tap_Mine = SpriteLoader.Load(skinCollectionPath + "/TapSkins/tap_mine.png");
                 Tap_Ex = SpriteLoader.Load(skinCollectionPath + "/TapSkins/tap_ex.png");
 
                 Slide = SpriteLoader.Load(skinCollectionPath + "/SlideSkins/slide.png");
                 Slide_Each = SpriteLoader.Load(skinCollectionPath + "/SlideSkins/slide_each.png");
                 Slide_Break = SpriteLoader.Load(skinCollectionPath + "/SlideSkins/slide_break.png");
+                Slide_Mine = SpriteLoader.Load(skinCollectionPath + "/SlideSkins/slide_mine.png");
+                Slide_Break_Mine = SpriteLoader.Load(skinCollectionPath + "/SlideSkins/slide_break_mine.png");
                 for (var i = 0; i < 11; i++)
                 {
                     Wifi[i] = SpriteLoader.Load(skinCollectionPath + "/WifiSkins/wifi_" + i + ".png");
                     Wifi_Each[i] = SpriteLoader.Load(skinCollectionPath + "/WifiSkins/wifi_each_" + i + ".png");
                     Wifi_Break[i] = SpriteLoader.Load(skinCollectionPath + "/WifiSkins/wifi_break_" + i + ".png");
+                    Wifi_Mine[i] = SpriteLoader.Load(skinCollectionPath + "/WifiSkins/wifi_mine_" + i + ".png");
+                    Wifi_Break_Mine[i] = SpriteLoader.Load(skinCollectionPath + "/WifiSkins/wifi_break_mine_" + i + ".png");
                 }
 
                 Star = SpriteLoader.Load(skinCollectionPath + "/StarSkins/star.png");
                 Star_Double = SpriteLoader.Load(skinCollectionPath + "/StarSkins/star_double.png");
+                Star_Double_Mine = SpriteLoader.Load(skinCollectionPath + "/StarSkins/star_double_mine.png");
                 Star_Each = SpriteLoader.Load(skinCollectionPath + "/StarSkins/star_each.png");
+                Star_Mine = SpriteLoader.Load(skinCollectionPath + "/StarSkins/star_mine.png");
                 Star_Each_Double = SpriteLoader.Load(skinCollectionPath + "/StarSkins/star_each_double.png");
                 Star_Break = SpriteLoader.Load(skinCollectionPath + "/StarSkins/star_break.png");
+                Star_Break_Mine = SpriteLoader.Load(skinCollectionPath + "/StarSkins/star_break_mine.png");
                 Star_Break_Double = SpriteLoader.Load(skinCollectionPath + "/StarSkins/star_break_double.png");
+                Star_Break_Double_Mine = SpriteLoader.Load(skinCollectionPath + "/StarSkins/star_break_double_mine.png");
                 Star_Ex = SpriteLoader.Load(skinCollectionPath + "/StarSkins/star_ex.png");
                 Star_Ex_Double = SpriteLoader.Load(skinCollectionPath + "/StarSkins/star_ex_double.png");
 
                 var border = new Vector4(0, 58, 0, 58);
                 Hold = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold.png", border);
+                Hold_Mine = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_mine.png", border);
                 Hold_Each = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_each.png", border);
                 Hold_Each_On = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_each_on.png", border);
                 Hold_Ex = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_ex.png", border);
                 Hold_Break = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_break.png", border);
+                Hold_Break_Mine = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_break_mine.png", border);
                 Hold_Break_On = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_break_on.png", border);
 
                 if (File.Exists(Path.Combine(skinCollectionPath, "HoldSkins/hold_on.png")))
@@ -883,6 +920,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
                 {
                     Hold_On = Hold;
                 }
+                Hold_Mine_On = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_mine_on.png", border);
                 Hold_Off = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_off.png", border);
                 if (File.Exists(Path.Combine(skinCollectionPath, "HoldSkins/hold_each_on.png")))
                 {
@@ -901,6 +939,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
                 {
                     Hold_Break_On = Hold_Break;
                 }
+                Hold_Break_Mine_On = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_break_mine_on.png", border);
 
                 // Critical Perfect
 
@@ -1075,11 +1114,15 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
                 Late = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/late.png");
 
                 Touch = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch.png");
+                Touch_Mine = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_mine.png");
                 Touch_Each = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_each.png");
                 Touch_Break = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_break.png");
+                Touch_Break_Mine = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_break_mine.png");
                 TouchPoint = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_point.png");
                 TouchPoint_Each = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_point_each.png");
                 TouchPoint_Break = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_break_point.png");
+                TouchPoint_Mine = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_point_mine.png");
+                TouchPoint_Break_Mine = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_break_point_mine.png");
 
                 TouchJust = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_just.png");
 
@@ -1089,11 +1132,17 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
                 TouchBorder_Each[1] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_border_3_each.png");
                 TouchBorder_Break[0] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_break_border_2.png");
                 TouchBorder_Break[1] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_break_border_3.png");
+                TouchBorder_Mine[0] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_border_2_mine.png");
+                TouchBorder_Mine[1] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_border_3_mine.png");
+                TouchBorder_Break_Mine[0] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_break_border_2_mine.png");
+                TouchBorder_Break_Mine[1] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_break_border_3_mine.png");
 
                 for (var i = 0; i < 4; i++)
                 {
                     TouchHold[i] = SpriteLoader.Load(skinCollectionPath + "/TouchHoldSkins/touchhold_" + i + ".png");
                     TouchHold_Break[i] = SpriteLoader.Load(skinCollectionPath + "/TouchHoldSkins/touchhold_break_" + i + ".png");
+                    TouchHold_Mine[i] = SpriteLoader.Load(skinCollectionPath + "/TouchHoldSkins/touchhold_mine_" + i + ".png");
+                    TouchHold_Break_Mine[i] = SpriteLoader.Load(skinCollectionPath + "/TouchHoldSkins/touchhold_break_mine_" + i + ".png");
                 }
                 TouchHold[4] = SpriteLoader.Load(skinCollectionPath + "/TouchHoldSkins/touchhold_border.png");
                 TouchHold_Break[4] = SpriteLoader.Load(skinCollectionPath + "/TouchHoldSkins/touchhold_break_border.png");
