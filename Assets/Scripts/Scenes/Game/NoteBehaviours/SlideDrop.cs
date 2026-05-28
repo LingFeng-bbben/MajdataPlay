@@ -143,7 +143,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 return;
             }
-
+            if (IsMine)
+            {
+                AutoplayMode = AutoplayModeOption.Enable;
+                AutoplayGrade = JudgeGrade.Perfect;
+            }
             if (_isMirror)
             {
                 _table.Mirror();

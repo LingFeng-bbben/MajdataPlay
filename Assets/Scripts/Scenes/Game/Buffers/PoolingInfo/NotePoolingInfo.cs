@@ -15,6 +15,7 @@ namespace MajdataPlay.Scenes.Game.Buffers
         public float Speed { get; init; }
         public bool IsEach { get; init; }
         public bool IsBreak { get; init; }
+        public bool IsMine { get; init; }
         public bool IsEX { get; init; }
         /// <summary>
         /// 该Info绑定的实例

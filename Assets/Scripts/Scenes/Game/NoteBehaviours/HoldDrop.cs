@@ -134,6 +134,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override void Autoplay()
         {
+            if (IsMine)
+            {
+                return;
+            }
             switch (AutoplayMode)
             {
                 case AutoplayModeOption.Enable:
@@ -236,6 +240,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             IsEach = poolingInfo.IsEach;
             IsBreak = poolingInfo.IsBreak;
             IsEX = poolingInfo.IsEX;
+            IsMine = poolingInfo.IsMine;
             QueueInfo = poolingInfo.QueueInfo;
             IsJudged = false;
             Distance = -100;
@@ -351,7 +356,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             using (UnityProfiler.Create("HoldDrop.OnPreUpdate"))
             {
                 TooLateCheck();
-                Check();
+                MineHeadCheck();
+                HeadCheck();
+                MineBodyCheck();
                 BodyCheck();
                 ForceEndCheck();
                 Autoplay();
@@ -498,7 +505,19 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 }
             }
         }
-        void Check()
+        void MineHeadCheck()
+        {
+            if (!IsMine || IsEnded || !IsInited || IsJudged)
+            {
+                return;
+            }
+            if (GetTimeSpanToJudgeTiming() > 0)
+            {
+                IsJudged = true;
+                JudgeResult = JudgeGrade.Perfect;
+            }
+        }
+        void HeadCheck()
         {
             if (IsEnded || !IsInited || IsJudged)
             {
@@ -524,6 +543,20 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             if (IsJudged)
             {
+                var isMineForceEnd = false;
+                if (IsMine)
+                {
+                    if (JudgeResult > JudgeGrade.Perfect)
+                    {
+                        JudgeResult = JudgeGrade.TooFast;
+                        isMineForceEnd = true;
+                    }
+                    else
+                    {
+                        JudgeResult = JudgeGrade.Miss;
+                        isMineForceEnd = true;
+                    }
+                }
                 PlaySFX();
                 if (USERSETTING_DISPLAY_HOLD_HEAD_JUDGE_RESULT)
                 {
@@ -537,11 +570,39 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 }
                 EffectManager.ResetEffect(StartPos);
                 NoteManager.NextNote(QueueInfo);
+                if (isMineForceEnd)
+                {
+                    End();
+                }
+            }
+        }
+        void MineBodyCheck()
+        {
+            if (!IsMine)
+            {
+                return;
+            }
+            else if (!IsInited || IsEnded || !IsJudged)
+            {
+                return;
+            }
+            var isButtonPressed = NoteManager.CheckButtonStatusInThisFrame(_buttonPos, SwitchStatus.On);
+            var isSensorPressed = NoteManager.CheckSensorStatusInThisFrame(SensorPos, SwitchStatus.On);
+            var isPressed = isButtonPressed || isSensorPressed;
+
+            if(isPressed)
+            {
+                JudgeResult = JudgeGrade.Miss;
+                End();
             }
         }
         void BodyCheck()
         {
-            if (!IsInited || IsEnded)
+            if (IsMine)
+            {
+                return;
+            }
+            else if (!IsInited || IsEnded)
             {
                 return;
             }

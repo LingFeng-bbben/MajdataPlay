@@ -119,21 +119,6 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _noteController;
         }
-        protected bool IsAutoplay
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _isAutoplay;
-        }
-        protected AutoplayModeOption AutoplayMode
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _autoplayMode;
-        }
-        protected JudgeGrade AutoplayGrade
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _autoplayGrade;
-        }
         protected Material BreakMaterial
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -154,8 +139,13 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             get;
             private set;
         }
-
+        protected bool IsAutoplay
+        {
+            get => AutoplayMode != AutoplayModeOption.Disable;
+        }
         protected bool IsJudged = false;
+        protected JudgeGrade AutoplayGrade = JudgeGrade.Perfect;
+        protected AutoplayModeOption AutoplayMode = AutoplayModeOption.Disable;
         /// <summary>
         /// The answer frame
         /// </summary>
@@ -243,9 +233,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             _breakMaterial = _noteController.BreakMaterial;
             _defaultMaterial = _noteController.DefaultMaterial;
             _holdShineMaterial = _noteController.HoldShineMaterial;
-            _isAutoplay = _noteController.IsAutoplay;
-            _autoplayMode = ModInfo.AutoPlay;
-            _autoplayGrade = _noteController.AutoplayGrade;
+            AutoplayMode = ModInfo.AutoPlay;
+            AutoplayGrade = _noteController.AutoplayGrade;
 #if UNITY_ANDROID || UNITY_IOS
             IsUseButtonRingForTouch = false;
 #else
@@ -455,13 +444,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [ReadOnlyField, SerializeField]
         bool _isEX = false;
         [ReadOnlyField, SerializeField]
-        bool _isMine = false;
-        [ReadOnlyField, SerializeField]
-        bool _isAutoplay = false;
-        [ReadOnlyField, SerializeField]
-        JudgeGrade _autoplayGrade = JudgeGrade.Perfect;
-        [ReadOnlyField, SerializeField]
-        AutoplayModeOption _autoplayMode = AutoplayModeOption.Disable;
+        bool _isMine = false;        
         [ReadOnlyField, SerializeField]
         NoteStatus _state = NoteStatus.Start;
 

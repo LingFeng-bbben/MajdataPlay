@@ -1,27 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using MajSimai;
+﻿using Cysharp.Text;
 using Cysharp.Threading.Tasks;
-using System.Threading.Tasks;
-using System.Runtime.CompilerServices;
-using MajdataPlay.Scenes.Game.Utils;
+using MajdataPlay.Buffers;
 using MajdataPlay.Collections;
+using MajdataPlay.IO;
+using MajdataPlay.Numerics;
 using MajdataPlay.Scenes.Game.Buffers;
+using MajdataPlay.Scenes.Game.Notes;
+using MajdataPlay.Scenes.Game.Notes.Behaviours;
+using MajdataPlay.Scenes.Game.Notes.Controllers;
 using MajdataPlay.Scenes.Game.Notes.Slide;
 using MajdataPlay.Scenes.Game.Notes.Slide.Utils;
 using MajdataPlay.Scenes.Game.Notes.Touch;
-using MajdataPlay.Scenes.Game.Notes.Behaviours;
-using MajdataPlay.Scenes.Game.Notes.Controllers;
-using MajdataPlay.IO;
-using MajdataPlay.Numerics;
-using MajdataPlay.Scenes.Game.Notes;
-using System.Buffers;
-using System.Threading;
+using MajdataPlay.Scenes.Game.Utils;
 using MajdataPlay.Settings;
-using MajdataPlay.Buffers;
-using Cysharp.Text;
+using MajSimai;
+using System;
+using System.Buffers;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+using UnityEngine;
 
 namespace MajdataPlay.Scenes.Game
 {
@@ -521,6 +522,7 @@ namespace MajdataPlay.Scenes.Game
                     IsEach = isEach,
                     IsBreak = note.IsBreak,
                     IsEX = note.IsEx,
+                    IsMine = note.IsMine,
                     IsStar = note.IsForceStar,
                     RotateSpeed = note.IsFakeRotate ? -440f : 0,
                     QueueInfo = new TapQueueInfo()
@@ -581,6 +583,7 @@ namespace MajdataPlay.Scenes.Game
                     Speed = speed,
                     IsEach = isEach,
                     IsBreak = note.IsBreak,
+                    IsMine = note.IsMine,
                     IsEX = note.IsEx,
                     QueueInfo = new TapQueueInfo()
                     {
@@ -665,6 +668,7 @@ namespace MajdataPlay.Scenes.Game
                     IsEach = isEach,
                     IsBreak = note.IsBreak,
                     IsEX = note.IsEx,
+                    IsMine = note.IsMine,
                     IsStar = true,
                     IsDouble = isDouble,
                     RotateSpeed = -180 / (float)note.SlideTime,
@@ -701,6 +705,7 @@ namespace MajdataPlay.Scenes.Game
                 var startPosition = note.StartPosition;
                 var isEach = timing.Notes.Length > 1;
                 var isBreak = note.IsBreak;
+                var isMine = note.IsMine;
                 var speed = TouchSpeed * Math.Abs(timing.HSpeed);
                 var isFirework = note.IsHanabi;
                 var noteSortOrder = _touchSortOrder;
@@ -731,6 +736,7 @@ namespace MajdataPlay.Scenes.Game
                     IsEach = isEach,
                     IsBreak = isBreak,
                     IsEX = false,
+                    IsMine = isMine,
                     NoteSortOrder = noteSortOrder,
                     QueueInfo = queueInfo,
                 };
@@ -773,6 +779,7 @@ namespace MajdataPlay.Scenes.Game
                 var speed = TouchSpeed * Math.Abs(timing.HSpeed);
                 var isFirework = note.IsHanabi;
                 var isBreak = note.IsBreak;
+                var isMine = note.IsMine;
                 var isEach = timing.Notes.Length > 1;
                 var moveDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
                 var appearTiming = Math.Min(noteTiming - moveDuration, noteTiming - 0.15f);
@@ -796,6 +803,7 @@ namespace MajdataPlay.Scenes.Game
                     IsEach = isEach,
                     IsBreak = isBreak,
                     IsEX = false,
+                    IsMine = isMine,
                     LastFor = lastFor,
                     NoteSortOrder = noteSortOrder,
                     QueueInfo = queueInfo,
@@ -1324,6 +1332,7 @@ namespace MajdataPlay.Scenes.Game
             SliCompo.IsBreak = note.IsSlideBreak;
             SliCompo.IsEach = isEach || multiple > 1;
             SliCompo.IsMirror = isMirror;
+            SliCompo.IsMine = note.IsMineSlide;
             SliCompo.IsJustR = isJustR;
             SliCompo.EndPos = endPos;
             SliCompo.Speed = Math.Abs(NoteSpeed * timing.HSpeed);
@@ -1407,6 +1416,7 @@ namespace MajdataPlay.Scenes.Game
 
             WifiCompo.IsBreak = note.IsSlideBreak;
             WifiCompo.IsEach = isEach || multiple > 1;
+            WifiCompo.IsMine = note.IsMineSlide;
             WifiCompo.IsJustR = isJustR;
             WifiCompo.EndPos = endPos;
             WifiCompo.Speed = Math.Abs(NoteSpeed * timing.HSpeed);

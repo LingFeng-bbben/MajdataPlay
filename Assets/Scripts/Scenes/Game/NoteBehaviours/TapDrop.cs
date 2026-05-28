@@ -121,6 +121,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             IsEach = poolingInfo.IsEach;
             IsBreak = poolingInfo.IsBreak;
             IsEX = poolingInfo.IsEX;
+            IsMine = poolingInfo.IsMine;
             QueueInfo = poolingInfo.QueueInfo;
             IsStar = poolingInfo.IsStar;
             IsDouble = poolingInfo.IsDouble;
@@ -191,12 +192,17 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             using (UnityProfiler.Create("TapDrop.OnPreUpdate"))
             {
                 TooLateCheck();
+                MineCheck();
                 Check();
                 Autoplay();
             }
         }
         protected override void Autoplay()
         {
+            if (IsMine)
+            {
+                return;
+            }
             switch(AutoplayMode)
             {
                 case AutoplayModeOption.Enable:
@@ -344,7 +350,31 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             if (IsJudged)
             {
+                if(IsMine)
+                {
+                    if(JudgeResult > JudgeGrade.Perfect)
+                    {
+                        JudgeResult = JudgeGrade.TooFast;
+                    }
+                    else
+                    {
+                        JudgeResult = JudgeGrade.Miss;
+                    }
+                }
                 //MajDebug.LogError("Note is judged");
+                End();
+            }
+        }
+        void MineCheck()
+        {
+            if (!IsMine || IsEnded || !IsInited || IsJudged)
+            {
+                return;
+            }
+            if (GetTimeSpanToJudgeTiming() > 0)
+            {
+                IsJudged = true;
+                JudgeResult = JudgeGrade.Perfect;
                 End();
             }
         }

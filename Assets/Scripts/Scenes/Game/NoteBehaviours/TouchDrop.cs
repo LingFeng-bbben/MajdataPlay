@@ -150,6 +150,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             IsEach = poolingInfo.IsEach;
             IsBreak = poolingInfo.IsBreak;
             IsEX = poolingInfo.IsEX;
+            IsMine = poolingInfo.IsMine;
             QueueInfo = poolingInfo.QueueInfo;
             IsJudged = false;
             _isFirework = poolingInfo.IsFirework;
@@ -316,12 +317,40 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 #endif
             if (IsJudged)
             {
+                if (IsMine)
+                {
+                    if (JudgeResult > JudgeGrade.Perfect)
+                    {
+                        JudgeResult = JudgeGrade.TooFast;
+                    }
+                    else
+                    {
+                        JudgeResult = JudgeGrade.Miss;
+                    }
+                }
                 RegisterGrade();
+                End();
+            }
+        }
+        void MineCheck()
+        {
+            if (!IsMine || IsEnded || !IsInited || IsJudged)
+            {
+                return;
+            }
+            if (GetTimeSpanToJudgeTiming() > 0)
+            {
+                IsJudged = true;
+                JudgeResult = JudgeGrade.Perfect;
                 End();
             }
         }
         protected override void Autoplay()
         {
+            if (IsMine)
+            {
+                return;
+            }
             switch (AutoplayMode)
             {
                 case AutoplayModeOption.Enable:
@@ -369,6 +398,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             using (UnityProfiler.Create("TouchDrop.OnPreUpdate"))
             {
                 TooLateCheck();
+                MineCheck();
                 Check();
                 Autoplay();
             }

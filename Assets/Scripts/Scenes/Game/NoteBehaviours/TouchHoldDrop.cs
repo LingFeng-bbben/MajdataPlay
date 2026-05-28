@@ -237,6 +237,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             IsEach = poolingInfo.IsEach;
             IsBreak = poolingInfo.IsBreak;
             IsEX = poolingInfo.IsEX;
+            IsMine = poolingInfo.IsMine;
             QueueInfo = poolingInfo.QueueInfo;
             GroupInfo = poolingInfo.GroupInfo;
             BodyGroupInfo = poolingInfo.TouchHoldGroupInfo;
@@ -419,7 +420,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             using (UnityProfiler.Create("TouchHoldDrop.OnPreUpdate"))
             {
                 TooLateCheck();
-                Check();
+                MineHeadCheck();
+                HeadCheck();
+                MineBodyCheck();
                 BodyCheck();
                 ForceEndCheck();
                 Autoplay();
@@ -534,7 +537,19 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 NoteManager.NextTouch(QueueInfo);
             }
         }
-        void Check()
+        void MineHeadCheck()
+        {
+            if (!IsMine || IsEnded || !IsInited || IsJudged)
+            {
+                return;
+            }
+            if (GetTimeSpanToJudgeTiming() > 0)
+            {
+                IsJudged = true;
+                JudgeResult = JudgeGrade.Perfect;
+            }
+        }
+        void HeadCheck()
         {
             if (IsEnded || !IsInited || IsJudged || AutoplayMode == AutoplayModeOption.Enable)
             {
@@ -572,14 +587,54 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 #endif
             if (IsJudged)
             {
+                var isMineForceEnd = false;
+                if (IsMine)
+                {
+                    if (JudgeResult > JudgeGrade.Perfect)
+                    {
+                        JudgeResult = JudgeGrade.TooFast;
+                        isMineForceEnd = true;
+                    }
+                    else
+                    {
+                        JudgeResult = JudgeGrade.Miss;
+                        isMineForceEnd = true;
+                    }
+                }
                 NoteManager.NextTouch(QueueInfo);
                 EffectManager.PlayHoldEffect(SensorPos, JudgeResult);
                 RegisterGrade();
+                if (isMineForceEnd)
+                {
+                    End();
+                }
+            }
+        }
+        void MineBodyCheck()
+        {
+            if (!IsMine)
+            {
+                return;
+            }
+            else if (!IsInited || IsEnded || !IsJudged)
+            {
+                return;
+            }
+            var on = NoteManager.CheckSensorStatusInThisFrame(SensorPos, SwitchStatus.On);
+
+            if (on)
+            {
+                JudgeResult = JudgeGrade.Miss;
+                End();
             }
         }
         void BodyCheck()
         {
-            if (!IsInited || IsEnded)
+            if (IsMine)
+            {
+                return;
+            }
+            else if (!IsInited || IsEnded)
             {
                 return;
             }

@@ -115,6 +115,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 return;
             }
+            if (IsMine)
+            {
+                AutoplayMode = AutoplayModeOption.Enable;
+                AutoplayGrade = JudgeGrade.Perfect;
+            }
             _wifiTable.Dispose();
             _wifiTable = SlideTables.GetWifiTable(StartPos);
             var wifiConst = _wifiTable.Const;
