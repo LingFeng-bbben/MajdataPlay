@@ -99,6 +99,7 @@ namespace MajdataPlay
         public static string LangPath { get; private set; } = string.Empty;
         public static string ScoreDBPath { get; private set; } = string.Empty;
         public static string LegacyScoreDBPath { get; private set; } = string.Empty;
+        public static string FavoriteDBPath { get; private set; } = string.Empty;
         public static string LogPath { get; private set; } = string.Empty;
         public static string RecordOutputsPath { get; private set; } = string.Empty;
         [Preserve] public static Sprite EmptySongCover { get; }
@@ -267,6 +268,7 @@ namespace MajdataPlay
             LegacyScoreDBPath = Path.Combine(RootPath,
                 "MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db");
             ScoreDBPath = Path.Combine(RootPath, "MajScores.db");
+            FavoriteDBPath = Path.Combine(CachePath, "Runtime", "MajFavorites.db");
             LogPath = Path.Combine(LogsPath, $"MajPlayRuntime.log");
             RecordOutputsPath = Path.Combine(RootPath, "RecordOutputs");
         }
