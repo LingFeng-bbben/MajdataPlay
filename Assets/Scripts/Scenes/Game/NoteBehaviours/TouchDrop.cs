@@ -242,7 +242,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 else
                 {
                     SetFansSprite(skin.Mine);
-                    _pointRenderer.sprite = skin.Point_Normal_Mine;
+                    _pointRenderer.sprite = skin.Point_Mine;
                 }
             }
             else
