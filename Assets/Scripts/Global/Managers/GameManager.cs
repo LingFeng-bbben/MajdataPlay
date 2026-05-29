@@ -138,6 +138,7 @@ namespace MajdataPlay
             }
             MajDebug.LogInfo($"AndroidVerCode: {androidVersionCode}");
 #endif
+            UnityWebRequest.ClearCookieCache();
             MajEnv.Init();
 #if !UNITY_EDITOR
 #if UNITY_ANDROID
