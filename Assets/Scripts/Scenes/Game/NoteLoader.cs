@@ -724,7 +724,9 @@ namespace MajdataPlay.Scenes.Game
                     var noteCount = timing.Notes.Length;
                     var noHeadSlideCount = timing.Notes.FindAll(x => x.Type == SimaiNoteType.Slide && x.IsSlideNoHead).Length;
                     if (noteCount - noHeadSlideCount == 1)
+                    {
                         isEach = false;
+                    }
                 }
                 var poolingInfo = new TouchPoolingInfo()
                 {
@@ -742,7 +744,7 @@ namespace MajdataPlay.Scenes.Game
                     NoteSortOrder = noteSortOrder,
                     QueueInfo = queueInfo,
                 };
-                if (isEach)
+                if (isEach && !isMine)
                 {
                     members.Add(poolingInfo);
                 }
@@ -810,7 +812,7 @@ namespace MajdataPlay.Scenes.Game
                     NoteSortOrder = noteSortOrder,
                     QueueInfo = queueInfo,
                 };
-                if (isEach)
+                if (isEach && !isMine)
                 {
                     touchGroupMembers.Add(poolingInfo);
                     touchHoldGroupMembers.Add(poolingInfo);
