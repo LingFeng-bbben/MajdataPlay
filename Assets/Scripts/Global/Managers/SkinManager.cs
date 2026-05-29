@@ -52,6 +52,17 @@ namespace MajdataPlay
                         _touchHoldBreakFans[1] = value.TouchHold_Break[1];
                         _touchHoldBreakFans[2] = value.TouchHold_Break[2];
                         _touchHoldBreakFans[3] = value.TouchHold_Break[3];
+
+                        _touchHoldMineFans[0] = value.TouchHold_Mine[0];
+                        _touchHoldMineFans[1] = value.TouchHold_Mine[1];
+                        _touchHoldMineFans[2] = value.TouchHold_Mine[2];
+                        _touchHoldMineFans[3] = value.TouchHold_Mine[3];
+
+                        _touchHoldBreakMineFans[0] = value.TouchHold_Break_Mine[0];
+                        _touchHoldBreakMineFans[1] = value.TouchHold_Break_Mine[1];
+                        _touchHoldBreakMineFans[2] = value.TouchHold_Break_Mine[2];
+                        _touchHoldBreakMineFans[3] = value.TouchHold_Break_Mine[3];
+
                         _selectedSkin = value;
                     }).Forget();
             }
@@ -152,6 +163,17 @@ namespace MajdataPlay
             _touchHoldBreakFans[1] = targetSkin.TouchHold_Break[1];
             _touchHoldBreakFans[2] = targetSkin.TouchHold_Break[2];
             _touchHoldBreakFans[3] = targetSkin.TouchHold_Break[3];
+
+            _touchHoldMineFans[0] = targetSkin.TouchHold_Mine[0];
+            _touchHoldMineFans[1] = targetSkin.TouchHold_Mine[1];
+            _touchHoldMineFans[2] = targetSkin.TouchHold_Mine[2];
+            _touchHoldMineFans[3] = targetSkin.TouchHold_Mine[3];
+
+            _touchHoldBreakMineFans[0] = targetSkin.TouchHold_Break_Mine[0];
+            _touchHoldBreakMineFans[1] = targetSkin.TouchHold_Break_Mine[1];
+            _touchHoldBreakMineFans[2] = targetSkin.TouchHold_Break_Mine[2];
+            _touchHoldBreakMineFans[3] = targetSkin.TouchHold_Break_Mine[3];
+
             IsInited = true;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

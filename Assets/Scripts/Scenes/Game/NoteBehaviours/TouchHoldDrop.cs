@@ -308,7 +308,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             _multTouchHandler.Unregister(SensorPos);
             BodyGroupInfo?.UnregisterTrigger(InstanceID);
             BodyGroupInfo?.Exit();
-            JudgeResult = HoldEndJudge(JudgeResult, TOUCH_HOLD_HEAD_IGNORE_LENGTH_SEC + TOUCH_HOLD_TAIL_IGNORE_LENGTH_SEC);
+            if (!IsMine)
+            {
+                JudgeResult = HoldEndJudge(JudgeResult, TOUCH_HOLD_HEAD_IGNORE_LENGTH_SEC + TOUCH_HOLD_TAIL_IGNORE_LENGTH_SEC);
+            }
             ConvertJudgeGrade(ref JudgeResult);
             var result = new NoteJudgeResult()
             {
@@ -575,6 +578,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 IsJudged = true;
                 JudgeResult = JudgeGrade.Perfect;
+                PlayHoldEffect();
+                _lastHoldState = HOLD_STATE_PRESSED;
             }
         }
         void HeadCheck()

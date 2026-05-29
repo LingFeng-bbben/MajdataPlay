@@ -22,6 +22,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 namespace MajdataPlay.Scenes.Game
@@ -357,6 +358,8 @@ namespace MajdataPlay.Scenes.Game
                                         IsHanabi = note.IsHanabi,
                                         IsSlideBreak = note.IsSlideBreak,
                                         IsSlideNoHead = note.IsSlideNoHead,
+                                        IsMine = note.IsMine,
+                                        IsMineSlide = note.IsMineSlide,
                                         RawContent = note.RawContent,
                                         SlideStartTime = note.SlideStartTime,
                                         SlideTime = note.SlideTime,
@@ -1092,6 +1095,8 @@ namespace MajdataPlay.Scenes.Game
                     subSlide.IsEx = note.IsEx;
                     subSlide.IsSlideBreak = note.IsSlideBreak;
                     subSlide.IsSlideNoHead = true;
+                    subSlide.IsMine = note.IsMine;
+                    subSlide.IsMineSlide = note.IsMineSlide;
                 }
                 preprocessSubSlides[0].IsSlideNoHead = note.IsSlideNoHead;
 
@@ -2041,6 +2046,8 @@ namespace MajdataPlay.Scenes.Game
                             IsHanabi = key.IsHanabi,
                             IsSlideBreak = key.IsSlideBreak,
                             IsSlideNoHead = key.IsSlideNoHead,
+                            IsMine = key.IsMine,
+                            IsMineSlide = key.IsMineSlide,
                             RawContent = key.RawContent,
                             SlideStartTime = key.SlideStartTime,
                             SlideTime = key.SlideTime,
@@ -2111,6 +2118,14 @@ namespace MajdataPlay.Scenes.Game
             public bool IsSlideNoHead
             {
                 get => _origin.IsSlideNoHead;
+            }
+            public bool IsMine
+            {
+                get => _origin.IsMine;
+            }
+            public bool IsMineSlide
+            {
+                get => _origin.IsMineSlide;
             }
             public string RawContent
             {

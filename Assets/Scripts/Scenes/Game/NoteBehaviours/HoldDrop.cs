@@ -294,13 +294,16 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             State = NoteStatus.End;
 
-            if (IsClassic)
+            if (!IsMine)
             {
-                JudgeResult = HoldClassicEndJudge(JudgeResult, endJudgeOffset);
-            }
-            else
-            {
-                JudgeResult = HoldEndJudge(JudgeResult, HOLD_HEAD_IGNORE_LENGTH_SEC + HOLD_TAIL_IGNORE_LENGTH_SEC);
+                if (IsClassic)
+                {
+                    JudgeResult = HoldClassicEndJudge(JudgeResult, endJudgeOffset);
+                }
+                else
+                {
+                    JudgeResult = HoldEndJudge(JudgeResult, HOLD_HEAD_IGNORE_LENGTH_SEC + HOLD_TAIL_IGNORE_LENGTH_SEC);
+                }
             }
             ConvertJudgeGrade(ref JudgeResult);
 
@@ -515,6 +518,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 IsJudged = true;
                 JudgeResult = JudgeGrade.Perfect;
+                PlayHoldEffect();
+                _lastHoldState = HOLD_STATE_PRESSED;
             }
         }
         void HeadCheck()
