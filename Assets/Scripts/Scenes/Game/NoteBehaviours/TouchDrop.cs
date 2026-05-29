@@ -335,7 +335,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 if (IsMine)
                 {
-                    if (JudgeResult > JudgeGrade.Perfect)
+                    if (JudgeResult >= JudgeGrade.Perfect)
                     {
                         JudgeResult = JudgeGrade.TooFast;
                     }

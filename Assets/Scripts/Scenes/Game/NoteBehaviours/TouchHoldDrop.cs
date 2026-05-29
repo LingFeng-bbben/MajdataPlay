@@ -623,7 +623,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 var isMineForceEnd = false;
                 if (IsMine)
                 {
-                    if (JudgeResult > JudgeGrade.Perfect)
+                    if (JudgeResult >= JudgeGrade.Perfect)
                     {
                         JudgeResult = JudgeGrade.TooFast;
                         isMineForceEnd = true;
