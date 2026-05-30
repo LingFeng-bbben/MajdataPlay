@@ -7,6 +7,7 @@ using MajdataPlay.Extensions;
 using MajdataPlay.Net;
 using MajdataPlay.Numerics;
 using MajdataPlay.Utils;
+using SQLite;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -70,6 +71,7 @@ namespace MajdataPlay
         static MyFavoriteSongCollection? _myFavorite;
 
         static bool _isInited = false;
+        static SQLiteAsyncConnection? _favDb;
 
         readonly static SongCollection EMPTY_SONG_COLLECTION = SongCollection.Empty("default");
         readonly static string MY_FAVORITE_FILENAME = "MyFavorites.json";
@@ -684,7 +686,6 @@ namespace MajdataPlay
                     return;
                 }
                 var hashSet = _myFavorite.ExportHashSet();
-                File.WriteAllText(MY_FAVORITE_STORAGE_PATH, Serializer.Json.Serialize(hashSet));
                 File.WriteAllText(MY_FAVORITE_EXPORT_PATH,
                                   Serializer.Json.Serialize(new DanInfo()
                                   {
@@ -702,7 +703,9 @@ namespace MajdataPlay
         public static void AddToMyFavorites(ISongDetail songDetail)
         {
             _myFavorite.Add(songDetail);
-            WriteMyFavStorage();
+            var hash = songDetail.Hash;
+            if (!string.IsNullOrEmpty(hash))
+                _favDb?.RunInTransactionAsync(conn => conn.InsertOrReplace(new FavoriteHashDB { Hash = hash }));
         }
         public static bool IsInMyFavorites(ISongDetail songDetail)
         {
@@ -711,16 +714,15 @@ namespace MajdataPlay
         public static void RemoveFromMyFavorites(ISongDetail songDetail)
         {
             _myFavorite.Remove(songDetail);
-            WriteMyFavStorage();
+            var hash = songDetail.Hash;
+            if (!string.IsNullOrEmpty(hash))
+                _favDb?.RunInTransactionAsync(conn => conn.Delete<FavoriteHashDB>(hash));
         }
         public static void RemoveFromMyFavorites(string hashBase64Str)
         {
             _myFavorite.Remove(hashBase64Str);
-            WriteMyFavStorage();
-        }
-        static void WriteMyFavStorage()
-        {
-            File.WriteAllText(MY_FAVORITE_STORAGE_PATH, Serializer.Json.Serialize(_myFavorite.ExportHashSet()));
+            if (!string.IsNullOrEmpty(hashBase64Str))
+                _favDb?.RunInTransactionAsync(conn => conn.Delete<FavoriteHashDB>(hashBase64Str));
         }
         static async Task RefreshMyFavAsync()
         {
@@ -733,6 +735,21 @@ namespace MajdataPlay
                 MY_FAVORITE_STORAGE_PATH = Path.Combine(MajEnv.CachePath, "Runtime", MY_FAVORITE_FILENAME);
             }
 
+            // Init SQLite DB (once)
+            if (_favDb is null)
+            {
+                var dbPath = MajEnv.FavoriteDBPath;
+                var isDbExists = File.Exists(dbPath);
+                _favDb = new SQLiteAsyncConnection(dbPath, SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.Create | SQLiteOpenFlags.FullMutex);
+                GameManager.OnAppQuit += OnAppQuit;
+                await _favDb.CreateTableAsync<FavoriteHashDB>();
+                if (!isDbExists && File.Exists(MY_FAVORITE_STORAGE_PATH))
+                {
+                    await MigrateFavFromJsonAsync();
+                }
+            }
+
+            // Load export JSON (user-facing, stays as JSON for portability)
             if (File.Exists(MY_FAVORITE_EXPORT_PATH))
             {
                 bool result;
@@ -749,32 +766,64 @@ namespace MajdataPlay
                     MajDebug.LogError($"Failed to load favorites\nPath: {MY_FAVORITE_EXPORT_PATH}\nException: {exception}");
                 }
             }
-            if (File.Exists(MY_FAVORITE_STORAGE_PATH))
-            {
 
-                var (result, storageFav, exception) = await Serializer.Json.TryDeserializeAsync<HashSet<string>>(File.OpenRead(MY_FAVORITE_STORAGE_PATH));
-                if (!result)
+            // Load from SQLite
+            _storageFav.Clear();
+            var rows = await _favDb.Table<FavoriteHashDB>().ToListAsync();
+            foreach (var row in rows)
+            {
+                if (!string.IsNullOrEmpty(row.Hash))
                 {
-                    var bakPath = $"{MY_FAVORITE_STORAGE_PATH}.bak";
-                    while (File.Exists(bakPath))
-                    {
-                        bakPath = $"{bakPath}.bak";
-                    }
-                    File.Copy(MY_FAVORITE_STORAGE_PATH, bakPath);
-                    MajDebug.LogError($"Failed to load favorites\nPath: {MY_FAVORITE_STORAGE_PATH}\nException: {exception}");
-                }
-                else if (storageFav is not null)
-                {
-                    foreach (var hash in storageFav)
-                    {
-                        if (string.IsNullOrEmpty(hash))
-                        {
-                            continue;
-                        }
-                        _storageFav.Add(hash);
-                    }
+                    _storageFav.Add(row.Hash);
                 }
             }
+        }
+        static async Task MigrateFavFromJsonAsync()
+        {
+            try
+            {
+                var (result, storageFav, exception) = await Serializer.Json.TryDeserializeAsync<HashSet<string>>(File.OpenRead(MY_FAVORITE_STORAGE_PATH));
+                if (result && storageFav is not null)
+                {
+                    await _favDb!.RunInTransactionAsync(conn =>
+                    {
+                        foreach (var hash in storageFav)
+                        {
+                            if (!string.IsNullOrEmpty(hash))
+                                conn.Insert(new FavoriteHashDB { Hash = hash });
+                        }
+                    });
+                }
+                var bakPath = MY_FAVORITE_STORAGE_PATH + ".bak";
+                try
+                {
+                    if (File.Exists(bakPath))
+                        File.Delete(bakPath);
+                    File.Move(MY_FAVORITE_STORAGE_PATH, bakPath);
+                    MajDebug.LogInfo("Migrated favorites from legacy JSON to SQLite, old file backed up.");
+                }
+                catch (Exception ex)
+                {
+                    MajDebug.LogError($"Failed to backup legacy favorite file: {ex.Message}");
+                }
+            }
+            catch (Exception e)
+            {
+                MajDebug.LogError($"Failed to migrate favorites from JSON: {e.Message}");
+            }
+        }
+
+        static void OnAppQuit(object? sender, EventArgs? args)
+        {
+            GameManager.OnAppQuit -= OnAppQuit;
+            _favDb?.CloseAsync().Wait();
+        }
+
+        [Table("FavoriteHashes")]
+        class FavoriteHashDB
+        {
+            [PrimaryKey]
+            public string Hash { get; set; } = string.Empty;
         }
     }
 }
