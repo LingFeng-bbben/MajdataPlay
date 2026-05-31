@@ -451,8 +451,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             using (UnityProfiler.Create("TouchHoldDrop.OnPreUpdate"))
             {
                 TooLateCheck();
-                MineHeadCheck();
                 HeadCheck();
+                MineHeadCheck();
                 MineBodyCheck();
                 BodyCheck();
                 ForceEndCheck();

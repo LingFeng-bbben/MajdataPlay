@@ -414,8 +414,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             using (UnityProfiler.Create("TouchDrop.OnPreUpdate"))
             {
                 TooLateCheck();
-                MineCheck();
                 Check();
+                MineCheck();
                 Autoplay();
             }
         }
