@@ -317,6 +317,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 Grade = JudgeResult,
                 IsBreak = IsBreak,
+                IsMine = IsMine,
                 IsEX = IsEX,
                 Diff = JudgeDiff,
             };
@@ -339,11 +340,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 Grade = JudgeResult,
                 IsBreak = false,
                 IsEX = false,
-                Diff = JudgeDiff
+                Diff = JudgeDiff,
+                IsMine = IsMine
             });
             _lastHoldState = HOLD_STATE_HEAD_MISS_OR_NOT_JUDGED;
             AudioEffMana.StopTouchHoldSound();
-            EffectManager.PlayTouchHoldEffect(SensorPos, result);
+            EffectManager.PlayTouchHoldJudgeResult(SensorPos, result);
             EffectManager.ResetHoldEffect(SensorPos);
             _notePoolManager.Collect(this);
         }
@@ -844,11 +846,15 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         protected override void PlayJudgeSFX(in NoteJudgeResult judgeResult)
         {
-            if (judgeResult.IsMissOrTooFast)
+            if (judgeResult.IsMissOrTooFast || judgeResult.IsMine)
+            {
                 return;
+            }
             AudioEffMana.PlayTapSound(judgeResult);
             if (isFirework)
+            {
                 AudioEffMana.PlayHanabiSound();
+            }
         }
 
         RendererStatus _rendererState = RendererStatus.Off;

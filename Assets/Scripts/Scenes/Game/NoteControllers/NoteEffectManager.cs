@@ -67,22 +67,34 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         void OnAnyAreaClick(object? sender, InputEventArgs args)
         {
             var pos = args.IsButton?(SensorArea)args.BZone: args.SArea;
-            if(args.IsButton && args.BZone >ButtonZone.A8) 
+            if(args.IsButton && args.BZone >ButtonZone.A8)
+            {
                 return;
+            }
             if (!args.IsDown)
+            {
                 return;
+            }
             else if (pos > SensorArea.E8)
+            {
                 return;
+            }
             else if (pos.GetGroup() == SensorGroup.D)
+            {
                 return;
+            }
             else if (!_touchFeedbackLevel.InRange((int)pos))
+            {
                 return;
+            }
 
             var now = MajTimeline.Time;
             var lastTriggerTime = _lastTriggerTimes[pos];
 
             if ((now - lastTriggerTime).TotalMilliseconds < 416.6675f)
+            {
                 return;
+            }
 
             _effectPool.PlayFeedbackEffect(pos);
         }
@@ -105,7 +117,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         /// <param name="isBreak"></param>
         /// <param name="judge"></param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void PlayEffect(int position, in NoteJudgeResult judgeResult)
+        public void PlayTapJudgeResult(int position, in NoteJudgeResult judgeResult)
         {
             var pos = (SensorArea)(position - 1);
             CabinetLed.SetButtonLightWithTimeout(GetColor(judgeResult.Grade), position - 1);
@@ -115,7 +127,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 _lastTriggerTimes[pos] = MajTimeline.Time;
                 _effectPool.ResetFeedbackEffect(pos);
             }
-            _effectPool.Play(judgeResult, position);
+            _effectPool.PlayTapJudgeResult(judgeResult, position);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PlayHoldEffect(int keyIndex, in JudgeGrade judgeType)
@@ -140,19 +152,19 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             _effectPool.ResetHoldEffect(sensorPos);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void PlayTouchEffect(SensorArea sensorPos, in NoteJudgeResult judgeResult)
+        public void PlayTouchJudgeResult(SensorArea sensorPos, in NoteJudgeResult judgeResult)
         {
             if (!judgeResult.IsMissOrTooFast)
             {
                 _lastTriggerTimes[sensorPos] = MajTimeline.Time;
                 _effectPool.ResetFeedbackEffect(sensorPos);
             }
-            _effectPool.Play(judgeResult, sensorPos);
+            _effectPool.PlayTouchJudgeResult(judgeResult, sensorPos);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void PlayTouchHoldEffect(SensorArea sensorPos, in NoteJudgeResult judgeResult)
+        public void PlayTouchHoldJudgeResult(SensorArea sensorPos, in NoteJudgeResult judgeResult)
         {
-            _effectPool.PlayTouchHoldEffect(judgeResult, sensorPos);
+            _effectPool.PlayTouchHoldJudgeResult(judgeResult, sensorPos);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool CheckJudgeDisplaySetting(in JudgeDisplayOption setting, in NoteJudgeResult judgeResult)

@@ -251,7 +251,14 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             _buttonPos = SensorPos.ToButtonZone();
             _playerReleaseTimeSec = 0;
             JudgeResult = JudgeGrade.Miss;
-            JudgableRange = new(JudgeTimingWithOffset - 0.15f, JudgeTimingWithOffset + 0.15f, ContainsType.Closed);
+            if (IsMine)
+            {
+                JudgableRange = new(JudgeTimingWithOffset - (TAP_JUDGE_SEG_3RD_PERFECT_MSEC / 1000), JudgeTimingWithOffset + (TAP_JUDGE_SEG_3RD_PERFECT_MSEC / 1000), ContainsType.Closed);
+            }
+            else
+            {
+                JudgableRange = new(JudgeTimingWithOffset - (TAP_JUDGE_GOOD_AREA_MSEC / 1000), JudgeTimingWithOffset + (TAP_JUDGE_GOOD_AREA_MSEC / 1000), ContainsType.Closed);
+            }
             _lastHoldState = HOLD_STATE_HEAD_MISS_OR_NOT_JUDGED;
             _releaseTime = 0;
 
@@ -311,12 +318,14 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 Grade = JudgeResult,
                 IsBreak = IsBreak,
+                IsMine = IsMine,
                 IsEX = IsEX,
                 Diff = JudgeDiff
             };
             PlayJudgeSFX(new NoteJudgeResult()
             {
                 Grade = JudgeResult,
+                IsMine = IsMine,
                 IsBreak = false,
                 IsEX = false,
                 Diff = JudgeDiff
@@ -326,7 +335,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             SetActive(false);
             RendererState = RendererStatus.Off;
             EffectManager.ResetHoldEffect(StartPos);
-            EffectManager.PlayEffect(StartPos, result);
+            EffectManager.PlayTapJudgeResult(StartPos, result);
             ObjectCounter.ReportResult(this, result);
             _poolManager.Collect(this);
         }
@@ -498,7 +507,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 _releaseTime = 114514;
                 if (USERSETTING_DISPLAY_HOLD_HEAD_JUDGE_RESULT)
                 {
-                    EffectManager.PlayEffect(StartPos, new NoteJudgeResult()
+                    EffectManager.PlayTapJudgeResult(StartPos, new NoteJudgeResult()
                     {
                         Grade = JudgeResult,
                         IsBreak = IsBreak,
@@ -514,7 +523,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 return;
             }
-            if (GetTimeSpanToJudgeTiming() > 0)
+            if (GetTimeSpanToJudgeTiming() > TAP_JUDGE_SEG_3RD_PERFECT_MSEC / 1000)
             {
                 IsJudged = true;
                 JudgeResult = JudgeGrade.Perfect;
@@ -565,7 +574,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 PlaySFX();
                 if (USERSETTING_DISPLAY_HOLD_HEAD_JUDGE_RESULT)
                 {
-                    EffectManager.PlayEffect(StartPos, new NoteJudgeResult()
+                    EffectManager.PlayTapJudgeResult(StartPos, new NoteJudgeResult()
                     {
                         Grade = JudgeResult,
                         IsBreak = IsBreak,

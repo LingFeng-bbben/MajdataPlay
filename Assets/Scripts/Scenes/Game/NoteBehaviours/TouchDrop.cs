@@ -209,7 +209,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 Grade = JudgeResult,
                 Diff = JudgeDiff,
                 IsEX = IsEX,
-                IsBreak = IsBreak
+                IsBreak = IsBreak,
+                IsMine = IsMine
             };
             // disable SpriteRenderer
             RendererState = RendererStatus.Off;
@@ -222,7 +223,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             PlayJudgeSFX(result);
             NoteManager.NextTouch(QueueInfo);
-            EffectManager.PlayTouchEffect(SensorPos, result);
+            EffectManager.PlayTouchJudgeResult(SensorPos, result);
             ObjectCounter.ReportResult(this, result);
             _notePoolManager.Collect(this);
         }
@@ -602,7 +603,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         protected override void PlayJudgeSFX(in NoteJudgeResult judgeResult)
         {
-            if (judgeResult.IsMissOrTooFast)
+            if (judgeResult.IsMissOrTooFast || judgeResult.IsMine)
             {
                 return;
             }

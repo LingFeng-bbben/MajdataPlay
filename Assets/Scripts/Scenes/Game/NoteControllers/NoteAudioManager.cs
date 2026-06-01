@@ -285,8 +285,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PlayTapSound(in NoteJudgeResult judgeResult)
         {
-            if (judgeResult.IsMissOrTooFast)
+            if (judgeResult.IsMissOrTooFast || judgeResult.IsMine)
+            {
                 return;
+            }
 
             var isBreak = judgeResult.IsBreak;
             var isEx = judgeResult.IsEX;

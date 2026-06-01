@@ -151,16 +151,13 @@ namespace MajdataPlay.Scenes.Game
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void PlayEffect(in NoteJudgeResult judgeResult)
         {
-            var isBreak = judgeResult.IsBreak;
-            var result = judgeResult.Grade;
-            if (!judgeResult.IsMissOrTooFast)
-            {
-                Reset();
-            }
-            else
+            if (judgeResult.IsMine || judgeResult.IsMissOrTooFast)
             {
                 return;
             }
+            var isBreak = judgeResult.IsBreak;
+            var result = judgeResult.Grade;
+            Reset();
 
             if (isBreak)
             {
@@ -198,7 +195,11 @@ namespace MajdataPlay.Scenes.Game
         protected virtual bool PlayResult(in NoteJudgeResult judgeResult)
         {
             bool canPlay;
-            if (judgeResult.IsBreak)
+            if (judgeResult.IsMine && judgeResult.Grade is not (JudgeGrade.Miss or JudgeGrade.TooFast))
+            {
+                return false;
+            }
+            else if (judgeResult.IsBreak)
             {
                 canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajEnv.Settings.Display.BreakJudgeType, judgeResult);
             }
@@ -217,7 +218,11 @@ namespace MajdataPlay.Scenes.Game
         bool PlayFastLate(in NoteJudgeResult judgeResult, FastLateDisplayer displayer)
         {
             bool canPlay;
-            if (judgeResult.IsBreak)
+            if (judgeResult.IsMine)
+            {
+                return judgeResult.Grade == JudgeGrade.Miss || judgeResult.Grade == JudgeGrade.TooFast;
+            }
+            else if (judgeResult.IsBreak)
             {
                 canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajEnv.Settings.Display.BreakFastLateType, judgeResult);
             }

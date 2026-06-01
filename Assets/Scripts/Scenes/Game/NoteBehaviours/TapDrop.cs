@@ -132,12 +132,19 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             _outerPos = NoteHelper.GetTapPosition(StartPos, 4.8f);
             SensorPos = (SensorArea)(StartPos - 1);
             _buttonPos = SensorPos.ToButtonZone();
-            JudgableRange = new(JudgeTimingWithOffset - 0.15f, JudgeTimingWithOffset + 0.15f, ContainsType.Closed);
+            if (IsMine)
+            {
+                JudgableRange = new(JudgeTimingWithOffset - (TAP_JUDGE_SEG_3RD_PERFECT_MSEC / 1000), JudgeTimingWithOffset + (TAP_JUDGE_SEG_3RD_PERFECT_MSEC / 1000), ContainsType.Closed);
+            }
+            else
+            {
+                JudgableRange = new(JudgeTimingWithOffset - (TAP_JUDGE_GOOD_AREA_MSEC / 1000), JudgeTimingWithOffset + (TAP_JUDGE_GOOD_AREA_MSEC / 1000), ContainsType.Closed);
+            }
 
-            Transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (StartPos - 1));
+            Transform.rotation = Quaternion.Euler(0, 0, -22.5f + (-45f * (StartPos - 1)));
             Transform.localScale = new Vector3(0, 0);
 
-            _tapLineObject.transform.rotation = Quaternion.Euler(0, 0, -22.5f + -45f * (StartPos - 1));
+            _tapLineObject.transform.rotation = Quaternion.Euler(0, 0, -22.5f + (-45f * (StartPos - 1)));
             _thisRenderer.sortingOrder = SortOrder - TAP_SPRITE_SORT_ORDER;
             _exRenderer.sortingOrder = SortOrder - TAP_EX_SORT_ORDER;
 
@@ -161,14 +168,14 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 Grade = JudgeResult,
                 IsBreak = IsBreak,
+                IsMine = IsMine,
                 IsEX = IsEX,
                 Diff = JudgeDiff
             };
             PlayJudgeSFX(result);
+            EffectManager.PlayTapJudgeResult(StartPos, result);
             //MajDebug.LogDebug($"Note index: {QueueInfo.Index}");
             NoteManager.NextNote(QueueInfo);
-            
-            EffectManager.PlayEffect(StartPos, result);
             ObjectCounter.ReportResult(this, result);
             _notePoolManager.Collect(this);
         }
@@ -184,6 +191,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         protected override void PlayJudgeSFX(in NoteJudgeResult judgeResult)
         {
+            if (judgeResult.IsMine)
+            {
+                return;
+            }
             AudioEffMana.PlayTapSound(judgeResult);
         }
         [OnPreUpdate]
@@ -371,7 +382,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 return;
             }
-            if (GetTimeSpanToJudgeTiming() > 0)
+            if (GetTimeSpanToJudgeTiming() > TAP_JUDGE_SEG_3RD_PERFECT_MSEC / 1000)
             {
                 IsJudged = true;
                 JudgeResult = JudgeGrade.Perfect;

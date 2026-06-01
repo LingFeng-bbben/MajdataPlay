@@ -255,7 +255,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Play(in NoteJudgeResult judgeResult, int keyIndex)
+        public void PlayTapJudgeResult(in NoteJudgeResult judgeResult, int keyIndex)
         {
             var effectDisplayer = _tapJudgeEffects[keyIndex - 1];
             effectDisplayer.Play(judgeResult);
@@ -268,7 +268,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Play(in NoteJudgeResult judgeResult, SensorArea sensorPos)
+        public void PlayTouchJudgeResult(in NoteJudgeResult judgeResult, SensorArea sensorPos)
         {
             var effectDisplayer = _touchJudgeEffects[(int)sensorPos];
             effectDisplayer.Play(judgeResult);
@@ -281,7 +281,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void PlayTouchHoldEffect(in NoteJudgeResult judgeResult, SensorArea sensorPos)
+        public void PlayTouchHoldJudgeResult(in NoteJudgeResult judgeResult, SensorArea sensorPos)
         {
             var effectDisplayer = _touchHoldJudgeEffects[(int)sensorPos];
             effectDisplayer.Play(judgeResult);
