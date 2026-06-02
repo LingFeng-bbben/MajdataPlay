@@ -502,15 +502,6 @@ namespace MajdataPlay.Scenes.Game
                 {
                     _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
                 }
-                if (isEach)
-                {
-                    var noteCount = timing.Notes.Length;
-                    var noHeadSlideCount = timing.Notes.FindAll(x => x.Type == SimaiNoteType.Slide && x.IsSlideNoHead).Length;
-                    if (noteCount - noHeadSlideCount == 1)
-                    {
-                        isEach = false;
-                    }
-                }
                 _noteSortOrder -= NOTE_LAYER_COUNT[note.Type];
                 startPos = NoteCreateHelper.Rotation(startPos, ChartRotation);
                 NoteCreateHelper.SetNewPositionIfRequested(ref startPos, _buttonRingMappingTable);
@@ -562,15 +553,6 @@ namespace MajdataPlay.Scenes.Game
                 if (appearTiming < -5f && _gpManager is not null)
                 {
                     _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
-                }
-                if (isEach)
-                {
-                    var noteCount = timing.Notes.Length;
-                    var noHeadSlideCount = timing.Notes.FindAll(x => x.Type == SimaiNoteType.Slide && x.IsSlideNoHead).Length;
-                    if (noteCount - noHeadSlideCount == 1)
-                    {
-                        isEach = false;
-                    }
                 }
                 _noteSortOrder -= NOTE_LAYER_COUNT[note.Type];
                 startPos = NoteCreateHelper.Rotation(startPos, ChartRotation);
@@ -724,15 +706,6 @@ namespace MajdataPlay.Scenes.Game
                 }
                 _isHasTouch[(int)sensorPos] = true;
                 _touchSortOrder -= NOTE_LAYER_COUNT[note.Type];
-                if (isEach)
-                {
-                    var noteCount = timing.Notes.Length;
-                    var noHeadSlideCount = timing.Notes.FindAll(x => x.Type == SimaiNoteType.Slide && x.IsSlideNoHead).Length;
-                    if (noteCount - noHeadSlideCount == 1)
-                    {
-                        isEach = false;
-                    }
-                }
                 var poolingInfo = new TouchPoolingInfo()
                 {
                     SensorPos = sensorPos,
