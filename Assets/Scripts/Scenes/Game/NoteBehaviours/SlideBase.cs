@@ -194,6 +194,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
         protected int JudgeQueueLength = 0;
         protected int AutoplayLastAreaIndex = 0;
+        [ReadOnlyField]
+        [SerializeField]
+        protected float AutoplayProgress = 0f;
         protected float DJAutoplayProgress = 0;
 
         protected int LastHiddenSlideBarIndex = 0;
@@ -228,7 +231,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
             if (ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide)
             {
-                if (GetTimeSpanToJudgeTiming() == 0)
+                if (GetTimeSpanToJudgeTiming() >= 0)
                 {
                     JudgeResult = JudgeGrade.Perfect;
                     IsJudged = true;

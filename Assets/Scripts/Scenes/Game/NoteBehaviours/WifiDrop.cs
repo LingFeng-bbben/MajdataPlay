@@ -115,14 +115,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 return;
             }
-            if (IsMine)
-            {
-                AutoplayMode = AutoplayModeOption.Enable;
-                AutoplayGrade = JudgeGrade.Perfect;
-            }
+            
             _wifiTable.Dispose();
             _wifiTable = SlideTables.GetWifiTable(StartPos);
             var wifiConst = _wifiTable.Const;
+            JudgeQueueLength = 4;
 
             JudgeQueues[0] = _wifiTable.Left;
             JudgeQueues[1] = _wifiTable.Center;
@@ -362,13 +359,19 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                     return 9;
                 }
             }
-            var nums = new int[3];
-            foreach (var (i, queue) in JudgeQueues.WithIndex())
-                nums[i] = queue.Length;
-            var max = nums.Max();
-            var index = nums.FindIndex(x => x == max);
+            var maxRemaing = 0;
+            var index2Hide = int.MaxValue;
+            for (var i = 0; i < JudgeQueues.Length; i++)
+            {
+                var queue = JudgeQueues[i];
+                if(queue.Length > maxRemaing)
+                {
+                    maxRemaing = queue.Length;
+                    index2Hide = queue.Span[0].ArrowProgressWhenFinished;
+                }
+            }
 
-            return JudgeQueues[index].Span[0].ArrowProgressWhenFinished;
+            return index2Hide;
         }
         [OnPreUpdate]
         void OnPreUpdate()
@@ -503,14 +506,14 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         protected override void Autoplay()
         {
             var process = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
-            var queueMemory = JudgeQueues[0];
-            var queue = queueMemory.Span;
-            if (queueMemory.IsEmpty)
+            var queues = JudgeQueues.AsSpan();
+            if (QueueRemaining == 0)
             {
                 return;
             }
             else if (process >= 1)
             {
+                AutoplayProgress = 1;
                 HideAllBar();
                 var autoplayGrade = AutoplayGrade;
                 if (((int)autoplayGrade).InRange(0, 14))
@@ -535,13 +538,39 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 PlaySFX();
             }
-            var areaIndex = (int)(process * queueMemory.Length) - 1;
+            AutoplayProgress = process;
+            var areaIndex = (int)(process * JudgeQueueLength) - 1;
             if (areaIndex < 0)
             {
                 return;
             }
-            var barIndex = queue[areaIndex].ArrowProgressWhenFinished;
-            HideBar(barIndex);
+            var lastAreaIndex = AutoplayLastAreaIndex;
+            if (lastAreaIndex != areaIndex)
+            {
+                AutoplayLastAreaIndex = areaIndex;
+                var remaining = JudgeQueueLength - areaIndex;
+                for(var i = 0; i < queues.Length; i++)
+                {
+                    ref var queueMemory = ref queues[i];
+                    var indexDelta = queueMemory.Length - remaining;
+                    if (indexDelta > 0)
+                    {
+                        queueMemory = queueMemory.Slice(indexDelta);
+                    }
+                }                
+            }
+            if(process > 0.7)
+            {
+                HideBar(9);
+            }
+            else if (process > 0.4)
+            {
+                HideBar(5);
+            }
+            else if (process > 0.15)
+            {
+                HideBar(2);
+            }
         }
         void DJAutoplay()
         {

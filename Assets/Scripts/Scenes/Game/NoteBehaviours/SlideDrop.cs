@@ -709,8 +709,6 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 PlaySFX();
             }
             var areaIndex = (int)(process * JudgeQueueLength);
-            var isLast = areaIndex == JudgeQueueLength - 1;
-            var delta = (process * JudgeQueueLength) - areaIndex;
             if (areaIndex < 0)
             {
                 return;
