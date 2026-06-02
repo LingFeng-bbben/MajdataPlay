@@ -527,6 +527,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 IsJudged = true;
                 JudgeResult = JudgeGrade.Perfect;
+                NoteManager.NextNote(QueueInfo);
+                EffectManager.ResetEffect(StartPos);
                 PlayHoldEffect();
                 _lastHoldState = HOLD_STATE_PRESSED;
             }

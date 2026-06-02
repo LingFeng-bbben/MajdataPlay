@@ -580,6 +580,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 IsJudged = true;
                 JudgeResult = JudgeGrade.Perfect;
+                NoteManager.NextTouch(QueueInfo);
+                EffectManager.PlayHoldEffect(SensorPos, JudgeResult);
                 PlayHoldEffect();
                 _lastHoldState = HOLD_STATE_PRESSED;
             }
