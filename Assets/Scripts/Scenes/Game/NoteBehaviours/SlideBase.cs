@@ -192,7 +192,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [ReadOnlyField, SerializeField]
         protected float FadeInMaxAlpha = 0.5f; // 淡入时最大不透明度
 
-
+        protected int JudgeQueueLength = 0;
+        protected int AutoplayLastAreaIndex = 0;
         protected float DJAutoplayProgress = 0;
 
         protected int LastHiddenSlideBarIndex = 0;
@@ -219,6 +220,47 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             Dispose();
         }
         public abstract void Init();
+        protected void MineCheck()
+        {
+            if (!IsMine || IsJudged)
+            {
+                return;
+            }
+            if (ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide)
+            {
+                if (GetTimeSpanToJudgeTiming() == 0)
+                {
+                    JudgeResult = JudgeGrade.Perfect;
+                    IsJudged = true;
+                    HideAllBar();
+                }
+                else
+                {
+                    Autoplay();
+                }
+            }
+            else
+            {
+                if (GetRemainingTimeWithoutOffset() == 0)
+                {
+                    IsJudged = true;
+                    ClearAllJudgeQueue();
+                    HideAllBar();
+                }
+                else
+                {
+                    Autoplay();
+                }
+            }            
+        }
+        void ClearAllJudgeQueue()
+        {
+            for (var i = 0; i < JudgeQueues.Length; i++)
+            {
+                ref var queue = ref JudgeQueues[i];
+                queue = Memory<SlideArea>.Empty;
+            }
+        }
         [Il2CppSetOption(Option.NullChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected sealed override void Judge(float currentSec)
@@ -269,6 +311,17 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             else if (diffMSec >= SLIDE_JUDGE_GOOD_AREA_MSEC && !isFast)
             {
                 LastWaitTimeSec = 0.05f;
+            }
+            if (IsMine)
+            {
+                if (JudgeResult >= JudgeGrade.Perfect)
+                {
+                    JudgeResult = JudgeGrade.TooFast;
+                }
+                else
+                {
+                    JudgeResult = JudgeGrade.Miss;
+                }
             }
         }
         [Il2CppSetOption(Option.NullChecks, false)]
@@ -323,6 +376,17 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             if (remainingStartTime < 0)
             {
                 LastWaitTimeSec = MathF.Abs(remainingStartTime) / 2;
+            }
+            if (IsMine)
+            {
+                if (JudgeResult >= JudgeGrade.Perfect)
+                {
+                    JudgeResult = JudgeGrade.TooFast;
+                }
+                else
+                {
+                    JudgeResult = JudgeGrade.Miss;
+                }
             }
         }
         [Il2CppSetOption(Option.NullChecks, false)]

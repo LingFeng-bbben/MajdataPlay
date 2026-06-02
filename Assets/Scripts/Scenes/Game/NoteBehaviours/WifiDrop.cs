@@ -384,8 +384,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         {
             using (UnityProfiler.Create("WifiDrop.OnUpdate"))
             {
-                Autoplay();
+                AutoplayUpdate();
                 SensorCheck();
+                MineCheck();
+
                 var stars = Stars.Span;
                 var starTransforms = StarTransforms.Span;
                 switch (State)
@@ -473,13 +475,13 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 }
             }
         }
-        protected override void Autoplay()
+        void AutoplayUpdate()
         {
             if (!IsAutoplay)
             {
                 return;
             }
-            switch(State)
+            switch (State)
             {
                 case NoteStatus.Running:
                 case NoteStatus.Arrived:
@@ -487,49 +489,59 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 default:
                     return;
             }
-            switch(AutoplayMode)
+            switch (AutoplayMode)
             {
                 case AutoplayModeOption.Enable:
-                    var process = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
-                    var queueMemory = JudgeQueues[0];
-                    var queue = queueMemory.Span;
-                    if (queueMemory.IsEmpty)
-                    {
-                        return;
-                    }
-                    else if (process >= 1)
-                    {
-                        HideAllBar();
-                        var autoplayGrade = AutoplayGrade;
-                        if (((int)autoplayGrade).InRange(0, 14))
-                            JudgeResult = autoplayGrade;
-                        else
-                            JudgeResult = (JudgeGrade)Randomizer.Next(0, 15);
-                        IsJudged = true;
-                        LastWaitTimeSec = 0;
-                        JudgeDiff = JudgeResult switch
-                        {
-                            < JudgeGrade.Perfect => 1,
-                            > JudgeGrade.Perfect => -1,
-                            _ => 0
-                        };
-                        return;
-                    }
-                    else if (process > 0)
-                        PlaySFX();
-                    var areaIndex = (int)(process * queueMemory.Length) - 1;
-                    if (areaIndex < 0)
-                    {
-                        return;
-                    }
-                    var barIndex = queue[areaIndex].ArrowProgressWhenFinished;
-                    HideBar(barIndex);
+                    Autoplay();
                     break;
                 case AutoplayModeOption.DJAuto_ButtonRing_First:
                 case AutoplayModeOption.DJAuto_TouchPanel_First:
                     DJAutoplay();
                     break;
             }
+        }
+        protected override void Autoplay()
+        {
+            var process = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
+            var queueMemory = JudgeQueues[0];
+            var queue = queueMemory.Span;
+            if (queueMemory.IsEmpty)
+            {
+                return;
+            }
+            else if (process >= 1)
+            {
+                HideAllBar();
+                var autoplayGrade = AutoplayGrade;
+                if (((int)autoplayGrade).InRange(0, 14))
+                {
+                    JudgeResult = autoplayGrade;
+                }
+                else
+                {
+                    JudgeResult = (JudgeGrade)Randomizer.Next(0, 15);
+                }
+                IsJudged = true;
+                LastWaitTimeSec = 0;
+                JudgeDiff = JudgeResult switch
+                {
+                    < JudgeGrade.Perfect => 1,
+                    > JudgeGrade.Perfect => -1,
+                    _ => 0
+                };
+                return;
+            }
+            else if (process > 0)
+            {
+                PlaySFX();
+            }
+            var areaIndex = (int)(process * queueMemory.Length) - 1;
+            if (areaIndex < 0)
+            {
+                return;
+            }
+            var barIndex = queue[areaIndex].ArrowProgressWhenFinished;
+            HideBar(barIndex);
         }
         void DJAutoplay()
         {

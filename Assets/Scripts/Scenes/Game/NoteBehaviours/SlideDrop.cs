@@ -143,11 +143,6 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 return;
             }
-            if (IsMine)
-            {
-                AutoplayMode = AutoplayModeOption.Enable;
-                AutoplayGrade = JudgeGrade.Perfect;
-            }
             if (_isMirror)
             {
                 _table.Mirror();
@@ -198,6 +193,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             starTransforms[0].position = _starPositions[0];
             starTransforms[0].transform.localScale = new Vector3(0f, 0f, 1f);
             JudgeQueues[0] = _table.JudgeQueue;
+            JudgeQueueLength = _table.JudgeQueue.Length;
 
             InitializeSlideGroup();
 
@@ -333,8 +329,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 //var star = _stars[0];
                 var starTransform = StarTransforms.Span[0];
 
-                Autoplay();
+                AutoplayUpdate();
                 SensorCheck();
+                MineCheck();
 
                 switch (State)
                 {
@@ -650,10 +647,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 PlayJudgeSFX(result);
             }
         }
-        protected override void Autoplay()
+        void AutoplayUpdate()
         {
-            if (!IsAutoplay)
+            if (!IsAutoplay || IsMine)
+            {
                 return;
+            }
             switch (State)
             {
                 case NoteStatus.Running:
@@ -662,62 +661,74 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 default:
                     return;
             }
-            switch(AutoplayMode)
+            switch (AutoplayMode)
             {
                 case AutoplayModeOption.Enable:
-                    var process = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
-                    var queueMemory = JudgeQueues[0];
-                    var queue = queueMemory.Span;
-                    var canPlaySFX = ConnectInfo.IsGroupPartHead || !ConnectInfo.IsConnSlide;
-                    if (queueMemory.IsEmpty)
-                        return;
-                    else if (process >= 1)
-                    {
-                        HideAllBar();
-                        var autoplayGrade = AutoplayGrade;
-                        if (((int)autoplayGrade).InRange(0, 14))
-                            JudgeResult = autoplayGrade;
-                        else
-                            JudgeResult = (JudgeGrade)Randomizer.Next(0, 15);
-                        IsJudged = true;
-                        LastWaitTimeSec = 0;
-                        JudgeDiff = JudgeResult switch
-                        {
-                            < JudgeGrade.Perfect => 1,
-                            > JudgeGrade.Perfect => -1,
-                            _ => 0
-                        };
-                        return;
-                    }
-                    else if (process > 0 && canPlaySFX)
-                    {
-                        PlaySFX();
-                    }
-                    var areaIndex = (int)(process * queueMemory.Length);
-                    var isLast = areaIndex == queueMemory.Length - 1;
-                    var delta = (process * queueMemory.Length) - areaIndex;
-                    if (areaIndex < 0)
-                        return;
-                    int barIndex;
-                    if (delta > 0.9)
-                    {
-                        barIndex = queue[areaIndex].ArrowProgressWhenFinished;
-                    }
-                    else if (delta > 0.4 && !isLast)
-                    {
-                        barIndex = queue[areaIndex].ArrowProgressWhenOn;
-                    }
-                    else
-                    {
-                        return;
-                    }
-                    HideBar(barIndex);
+                    Autoplay();
                     break;
                 case AutoplayModeOption.DJAuto_TouchPanel_First:
                 case AutoplayModeOption.DJAuto_ButtonRing_First:
                     DJAutoplay();
                     break;
             }
+        }
+
+        protected override void Autoplay()
+        {
+            var process = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
+            ref var queueMemory = ref JudgeQueues[0];
+            var canPlaySFX = ConnectInfo.IsGroupPartHead || !ConnectInfo.IsConnSlide;
+            if (queueMemory.IsEmpty)
+            {
+                return;
+            }
+            else if (process >= 1)
+            {
+                HideAllBar();
+                var autoplayGrade = AutoplayGrade;
+                if (((int)autoplayGrade).InRange(0, 14))
+                {
+                    JudgeResult = autoplayGrade;
+                }
+                else
+                {
+                    JudgeResult = (JudgeGrade)Randomizer.Next(0, 15);
+                }
+                IsJudged = true;
+                LastWaitTimeSec = 0;
+                JudgeDiff = JudgeResult switch
+                {
+                    < JudgeGrade.Perfect => 1,
+                    > JudgeGrade.Perfect => -1,
+                    _ => 0
+                };
+                return;
+            }
+            else if (process > 0 && canPlaySFX)
+            {
+                PlaySFX();
+            }
+            var areaIndex = (int)(process * JudgeQueueLength);
+            var isLast = areaIndex == JudgeQueueLength - 1;
+            var delta = (process * JudgeQueueLength) - areaIndex;
+            if (areaIndex < 0)
+            {
+                return;
+            }
+            var lastAreaIndex = AutoplayLastAreaIndex;
+            if (lastAreaIndex != areaIndex)
+            {
+                AutoplayLastAreaIndex = areaIndex;
+                var remaining = JudgeQueueLength - areaIndex;
+                var indexDelta = queueMemory.Length - remaining;
+                if(indexDelta > 0)
+                {
+                    var queue = queueMemory.Span;
+                    queueMemory = queueMemory.Slice(indexDelta);
+                    HideBar(queue[0].ArrowProgressWhenFinished);
+                }
+            }
+            
         }
         void DJAutoplay()
         {
