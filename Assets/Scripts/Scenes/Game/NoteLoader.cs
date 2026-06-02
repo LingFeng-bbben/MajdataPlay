@@ -399,7 +399,7 @@ namespace MajdataPlay.Scenes.Game
                     for (var x = 0; x < eachNotes.Count; x++)
                     {
                         var note = eachNotes[x];
-                        if (note is null)
+                        if (note is null || note.IsMine)
                         {
                             eachNotes.RemoveAt(x);
                             x--;
@@ -496,7 +496,8 @@ namespace MajdataPlay.Scenes.Game
                 var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (Math.Abs(speed) * scaleRate);
                 var appearTiming = Math.Min(noteTiming + appearDiff, noteTiming - 0.15f);
                 var sortOrder = _noteSortOrder;
-                var isEach = timing.Notes.Length > 1;
+                var isMine = note.IsMine;
+                var isEach = !isMine && timing.Notes.FindAll(x => !x.IsMine && !x.IsSlideNoHead).Length > 1;
                 if (appearTiming < -5f && _gpManager is not null)
                 {
                     _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
@@ -524,7 +525,7 @@ namespace MajdataPlay.Scenes.Game
                     IsEach = isEach,
                     IsBreak = note.IsBreak,
                     IsEX = note.IsEx,
-                    IsMine = note.IsMine,
+                    IsMine = isMine,
                     IsStar = note.IsForceStar,
                     RotateSpeed = note.IsFakeRotate ? -440f : 0,
                     QueueInfo = new TapQueueInfo()
@@ -556,7 +557,8 @@ namespace MajdataPlay.Scenes.Game
                 var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (speed * scaleRate);
                 var appearTiming = Math.Min(noteTiming + appearDiff, noteTiming - 0.15f);
                 var sortOrder = _noteSortOrder;
-                var isEach = timing.Notes.Length > 1;
+                var isMine = note.IsMine;
+                var isEach = !isMine && timing.Notes.FindAll(x => !x.IsMine && !x.IsSlideNoHead).Length > 1;
                 if (appearTiming < -5f && _gpManager is not null)
                 {
                     _gpManager.FirstNoteAppearTiming = Mathf.Min(_gpManager.FirstNoteAppearTiming, appearTiming);
@@ -585,7 +587,7 @@ namespace MajdataPlay.Scenes.Game
                     Speed = speed,
                     IsEach = isEach,
                     IsBreak = note.IsBreak,
-                    IsMine = note.IsMine,
+                    IsMine = isMine,
                     IsEX = note.IsEx,
                     QueueInfo = new TapQueueInfo()
                     {
@@ -616,7 +618,8 @@ namespace MajdataPlay.Scenes.Game
                 var appearDiff = (-(1 - (scaleRate * 1.225f)) - (4.8f * scaleRate)) / (Math.Abs(speed) * scaleRate);
                 var appearTiming = Math.Min(noteTiming + appearDiff, noteTiming - 0.15f);
                 var sortOrder = _noteSortOrder;
-                var isEach = timing.Notes.Length > 1;
+                var isMine = note.IsMine;
+                var isEach = !isMine && timing.Notes.FindAll(x => !x.IsMine && !x.IsSlideNoHead).Length > 1;
                 bool isDouble = false;
                 TapQueueInfo? queueInfo = null;
 
@@ -636,15 +639,17 @@ namespace MajdataPlay.Scenes.Game
                     if (count > 1)
                     {
                         isDouble = true;
-                        if (count == timing.Notes.Length)
+                        if (count == timing.Notes.Length) // same position slide
                         {
                             isEach = false;
                         }
                         else
                         {
                             var noteCount = timing.Notes.Length;
-                            var noHeadSlideCount = timing.Notes.FindAll(x => x.Type == SimaiNoteType.Slide && x.IsSlideNoHead).Length;
-                            if (noteCount - noHeadSlideCount == 1)
+                            var noHeadOrMineSlideCount = timing.Notes.FindAll(x => 
+                                    x.Type == SimaiNoteType.Slide && (x.IsSlideNoHead || x.IsMineSlide)
+                                    ).Length;
+                            if (noteCount - noHeadOrMineSlideCount == 1)
                             {
                                 isEach = false;
                             }
@@ -705,9 +710,9 @@ namespace MajdataPlay.Scenes.Game
                 var noteTiming = (float)timing.Timing;
                 var areaPosition = note.TouchArea;
                 var startPosition = note.StartPosition;
-                var isEach = timing.Notes.Length > 1;
                 var isBreak = note.IsBreak;
                 var isMine = note.IsMine;
+                var isEach = !isMine && timing.Notes.FindAll(x => !x.IsMine && !x.IsSlideNoHead).Length > 1;
                 var speed = TouchSpeed * Math.Abs(timing.HSpeed);
                 var isFirework = note.IsHanabi;
                 var noteSortOrder = _touchSortOrder;
@@ -744,7 +749,7 @@ namespace MajdataPlay.Scenes.Game
                     NoteSortOrder = noteSortOrder,
                     QueueInfo = queueInfo,
                 };
-                if (isEach && !isMine)
+                if (isEach)
                 {
                     members.Add(poolingInfo);
                 }
@@ -784,7 +789,7 @@ namespace MajdataPlay.Scenes.Game
                 var isFirework = note.IsHanabi;
                 var isBreak = note.IsBreak;
                 var isMine = note.IsMine;
-                var isEach = timing.Notes.Length > 1;
+                var isEach = !isMine && timing.Notes.FindAll(x => !x.IsMine && !x.IsSlideNoHead).Length > 1;
                 var moveDuration = 3.209385682f * Mathf.Pow(speed, -0.9549621752f);
                 var appearTiming = Math.Min(noteTiming - moveDuration, noteTiming - 0.15f);
                 var noteSortOrder = _touchSortOrder;
@@ -812,7 +817,7 @@ namespace MajdataPlay.Scenes.Game
                     NoteSortOrder = noteSortOrder,
                     QueueInfo = queueInfo,
                 };
-                if (isEach && !isMine)
+                if (isEach)
                 {
                     touchGroupMembers.Add(poolingInfo);
                     touchHoldGroupMembers.Add(poolingInfo);
@@ -1265,6 +1270,7 @@ namespace MajdataPlay.Scenes.Game
         {
             string slideShape = NoteCreateHelper.DetectShapeFromText(note.RawContent);
             var isMirror = false;
+            var isMine = note.IsMineSlide;
             var isEach = false;
             if (slideShape.StartsWith("-"))
             {
@@ -1317,9 +1323,9 @@ namespace MajdataPlay.Scenes.Game
 
             //SliCompo.SlideType = slideShape;
 
-            if (timing.Notes.Length > 1)
+            if (!isMine && timing.Notes.Length > 1)
             {
-                var slides = timing.Notes.FindAll(o => o.Type == SimaiNoteType.Slide);
+                var slides = timing.Notes.FindAll(o => o.Type == SimaiNoteType.Slide && !o.IsMineSlide);
                 var index = slides.FindIndex(x => x == note.Origin) + 1;
                 if (slides.Length > 1)
                 {
@@ -1336,9 +1342,9 @@ namespace MajdataPlay.Scenes.Game
 
             SliCompo.ConnectInfo = info;
             SliCompo.IsBreak = note.IsSlideBreak;
-            SliCompo.IsEach = isEach || multiple > 1;
+            SliCompo.IsEach = !isMine && (isEach || multiple > 1);
             SliCompo.IsMirror = isMirror;
-            SliCompo.IsMine = note.IsMineSlide;
+            SliCompo.IsMine = isMine;
             SliCompo.IsJustR = isJustR;
             SliCompo.EndPos = endPos;
             SliCompo.Speed = Math.Abs(NoteSpeed * timing.HSpeed);
@@ -1376,6 +1382,7 @@ namespace MajdataPlay.Scenes.Game
             var digits = str.Split('w');
             var startPos = int.Parse(digits[0]);
             var endPos = int.Parse(digits[1]);
+            var isMine = note.IsMineSlide;
             var isEach = false;
             endPos = endPos - startPos;
             endPos = endPos < 0 ? endPos + 8 : endPos;
@@ -1403,9 +1410,9 @@ namespace MajdataPlay.Scenes.Game
                 }
             }
 
-            if (timing.Notes.Length > 1)
+            if (!isMine && timing.Notes.Length > 1)
             {
-                var slides = timing.Notes.FindAll(o => o.Type == SimaiNoteType.Slide);
+                var slides = timing.Notes.FindAll(o => o.Type == SimaiNoteType.Slide && !o.IsMineSlide);
                 var index = slides.FindIndex(x => x == note.Origin) + 1;
                 if (slides.Length > 1)
                 {
@@ -1421,8 +1428,8 @@ namespace MajdataPlay.Scenes.Game
             }
 
             WifiCompo.IsBreak = note.IsSlideBreak;
-            WifiCompo.IsEach = isEach || multiple > 1;
-            WifiCompo.IsMine = note.IsMineSlide;
+            WifiCompo.IsEach = !isMine && (isEach || multiple > 1);
+            WifiCompo.IsMine = isMine;
             WifiCompo.IsJustR = isJustR;
             WifiCompo.EndPos = endPos;
             WifiCompo.Speed = Math.Abs(NoteSpeed * timing.HSpeed);
