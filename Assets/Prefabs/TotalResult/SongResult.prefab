@@ -637,8 +637,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -102.41, y: -17.549988}
-  m_SizeDelta: {x: 325.83, y: 27.18}
+  m_AnchoredPosition: {x: -102.41, y: -18.5425}
+  m_SizeDelta: {x: 325.83, y: 29.165}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3530502302823249073
 CanvasRenderer:
@@ -668,7 +668,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Master 12
+  m_text: "Master 12\u54E6\u54E6\u725B\u903C"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: dbc58334dc23ba04fbfee4bf5298b6a0, type: 2}
   m_sharedMaterial: {fileID: -9050617650548543871, guid: dbc58334dc23ba04fbfee4bf5298b6a0, type: 2}

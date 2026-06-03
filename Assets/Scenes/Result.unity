@@ -4226,8 +4226,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 42.920006, y: -45.49997}
-  m_SizeDelta: {x: 478.29, y: 30.62}
+  m_AnchoredPosition: {x: 42.920006, y: -44.5}
+  m_SizeDelta: {x: 478.29, y: 40.04}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &537021205
 MonoBehaviour:
@@ -4249,7 +4249,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Master 12
+  m_text: "Master 12\u54C8\u6C14666555"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: dbc58334dc23ba04fbfee4bf5298b6a0, type: 2}
   m_sharedMaterial: {fileID: -9050617650548543871, guid: dbc58334dc23ba04fbfee4bf5298b6a0, type: 2}
