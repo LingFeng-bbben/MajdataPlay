@@ -96,12 +96,12 @@ namespace MajdataPlay.Scenes.Login
                 return;
             }
             var isUsernameInputClicked = InputManager.IsSensorClickedUpInThisFrame(SensorArea.B2) ||
-                                         InputManager.IsSensorClickedUpInThisFrame(SensorArea.B1) ||
-                                         InputManager.IsSensorClickedUpInThisFrame(SensorArea.E2);
-            var isPasswordInputClicked = InputManager.IsSensorClickedUpInThisFrame(SensorArea.B3) ||
                                          InputManager.IsSensorClickedUpInThisFrame(SensorArea.C) ||
                                          InputManager.IsSensorClickedUpInThisFrame(SensorArea.E3);
-            var isUsernameClearBtnClicked = InputManager.IsSensorClickedUpInThisFrame(SensorArea.A2);
+            var isPasswordInputClicked = InputManager.IsSensorClickedUpInThisFrame(SensorArea.B3) ||
+                                         InputManager.IsSensorClickedUpInThisFrame(SensorArea.B4) ||
+                                         InputManager.IsSensorClickedUpInThisFrame(SensorArea.E4);
+            var isUsernameClearBtnClicked = InputManager.IsSensorClickedUpInThisFrame(SensorArea.D3);
             var isPasswordClearBtnClicked = InputManager.IsSensorClickedUpInThisFrame(SensorArea.A3);
             if(isUsernameInputClicked)
             {
@@ -153,7 +153,7 @@ namespace MajdataPlay.Scenes.Login
                 {
                     siteName = endpoint.Url.Host;
                 }
-                _sceneTitle.text = $"Login to\n{siteName}";
+                _sceneTitle.text = $"Login to {siteName}";
 
                 _qrCodeComponent.SetActive(true);
                 _qrCodeLoading.SetActive(true);
@@ -178,10 +178,7 @@ namespace MajdataPlay.Scenes.Login
                     _isReady = true;
                     _usernameInput.readOnly = false;
                     _passwordInput.readOnly = false;
-                    var isRefreshQRCodeRequested = InputManager.IsSensorClickedUpInThisFrame(SensorArea.A7) ||
-                                                   InputManager.IsSensorClickedUpInThisFrame(SensorArea.D7) ||
-                                                   InputManager.IsSensorClickedUpInThisFrame(SensorArea.A6) ||
-                                                   InputManager.IsSensorClickedUpInThisFrame(SensorArea.B7) ||
+                    var isRefreshQRCodeRequested = InputManager.IsSensorClickedUpInThisFrame(SensorArea.A6) ||
                                                    InputManager.IsSensorClickedUpInThisFrame(SensorArea.B6) ||
                                                    InputManager.IsSensorClickedUpInThisFrame(SensorArea.E7);
                     try
