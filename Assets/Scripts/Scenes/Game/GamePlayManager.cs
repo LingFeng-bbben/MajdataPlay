@@ -120,13 +120,16 @@ namespace MajdataPlay.Scenes.Game
 
         ButtonZone[] _buttonKeyFor2367 = new ButtonZone[4];
         ButtonZone[] _buttonKeyFor3456 = new ButtonZone[4];
+        ButtonZone[] _buttonKeyFor1278 = new ButtonZone[4];
         SensorArea[] _sensorAreaFor2367 = new SensorArea[4];
         SensorArea[] _sensorAreaFor3456 = new SensorArea[4];
+        SensorArea[] _sensorAreaFor1278 = new SensorArea[4];
 
         Accurate _historyAccurate;
 
         bool _isTrackSkipAvailable = false;
         bool _isFastRetryAvailable = false;
+        bool _isFastPracticeAvailable = false;
         bool _isEnforceFastRetry = false;
         bool _isManualStartGame = false;
         float? _allNotesFinishedTiming = null;
@@ -136,6 +139,7 @@ namespace MajdataPlay.Scenes.Game
         // Key timers
         float _2367PressTime = 0;
         float _3456PressTime = 0;
+        float _1278PressTime = 0;
         float _p1PressTime = 0;
 
         float _devicePlaybackOffset = 0f;
@@ -201,6 +205,7 @@ namespace MajdataPlay.Scenes.Game
             _isEnforceFastRetry = (int)_enforceGameFailureCondition % 2 == 0;
             _isTrackSkipAvailable = _gameSettings.Game.TrackSkip;
             _isFastRetryAvailable = _gameSettings.Game.FastRetry;
+            _isFastPracticeAvailable = _gameSettings.Game.FastPractice;
             _isManualStartGame = _gameSettings.Game.ManualStartGame;
             BreakMaterial = MajEnv.BreakMaterial;
             DefaultMaterial = MajEnv.DefaultMaterial;
@@ -254,6 +259,16 @@ namespace MajdataPlay.Scenes.Game
                     _sensorAreaFor3456[1] = SensorArea.A6;
                     _sensorAreaFor3456[2] = SensorArea.A7;
                     _sensorAreaFor3456[3] = SensorArea.A8;
+
+                    _buttonKeyFor1278[0] = ButtonZone.A1;
+                    _buttonKeyFor1278[1] = ButtonZone.A2;
+                    _buttonKeyFor1278[2] = ButtonZone.A3;
+                    _buttonKeyFor1278[3] = ButtonZone.A4;
+
+                    _sensorAreaFor1278[0] = SensorArea.A1;
+                    _sensorAreaFor1278[1] = SensorArea.A2;
+                    _sensorAreaFor1278[2] = SensorArea.A3;
+                    _sensorAreaFor1278[3] = SensorArea.A4;
                     break;
                 case GameplayScreenRotationAngleOption._180:
                     _mainDisplayer.rotation = Quaternion.Euler(0, 0, -180);
@@ -276,6 +291,16 @@ namespace MajdataPlay.Scenes.Game
                     _sensorAreaFor3456[1] = SensorArea.A8;
                     _sensorAreaFor3456[2] = SensorArea.A1;
                     _sensorAreaFor3456[3] = SensorArea.A2;
+
+                    _buttonKeyFor1278[0] = ButtonZone.A3;
+                    _buttonKeyFor1278[1] = ButtonZone.A4;
+                    _buttonKeyFor1278[2] = ButtonZone.A5;
+                    _buttonKeyFor1278[3] = ButtonZone.A6;
+
+                    _sensorAreaFor1278[0] = SensorArea.A3;
+                    _sensorAreaFor1278[1] = SensorArea.A4;
+                    _sensorAreaFor1278[2] = SensorArea.A5;
+                    _sensorAreaFor1278[3] = SensorArea.A6;
                     break;
                 case GameplayScreenRotationAngleOption._270:
                     _mainDisplayer.rotation = Quaternion.Euler(0, 0, -270);
@@ -298,6 +323,16 @@ namespace MajdataPlay.Scenes.Game
                     _sensorAreaFor3456[1] = SensorArea.A2;
                     _sensorAreaFor3456[2] = SensorArea.A3;
                     _sensorAreaFor3456[3] = SensorArea.A4;
+
+                    _buttonKeyFor1278[0] = ButtonZone.A5;
+                    _buttonKeyFor1278[1] = ButtonZone.A6;
+                    _buttonKeyFor1278[2] = ButtonZone.A7;
+                    _buttonKeyFor1278[3] = ButtonZone.A8;
+
+                    _sensorAreaFor1278[0] = SensorArea.A5;
+                    _sensorAreaFor1278[1] = SensorArea.A6;
+                    _sensorAreaFor1278[2] = SensorArea.A7;
+                    _sensorAreaFor1278[3] = SensorArea.A8;
                     break;
                 default:
                     _buttonKeyFor2367[0] = ButtonZone.A2;
@@ -319,6 +354,16 @@ namespace MajdataPlay.Scenes.Game
                     _sensorAreaFor3456[1] = SensorArea.A4;
                     _sensorAreaFor3456[2] = SensorArea.A5;
                     _sensorAreaFor3456[3] = SensorArea.A6;
+
+                    _buttonKeyFor1278[0] = ButtonZone.A1;
+                    _buttonKeyFor1278[1] = ButtonZone.A2;
+                    _buttonKeyFor1278[2] = ButtonZone.A7;
+                    _buttonKeyFor1278[3] = ButtonZone.A8;
+
+                    _sensorAreaFor1278[0] = SensorArea.A1;
+                    _sensorAreaFor1278[1] = SensorArea.A2;
+                    _sensorAreaFor1278[2] = SensorArea.A7;
+                    _sensorAreaFor1278[3] = SensorArea.A8;
                     break;
             }
             _trackVolume = (MajEnv.Settings.Audio.Volume.Track + _chartSetting.TrackVolumeOffset).Clamp(0, 2);
@@ -1224,6 +1269,7 @@ namespace MajdataPlay.Scenes.Game
                 {
                     _3456PressTime = 0;
                     _2367PressTime = 0;
+                    _1278PressTime = 0;
                     _p1PressTime = 0;
                     return;
                 }
@@ -1244,12 +1290,23 @@ namespace MajdataPlay.Scenes.Game
                                     InputManager.CheckButtonStatus(_buttonKeyFor3456[1], SwitchStatus.On) &&
                                     InputManager.CheckButtonStatus(_buttonKeyFor3456[2], SwitchStatus.On) &&
                                     InputManager.CheckButtonStatus(_buttonKeyFor3456[3], SwitchStatus.On);
+                
+                var _inner_1278 = InputManager.CheckSensorStatus(_sensorAreaFor1278[0], SwitchStatus.On) &&
+                                   InputManager.CheckSensorStatus(_sensorAreaFor1278[1], SwitchStatus.On) &&
+                                   InputManager.CheckSensorStatus(_sensorAreaFor1278[2], SwitchStatus.On) &&
+                                   InputManager.CheckSensorStatus(_sensorAreaFor1278[3], SwitchStatus.On);
+                var _outter_1278 = InputManager.CheckButtonStatus(_buttonKeyFor1278[0], SwitchStatus.On) &&
+                                    InputManager.CheckButtonStatus(_buttonKeyFor1278[1], SwitchStatus.On) &&
+                                    InputManager.CheckButtonStatus(_buttonKeyFor1278[2], SwitchStatus.On) &&
+                                    InputManager.CheckButtonStatus(_buttonKeyFor1278[3], SwitchStatus.On);
 #if UNITY_ANDROID || UNITY_IOS
                 var _2367 = (_inner_2367 || _outter_2367) && _isTrackSkipAvailable;
                 var _3456 = (_inner_3456 || _outter_3456) && _isFastRetryAvailable;
+                var _1278 = (_inner_1278 || _outter_1278) && _isFastPracticeAvailable;
 #else
                 var _2367 = _outter_2367 && _isTrackSkipAvailable;
                 var _3456 = _outter_3456 && _isFastRetryAvailable;
+                var _1278 = _outter_1278 && _isFastPracticeAvailable;
 #endif
                 var _p1Skip = InputManager.CheckButtonStatus(ButtonZone.P1, SwitchStatus.On);
                 if (_p1Skip)
@@ -1260,16 +1317,25 @@ namespace MajdataPlay.Scenes.Game
                 {
                     _2367PressTime += MajTimeline.DeltaTime;
                     _3456PressTime = 0;
+                    _1278PressTime = 0;
                 }
                 else if (_3456)
                 {
                     _3456PressTime += MajTimeline.DeltaTime;
                     _2367PressTime = 0;
+                    _1278PressTime = 0;
+                }
+                else if (_1278)
+                {
+                    _1278PressTime += MajTimeline.DeltaTime;
+                    _2367PressTime = 0;
+                    _3456PressTime = 0;
                 }
                 else
                 {
                     _3456PressTime = 0;
                     _2367PressTime = 0;
+                    _1278PressTime = 0;
                     _p1PressTime = 0;
                 }
 
@@ -1329,7 +1395,21 @@ namespace MajdataPlay.Scenes.Game
                 {
                     FastRetry().Forget();
                 }
-            } 
+                else if (_1278PressTime >= 0.5f && _isFastPracticeAvailable)
+                {
+                    var startTime = Math.Max(ThisFrameSec - 5f, 0f);
+                    var endTime = Math.Min(ThisFrameSec + 10f, (float)_audioSample.Length.TotalSeconds);
+
+                    var info = new GameInfo(GameMode.Practice, _gameInfo.Charts, _gameInfo.Levels, 114514);
+                    info.TimeRange = new Range<double>(startTime, endTime);
+                    Majdata<GameInfo>.Instance = info;
+
+                    State = GamePlayStatus.Ended;
+                    _cts.Cancel();
+                    _audioSample?.Stop();
+                    ExitToScene("Practice", 0).Forget();
+                }
+            }
         }
         void EnforceGameFailureLateUpdate()
         {
