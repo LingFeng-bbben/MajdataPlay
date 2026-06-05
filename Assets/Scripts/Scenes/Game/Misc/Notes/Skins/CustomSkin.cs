@@ -1156,10 +1156,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
                 TouchBorder_Each[1] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_border_3_each.png");
                 TouchBorder_Break[0] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_break_border_2.png");
                 TouchBorder_Break[1] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_break_border_3.png");
-                TouchBorder_Mine[0] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_border_2_mine.png");
-                TouchBorder_Mine[1] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_border_3_mine.png");
-                TouchBorder_Break_Mine[0] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_break_border_2_mine.png");
-                TouchBorder_Break_Mine[1] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_break_border_3_mine.png");
+                TouchBorder_Mine[0] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_mine_border_2.png");
+                TouchBorder_Mine[1] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_mine_border_3_mine.png");
+                TouchBorder_Break_Mine[0] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_break_mine_border_2.png");
+                TouchBorder_Break_Mine[1] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_break_mine_border_3.png");
 
                 for (var i = 0; i < 4; i++)
                 {
