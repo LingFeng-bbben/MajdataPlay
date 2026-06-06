@@ -355,6 +355,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 Grade = JudgeResult,
                 IsBreak = IsBreak,
                 IsEX = IsEX,
+                IsMine = IsMine,
                 Diff = JudgeDiff
             });
         }

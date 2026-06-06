@@ -186,15 +186,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 Grade = JudgeResult,
                 IsBreak = IsBreak,
                 IsEX = IsEX,
+                IsMine = IsMine,
                 Diff = JudgeDiff
             });
         }
         protected override void PlayJudgeSFX(in NoteJudgeResult judgeResult)
         {
-            if (judgeResult.IsMine)
-            {
-                return;
-            }
             AudioEffMana.PlayTapSound(judgeResult);
         }
         [OnPreUpdate]

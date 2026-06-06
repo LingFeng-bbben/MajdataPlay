@@ -28,10 +28,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         Memory<AnswerSoundPoint> _answerTimingPoints = Memory<AnswerSoundPoint>.Empty;
         AnswerSoundPoint[] _rentedArrayForAnswerSoundPoints = Array.Empty<AnswerSoundPoint>();
 
-        readonly static bool[] _noteSFXPlaybackRequests = new bool[14];
-        readonly static AudioSampleWrap[] _noteSFXs = new AudioSampleWrap[14];
+        readonly static bool[] _noteSFXPlaybackRequests = new bool[16];
+        readonly static AudioSampleWrap[] _noteSFXs = new AudioSampleWrap[16];
         readonly AudioManager _audioManager = MajInstances.AudioManager;
-        static readonly ReadOnlyMemory<string> SFX_NAMES = new string[14]
+        static readonly ReadOnlyMemory<string> SFX_NAMES = new string[16]
         {
             "tap_perfect.wav",
             "tap_great.wav",
@@ -46,7 +46,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             "touch_Hold_riser.wav",
             "touch_hanabi.wav",
             "answer.wav",
-            "answer_clock.wav"
+            "answer_clock.wav",
+            "answer_mine.wav",
+            "tap_miss.wav"
         };
         const float ANSWER_PLAYBACK_OFFSET_SEC = -(16.66666f * 1) / 1000;
         const int TAP_PERFECT = 0;
@@ -63,6 +65,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         const int FIREWORK = 11;
         const int ANSWER = 12;
         const int ANSWER_CLOCK = 13;
+        const int MINE = 14;
+        const int MISS = 15;
 
         float _answerOffsetSec = 0;
 
@@ -231,6 +235,18 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                                 _noteSFXs[ANSWER_CLOCK].PlayOneShot();
                             }
                             break;
+                        case MINE:
+                            if (isRequested)
+                            {
+                                _noteSFXs[MINE].PlayOneShot();
+                            }
+                            break;
+                        case MISS:
+                            if (isRequested)
+                            {
+                                _noteSFXs[MISS].PlayOneShot();
+                            }
+                            break;
                     }
                 }
             }
@@ -265,7 +281,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                         }
                         else
                         {
-                            _noteSFXPlaybackRequests[ANSWER] = true;
+                            _noteSFXPlaybackRequests[ANSWER] = sfxInfo.IsNormal;
+                            _noteSFXPlaybackRequests[MINE] = sfxInfo.IsMine;
                         }
                     }
                     else
@@ -285,6 +302,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PlayTapSound(in NoteJudgeResult judgeResult)
         {
+            if (judgeResult.IsMine && judgeResult.IsMissOrTooFast)
+            {
+                _noteSFXPlaybackRequests[MISS] = true;
+                return;
+            }
+
             if (judgeResult.IsMissOrTooFast || judgeResult.IsMine)
             {
                 return;
@@ -420,10 +443,30 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                     }
                     var timing = (float)timingPoint.Timing + _answerOffsetSec;
                     var isClock = false;
-                    answerTimingPoints.Add(new AnswerSoundPoint(timing, isClock)
+                    //并非全部都是mine，所以需要播放answer声音
+                    var isNormal = !timingPoint.Notes.All(o => o.IsMine);
+                    var isMine = timingPoint.Notes.Any(o => o.IsMine);
+                    //check if there is already a timing points here, if there is one, we update it
+                    if (answerTimingPoints.Any(o => Math.Abs(o.Timing - timing) < 0.001))
                     {
-                        IsPlayed = false
-                    });
+                        var idx = answerTimingPoints.FindIndex(o => Math.Abs(o.Timing - timing) < 0.001);
+                        if(idx == -1)
+                        {
+                            throw new Exception("waht th fu");
+                        }
+                        var oldTimingPoint = answerTimingPoints[idx].Clone();
+                        answerTimingPoints[idx] = new AnswerSoundPoint(timing, isClock, isMine || oldTimingPoint.IsMine, isNormal || oldTimingPoint.IsNormal)
+                        {
+                            IsPlayed = false
+                        };
+                    }
+                    else
+                    {
+                        answerTimingPoints.Add(new AnswerSoundPoint(timing, isClock, isMine, isNormal)
+                        {
+                            IsPlayed = false
+                        });
+                    }
                     var holds = timingPoint.Notes.FindAll(o => o.Type == SimaiNoteType.Hold || o.Type == SimaiNoteType.TouchHold);
                     if (holds.Length == 0)
                     {
@@ -431,14 +474,30 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                     }
                     foreach (var hold in holds)
                     {
-                        var newTime = (float)(timingPoint.Timing + hold.HoldTime) + _answerOffsetSec;
-                        if (!chart.NoteTimings.Any(o => Math.Abs(o.Timing - newTime) < 0.001) &&
-                            !answerTimingPoints.Any(o => Math.Abs(o.Timing - newTime) < 0.001)
-                            )
-                            answerTimingPoints.Add(new AnswerSoundPoint(newTime, isClock)
+                        var holdTailTime = (float)(timingPoint.Timing + hold.HoldTime) + _answerOffsetSec;
+                        var isTailMine = hold.IsMine;
+                        //if there is already one there, update
+                        if (answerTimingPoints.Any(o => Math.Abs(o.Timing - holdTailTime) < 0.001))
+                        {
+                            var idx = answerTimingPoints.FindIndex(o => Math.Abs(o.Timing - holdTailTime) < 0.001);
+                            if (idx == -1)
+                            {
+                                throw new Exception("waht th fu");
+                            }
+                            var oldTimingPoint = answerTimingPoints[idx].Clone();
+                            answerTimingPoints[idx] = new AnswerSoundPoint(holdTailTime, isClock, isTailMine || oldTimingPoint.IsMine, !isTailMine || oldTimingPoint.IsNormal)
+                            {
+                                IsPlayed = false
+                            };
+                        }
+                        else
+                        {
+                            answerTimingPoints.Add(new AnswerSoundPoint(holdTailTime, isClock, isTailMine, !isTailMine)
                             {
                                 IsPlayed = false
                             });
+                        }
+                        
                     }
                 }
                 _rentedArrayForAnswerSoundPoints = Pool<AnswerSoundPoint>.RentArray(answerTimingPoints.Count, true);
@@ -528,12 +587,16 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         {
             public readonly float Timing;
             public readonly bool IsClock;
+            public bool IsMine;
+            public bool IsNormal;
             public bool IsPlayed;
 
-            public AnswerSoundPoint(float timing, bool isClock)
+            public AnswerSoundPoint(float timing, bool isClock, bool isMine = false, bool isNormal = true)
             {
                 Timing = timing;
                 IsClock = isClock;
+                IsMine = isMine;
+                IsNormal = isNormal;
             }
         }
     }

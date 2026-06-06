@@ -188,6 +188,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                             Grade = JudgeResult,
                             IsBreak = IsBreak,
                             IsEX = IsEX,
+                            IsMine = IsMine,
                             Diff = JudgeDiff
                         });
                         _lastHoldState = HOLD_STATE_HEAD_JUDGED_AND_NOT_FEEDBACK;
@@ -848,13 +849,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         protected override void PlayJudgeSFX(in NoteJudgeResult judgeResult)
         {
-            if (judgeResult.IsMissOrTooFast || judgeResult.IsMine)
-            {
-                return;
-            }
             AudioEffMana.PlayTapSound(judgeResult);
             if (isFirework)
             {
+                //if user touched the mine we dont get firework
+                if (judgeResult.IsMissOrTooFast)
+                    return;
                 AudioEffMana.PlayHanabiSound();
             }
         }
