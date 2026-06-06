@@ -321,6 +321,9 @@ jobs:
         
           BUILD_AT="$(TZ=Asia/Shanghai date '+%Y-%m-%d %H:%M:%S')"
           export BUILD_AT
+
+          gem install bundler
+          gem install fastlane -v 2.235.0
         
           mkdir -p fastlane
           cat > fastlane/Fastfile <<'EOF'
@@ -404,6 +407,9 @@ jobs:
         
           BUILD_AT="$(TZ=Asia/Shanghai date '+%Y-%m-%d %H:%M:%S')"
           export BUILD_AT
+
+          gem install bundler
+          gem install fastlane -v 2.235.0
         
           mkdir -p fastlane
           cat > fastlane/Fastfile <<'EOF'
