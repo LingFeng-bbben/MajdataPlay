@@ -284,13 +284,15 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                             _noteSFXPlaybackRequests[ANSWER] = sfxInfo.IsNormal;
                             _noteSFXPlaybackRequests[MINE] = sfxInfo.IsMine;
                         }
+                        _answerTimingPoints = _answerTimingPoints.Slice(i+1);
+                        return;
                     }
                     else
                     {
                         break;
                     }
                 }
-                _answerTimingPoints = _answerTimingPoints.Slice(i);
+                
             }
             catch (Exception e)
             {
@@ -401,7 +403,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                     firstBpm = chart.NoteTimings[0].Bpm;
                 }
                 var interval = 60 / firstBpm;
-                using RentedList<AnswerSoundPoint> answerTimingPoints = new();
+                List<AnswerSoundPoint> answerTimingPoints = new();
 
                 if (!isPracticeMode)
                 {
@@ -505,6 +507,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 {
                     _rentedArrayForAnswerSoundPoints[i] = tp;
                 }
+                print("TimingPoint Count " + answerTimingPoints.Count);
                 _answerTimingPoints = _rentedArrayForAnswerSoundPoints.AsMemory(0, answerTimingPoints.Capacity);
                 FirstClockTiming = _answerTimingPoints.Span[0].Timing;
             });
