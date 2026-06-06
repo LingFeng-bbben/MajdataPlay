@@ -266,7 +266,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 var thisFrameSec = _noteController.ThisFrameSec;
                 var offset = ANSWER_PLAYBACK_OFFSET_SEC;
                 var i = 0;
-                for (; i < timingPoints.Length; i++)
+                for (; i < timingPoints.Length; )
                 {
                     ref var sfxInfo = ref _answerTimingPoints.Span[i];
                     var playTiming = sfxInfo.Timing;
@@ -284,7 +284,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                             _noteSFXPlaybackRequests[ANSWER] = sfxInfo.IsNormal;
                             _noteSFXPlaybackRequests[MINE] = sfxInfo.IsMine;
                         }
-                        _answerTimingPoints = _answerTimingPoints.Slice(i+1);
+                        _answerTimingPoints = _answerTimingPoints.Slice(i + 1);
                         return;
                     }
                     else
@@ -398,12 +398,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 }
                 //Generate ClockSounds
                 var firstBpm = 0f;
-                if(!chart.NoteTimings.IsEmpty)
+                if (!chart.NoteTimings.IsEmpty)
                 {
                     firstBpm = chart.NoteTimings[0].Bpm;
                 }
                 var interval = 60 / firstBpm;
-                List<AnswerSoundPoint> answerTimingPoints = new();
+                using RentedList<AnswerSoundPoint> answerTimingPoints = new();
 
                 if (!isPracticeMode)
                 {
@@ -436,72 +436,99 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 }
 
                 //Generate AnwserSounds
+                using var simaiTimingBuffer = new RentedList<SimaiTimingPoint>();
+                simaiTimingBuffer.AddRange(chart.NoteTimings);
+                var timings = simaiTimingBuffer.SelectMany(x =>
+                                          {
+                                              var timing = x.Timing + _answerOffsetSec;
+                                              using var buffer = new RentedList<AnswerSoundPoint>();
+                                              var isAnswer = false;
+                                              var isMine = false;
+                                              foreach (var note in x.Notes)
+                                              {
+                                                  if(note.IsSlideNoHead)
+                                                  {
+                                                      continue;
+                                                  }
+                                                  if(note.IsMine)
+                                                  {
+                                                      isMine = true;
+                                                  }
+                                                  else
+                                                  {
+                                                      isAnswer = true;
+                                                  }
+                                                  var isHold = note.Type is SimaiNoteType.Hold or SimaiNoteType.TouchHold;
+                                                  if (isHold && note.HoldTime >= MajEnv.FRAME_LENGTH_SEC)
+                                                  {
+                                                      var holdEndTiming = (float)(timing + note.HoldTime);
+                                                      buffer.Add(new AnswerSoundPoint(holdEndTiming, false, note.IsMine, !note.IsMine)
+                                                      {
+                                                          IsPlayed = false
+                                                      });
+                                                  }
+                                              }
+                                              if(isAnswer || isMine)
+                                              {
+                                                  buffer.Add(new AnswerSoundPoint((float)timing, false, isMine, isAnswer)
+                                                  {
+                                                      IsPlayed = false
+                                                  });
+                                              }                                              
 
-                foreach (var timingPoint in chart.NoteTimings)
+                                              return buffer.ToArray();
+                                          })
+                                          .GroupBy(x => x.Timing)
+                                          .Select(x =>
+                                          {
+                                              var isMine = false;
+                                              var isNormal = false;
+                                              foreach (var point in x)
+                                              {
+                                                  if (point.IsMine)
+                                                  {
+                                                      isMine = true;
+                                                  }
+                                                  if (point.IsNormal)
+                                                  {
+                                                      isNormal = true;
+                                                  }
+                                              }
+                                              return new AnswerSoundPoint(x.Key, false, isMine, isNormal)
+                                              {
+                                                  IsPlayed = false
+                                              };
+                                          })
+                                          .OrderBy(x => x.Timing);
+                using (var timingBuffer = new RentedList<AnswerSoundPoint>())
                 {
-                    if (timingPoint.Notes.All(o => o.IsSlideNoHead))
+                    timingBuffer.AddRange(timings);
+                    for (var i = 0; i < timingBuffer.Count; i++)
                     {
-                        continue;
-                    }
-                    var timing = (float)timingPoint.Timing + _answerOffsetSec;
-                    var isClock = false;
-                    //并非全部都是mine，所以需要播放answer声音
-                    var isNormal = !timingPoint.Notes.All(o => o.IsMine);
-                    var isMine = timingPoint.Notes.Any(o => o.IsMine);
-                    //check if there is already a timing points here, if there is one, we update it
-                    if (answerTimingPoints.Any(o => Math.Abs(o.Timing - timing) < 0.001))
-                    {
-                        var idx = answerTimingPoints.FindIndex(o => Math.Abs(o.Timing - timing) < 0.001);
-                        if(idx == -1)
+                        var isLast = i == timingBuffer.Count - 1;
+                        var current = timingBuffer[i];
+                        if (current.IsClock)
                         {
-                            throw new Exception("waht th fu");
+                            continue;
                         }
-                        var oldTimingPoint = answerTimingPoints[idx].Clone();
-                        answerTimingPoints[idx] = new AnswerSoundPoint(timing, isClock, isMine || oldTimingPoint.IsMine, isNormal || oldTimingPoint.IsNormal)
+                        else if (isLast)
                         {
-                            IsPlayed = false
-                        };
-                    }
-                    else
-                    {
-                        answerTimingPoints.Add(new AnswerSoundPoint(timing, isClock, isMine, isNormal)
+                            break;
+                        }                        
+                        var next = timingBuffer[i + 1];
+                        var timingDiff = next.Timing - current.Timing;
+                        if (timingDiff < MajEnv.FRAME_LENGTH_SEC)
                         {
-                            IsPlayed = false
-                        });
+                            timingBuffer.RemoveAt(i + 1);
+                            current.IsMine |= next.IsMine;
+                            current.IsNormal |= next.IsNormal;
+                            timingBuffer[i] = current;
+                            i--;
+                        }                        
                     }
-                    var holds = timingPoint.Notes.FindAll(o => o.Type == SimaiNoteType.Hold || o.Type == SimaiNoteType.TouchHold);
-                    if (holds.Length == 0)
-                    {
-                        continue;
-                    }
-                    foreach (var hold in holds)
-                    {
-                        var holdTailTime = (float)(timingPoint.Timing + hold.HoldTime) + _answerOffsetSec;
-                        var isTailMine = hold.IsMine;
-                        //if there is already one there, update
-                        if (answerTimingPoints.Any(o => Math.Abs(o.Timing - holdTailTime) < 0.001))
-                        {
-                            var idx = answerTimingPoints.FindIndex(o => Math.Abs(o.Timing - holdTailTime) < 0.001);
-                            if (idx == -1)
-                            {
-                                throw new Exception("waht th fu");
-                            }
-                            var oldTimingPoint = answerTimingPoints[idx].Clone();
-                            answerTimingPoints[idx] = new AnswerSoundPoint(holdTailTime, isClock, isTailMine || oldTimingPoint.IsMine, !isTailMine || oldTimingPoint.IsNormal)
-                            {
-                                IsPlayed = false
-                            };
-                        }
-                        else
-                        {
-                            answerTimingPoints.Add(new AnswerSoundPoint(holdTailTime, isClock, isTailMine, !isTailMine)
-                            {
-                                IsPlayed = false
-                            });
-                        }
-                        
-                    }
+                    answerTimingPoints.AddRange(timingBuffer);
                 }
+
                 _rentedArrayForAnswerSoundPoints = Pool<AnswerSoundPoint>.RentArray(answerTimingPoints.Count, true);
                 foreach(var (i, tp) in answerTimingPoints.OrderBy(o => o.Timing).WithIndex())
                 {
