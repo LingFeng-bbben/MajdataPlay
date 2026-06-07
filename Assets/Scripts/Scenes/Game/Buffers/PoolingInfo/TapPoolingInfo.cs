@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MajdataPlay.Game.Notes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,5 +14,6 @@ namespace MajdataPlay.Scenes.Game.Buffers
         public bool IsDouble { get; init; }
         public float RotateSpeed { get; set; } = 0f;
         public TapQueueInfo QueueInfo { get; init; } = TapQueueInfo.Default;
+        public EachLineBinding? EachLineBinding { get; set; }
     }
 }

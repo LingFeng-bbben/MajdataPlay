@@ -2,6 +2,7 @@
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Buffers;
 using MajdataPlay.Collections;
+using MajdataPlay.Game.Notes;
 using MajdataPlay.IO;
 using MajdataPlay.Numerics;
 using MajdataPlay.Scenes.Game.Buffers;
@@ -411,11 +412,19 @@ namespace MajdataPlay.Scenes.Game
                     }
                     if (eachNoteCount > 1) //有多个非touchnote
                     {
-                        var eachLinePoolingInfo = CreateEachLine(timing, eachNotes[0]!, eachNotes[1]!);
-                        if (eachLinePoolingInfo is not null)
+                        for (var x = 0; x < eachNoteCount; x++)
                         {
-                            _poolManager.AddEachLine(eachLinePoolingInfo);
-                        }
+                            var isLast = x == eachNoteCount - 1;
+                            if (isLast)
+                            {
+                                break;
+                            }
+                            var eachLinePoolingInfo = CreateEachLine(timing, eachNotes[x]!, eachNotes[x + 1]!);
+                            if (eachLinePoolingInfo is not null)
+                            {
+                                _poolManager.AddEachLine(eachLinePoolingInfo);
+                            }
+                        }                            
                     }
                 }
 
@@ -436,6 +445,17 @@ namespace MajdataPlay.Scenes.Game
         }
         EachLinePoolingInfo? CreateEachLine(SimaiTimingPoint timing, NotePoolingInfo noteA, NotePoolingInfo noteB)
         {
+            static void SetNoteBinding(NotePoolingInfo note, EachLineBinding binding)
+            {
+                if (note is TapPoolingInfo tapInfo)
+                {
+                    tapInfo.EachLineBinding = binding;
+                }
+                else if(note is HoldPoolingInfo holdInfo)
+                {
+                    holdInfo.EachLineBinding = binding;
+                }
+            }
             try
             {
                 var startPos = noteA.StartPos;
@@ -445,6 +465,7 @@ namespace MajdataPlay.Scenes.Game
                 {
                     return null;
                 }
+                var binding = new EachLineBinding();
                 var time = (float)timing.Timing;
                 var speed = NoteSpeed * timing.HSpeed;
                 var scaleRate = MajEnv.Settings.Debug.NoteAppearRate;
@@ -468,6 +489,9 @@ namespace MajdataPlay.Scenes.Game
                 var startPosition = startPos;
                 var curvLength = endPos - 1;
 
+                SetNoteBinding(noteA, binding);
+                SetNoteBinding(noteB, binding);
+
                 return new EachLinePoolingInfo()
                 {
                     StartPos = startPosition,
@@ -476,7 +500,8 @@ namespace MajdataPlay.Scenes.Game
                     CurvLength = curvLength,
                     MemberA = noteA,
                     MemberB = noteB,
-                    Speed = speed
+                    Speed = speed,
+                    DistanceProvider = binding,
                 };
             }
             catch (Exception e)

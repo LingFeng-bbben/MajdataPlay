@@ -1,4 +1,5 @@
 using MajdataPlay.Buffers;
+using MajdataPlay.Game.Notes;
 using MajdataPlay.IO;
 using MajdataPlay.Numerics;
 using MajdataPlay.Scenes.Game.Buffers;
@@ -57,6 +58,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
         [SerializeField]
         GameObject _tapLinePrefab;
+
+        EachLineBinding? _eachLineBinding;
 
         Sprite _holdSprite;
         Sprite _holdOnSprite;
@@ -232,6 +235,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 return;
             }
+            _eachLineBinding = poolingInfo.EachLineBinding;
+            if (_eachLineBinding is not null)
+            {
+                _eachLineBinding.Bind(this);
+            }
             StartPos = poolingInfo.StartPos;
             Timing = poolingInfo.Timing;
             JudgeTiming = Timing;
@@ -301,6 +309,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             State = NoteStatus.End;
 
+            if (_eachLineBinding is not null)
+            {
+                _eachLineBinding.Unbind(this);
+                _eachLineBinding = null;
+            }
             if (!IsMine)
             {
                 if (IsClassic)
