@@ -2,6 +2,7 @@
 using MajdataPlay.Scenes.Game.Notes.Behaviours;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 #nullable enable
 namespace MajdataPlay.Game.Notes
@@ -25,78 +26,88 @@ namespace MajdataPlay.Game.Notes
 
         bool _isAnyNoteEnded = false;
 
-        NoteDrop? _noteInstanceA;
-        NoteDrop? _noteInstanceB;
         ProviderType _providerType = ProviderType.None;
         IDistanceProvider? _distanceProvider;
+        
+        int _noteCount = 0;
+        readonly NoteDrop?[] _noteInstances = new NoteDrop[8];
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Bind(NoteDrop instance)
         {
-            if (_noteInstanceA is null)
+            if (instance is null)
             {
-                _noteInstanceA = instance;
+                ThrowArgumentNull();
+                return;
             }
-            else if (_noteInstanceB is null)
+            if (_noteCount < 8)
             {
-                _noteInstanceB = instance;
+                _noteInstances[_noteCount++] = instance;
             }
-            if (_distanceProvider is null)
+
+            var isTap = instance is TapDrop;
+
+            if (instance is IDistanceProvider provider)
             {
-                var isTap = instance is TapDrop;
-                _distanceProvider = instance as IDistanceProvider;
-                if (isTap)
+                if (_distanceProvider is null)
+                {
+                    _providerType = isTap ? ProviderType.FromTap : ProviderType.FromHold;
+                    _distanceProvider = provider;
+                }
+                else if (_providerType == ProviderType.FromHold && isTap)
                 {
                     _providerType = ProviderType.FromTap;
-                }
-                else
-                {
-                    _providerType = ProviderType.FromHold;
-                }
-            }
-            else if(_providerType == ProviderType.FromHold)
-            {
-                var isTap = instance is TapDrop;
-                if(isTap)
-                {
-                    _providerType = ProviderType.FromTap;
-                    _distanceProvider = instance as IDistanceProvider;
+                    _distanceProvider = provider;
                 }
             }
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Unbind(NoteDrop instance)
         {
-            ThrowIfNull(instance);
-            if ((object?)_noteInstanceA == instance)
+            if (instance is null)
             {
-                _noteInstanceA = null;
-                _isAnyNoteEnded = true;
+                ThrowArgumentNull();
+                return;
             }
-            else if ((object?)_noteInstanceB == instance)
+
+            for (var i = 0; i < _noteCount; i++)
             {
-                _noteInstanceB = null;
-                _isAnyNoteEnded = true;
+                ref var currentInstance = ref _noteInstances[i];
+                if ((object?)currentInstance == instance)
+                {
+                    _noteCount--;
+                    ref var lastInstance = ref _noteInstances[_noteCount];
+                    currentInstance = lastInstance;
+                    lastInstance = null;
+
+                    _isAnyNoteEnded = true;
+                    if(_noteCount == 0)
+                    {
+                        _distanceProvider = null;
+                    }
+                    return;
+                }
             }
-            else
-            {
-                ThrowInvalidOp();
-            }
+
+            ThrowInvalidOp();
         }
-        void ThrowIfNull(object? reference)
+
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        static void ThrowArgumentNull()
         {
-            if (reference is null)
-            {
-                throw new InvalidOperationException("Reference is null.");
-            }
+            throw new ArgumentNullException("Reference is null.");
         }
-        void ThrowInvalidOp()
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        static void ThrowInvalidOp()
         {
             throw new InvalidOperationException("Attempted to unbind a Note instance that was never bound");
         }
-        enum ProviderType
+        enum ProviderType : byte
         {
-            None,
-            FromTap,
-            FromHold
+            None = 0,
+            FromTap = 1,
+            FromHold = 2
         }
     }
 }

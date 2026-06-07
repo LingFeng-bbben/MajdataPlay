@@ -456,6 +456,18 @@ namespace MajdataPlay.Scenes.Game
                     holdInfo.EachLineBinding = binding;
                 }
             }
+            static EachLineBinding? GetEachLineBindingFromNoteInfo(NotePoolingInfo noteInfo)
+            {
+                if (noteInfo is TapPoolingInfo tapInfo)
+                {
+                    return tapInfo.EachLineBinding;
+                }
+                else if (noteInfo is HoldPoolingInfo holdInfo)
+                {
+                    return holdInfo.EachLineBinding;
+                }
+                return null;
+            }
             try
             {
                 var startPos = noteA.StartPos;
@@ -465,7 +477,8 @@ namespace MajdataPlay.Scenes.Game
                 {
                     return null;
                 }
-                var binding = new EachLineBinding();
+                var binding = GetEachLineBindingFromNoteInfo(noteA) ?? GetEachLineBindingFromNoteInfo(noteB);
+                binding ??= new EachLineBinding();
                 var time = (float)timing.Timing;
                 var speed = NoteSpeed * timing.HSpeed;
                 var scaleRate = MajEnv.Settings.Debug.NoteAppearRate;
