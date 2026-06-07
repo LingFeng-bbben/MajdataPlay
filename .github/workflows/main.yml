@@ -389,7 +389,7 @@ jobs:
           end
           EOF
           
-          fastlane ios ci
+          bundle exec fastlane ios ci
 
       - name: Upload to TestFlight
         if: ${{ env.TARGET_PLATFORM == 'iOS' }}
@@ -435,7 +435,7 @@ jobs:
           end
           EOF
           
-          fastlane ios ci
+          bundle exec fastlane ios ci
 
       - name: Package macOS output as zip
         if: ${{ env.TARGET_PLATFORM == 'StandaloneOSX' }}
