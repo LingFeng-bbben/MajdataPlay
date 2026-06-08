@@ -3058,6 +3058,14 @@ PrefabInstance:
       propertyPath: m_PixelPerfect
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8393004949030024863, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
+      propertyPath: m_SortingLayerID
+      value: 587624755
+      objectReference: {fileID: 0}
+    - target: {fileID: 8393004949030024863, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
+      propertyPath: m_OverrideSorting
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8442623165532972581, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
       propertyPath: CoverBigDisplayer
       value: 
@@ -10647,10 +10655,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2871890351397632696, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: 0.0000019073486
-      objectReference: {fileID: 0}
     - target: {fileID: 3374659970506328570, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
       propertyPath: m_SizeDelta.x
       value: 0
@@ -10682,10 +10686,6 @@ PrefabInstance:
     - target: {fileID: 6427247033723599783, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7292999326156304151, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: -0.000015258789
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
