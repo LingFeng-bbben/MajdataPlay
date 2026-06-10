@@ -145,6 +145,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
         public Sprite TapLine_Each { get; private set; }
         public Sprite TapLine_Slide { get; private set; }
         public Sprite TapLine_Break { get; private set; }
+        public Sprite TapLine_Mine { get; private set; }
 
         public Sprite[] EachLines { get; private set; } = new Sprite[4];
         public Sprite HoldEndPoint_Normal { get; private set; }
@@ -573,10 +574,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
                 TouchBorder_Each[1] = SpriteLoader.Load(this._path + "/TouchSkins/touch_border_3_each.png");
                 TouchBorder_Break[0] = SpriteLoader.Load(this._path + "/TouchSkins/touch_break_border_2.png");
                 TouchBorder_Break[1] = SpriteLoader.Load(this._path + "/TouchSkins/touch_break_border_3.png");
-                TouchBorder_Mine[0] = SpriteLoader.Load(this._path + "/TouchSkins/touch_border_2_mine.png");
-                TouchBorder_Mine[1] = SpriteLoader.Load(this._path + "/TouchSkins/touch_border_3_mine.png");
-                TouchBorder_Break_Mine[0] = SpriteLoader.Load(this._path + "/TouchSkins/touch_break_border_2_mine.png");
-                TouchBorder_Break_Mine[1] = SpriteLoader.Load(this._path + "/TouchSkins/touch_break_border_3_mine.png");
+                TouchBorder_Mine[0] = SpriteLoader.Load(this._path + "/TouchSkins/touch_mine_border_2.png");
+                TouchBorder_Mine[1] = SpriteLoader.Load(this._path + "/TouchSkins/touch_mine_border_3_mine.png");
+                TouchBorder_Break_Mine[0] = SpriteLoader.Load(this._path + "/TouchSkins/touch_break_mine_border_2.png");
+                TouchBorder_Break_Mine[1] = SpriteLoader.Load(this._path + "/TouchSkins/touch_break_mine_border_3.png");
 
                 for (var i = 0; i < 4; i++)
                 {
@@ -595,6 +596,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
                 TapLine_Each = SpriteLoader.Load(this._path + "/NoteGuideSkins/Each.png");
                 TapLine_Slide = SpriteLoader.Load(this._path + "/NoteGuideSkins/Slide.png");
                 TapLine_Break = SpriteLoader.Load(this._path + "/NoteGuideSkins/Break.png");
+                TapLine_Mine = SpriteLoader.Load(this._path + "/NoteGuideSkins/Mine.png");
 
                 EachLines[0] = SpriteLoader.Load(this._path + "/NoteGuideSkins/EachLine1.png");
                 EachLines[1] = SpriteLoader.Load(this._path + "/NoteGuideSkins/EachLine2.png");
@@ -604,6 +606,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
                 HoldEndPoint_Normal = SpriteLoader.Load(this._path + "/NoteGuideSkins/Hold_End.png");
                 HoldEndPoint_Each = SpriteLoader.Load(this._path + "/NoteGuideSkins/Hold_Each_End.png");
                 HoldEndPoint_Break = SpriteLoader.Load(this._path + "/NoteGuideSkins/Hold_Break_End.png");
+                HoldEndPoint_Mine = SpriteLoader.Load(this._path + "/NoteGuideSkins/Hold_Mine_End.png");
 
                 IsLoaded = true;
             }
@@ -1156,10 +1159,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
                 TouchBorder_Each[1] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_border_3_each.png");
                 TouchBorder_Break[0] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_break_border_2.png");
                 TouchBorder_Break[1] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_break_border_3.png");
-                TouchBorder_Mine[0] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_border_2_mine.png");
-                TouchBorder_Mine[1] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_border_3_mine.png");
-                TouchBorder_Break_Mine[0] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_break_border_2_mine.png");
-                TouchBorder_Break_Mine[1] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_break_border_3_mine.png");
+                TouchBorder_Mine[0] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_mine_border_2.png");
+                TouchBorder_Mine[1] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_mine_border_3_mine.png");
+                TouchBorder_Break_Mine[0] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_break_mine_border_2.png");
+                TouchBorder_Break_Mine[1] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_break_mine_border_3.png");
 
                 for (var i = 0; i < 4; i++)
                 {
@@ -1178,6 +1181,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
                 TapLine_Each = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/Each.png");
                 TapLine_Slide = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/Slide.png");
                 TapLine_Break = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/Break.png");
+                TapLine_Mine = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/Mine.png");
 
                 EachLines[0] = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/EachLine1.png");
                 EachLines[1] = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/EachLine2.png");
@@ -1187,6 +1191,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
                 HoldEndPoint_Normal = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/Hold_End.png");
                 HoldEndPoint_Each = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/Hold_Each_End.png");
                 HoldEndPoint_Break = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/Hold_Break_End.png");
+                HoldEndPoint_Mine = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/Hold_Mine_End.png");
 
                 IsLoaded = true;
             }

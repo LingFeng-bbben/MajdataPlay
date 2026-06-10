@@ -50,6 +50,7 @@ MovieBG\GameOver.webm
 MovieBG\title.webm
 SFX\answer.wav
 SFX\answer_clock.wav
+SFX\answer_mine.wav
 SFX\bgm_dan.mp3
 SFX\bgm_explosion.mp3
 SFX\bgm_result.mp3
@@ -65,6 +66,7 @@ SFX\slide_break_start.wav
 SFX\tap_ex.wav
 SFX\tap_good.wav
 SFX\tap_great.wav
+SFX\tap_miss.wav
 SFX\tap_perfect.wav
 SFX\touch.wav
 SFX\touch_hanabi.wav

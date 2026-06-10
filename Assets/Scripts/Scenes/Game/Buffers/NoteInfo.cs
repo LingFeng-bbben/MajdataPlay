@@ -175,6 +175,8 @@ namespace MajdataPlay.Scenes.Game.Buffers
         {
             Dispose();
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void OnPreUpdate()
         {
@@ -201,6 +203,8 @@ namespace MajdataPlay.Scenes.Game.Buffers
                 }
             }
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void OnUpdate()
         {
@@ -227,6 +231,8 @@ namespace MajdataPlay.Scenes.Game.Buffers
                 }
             }
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void OnLateUpdate()
         {
@@ -253,6 +259,8 @@ namespace MajdataPlay.Scenes.Game.Buffers
                 }
             }
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void OnFixedUpdate()
         {
@@ -279,6 +287,8 @@ namespace MajdataPlay.Scenes.Game.Buffers
                 }
             }
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsExecutable()
         {

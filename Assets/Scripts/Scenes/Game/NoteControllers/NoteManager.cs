@@ -119,7 +119,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             Majdata<NoteManager>.Free();
         }
 
-        
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void OnPreUpdate()
         {
@@ -171,6 +172,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
 #endif
             }
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void OnUpdate()
         {
@@ -193,6 +196,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
 #endif
             }
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void OnLateUpdate()
         {
@@ -215,6 +220,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
 #endif
             }
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void OnFixedUpdate()
         {

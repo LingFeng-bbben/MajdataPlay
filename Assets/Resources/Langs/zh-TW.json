@@ -109,6 +109,8 @@
     "MAJSETTING_PROPERTY_FastLateType_DESC": "控制Note的Fast/Late顯示級別\n不符合條件的判定結果將不會顯示\n影響Tap、Hold、Touch、TouchHold",
     "MAJSETTING_PROPERTY_FastRetry": "快速重開",
     "MAJSETTING_PROPERTY_FastRetry_DESC": "開啟後，\n按住3456即可重新開始樂曲",
+    "MAJSETTING_PROPERTY_FastPractice": "快速練習",
+    "MAJSETTING_PROPERTY_FastPractice_DESC": "開啟後，遊戲中同時按住1278可進入練習模式選單\n起止時間：-5s / 按住 / +10s",
     "MAJSETTING_PROPERTY_FullScreen": "強制全螢幕",
     "MAJSETTING_PROPERTY_FullScreen_DESC": "Nothing",
     "MAJSETTING_PROPERTY_Global": "全域",

@@ -603,20 +603,19 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         protected override void PlayJudgeSFX(in NoteJudgeResult judgeResult)
         {
-            if (judgeResult.IsMissOrTooFast || judgeResult.IsMine)
-            {
-                return;
-            }
-            if (judgeResult.IsBreak)
+            if (judgeResult.IsBreak || judgeResult.IsMine)
             {
                 AudioEffMana.PlayTapSound(judgeResult);
             }
             else
             {
-                AudioEffMana.PlayTouchSound();
+                if(judgeResult.Grade != JudgeGrade.Miss)
+                    AudioEffMana.PlayTouchSound();
             }
             if (_isFirework)
             {
+                if (judgeResult.IsMissOrTooFast)
+                    return;
                 AudioEffMana.PlayHanabiSound();
             }
         }

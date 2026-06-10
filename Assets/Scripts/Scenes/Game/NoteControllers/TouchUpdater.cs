@@ -25,7 +25,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal override void OnFixedUpdate()
+        internal new void OnFixedUpdate()
         {
             Profiler.BeginSample(FIXED_UPDATE_METHOD_NAME);
             base.OnFixedUpdate();
@@ -34,7 +34,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal override void OnLateUpdate()
+        internal new void OnLateUpdate()
         {
             Profiler.BeginSample(LATE_UPDATE_METHOD_NAME);
             base.OnLateUpdate();
@@ -43,7 +43,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal override void OnUpdate()
+        internal new void OnUpdate()
         {
             Profiler.BeginSample(UPDATE_METHOD_NAME);
             base.OnUpdate();
@@ -52,7 +52,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal override void OnPreUpdate()
+        internal new void OnPreUpdate()
         {
             Profiler.BeginSample(PRE_UPDATE_METHOD_NAME);
             base.OnPreUpdate();

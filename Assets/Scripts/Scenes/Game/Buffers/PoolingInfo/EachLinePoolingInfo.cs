@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Scenes.Game.Notes;
+﻿using MajdataPlay.Game.Notes;
+using MajdataPlay.Scenes.Game.Notes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,5 +13,6 @@ namespace MajdataPlay.Scenes.Game.Buffers
         public NotePoolingInfo? MemberA { get; init; } = null;
         public NotePoolingInfo? MemberB { get; init; } = null;
         public int CurvLength { get; init; }
+        public required IEachLineDistanceProvider DistanceProvider { get; set; }
     }
 }

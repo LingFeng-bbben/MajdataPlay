@@ -109,6 +109,8 @@
     "MAJSETTING_PROPERTY_FastLateType_DESC": "",
     "MAJSETTING_PROPERTY_FastRetry": "Fast Retry",
     "MAJSETTING_PROPERTY_FastRetry_DESC": "起動後、3456を押し続けるとプレイを再開できます",
+    "MAJSETTING_PROPERTY_FastPractice": "クイック練習",
+    "MAJSETTING_PROPERTY_FastPractice_DESC": "有効にすると、プレイ中に1+2+7+8同時押しで練習モード画面に入れます\nスタート/エンド: -5s / ホールド / +10s",
     "MAJSETTING_PROPERTY_FullScreen": "フルスクリーン",
     "MAJSETTING_PROPERTY_FullScreen_DESC": "",
     "MAJSETTING_PROPERTY_Global": "Main Volume",

@@ -301,8 +301,14 @@ jobs:
       - name: Install fastlane
         if: ${{ env.TARGET_PLATFORM == 'iOS' }}
         run: |
-          gem install fastlane
-          gem install xcodeproj
+          gem install bundler        
+          cat > Gemfile <<'EOF'
+          source "https://rubygems.org"
+          gem "fastlane", "2.235.0"
+          gem "xcodeproj"
+          gem "multi_json"
+          EOF
+          bundle install
     
       - name: Build IPK (Release)
         if: ${{ env.TARGET_PLATFORM == 'iOS' }}
@@ -384,7 +390,7 @@ jobs:
           end
           EOF
           
-          fastlane ios ci
+          bundle exec fastlane ios ci
 
       - name: Upload to TestFlight
         if: ${{ env.TARGET_PLATFORM == 'iOS' }}
@@ -404,7 +410,7 @@ jobs:
         
           BUILD_AT="$(TZ=Asia/Shanghai date '+%Y-%m-%d %H:%M:%S')"
           export BUILD_AT
-        
+          
           mkdir -p fastlane
           cat > fastlane/Fastfile <<'EOF'
           default_platform(:ios)
@@ -430,7 +436,7 @@ jobs:
           end
           EOF
           
-          fastlane ios ci
+          bundle exec fastlane ios ci
 
       - name: Package macOS output as zip
         if: ${{ env.TARGET_PLATFORM == 'StandaloneOSX' }}

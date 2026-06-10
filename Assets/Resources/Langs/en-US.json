@@ -109,6 +109,8 @@
     "MAJSETTING_PROPERTY_FastLateType_DESC": "Set which judgment levels show Fast/Late\nHigher judgments are hidden",
     "MAJSETTING_PROPERTY_FastRetry": "Quick Retry",
     "MAJSETTING_PROPERTY_FastRetry_DESC": "Hold Buttons 3, 4, 5, and 6 to retry",
+    "MAJSETTING_PROPERTY_FastPractice": "Quick Practice",
+    "MAJSETTING_PROPERTY_FastPractice_DESC": "Enable pressing 1+2+7+8 during gameplay to enter practice mode menu\nStart/End time: -5s / Hold / +10s",
     "MAJSETTING_PROPERTY_FullScreen": "Full Screen",
     "MAJSETTING_PROPERTY_FullScreen_DESC": "Force full-screen mode",
     "MAJSETTING_PROPERTY_Global": "Master",
