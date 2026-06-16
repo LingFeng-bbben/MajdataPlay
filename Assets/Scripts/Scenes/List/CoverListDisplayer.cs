@@ -12,6 +12,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Serialization;
 #nullable enable
 namespace MajdataPlay.Scenes.List
 {
@@ -62,8 +63,15 @@ namespace MajdataPlay.Scenes.List
 
         public int selectedDifficulty = 0;
 
+        [SerializeField]
+        [FormerlySerializedAs("songCoverParent")]
+        GameObject _songCoverParent;
+
+        [SerializeField]
+        [FormerlySerializedAs("thumbnailParent")]
+        GameObject _thumbnailParent;
+
         private int coveri = 0;
-        //SongCollection[] dirs = SongStorage.Collections;
 
         float _preloadCooldownTimer = 0.5f;
         bool _isNeedPreload = false;
