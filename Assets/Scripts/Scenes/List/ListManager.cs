@@ -47,6 +47,7 @@ namespace MajdataPlay.Scenes.List
         float _inactiveTimeSec = 0f;
 
         CoverListDisplayer _coverListDisplayer;
+        CollectionListDisplayer _collectionListDisplayer;
         [SerializeField]
         UserInfoDisplayer _userInfoDisplayer;
 
@@ -106,6 +107,7 @@ namespace MajdataPlay.Scenes.List
         void Start()
         {
             _coverListDisplayer = Majdata<CoverListDisplayer>.Instance!;
+            _collectionListDisplayer = Majdata<CollectionListDisplayer>.Instance!;
             InitializeCoverListAsync().Forget();
             var selectsfx = MajInstances.AudioManager.GetSFX("bgm_select.mp3");
             if (!selectsfx.IsPlaying)
@@ -136,8 +138,8 @@ namespace MajdataPlay.Scenes.List
             try
             {
                 await UniTask.Yield();
-                _coverListDisplayer.SwitchToDirList();
-                _coverListDisplayer.SwitchToSongList();
+                //_coverListDisplayer.SwitchToDirList();
+                //_coverListDisplayer.SwitchToSongList();
                 await UniTask.Yield();
             }
             finally
@@ -215,7 +217,7 @@ namespace MajdataPlay.Scenes.List
             }
             else if (InputManager.IsSensorClickedInThisFrame(SensorArea.C))
             {
-                _coverListDisplayer.RandomSelect();
+                //_coverListDisplayer.RandomSelect();
             }
 
             if (InputManager.IsSensorClickedInThisFrame_OR(SensorArea.B7, SensorArea.B6, SensorArea.E7))
@@ -235,7 +237,7 @@ namespace MajdataPlay.Scenes.List
             }
             if (InputManager.IsSensorClickedInThisFrame(SensorArea.B2))
             {
-                _coverListDisplayer.FavoriteAdder.FavoratePressed();
+                //_coverListDisplayer.FavoriteAdder.FavoratePressed();
             }
         }
         void ButtonStatisticsUpdate()
@@ -313,7 +315,7 @@ namespace MajdataPlay.Scenes.List
                     {
                         if(_autoSlideTimer > AUTO_SLIDE_INTERVAL_SEC)
                         {
-                            _coverListDisplayer.DisableAnimation = true;
+                            //_coverListDisplayer.DisableAnimation = true;
                             _coverListDisplayer.SlideList(_delta);
                             _autoSlideTimer = 0;
                         }
@@ -338,7 +340,7 @@ namespace MajdataPlay.Scenes.List
                     {
                         if (_autoSlideTimer > AUTO_SLIDE_INTERVAL_SEC)
                         {
-                            _coverListDisplayer.DisableAnimation = true;
+                            //_coverListDisplayer.DisableAnimation = true;
                             _coverListDisplayer.SlideList(_delta);
                             _autoSlideTimer = 0;
                         }
@@ -353,57 +355,37 @@ namespace MajdataPlay.Scenes.List
             else
             {
                 _autoSlideTimer = 0;
-                _coverListDisplayer.DisableAnimation = false;
+                //_coverListDisplayer.DisableAnimation = false;
             }
 
-            if (a4Statistic.IsClicked)
+            if (a4Statistic.IsPressed)
             {
-                if(_coverListDisplayer.IsDirList)
+                if (!_isPlayedExplosion)
                 {
-                    if (_coverListDisplayer.SelectedCollection.Type == ChartStorageType.Dan)
+                    if (_enterPracticeTimer > 1f)
                     {
-                        EnterDan();
+                        MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
+                        _isPlayedExplosion = true;
                     }
-                    else
-                    {
-                        CabinetLed.SetButtonLight(Color.red, 4);
-                        _coverListDisplayer.SwitchToSongList();
-                        _coverListDisplayer.SlideListToTop();
-                        if (SongStorage.WorkingCollection.IsOnline)
-                        {
-                            MajInstances.AudioManager.PlaySFX("online_page.wav");
-                        }
-                    }
-                    a4Statistic.IsClickEventUsed = true;
                 }
-            }
-            else if (a4Statistic.IsPressed)
-            {
-                if (_coverListDisplayer.IsChartList)
+                if (_enterPracticeTimer > 1.6f)
                 {
-                    if(!_isPlayedExplosion)
-                    {
-                        if(_enterPracticeTimer > 1f)
-                        {
-                            MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
-                            _isPlayedExplosion = true;
-                        }
-                    }
-                    if (_enterPracticeTimer > 1.6f)
-                    {
-                        EnterPractice();
-                    }
-                    _enterPracticeTimer += MajTimeline.DeltaTime;
-                    return;
+                    EnterPractice();
                 }
+                _enterPracticeTimer += MajTimeline.DeltaTime;
+                return;
             }
             else if (a4Statistic.IsReleased)
             {
-                if (_coverListDisplayer.IsChartList && !a4Statistic.IsClickEventUsed)
+                if (!a4Statistic.IsClickEventUsed)
                 {
                     if (_enterPracticeTimer > 1f)
                     {
                         EnterPractice();
+                    }
+                    else if (_collectionListDisplayer.SelectedCollection.Type == ChartStorageType.Dan)
+                    {
+                        EnterDan();
                     }
                     else
                     {
@@ -414,13 +396,7 @@ namespace MajdataPlay.Scenes.List
             }
             else if (a5Statistic.IsClicked)
             {
-                if (_coverListDisplayer.IsChartList)
-                {
-                    _coverListDisplayer.SwitchToDirList();
-                    CabinetLed.SetButtonLight(Color.white, 4);
-                    SongStorage.WorkingCollection.Index = 0;
-                }
-                else if (_isOnlineEnabled && _coverListDisplayer.IsDirList)
+                if (_isOnlineEnabled)
                 {
                     EnterLogin();
                 }
@@ -449,14 +425,14 @@ namespace MajdataPlay.Scenes.List
                 //MajInstances.GameManager.LastSettingPage = MOD_PAGE_INDEX;
                 MajEnv.RuntimeConfig.Setting.SelectedMenu = nameof(GameSetting.Mod);
                 MajEnv.RuntimeConfig.Setting.SelectedOption = string.Empty;
-                if (_coverListDisplayer.Mode == CoverListMode.Directory)
-                {
-                    MajEnv.RuntimeConfig.Setting.IgnoreChartSettingPage = true;
-                }
-                else
-                {
-                    MajEnv.RuntimeConfig.Setting.IgnoreChartSettingPage = false;
-                }
+                //if (_coverListDisplayer.Mode == CoverListMode.Directory)
+                //{
+                //    MajEnv.RuntimeConfig.Setting.IgnoreChartSettingPage = true;
+                //}
+                //else
+                //{
+                //    MajEnv.RuntimeConfig.Setting.IgnoreChartSettingPage = false;
+                //}
                 MajInstances.SceneSwitcher.SwitchScene("Setting", false);
                 _isExited = true;
                 return;
@@ -464,14 +440,14 @@ namespace MajdataPlay.Scenes.List
             else if (a7Statistic.IsClicked)
             {
                 //MajInstances.GameManager.LastSettingPage = 0;
-                if (_coverListDisplayer.Mode == CoverListMode.Directory)
-                {
-                    MajEnv.RuntimeConfig.Setting.IgnoreChartSettingPage = true;
-                }
-                else
-                {
-                    MajEnv.RuntimeConfig.Setting.IgnoreChartSettingPage = false;
-                }
+                //if (_coverListDisplayer.Mode == CoverListMode.Directory)
+                //{
+                //    MajEnv.RuntimeConfig.Setting.IgnoreChartSettingPage = true;
+                //}
+                //else
+                //{
+                //    MajEnv.RuntimeConfig.Setting.IgnoreChartSettingPage = false;
+                //}
                 MajInstances.SceneSwitcher.SwitchScene("Setting", false);
                 _isExited = true;
                 return;
@@ -584,8 +560,8 @@ namespace MajdataPlay.Scenes.List
         void EnterDan()
         {
             _cts.Cancel();
-            var danInfo = _coverListDisplayer.SelectedCollection.DanInfo;
-            var collection = _coverListDisplayer.SelectedCollection;
+            var danInfo = _collectionListDisplayer.SelectedCollection.DanInfo;
+            var collection = _collectionListDisplayer.SelectedCollection;
             if (danInfo is null)
             {
                 return;
@@ -603,13 +579,13 @@ namespace MajdataPlay.Scenes.List
             }
             var info = new GameInfo(GameMode.Dan, collection.ToArray(), levels)
             {
-                MaxHP = _coverListDisplayer.SelectedCollection.DanInfo.StartHP,
-                CurrentHP = _coverListDisplayer.SelectedCollection.DanInfo.StartHP,
-                HPRecover = _coverListDisplayer.SelectedCollection.DanInfo.RestoreHP,
+                MaxHP = danInfo.StartHP,
+                CurrentHP = danInfo.StartHP,
+                HPRecover = danInfo.RestoreHP,
                 DanInfo = danInfo
             };
             Majdata<GameInfo>.Instance = info;
-            _coverListDisplayer.SelectedCollection.Index = 0;
+            _collectionListDisplayer.SelectedCollection.Index = 0;
             _isExited = true;
             MajInstances.SceneSwitcher.SwitchScene("Game", false);
         }
