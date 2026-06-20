@@ -19,6 +19,7 @@ namespace MajdataPlay.Scenes.List
 {
     public class CoverListDisplayer : MonoBehaviour
     {
+        const int POOL_SONG_COVER_CAPACITY = 8;
         public ISongDetail SelectedSong { get; private set; } = null!;
         public float PreloadCooldownTimer
         {
@@ -48,6 +49,10 @@ namespace MajdataPlay.Scenes.List
         [ReadOnlyField]
         int _selectedDifficulty = 0;
 
+        int _songCount = 0;
+        int _songListCursor = 0;
+        float _songListDesiredPos = 0;
+
         float _preloadCooldownTimer = 0.5f;
         bool _isNeedPreload = false;
 
@@ -56,17 +61,23 @@ namespace MajdataPlay.Scenes.List
 
         SongCollection _currentCollection = SongCollection.Empty("Empty");
 
-        ReadOnlyMemory<SongCoverSmallDisplayer> _allocatedSongCoverDisplayer = ReadOnlyMemory<SongCoverSmallDisplayer>.Empty;
-
         readonly RentedList<SongDetailBinding> _songDetailBindings = new();
+        readonly Queue<SongCoverSmallDisplayer> _allocatedSongCoverDisplayer = new(POOL_SONG_COVER_CAPACITY);
+        readonly Queue<SongCoverSmallDisplayer> _idleSongCoverDisplayer = new(POOL_SONG_COVER_CAPACITY);
 
-        readonly Queue<SongCoverSmallDisplayer> _idleSongCoverDisplayer = new(16);
         readonly ListConfig _listConfig = MajEnv.RuntimeConfig?.List ?? new();
 
         private void Awake()
         {
             Majdata<CoverListDisplayer>.Instance = this;
             _previewSoundPlayer = GetComponent<PreviewSoundPlayer>();
+            for (var i = 0; i < POOL_SONG_COVER_CAPACITY; i++)
+            {
+                var obj = Instantiate(_songCoverDisplayerPrefab, _songCoverParent.transform);
+                var displayer = obj.GetComponent<SongCoverSmallDisplayer>();
+                displayer.gameObject.SetActive(false);
+                _idleSongCoverDisplayer.Enqueue(displayer);
+            }
         }
         void Start()
         {
@@ -85,6 +96,21 @@ namespace MajdataPlay.Scenes.List
                 throw new ArgumentNullException(nameof(collection));
             }
             _currentCollection = collection;
+            while(_allocatedSongCoverDisplayer.TryDequeue(out var displayer))
+            {
+                displayer.gameObject.SetActive(false);
+                _idleSongCoverDisplayer.Enqueue(displayer);
+            }
+            _songDetailBindings.Clear();
+            _songCount = _currentCollection.Count;
+            _songListCursor = 0;
+            for (var i  =0; i < _songCount; i++)
+            {
+                var songDetail = _currentCollection[i];
+                var binding = GetSongDetailBinding(songDetail);
+                _songDetailBindings.Add(binding);
+            }
+            
         }
         public void SlideDifficulty(int delta)
         {

@@ -11368,25 +11368,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9e0ca7485b551fe458798602fce50dc1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  soundEffectName: judge.wav
-  CoverSmallPrefab: {fileID: 7013899708052084777, guid: 0c3d239ab8e5416448f92224d0f5de7f, type: 3}
-  DirSmallPrefab: {fileID: 7013899708052084777, guid: c4fd618c421cd9a4c8b5dde154b57747, type: 3}
-  DanSmallPrefab: {fileID: 7013899708052084777, guid: 7c2b648d07b4789478238f8ea960771a, type: 3}
-  CoverBigDisplayer: {fileID: 5793241147777706893}
-  SubInfoDisplayer: {fileID: 654444965399099254}
-  chartAnalyzer: {fileID: 0}
-  FavoriteAdder: {fileID: 0}
-  RankingDisplayer: {fileID: 0}
-  desiredListPos: 0
-  listPosReal: 0
-  turnSpeed: 0.12
-  radius: 334
-  offset: 0
-  angle: 33.4
-  DisableAnimation: 0
-  selectedDifficulty: 0
+  _songCoverDisplayerPrefab: {fileID: 2193112517558259703, guid: 5accf119bad4f164a928256f7a95d968, type: 3}
+  _centerCoverDisplayer: {fileID: 5793241147777706893}
   _songCoverParent: {fileID: 6465454565755057574}
   _thumbnailParent: {fileID: 530472979142932611}
+  _selectedDifficulty: 0
 --- !u!114 &9117727706001606341
 MonoBehaviour:
   m_ObjectHideFlags: 0
