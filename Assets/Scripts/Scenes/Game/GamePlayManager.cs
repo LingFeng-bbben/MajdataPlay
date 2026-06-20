@@ -236,7 +236,45 @@ namespace MajdataPlay.Scenes.Game
                 _audioTimeOffsetSec += _chartSetting.AudioOffset * MajEnv.FRAME_LENGTH_SEC;
                 _displayOffsetSec = _gameSettings.Debug.DisplayOffset * MajEnv.FRAME_LENGTH_SEC;
             }
-            switch(_screenRotationAngle)
+            _trackVolume = (MajEnv.Settings.Audio.Volume.Track + _chartSetting.TrackVolumeOffset).Clamp(0, 2);
+#if !UNITY_EDITOR && UNITY_STANDALONE
+            if(_gameSettings.Debug.HideCursorInGame)
+            {
+                Cursor.visible = false;
+            }
+#endif
+            LoadGameMod();
+            if (_gameInfo.IsDanMode)
+            {
+                LoadDanModSettings();
+            }
+            if (InputManager.IsTouchPanelConnected)
+            {
+                Destroy(GameObject.Find("EventSystem"));
+            }
+#if UNITY_ANDROID || UNITY_IOS
+            InputManager.UseOuterTouchAsSensor = _gameSettings.Game.ButtonRingForTouch;
+            InputManager.UseGameplayTouchEnhancementFeatures = true;
+#endif
+            InputManager.TouchButtonRingEdge = 5.4f;
+            MajInstances.SceneSwitcher.HideMV();
+        }
+        void Start()
+        {
+            _noteManager = Majdata<NoteManager>.Instance!;
+            _bgManager = Majdata<BGManager>.Instance!;
+            _objectCounter = Majdata<ObjectCounter>.Instance!;
+            _noteAudioManager = Majdata<NoteAudioManager>.Instance!;
+            _notePoolManager = Majdata<NotePoolManager>.Instance!;
+            _noteEffectPool = Majdata<NoteEffectPool>.Instance!;
+            _timeDisplayer = Majdata<TimeDisplayer>.Instance!;
+            _noteLoader = Majdata<NoteLoader>.Instance!;
+            _recorderStateDisplayer = Majdata<RecorderStatusDisplayer>.Instance!;
+
+            _errText = GameObject.Find("ErrText").GetComponent<TextMeshProUGUI>();
+            _chartRotation = _gameSettings.Game.Rotation.Clamp(-7, 7);
+
+            switch (_screenRotationAngle)
             {
                 case GameplayScreenRotationAngleOption._90:
                     _mainDisplayer.rotation = Quaternion.Euler(0, 0, -90);
@@ -366,44 +404,7 @@ namespace MajdataPlay.Scenes.Game
                     _sensorAreaFor1278[3] = SensorArea.A8;
                     break;
             }
-            _trackVolume = (MajEnv.Settings.Audio.Volume.Track + _chartSetting.TrackVolumeOffset).Clamp(0, 2);
-#if !UNITY_EDITOR && UNITY_STANDALONE
-            if(_gameSettings.Debug.HideCursorInGame)
-            {
-                Cursor.visible = false;
-            }
-#endif
-            LoadGameMod();
-            if (_gameInfo.IsDanMode)
-            {
-                LoadDanModSettings();
-            }
-            if (InputManager.IsTouchPanelConnected)
-            {
-                Destroy(GameObject.Find("EventSystem"));
-            }
-#if UNITY_ANDROID || UNITY_IOS
-            InputManager.UseOuterTouchAsSensor = _gameSettings.Game.ButtonRingForTouch;
-            InputManager.UseGameplayTouchEnhancementFeatures = true;
-#endif
-            InputManager.TouchButtonRingEdge = 5.4f;
-            MajInstances.SceneSwitcher.HideMV();
-        }
-        void Start()
-        {
-            _noteManager = Majdata<NoteManager>.Instance!;
-            _bgManager = Majdata<BGManager>.Instance!;
-            _objectCounter = Majdata<ObjectCounter>.Instance!;
-            _noteAudioManager = Majdata<NoteAudioManager>.Instance!;
-            _notePoolManager = Majdata<NotePoolManager>.Instance!;
-            _noteEffectPool = Majdata<NoteEffectPool>.Instance!;
-            _timeDisplayer = Majdata<TimeDisplayer>.Instance!;
-            _noteLoader = Majdata<NoteLoader>.Instance!;
-            _recorderStateDisplayer = Majdata<RecorderStatusDisplayer>.Instance!;
 
-            _errText = GameObject.Find("ErrText").GetComponent<TextMeshProUGUI>();
-            _chartRotation = _gameSettings.Game.Rotation.Clamp(-7, 7);
-            
             InitGame().Forget();
             return;
         }
