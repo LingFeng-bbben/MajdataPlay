@@ -1,10 +1,13 @@
 ﻿using MajdataPlay.Collections;
+using MajdataPlay.Editor;
+using MajdataPlay.Settings.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace MajdataPlay.Scenes.List
 {
@@ -18,6 +21,14 @@ namespace MajdataPlay.Scenes.List
             }
         }
 
+        [SerializeField]
+        [FormerlySerializedAs("centerCoverDisplayer")]
+        CoverBigDisplayer _centerCoverDisplayer;
+
+        [SerializeField]
+        [FormerlySerializedAs("coverListDisplayer")]
+        CoverListDisplayer _coverListDisplayer;
+
         SongCollection _currentCollection = SongCollection.Empty("Empty");
         ReadOnlyMemory<SongCollection> _collections = ReadOnlyMemory<SongCollection>.Empty;
 
@@ -29,6 +40,15 @@ namespace MajdataPlay.Scenes.List
         SongCollection[] _reMasterSortedCollections = Array.Empty<SongCollection>();
         SongCollection[] _utageSortedCollections = Array.Empty<SongCollection>();
 
+        [SerializeField]
+        [ReadOnlyField]
+        int _selectedDifficulty = 0;
+
+        int _listCursor = 0;
+        int _listDesiredPos = 0;
+
+        readonly ListConfig _listConfig = MajEnv.RuntimeConfig?.List ?? new();
+
         void Awake()
         {
             Majdata<CollectionListDisplayer>.Instance = this;
@@ -36,6 +56,59 @@ namespace MajdataPlay.Scenes.List
         internal void Init()
         {
             InitCollectionStorage();
+        }
+        internal void SlideList(int delta)
+        {
+
+        }
+        public void SlideDifficulty(int delta)
+        {
+            _selectedDifficulty += delta;
+            SlideToDifficulty(_selectedDifficulty);
+        }
+
+        public void SlideToDifficulty(int pos)
+        {
+            _selectedDifficulty = pos;
+            if (_selectedDifficulty > 6)
+            {
+                _selectedDifficulty = 0;
+            }
+            if (_selectedDifficulty < 0)
+            {
+                _selectedDifficulty = 6;
+            }
+            var chartLevel = (ChartLevel)_selectedDifficulty;
+            _listConfig.SelectedDiff = chartLevel;
+            switch(chartLevel)
+            {
+                case ChartLevel.Easy:
+                    _currentCollection = _easySortedCollections[_listCursor];
+                    break;
+                case ChartLevel.Basic:
+                    _currentCollection = _basicSortedCollections[_listCursor];
+                    break;
+                case ChartLevel.Advance:
+                    _currentCollection = _advanceSortedCollections[_listCursor];
+                    break;
+                case ChartLevel.Expert:
+                    _currentCollection = _expertSortedCollections[_listCursor];
+                    break;
+                case ChartLevel.Master:
+                    _currentCollection = _masterSortedCollections[_listCursor];
+                    break;
+                case ChartLevel.ReMaster:
+                    _currentCollection = _reMasterSortedCollections[_listCursor];
+                    break;
+                case ChartLevel.UTAGE:
+                    _currentCollection = _utageSortedCollections[_listCursor];
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("sb");
+            }
+            
+            _centerCoverDisplayer.SetDifficulty(_selectedDifficulty);
+            _coverListDisplayer.SetCollection(_currentCollection);
         }
         void UpdateCurrentSongCollection()
         {

@@ -145,7 +145,7 @@ namespace MajdataPlay.Scenes.List
             finally
             {
                 MajInstances.SceneSwitcher.FadeOut();
-                _coverListDisplayer.SlideToDifficulty((int)_listConfig.SelectedDiff);
+                _collectionListDisplayer.SlideToDifficulty((int)_listConfig.SelectedDiff);
                 _isInited = true;
                 CabinetLed.SetButtonLight(Color.green, 3);
                 CabinetLed.SetButtonLight(Color.red, 4);
@@ -455,13 +455,13 @@ namespace MajdataPlay.Scenes.List
 
             if (a8Statistic.IsClicked)
             {
-                _coverListDisplayer.SlideDifficulty(-1);
+                _collectionListDisplayer.SlideDifficulty(-1);
                 var list = new string[] { "easy.wav", "basic.wav", "advanced.wav", "expert.wav", "master.wav", "remaster.wav", "original.wav" };
                 MajInstances.AudioManager.PlaySFX(list[(int)_listConfig.SelectedDiff]);
             }
             else if (a1Statistic.IsClicked)
             {
-                _coverListDisplayer.SlideDifficulty(1);
+                _collectionListDisplayer.SlideDifficulty(1);
                 var list = new string[] { "easy.wav", "basic.wav", "advanced.wav", "expert.wav", "master.wav", "remaster.wav", "original.wav" };
                 MajInstances.AudioManager.PlaySFX(list[(int)_listConfig.SelectedDiff]);
             }

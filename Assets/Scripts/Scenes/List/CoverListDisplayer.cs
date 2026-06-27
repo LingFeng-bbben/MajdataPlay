@@ -20,7 +20,7 @@ namespace MajdataPlay.Scenes.List
     public class CoverListDisplayer : MonoBehaviour
     {
         const int POOL_SONG_COVER_CAPACITY = 8;
-        public ISongDetail SelectedSong { get; private set; } = null!;
+        public ISongDetail? SelectedSong { get; private set; } = null;
         public float PreloadCooldownTimer
         {
             get
@@ -95,6 +95,7 @@ namespace MajdataPlay.Scenes.List
             {
                 throw new ArgumentNullException(nameof(collection));
             }
+            SelectedSong = null;
             _currentCollection = collection;
             while(_allocatedSongCoverDisplayer.TryDequeue(out var displayer))
             {
@@ -111,26 +112,6 @@ namespace MajdataPlay.Scenes.List
                 _songDetailBindings.Add(binding);
             }
             
-        }
-        public void SlideDifficulty(int delta)
-        {
-            _selectedDifficulty += delta;
-            SlideToDifficulty(_selectedDifficulty);
-        }
-
-        public void SlideToDifficulty(int pos)
-        {
-            _selectedDifficulty = pos;
-            if (_selectedDifficulty > 6)
-            {
-                _selectedDifficulty = 0;
-            }
-            if (_selectedDifficulty < 0)
-            {
-                _selectedDifficulty = 6;
-            }
-            _listConfig.SelectedDiff = (ChartLevel)_selectedDifficulty;
-            _centerCoverDisplayer.SetDifficulty(_selectedDifficulty);
         }
 
         public void SlideList(int delta)
