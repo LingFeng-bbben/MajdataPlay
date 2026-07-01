@@ -66,7 +66,6 @@ namespace MajdataPlay.Scenes.List
             _selectedDifficulty += delta;
             SlideToDifficulty(_selectedDifficulty);
         }
-
         public void SlideToDifficulty(int pos)
         {
             _selectedDifficulty = pos;
@@ -80,7 +79,15 @@ namespace MajdataPlay.Scenes.List
             }
             var chartLevel = (ChartLevel)_selectedDifficulty;
             _listConfig.SelectedDiff = chartLevel;
-            switch(chartLevel)
+            UpdateSelectedSongCollection();
+
+            _centerCoverDisplayer.SetDifficulty(_selectedDifficulty);
+            _coverListDisplayer.SetCollection(_currentCollection);
+        }
+        void UpdateSelectedSongCollection()
+        {
+            var oldSelected = _currentCollection;
+            switch (_listConfig.SelectedDiff)
             {
                 case ChartLevel.Easy:
                     _currentCollection = _easySortedCollections[_listCursor];
@@ -106,38 +113,18 @@ namespace MajdataPlay.Scenes.List
                 default:
                     throw new ArgumentOutOfRangeException("sb");
             }
-            
-            _centerCoverDisplayer.SetDifficulty(_selectedDifficulty);
-            _coverListDisplayer.SetCollection(_currentCollection);
-        }
-        void UpdateCurrentSongCollection()
-        {
-            var pos = SongStorage.CollectionIndex;
-            switch (ChartLevel.Expert)
+            if(_currentCollection != oldSelected)
             {
-                case ChartLevel.Easy:
-                    _currentCollection = _easySortedCollections[pos];
-                    break;
-                case ChartLevel.Basic:
-                    _currentCollection = _basicSortedCollections[pos];
-                    break;
-                case ChartLevel.Advance:
-                    _currentCollection = _advanceSortedCollections[pos];
-                    break;
-                case ChartLevel.Expert:
-                    _currentCollection = _expertSortedCollections[pos];
-                    break;
-                case ChartLevel.Master:
-                    _currentCollection = _masterSortedCollections[pos];
-                    break;
-                case ChartLevel.ReMaster:
-                    _currentCollection = _reMasterSortedCollections[pos];
-                    break;
-                case ChartLevel.UTAGE:
-                    _currentCollection = _utageSortedCollections[pos];
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException("sb");
+                var oldSelectedSong = default(ISongDetail);
+                if(oldSelected.Count != 0)
+                {
+                    oldSelectedSong = oldSelected.Current;
+                }
+                _coverListDisplayer.SetCollection(_currentCollection);
+                if (oldSelectedSong is not null)
+                {
+                    _coverListDisplayer.SetCursor(oldSelectedSong);
+                }
             }
         }
         void InitCollectionStorage()
@@ -276,6 +263,24 @@ namespace MajdataPlay.Scenes.List
                 _reMasterSortedCollections = newCollections;
                 _utageSortedCollections = newCollections;
             }
+        }
+        internal void NextCollection()
+        {
+            _listCursor++;
+            if (_listCursor >= _collections.Length)
+            {
+                _listCursor = 0;
+            }
+            UpdateSelectedSongCollection();
+        }
+        internal void PreviousCollection()
+        {
+            _listCursor--;
+            if (_listCursor < 0)
+            {
+                _listCursor = _collections.Length - 1;
+            }
+            UpdateSelectedSongCollection();
         }
 
         SongCollectionBinding GetSongCollectionBinding(SongCollection songCollection)

@@ -55,6 +55,7 @@ namespace MajdataPlay.Scenes.List
 
         float _preloadCooldownTimer = 0.5f;
         bool _isNeedPreload = false;
+        bool _isEmptyCollection = true;
 
         ListManager _listManager;
         PreviewSoundPlayer _previewSoundPlayer;
@@ -96,22 +97,30 @@ namespace MajdataPlay.Scenes.List
                 throw new ArgumentNullException(nameof(collection));
             }
             SelectedSong = null;
-            _currentCollection = collection;
-            while(_allocatedSongCoverDisplayer.TryDequeue(out var displayer))
+            if (!collection.IsEmpty)
             {
-                displayer.gameObject.SetActive(false);
-                _idleSongCoverDisplayer.Enqueue(displayer);
+                collection.Index = 0;
+                _currentCollection = collection;
+                _isEmptyCollection = false;
+                while (_allocatedSongCoverDisplayer.TryDequeue(out var displayer))
+                {
+                    displayer.gameObject.SetActive(false);
+                    _idleSongCoverDisplayer.Enqueue(displayer);
+                }
+                _songDetailBindings.Clear();
+                _songCount = _currentCollection.Count;
+                _songListCursor = 0;
+                for (var i = 0; i < _songCount; i++)
+                {
+                    var songDetail = _currentCollection[i];
+                    var binding = GetSongDetailBinding(songDetail);
+                    _songDetailBindings.Add(binding);
+                }
             }
-            _songDetailBindings.Clear();
-            _songCount = _currentCollection.Count;
-            _songListCursor = 0;
-            for (var i  =0; i < _songCount; i++)
+            else
             {
-                var songDetail = _currentCollection[i];
-                var binding = GetSongDetailBinding(songDetail);
-                _songDetailBindings.Add(binding);
+                _isEmptyCollection = true;
             }
-            
         }
 
         public void SlideList(int delta)
@@ -184,7 +193,7 @@ namespace MajdataPlay.Scenes.List
         //        cover.RectTransform.anchoredPosition = GetCoverPosition(radius, (distance * angle - 90) * Mathf.Deg2Rad);
         //    }
         //}
-        void SetCursor(ISongDetail songDetail)
+        internal void SetCursor(ISongDetail songDetail)
         {
             var pos = SongStorage.CollectionIndex;
             SongStorage.WorkingCollection.SetCursor(songDetail);
