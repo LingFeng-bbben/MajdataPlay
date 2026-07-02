@@ -6,8 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Serialization;
+using UnityEngine.UI;
 
 namespace MajdataPlay.Scenes.List
 {
@@ -28,6 +30,18 @@ namespace MajdataPlay.Scenes.List
         [SerializeField]
         [FormerlySerializedAs("coverListDisplayer")]
         CoverListDisplayer _coverListDisplayer;
+
+        [SerializeField]
+        [FormerlySerializedAs("collectionListRoot")]
+        GameObject _collectionListRoot;
+
+        [SerializeField]
+        [FormerlySerializedAs("nameDisplayer")]
+        TextMeshProUGUI _nameDisplayer;
+
+        [SerializeField]
+        [FormerlySerializedAs("iconDisplayer")]
+        Image _iconDisplayer;
 
         SongCollection _currentCollection = SongCollection.Empty("Empty");
         ReadOnlyMemory<SongCollection> _collections = ReadOnlyMemory<SongCollection>.Empty;

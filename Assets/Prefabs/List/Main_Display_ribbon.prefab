@@ -2819,6 +2819,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8508776462621582018}
+  - component: {fileID: 8559549775166674051}
   m_Layer: 5
   m_Name: CollectionList
   m_TagString: Untagged
@@ -2838,8 +2839,8 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 6149288244680687894}
   - {fileID: 8756049105342868531}
+  - {fileID: 6149288244680687894}
   m_Father: {fileID: 2800794618870294913}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -2847,6 +2848,24 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 220}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &8559549775166674051
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1970302881257651075}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c028c9e4207d672408687d8d8f13420b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.Scenes.List.CollectionListDisplayer
+  _centerCoverDisplayer: {fileID: 5793241147777706893}
+  _coverListDisplayer: {fileID: 3871508246094013892}
+  _collectionListRoot: {fileID: 7999400292341158867}
+  _nameDisplayer: {fileID: 5651021545453185851}
+  _iconDisplayer: {fileID: 6641030779259986060}
+  _selectedDifficulty: 0
 --- !u!1 &2115343642357878026
 GameObject:
   m_ObjectHideFlags: 0
@@ -8703,7 +8722,7 @@ GameObject:
   - component: {fileID: 2021317950879446613}
   - component: {fileID: 5793241147777706893}
   m_Layer: 5
-  m_Name: SongInfoCard
+  m_Name: CenterCoverDisplayer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -13739,7 +13758,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7474518267128280970, guid: 00ca703dc39e7ac428d9eb1583eeb120, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 54
+      value: 540
       objectReference: {fileID: 0}
     - target: {fileID: 7474518267128280970, guid: 00ca703dc39e7ac428d9eb1583eeb120, type: 3}
       propertyPath: m_AnchoredPosition.y
