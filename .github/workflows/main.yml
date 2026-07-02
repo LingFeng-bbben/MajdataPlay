@@ -368,8 +368,20 @@ jobs:
           IPA_PATH="${{ env.CONFIGURATION }}/iOS/export/MajdataPlay.ipa"
           TMP_DIR="$(mktemp -d)"
           unzip -q "$IPA_PATH" -d "$TMP_DIR"
-          INFO_PLIST="$(find "$TMP_DIR/Payload" -name Info.plist | head -n 1)"
-          /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$INFO_PLIST"
+
+          APP_DIR="$(find "$TMP_DIR/Payload" -maxdepth 1 -name "*.app" -type d | head -n 1)"
+          INFO_PLIST="$APP_DIR/Info.plist"
+
+          echo "App bundle: $APP_DIR"
+          echo "Info.plist: $INFO_PLIST"
+
+          echo "CFBundleIdentifier:"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$INFO_PLIST"
+
+          echo "CFBundleShortVersionString:"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$INFO_PLIST" || true
+
+          echo "CFBundleVersion:"
           /usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$INFO_PLIST"
 
       - name: Upload to TestFlight
