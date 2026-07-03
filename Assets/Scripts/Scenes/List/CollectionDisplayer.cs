@@ -13,6 +13,11 @@ namespace MajdataPlay.Scenes.List
 {
     public class CollectionDisplayer : MonoBehaviour
     {
+        public RectTransform RectTransform
+        {
+            get => _rectTransform;
+        }
+
         [SerializeField]
         [FormerlySerializedAs("onlineCollectionIcon")]
         Sprite _onlineCollectionIcon;
@@ -34,8 +39,13 @@ namespace MajdataPlay.Scenes.List
         [FormerlySerializedAs("nameDisplayer")]
         TextMeshProUGUI _nameDisplayer;
 
+        RectTransform _rectTransform;
         SongCollection? _bindingCollection;
 
+        void Awake()
+        {
+            _rectTransform = GetComponent<RectTransform>();
+        }
 
         internal void SetCollection(SongCollection collection)
         {
@@ -46,6 +56,11 @@ namespace MajdataPlay.Scenes.List
             _bindingCollection = collection;
 
             _nameDisplayer.text = collection.Name;
+        }
+
+        public void SetActive(bool state)
+        {
+            gameObject.SetActive(state);
         }
     }
 }

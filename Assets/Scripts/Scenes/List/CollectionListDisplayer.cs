@@ -10,11 +10,13 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
-
+#nullable enable
 namespace MajdataPlay.Scenes.List
 {
     public class CollectionListDisplayer: MonoBehaviour
     {
+        const int DISPLAYER_ANIM_DURATION_MS = 250;
+
         public SongCollection SelectedCollection
         {
             get
@@ -43,8 +45,19 @@ namespace MajdataPlay.Scenes.List
         [FormerlySerializedAs("iconDisplayer")]
         Image _iconDisplayer;
 
+        [SerializeField]
+        [ReadOnlyField]
+        int _selectedDifficulty = 0;
+
+        int _listDesiredPos = 0;
+        float _listCursorPos = 0;
+        float _displayerAnimStepPerSec = 0f;
+
         SongCollection _currentCollection = SongCollection.Empty("Empty");
-        ReadOnlyMemory<SongCollection> _collections = ReadOnlyMemory<SongCollection>.Empty;
+        SongCollection[] _collections = Array.Empty<SongCollection>();
+
+        CollectionDisplayer[] _collectionDisplayers = Array.Empty<CollectionDisplayer>();
+        SongCollectionBinding[] _collectionBindings = Array.Empty<SongCollectionBinding>();
 
         SongCollection[] _easySortedCollections = Array.Empty<SongCollection>();
         SongCollection[] _basicSortedCollections = Array.Empty<SongCollection>();
@@ -54,26 +67,49 @@ namespace MajdataPlay.Scenes.List
         SongCollection[] _reMasterSortedCollections = Array.Empty<SongCollection>();
         SongCollection[] _utageSortedCollections = Array.Empty<SongCollection>();
 
-        [SerializeField]
-        [ReadOnlyField]
-        int _selectedDifficulty = 0;
-
-        int _listCursor = 0;
-        int _listDesiredPos = 0;
-
+        readonly Queue<CollectionDisplayer> _idleCollectionDisplayers = new();
         readonly ListConfig _listConfig = MajEnv.RuntimeConfig?.List ?? new();
 
         void Awake()
         {
             Majdata<CollectionListDisplayer>.Instance = this;
+            var collectionListRoot = _collectionListRoot.transform;
+            var displayerCount = collectionListRoot.childCount;
+            _collectionDisplayers = new CollectionDisplayer[displayerCount];
+            for (int i = 0; i < displayerCount; i++)
+            {
+                var child = collectionListRoot.GetChild(i);
+                var displayer = child.GetComponent<CollectionDisplayer>();
+                if (displayer is null)
+                {
+                    throw new InvalidOperationException($"Child {child.name} does not have a CollectionDisplayer component.");
+                }
+                _collectionDisplayers[i] = displayer;
+                _idleCollectionDisplayers.Enqueue(displayer);
+            }
         }
         internal void Init()
         {
             InitCollectionStorage();
+            InitCollectionBinding();
         }
         internal void SlideList(int delta)
         {
-
+            var lastDesiredPos = _listDesiredPos;
+            _listDesiredPos += delta;
+            if (_listDesiredPos < 0)
+            {
+                _listDesiredPos = _collections.Length - 1;
+            }
+            else if (_listDesiredPos >= _collections.Length)
+            {
+                _listDesiredPos = 0;
+            }
+            UpdateSelectedSongCollection();
+            if(lastDesiredPos != _listDesiredPos)
+            {
+                _displayerAnimStepPerSec = Mathf.Abs(_listDesiredPos - _listCursorPos) / (DISPLAYER_ANIM_DURATION_MS / 1000f);
+            }
         }
         public void SlideDifficulty(int delta)
         {
@@ -98,39 +134,55 @@ namespace MajdataPlay.Scenes.List
             _centerCoverDisplayer.SetDifficulty(_selectedDifficulty);
             _coverListDisplayer.SetCollection(_currentCollection);
         }
+
+        internal void OnUpdate()
+        {
+            UpdateSongCollectionBinding();
+            UpdateDisplayerAnim();
+        }
+        
+        internal void NextCollection()
+        {
+            SlideList(1);
+        }
+        internal void PreviousCollection()
+        {
+            SlideList(-1);
+        }
+
         void UpdateSelectedSongCollection()
         {
             var oldSelected = _currentCollection;
             switch (_listConfig.SelectedDiff)
             {
                 case ChartLevel.Easy:
-                    _currentCollection = _easySortedCollections[_listCursor];
+                    _currentCollection = _easySortedCollections[_listDesiredPos];
                     break;
                 case ChartLevel.Basic:
-                    _currentCollection = _basicSortedCollections[_listCursor];
+                    _currentCollection = _basicSortedCollections[_listDesiredPos];
                     break;
                 case ChartLevel.Advance:
-                    _currentCollection = _advanceSortedCollections[_listCursor];
+                    _currentCollection = _advanceSortedCollections[_listDesiredPos];
                     break;
                 case ChartLevel.Expert:
-                    _currentCollection = _expertSortedCollections[_listCursor];
+                    _currentCollection = _expertSortedCollections[_listDesiredPos];
                     break;
                 case ChartLevel.Master:
-                    _currentCollection = _masterSortedCollections[_listCursor];
+                    _currentCollection = _masterSortedCollections[_listDesiredPos];
                     break;
                 case ChartLevel.ReMaster:
-                    _currentCollection = _reMasterSortedCollections[_listCursor];
+                    _currentCollection = _reMasterSortedCollections[_listDesiredPos];
                     break;
                 case ChartLevel.UTAGE:
-                    _currentCollection = _utageSortedCollections[_listCursor];
+                    _currentCollection = _utageSortedCollections[_listDesiredPos];
                     break;
                 default:
                     throw new ArgumentOutOfRangeException("sb");
             }
-            if(_currentCollection != oldSelected)
+            if (_currentCollection != oldSelected)
             {
                 var oldSelectedSong = default(ISongDetail);
-                if(oldSelected.Count != 0)
+                if (oldSelected.Count != 0)
                 {
                     oldSelectedSong = oldSelected.Current;
                 }
@@ -140,6 +192,84 @@ namespace MajdataPlay.Scenes.List
                     _coverListDisplayer.SetCursor(oldSelectedSong);
                 }
             }
+        }
+        void UpdateSongCollectionBinding()
+        {
+            var currentListCursorPos = (int)_listCursorPos;
+            for (var i = 0; i < _collectionBindings.Length; i++)
+            {
+                ref var binding = ref _collectionBindings[i];
+                var absDistance = Math.Abs(i - currentListCursorPos);
+                var displayer = binding.Displayer;
+
+                if (absDistance > 3)
+                {                    
+                    if (displayer is null)
+                    {
+                        continue;
+                    }
+                    binding.Displayer = null;
+                    displayer.SetActive(false);
+                    _idleCollectionDisplayers.Enqueue(displayer);
+                }
+                else
+                {
+                    if(displayer is not null)
+                    {
+                        continue;
+                    }
+                    if (!_idleCollectionDisplayers.TryDequeue(out displayer))
+                    {
+                        Debug.LogWarning("No idle collection displayer available.");
+                        continue;
+                    }
+                    binding.Displayer = displayer;
+                    displayer.SetCollection(binding.Collection);
+                    displayer.SetActive(true);
+                }
+            }
+        }
+        void UpdateDisplayerAnim()
+        {
+            if(_listCursorPos == _listDesiredPos)
+            {
+                return;
+            }
+            else
+            {
+                _listCursorPos += _displayerAnimStepPerSec * MajTimeline.DeltaTime;
+                _listCursorPos = Mathf.Min(_listCursorPos, _listDesiredPos);
+            }
+            for (var i = 0; i < _collectionBindings.Length; i++)
+            {
+                ref var binding = ref _collectionBindings[i];
+                var displayer = binding.Displayer;
+                if (displayer is null)
+                {
+                    continue;
+                }
+                var delta = i - _listCursorPos;
+                displayer.RectTransform.anchoredPosition = GetDisplayerPositionFromDelta(delta);
+            }
+        }
+        Vector2 GetDisplayerPositionFromDelta(float delta)
+        {
+            const int X_POS_WITH_DELTA_1 = 240;
+            const int X_POS_WITH_DELTA_2 = 390;
+            const int X_POS_WITH_DELTA_3 = 540;
+            const int X_POS_WITH_DELTA_4 = 690;
+            var absDelta = Mathf.Abs(delta);
+
+            var x = absDelta switch
+            {
+                <= 1f => 240f * absDelta,
+                <= 2f => Mathf.Lerp(X_POS_WITH_DELTA_1, X_POS_WITH_DELTA_2, absDelta - 1f),
+                <= 3f => Mathf.Lerp(X_POS_WITH_DELTA_2, X_POS_WITH_DELTA_3, absDelta - 2f),
+                <= 4f => Mathf.Lerp(X_POS_WITH_DELTA_3, X_POS_WITH_DELTA_4, absDelta - 3f),
+                _ => X_POS_WITH_DELTA_4
+            };
+
+            return new Vector2(Mathf.Sign(delta) * x, 0);
         }
         void InitCollectionStorage()
         {
@@ -178,7 +308,7 @@ namespace MajdataPlay.Scenes.List
                 newCollections[i].SortAndFilter(SongStorage.OrderBy);
             });
             _collections = newCollections;
-            var collection = _collections.Span[SongStorage.CollectionIndex];
+            var collection = _collections[SongStorage.CollectionIndex];
 
             if (SongStorage.OrderBy.SortBy == SortType.ByRank)
             {
@@ -278,38 +408,26 @@ namespace MajdataPlay.Scenes.List
                 _utageSortedCollections = newCollections;
             }
         }
-        internal void NextCollection()
+        void InitCollectionBinding()
         {
-            _listCursor++;
-            if (_listCursor >= _collections.Length)
+            _collectionBindings = new SongCollectionBinding[_collections.Length];
+            for (int i = 0; i < _collections.Length; i++)
             {
-                _listCursor = 0;
+                var collection = _collections[i];
+                var binding = new SongCollectionBinding()
+                {
+                    Collection = collection
+                };
+                _collectionBindings[i] = binding;
             }
-            UpdateSelectedSongCollection();
-        }
-        internal void PreviousCollection()
-        {
-            _listCursor--;
-            if (_listCursor < 0)
-            {
-                _listCursor = _collections.Length - 1;
-            }
-            UpdateSelectedSongCollection();
         }
 
-        SongCollectionBinding GetSongCollectionBinding(SongCollection songCollection)
-        {
-            return new SongCollectionBinding()
-            {
-                Collection = songCollection
-            };
-        }
         struct SongCollectionBinding
         {
-            public SongCollection Collection { get; set; }
-            public FolderCoverSmallDisplayer? Displayer { get; set; }
+            public SongCollection Collection { get; init; }
+            public CollectionDisplayer? Displayer { get; set; }
 
-            public SongCollectionBinding(SongCollection collection, FolderCoverSmallDisplayer? displayer)
+            public SongCollectionBinding(SongCollection collection, CollectionDisplayer? displayer)
             {
                 Collection = collection;
                 Displayer = displayer;
