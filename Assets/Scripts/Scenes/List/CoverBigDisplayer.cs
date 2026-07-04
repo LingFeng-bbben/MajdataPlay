@@ -48,7 +48,7 @@ namespace MajdataPlay.Scenes.List
 
         CancellationTokenSource? _cts = null;
         ChartAnalyzer _chartAnalyzer;
-        CoverListDisplayer _listDisplayer;
+        CoverListManager _listDisplayer;
         ListManager _listManager;
         private void Awake()
         {
@@ -62,7 +62,7 @@ namespace MajdataPlay.Scenes.List
         }
         void Start()
         {
-            _listDisplayer = Majdata<CoverListDisplayer>.Instance!;
+            _listDisplayer = Majdata<CoverListManager>.Instance!;
             _listManager = Majdata<ListManager>.Instance!;
         }
         public void SetDifficulty(int i)

@@ -14,7 +14,7 @@ using UnityEngine.UI;
 #nullable enable
 namespace MajdataPlay.Scenes.List
 {
-    public class CollectionListDisplayer: MonoBehaviour
+    public class CollectionListManager: MonoBehaviour
     {
         const int DISPLAYER_ANIM_DURATION_MS = 250;
 
@@ -32,7 +32,7 @@ namespace MajdataPlay.Scenes.List
 
         [SerializeField]
         [FormerlySerializedAs("coverListDisplayer")]
-        CoverListDisplayer _coverListDisplayer;
+        CoverListManager _coverListDisplayer;
 
         [SerializeField]
         [FormerlySerializedAs("collectionListRoot")]
@@ -73,7 +73,7 @@ namespace MajdataPlay.Scenes.List
 
         void Awake()
         {
-            Majdata<CollectionListDisplayer>.Instance = this;
+            Majdata<CollectionListManager>.Instance = this;
             var collectionListRoot = _collectionListRoot.transform;
             var displayerCount = collectionListRoot.childCount;
             _collectionDisplayers = new CollectionDisplayer[displayerCount];

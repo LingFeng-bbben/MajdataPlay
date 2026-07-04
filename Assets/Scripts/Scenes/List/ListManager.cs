@@ -46,8 +46,8 @@ namespace MajdataPlay.Scenes.List
         float _enterPracticeTimer = 0f;
         float _inactiveTimeSec = 0f;
 
-        CoverListDisplayer _coverListDisplayer;
-        CollectionListDisplayer _collectionListDisplayer;
+        CoverListManager _coverListDisplayer;
+        CollectionListManager _collectionListDisplayer;
         [SerializeField]
         UserInfoDisplayer _userInfoDisplayer;
 
@@ -106,8 +106,8 @@ namespace MajdataPlay.Scenes.List
         }
         void Start()
         {
-            _coverListDisplayer = Majdata<CoverListDisplayer>.Instance!;
-            _collectionListDisplayer = Majdata<CollectionListDisplayer>.Instance!;
+            _coverListDisplayer = Majdata<CoverListManager>.Instance!;
+            _collectionListDisplayer = Majdata<CollectionListManager>.Instance!;
             InitializeCoverListAsync().Forget();
             var selectsfx = MajInstances.AudioManager.GetSFX("bgm_select.mp3");
             if (!selectsfx.IsPlaying)

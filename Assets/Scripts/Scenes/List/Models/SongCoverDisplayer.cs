@@ -29,7 +29,7 @@ namespace MajdataPlay.Scenes.List.Models
         bool _isRefreshed = false;
         ISongDetail _boundSong;
         CancellationTokenSource _cts = new();
-        CoverListDisplayer? _listDisplayer;
+        CoverListManager? _listDisplayer;
 
         protected override void Awake()
         {
@@ -41,7 +41,7 @@ namespace MajdataPlay.Scenes.List.Models
         }
         void Start()
         {
-            _listDisplayer = Majdata<CoverListDisplayer>.Instance;
+            _listDisplayer = Majdata<CoverListManager>.Instance;
         }
         public void SetOpacity(float alpha)
         {

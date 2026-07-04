@@ -18,7 +18,7 @@ using UnityEngine.Serialization;
 #nullable enable
 namespace MajdataPlay.Scenes.List
 {
-    public class CoverListDisplayer : MonoBehaviour
+    public class CoverListManager : MonoBehaviour
     {
         const int POOL_SONG_COVER_CAPACITY = 8;
         public ISongDetail? SelectedSong { get; private set; } = null;
@@ -71,7 +71,7 @@ namespace MajdataPlay.Scenes.List
 
         private void Awake()
         {
-            Majdata<CoverListDisplayer>.Instance = this;
+            Majdata<CoverListManager>.Instance = this;
             _previewSoundPlayer = GetComponent<PreviewSoundPlayer>();
             for (var i = 0; i < POOL_SONG_COVER_CAPACITY; i++)
             {
@@ -87,7 +87,7 @@ namespace MajdataPlay.Scenes.List
         }
         void OnDestroy()
         {
-            Majdata<CoverListDisplayer>.Free();
+            Majdata<CoverListManager>.Free();
             
             _idleSongCoverDisplayer.Clear();
         }
