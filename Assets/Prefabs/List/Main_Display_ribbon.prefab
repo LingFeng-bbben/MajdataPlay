@@ -7122,10 +7122,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _levelRingDisplayer: {fileID: 8738575971539709348}
   _songCoverDisplayer: {fileID: 1161547970623125164}
-  _archieveRate: {fileID: 3869631019735646211}
-  _APbg: {fileID: 8947665734774427514}
-  _clearMark: {fileID: 0}
-  _rank: {fileID: 6326863885416059801}
   _loadingObj: {fileID: 0}
   _diffColors:
   - {r: 0.27058825, g: 0.6901961, b: 1, a: 1}
@@ -7135,6 +7131,8 @@ MonoBehaviour:
   - {r: 0.6784314, g: 0.16470589, b: 1, a: 1}
   - {r: 1, g: 0.48235297, b: 0.92549026, a: 1}
   - {r: 1, g: 0.627451, b: 0.27058825, a: 1}
+  _scoreDisplayer: {fileID: 1605295673057992418}
+  _metadataDisplayer: {fileID: 3559887092446061320}
 --- !u!1 &5683956194572856852
 GameObject:
   m_ObjectHideFlags: 0

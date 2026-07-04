@@ -35,20 +35,26 @@ namespace MajdataPlay.Scenes.List
         [FormerlySerializedAs("diffColors")]
         Color[] _diffColors = new Color[6];
 
+        [SerializeField]
+        [FormerlySerializedAs("scoreDisplayer")]
+        MaiScoreDisplayer _scoreDisplayer;
+
+        [SerializeField]
+        [FormerlySerializedAs("metadataDisplayer")]
+        ChartMetadataDisplayer _metadataDisplayer;
+
+        [SerializeField]
+        [FormerlySerializedAs("chartAnalyzer")]
+        ChartAnalyzer _chartAnalyzer;
+
         int _diff = 0;
 
         CancellationTokenSource? _cts = null;
-        ChartAnalyzer _chartAnalyzer;
+        
         CoverListManager _listDisplayer;
         ListManager _listManager;
         private void Awake()
         {
-            /* Level = transform.Find("Level").GetComponent<TMP_Text>();
-             Charter = transform.Find("Designer").GetComponent<TMP_Text>();
-             Title = transform.Find("Title").GetComponent<TMP_Text>();
-             Artist = transform.Find("Artist").GetComponent<TMP_Text>();
-             ArchieveRate = transform.Find("Rate").GetComponent<TMP_Text>();*/
-            _chartAnalyzer = GameObject.FindObjectOfType<ChartAnalyzer>();
             _loadingObj.SetActive(false);
         }
         void Start()
@@ -56,6 +62,11 @@ namespace MajdataPlay.Scenes.List
             _listDisplayer = Majdata<CoverListManager>.Instance!;
             _listManager = Majdata<ListManager>.Instance!;
         }
+        void OnDestroy()
+        {
+            _cts?.Cancel();
+        }
+
         public void SetDifficulty(int i)
         {
             _levelRingDisplayer.color = _diffColors[i];
@@ -92,10 +103,7 @@ namespace MajdataPlay.Scenes.List
         {
             _songCoverDisplayer.sprite = SpriteLoader.EmptySprite;
         }
-        void OnDestroy()
-        {
-            _cts?.Cancel();    
-        }
+        
         async Task SetCoverAsync(ISongDetail detail, CancellationToken ct = default)
         {
             _loadingObj.SetActive(true);
@@ -106,7 +114,5 @@ namespace MajdataPlay.Scenes.List
             _songCoverDisplayer.sprite = cover;
             _loadingObj.SetActive(false);
         }
-
-        
     }
 }
