@@ -26,26 +26,30 @@ namespace MajdataPlay.Scenes.List
         [SerializeField]
         [FormerlySerializedAs("songCoverDisplayer")]
         Image _songCoverDisplayer;
+        
         [SerializeField]
-        TMP_Text _level;
-        [SerializeField]
-        TMP_Text _charter;
-        [SerializeField]
-        TMP_Text _title;
-        [SerializeField]
-        TMP_Text _artist;
-        [SerializeField]
+        [FormerlySerializedAs("archieveRate")]
         TMP_Text _archieveRate;
+
         [SerializeField]
+        [FormerlySerializedAs("apbg")]
         GameObject _APbg;
+
         [SerializeField]
+        [FormerlySerializedAs("clearMark")]
         TMP_Text _clearMark;
+
         [SerializeField]
+        [FormerlySerializedAs("rank")]
         TMP_Text _rank;
+
         [SerializeField]
+        [FormerlySerializedAs("loadingObj")]
         GameObject _loadingObj;
 
-        public Color[] diffColors = new Color[6];
+        [SerializeField]
+        [FormerlySerializedAs("diffColors")]
+        Color[] _diffColors = new Color[6];
 
         int diff = 0;
 
@@ -70,23 +74,23 @@ namespace MajdataPlay.Scenes.List
         }
         public void SetDifficulty(int i)
         {
-            _levelRingDisplayer.color = diffColors[i];
+            _levelRingDisplayer.color = _diffColors[i];
             diff = i;
-            if (i + 1 < diffColors.Length)
+            if (i + 1 < _diffColors.Length)
             {
-                CabinetLed.SetButtonLight(diffColors[i + 1], 0);
+                CabinetLed.SetButtonLight(_diffColors[i + 1], 0);
             }
             else
             {
-                CabinetLed.SetButtonLight(diffColors.First(), 0);
+                CabinetLed.SetButtonLight(_diffColors.First(), 0);
             }
             if (i - 1 >= 0)
             {
-                CabinetLed.SetButtonLight(diffColors[i - 1], 7);
+                CabinetLed.SetButtonLight(_diffColors[i - 1], 7);
             }
             else
             {
-                CabinetLed.SetButtonLight(diffColors.Last(), 7);
+                CabinetLed.SetButtonLight(_diffColors.Last(), 7);
             }
 
         }
@@ -119,13 +123,6 @@ namespace MajdataPlay.Scenes.List
             _loadingObj.SetActive(false);
         }
 
-        public void SetMeta(string _Title, string _Artist, string _Charter, string _Level)
-        {
-            _title.text = _Title;
-            _artist.text = _Artist;
-            _charter.text = _Charter;
-            _level.text = _Level;
-        }
         public void SetScore(MaiScore score)
         {
             if (score.PlayCount == 0)
