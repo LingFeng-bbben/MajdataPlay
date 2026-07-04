@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 237486058234395146}
   - component: {fileID: 7380765868409853110}
   - component: {fileID: 8249928198695386401}
+  - component: {fileID: 8242128426268193459}
   m_Layer: 0
   m_Name: ThumbnailDisplayer
   m_TagString: Untagged
@@ -90,6 +91,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_ShowMaskGraphic: 1
+--- !u!114 &8242128426268193459
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3988981759765312762}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a44e91c9531cabb41ae00d65555ae55d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.Scenes.List.Models.ThumbnailDisplayer
+  _coverDisplayer: {fileID: 234687209036855421}
 --- !u!1 &8279228112649159462
 GameObject:
   m_ObjectHideFlags: 0

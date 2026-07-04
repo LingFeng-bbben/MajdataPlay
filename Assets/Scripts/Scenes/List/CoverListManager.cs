@@ -83,11 +83,17 @@ namespace MajdataPlay.Scenes.List
 
         readonly ListConfig _listConfig = MajEnv.RuntimeConfig?.List ?? new();
 
-        private void Awake()
+        const int DISPLAYER_ANIM_DURATION_MS = 250;
+
+        #region Unity Lifecycle
+        void Awake()
         {
             Majdata<CoverListManager>.Instance = this;
             _previewSoundPlayer = GetComponent<PreviewSoundPlayer>();
-
+        }
+        void Start()
+        {
+            _listManager = Majdata<ListManager>.Instance!;
             var songCoverListRoot = _songCoverListRoot.transform;
             var coverDisplayerCount = songCoverListRoot.childCount;
             _songCoverDisplayers = new SongCoverDisplayer[coverDisplayerCount];
@@ -95,10 +101,11 @@ namespace MajdataPlay.Scenes.List
             {
                 var displayerTransform = songCoverListRoot.GetChild(i);
                 var displayer = displayerTransform.GetComponent<SongCoverDisplayer>();
+                displayer.SetActive(false);
                 if (displayer is null)
                 {
                     throw new InvalidOperationException($"Child {i} of {_songCoverListRoot.name} does not have a SongCoverDisplayer component.");
-                }
+                }                
                 _songCoverDisplayers[i] = displayer;
                 _idleSongCoverDisplayer.Enqueue(displayer);
             }
@@ -110,6 +117,7 @@ namespace MajdataPlay.Scenes.List
             {
                 var displayerTransform = thumbnailListRoot.GetChild(i);
                 var displayer = displayerTransform.GetComponent<ThumbnailDisplayer>();
+                displayer.SetActive(false);
                 if (displayer is null)
                 {
                     throw new InvalidOperationException($"Child {i} of {_thumbnailListRoot.name} does not have a ThumbnailDisplayer component.");
@@ -118,16 +126,13 @@ namespace MajdataPlay.Scenes.List
                 _idleSongThumbnailDisplayer.Enqueue(displayer);
             }
         }
-        void Start()
-        {
-            _listManager = Majdata<ListManager>.Instance!;
-        }
         void OnDestroy()
         {
             Majdata<CoverListManager>.Free();
             
             _idleSongCoverDisplayer.Clear();
         }
+        #endregion
         internal void SetCollection(SongCollection collection)
         {
             if(collection is null)
@@ -170,7 +175,27 @@ namespace MajdataPlay.Scenes.List
 
         public void SlideList(int delta)
         {
+            if(_isEmptyCollection)
+            {
+                return;
+            }
+            var lastDesiredPos = _listDesiredPos;
+            _listDesiredPos += delta;
+            if (_listDesiredPos < 0)
+            {
+                _listDesiredPos = 0;
+            }
+            else if (_listDesiredPos >= _songCount)
+            {
+                _listDesiredPos = _songCount - 1;
+            }
 
+            if (lastDesiredPos != _listDesiredPos)
+            {
+                _listCursorPosStepPerSec = Mathf.Abs(_listDesiredPos - _listCursorPos) / (DISPLAYER_ANIM_DURATION_MS / 1000f);
+                SelectedSong = _currentCollection[_listDesiredPos];
+                UpdateCenterDisplayer();
+            }
         }
         public void SlideListToTop()
         {
@@ -203,6 +228,10 @@ namespace MajdataPlay.Scenes.List
                 displayer.gameObject.SetActive(false);
                 _idleSongThumbnailDisplayer.Enqueue(displayer);
             }
+        }
+        void UpdateCenterDisplayer()
+        {
+            _centerCoverDisplayer.SetSongDetail(SelectedSong!);
         }
         void UpdateDisplayerBinding()
         {
@@ -310,14 +339,21 @@ namespace MajdataPlay.Scenes.List
                 }
             }
         }
+        void UpdateListConfiguration()
+        {
+            _listConfig.SelectedSongIndex = _listDesiredPos;
+            _listConfig.SelectedSongHash = SelectedSong?.Hash ?? string.Empty;
+        }
 
         internal void SetCursor(ISongDetail songDetail)
         {
-            var pos = SongStorage.CollectionIndex;
-            SongStorage.WorkingCollection.SetCursor(songDetail);
+            if(_isEmptyCollection)
+            {
+                return;
+            }
             _currentCollection.SetCursor(songDetail);
-            _listConfig.SelectedSongIndex = SongStorage.WorkingCollection.Index;
-            _listConfig.SelectedSongHash = songDetail.Hash;
+            _listDesiredPos = _currentCollection.Index;
+            UpdateListConfiguration();
         }
         //async Task AnalyzeAndUpdateBpmLedAsync(ISongDetail songDetail, ChartLevel level)
         //{
