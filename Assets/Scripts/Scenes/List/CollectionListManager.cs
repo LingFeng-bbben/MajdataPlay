@@ -52,7 +52,7 @@ namespace MajdataPlay.Scenes.List
 
         int _listDesiredPos = 0;
         float _listCursorPos = 0;
-        float _displayerAnimStepPerSec = 0f;
+        float _listCursorPosStepPerSec = 0f;
 
         SongCollection _currentCollection = SongCollection.Empty("Empty");
         SongCollection[] _collections = Array.Empty<SongCollection>();
@@ -109,7 +109,7 @@ namespace MajdataPlay.Scenes.List
             UpdateSelectedSongCollection();
             if(lastDesiredPos != _listDesiredPos)
             {
-                _displayerAnimStepPerSec = Mathf.Abs(_listDesiredPos - _listCursorPos) / (DISPLAYER_ANIM_DURATION_MS / 1000f);
+                _listCursorPosStepPerSec = Mathf.Abs(_listDesiredPos - _listCursorPos) / (DISPLAYER_ANIM_DURATION_MS / 1000f);
             }
         }
         public void SlideDifficulty(int delta)
@@ -139,7 +139,7 @@ namespace MajdataPlay.Scenes.List
         internal void OnUpdate()
         {
             UpdateSongCollectionBinding();
-            UpdateDisplayerAnim();
+            UpdateDisplayerPosition();
         }
         
         internal void NextCollection()
@@ -230,7 +230,7 @@ namespace MajdataPlay.Scenes.List
                 }
             }
         }
-        void UpdateDisplayerAnim()
+        void UpdateDisplayerPosition()
         {
             if(_listCursorPos == _listDesiredPos)
             {
@@ -238,7 +238,7 @@ namespace MajdataPlay.Scenes.List
             }
             else
             {
-                _listCursorPos += _displayerAnimStepPerSec * MajTimeline.DeltaTime;
+                _listCursorPos += _listCursorPosStepPerSec * MajTimeline.DeltaTime;
                 _listCursorPos = Mathf.Min(_listCursorPos, _listDesiredPos);
             }
             for (var i = 0; i < _collectionBindings.Length; i++)

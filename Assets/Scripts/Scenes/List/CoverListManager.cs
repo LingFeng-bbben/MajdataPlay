@@ -57,8 +57,11 @@ namespace MajdataPlay.Scenes.List
         int _selectedDifficulty = 0;
 
         int _songCount = 0;
-        float _listCursorPos = 0;
+
+        // List cursor position and desired position
         int _listDesiredPos = 0;
+        float _listCursorPos = 0;
+        float _listCursorPosStepPerSec = 0f;
 
         float _preloadCooldownTimer = 0.5f;
         bool _isNeedPreload = false;
@@ -179,7 +182,8 @@ namespace MajdataPlay.Scenes.List
         }
         internal void OnUpdate()
         {
-            UpdateSongCoverAndThumbnailBinding();
+            UpdateDisplayerBinding();
+            UpdateDisplayerPosition();
         }
         void Clear()
         {
@@ -200,7 +204,7 @@ namespace MajdataPlay.Scenes.List
                 _idleSongThumbnailDisplayer.Enqueue(displayer);
             }
         }
-        void UpdateSongCoverAndThumbnailBinding()
+        void UpdateDisplayerBinding()
         {
             if(_isEmptyCollection)
             {
@@ -269,6 +273,40 @@ namespace MajdataPlay.Scenes.List
                             MajDebug.LogWarning("No idle song thumbnail displayer available.");
                         }                            
                     }
+                }
+            }
+        }
+        void UpdateDisplayerPosition()
+        {
+            if (_listCursorPos == _listDesiredPos)
+            {
+                return;
+            }
+            else
+            {
+                _listCursorPos += _listCursorPosStepPerSec * MajTimeline.DeltaTime;
+                _listCursorPos = Mathf.Min(_listCursorPos, _listDesiredPos);
+            }
+            var songCoverBindings = _songCoverBindings.AsSpan();
+            var songThumbnailBindings = _songThumbnailBindings.AsSpan();
+            for (var i = 0; i < _songCount; i++)
+            {
+                ref var coverBinding = ref songCoverBindings[i];
+                ref var thumbnailBinding = ref songThumbnailBindings[i];
+                var delta = i - _listCursorPos;
+
+                // Update song cover position
+                var coverDisplayer = coverBinding.Displayer;
+                if (coverDisplayer is not null)
+                {
+                    coverDisplayer.RectTransform.anchoredPosition = GetCoverDisplayerPositionFromDelta(delta);
+                }
+
+                // Update thumbnail position
+                var thumbnailDisplayer = thumbnailBinding.Displayer;
+                if (thumbnailDisplayer is not null)
+                {
+                    thumbnailDisplayer.RectTransform.anchoredPosition = GetThumbnailDisplayerPositionFromDelta(delta);
                 }
             }
         }
