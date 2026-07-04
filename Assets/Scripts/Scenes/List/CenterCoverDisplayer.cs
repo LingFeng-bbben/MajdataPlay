@@ -1,20 +1,21 @@
 using Cysharp.Threading.Tasks;
+using MajdataPlay.Drawing;
+using MajdataPlay.IO;
 using MajdataPlay.Scenes.Game;
 using MajdataPlay.Scenes.Game.Notes;
-using MajdataPlay.IO;
+using MajdataPlay.Settings;
+using MajdataPlay.Settings.Runtime;
 using MajdataPlay.Utils;
-using MajdataPlay.Drawing;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MajdataPlay.Settings;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.Serialization;
+using UnityEngine.UI;
 #nullable enable
 namespace MajdataPlay.Scenes.List
 {
@@ -49,13 +50,17 @@ namespace MajdataPlay.Scenes.List
 
         int _diff = 0;
 
+        ISongDetail? _currentSongDetail = null;
+
         CancellationTokenSource? _cts = null;
         
         CoverListManager _listDisplayer;
         ListManager _listManager;
+
+        readonly ListConfig _listConfig = MajEnv.RuntimeConfig?.List ?? new();
         private void Awake()
         {
-            _loadingObj.SetActive(false);
+            SetDifficulty((int)_listConfig.SelectedDiff);
         }
         void Start()
         {
@@ -87,7 +92,7 @@ namespace MajdataPlay.Scenes.List
             {
                 CabinetLed.SetButtonLight(_diffColors.Last(), 7);
             }
-
+            UpdateMetadataAndScoreDisplayer();
         }
         public void SetSongDetail(ISongDetail detail)
         {
@@ -95,13 +100,21 @@ namespace MajdataPlay.Scenes.List
             {
                 _cts.Cancel();
             }
+            _currentSongDetail = detail;
+            UpdateMetadataAndScoreDisplayer();
             _cts = new();
             var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_listManager.CancellationToken, _cts.Token);
             ListManager.AllBackgroundTasks.Add(SetCoverAsync(detail, linkedCts.Token));
         }
-        public void SetNoCover()
+
+        void UpdateMetadataAndScoreDisplayer()
         {
-            _songCoverDisplayer.sprite = SpriteLoader.EmptySprite;
+            if(_currentSongDetail is null)
+            {
+                return;
+            }
+            _metadataDisplayer.SetMetadataFromSongDetail(_currentSongDetail, (ChartLevel)_diff);
+            _scoreDisplayer.SetScore(_currentSongDetail, (ChartLevel)_diff);
         }
         
         async Task SetCoverAsync(ISongDetail detail, CancellationToken ct = default)

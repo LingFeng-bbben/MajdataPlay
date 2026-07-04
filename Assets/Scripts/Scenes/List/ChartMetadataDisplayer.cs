@@ -46,5 +46,20 @@ namespace MajdataPlay.Scenes.List
         [SerializeField]
         [FormerlySerializedAs("durationDisplayer")]
         TextMeshProUGUI _durationDisplayer;
+
+        public void SetMetadataFromSongDetail(ISongDetail songDetail, ChartLevel level)
+        {
+            if (songDetail is OnlineSongDetail onlineSongDetail)
+            {
+                _onlineIdDisplayer.text = $"ID: {onlineSongDetail.Id}";
+            }
+            else
+            {
+                _onlineIdDisplayer.text = string.Empty;
+            }
+            _title.text = songDetail.Title;
+            _artist.text = songDetail.Artist;
+            _charter.text = songDetail.Designers[(int)level];
+        }
     }
 }
