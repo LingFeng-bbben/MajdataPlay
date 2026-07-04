@@ -5637,6 +5637,10 @@ PrefabInstance:
       propertyPath: ThumbUpGreenColor.r
       value: 0.5863606
       objectReference: {fileID: 0}
+    - target: {fileID: 905774944050571930, guid: d170f1a30405d634e84aeca872a46298, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1353372395962235708, guid: d170f1a30405d634e84aeca872a46298, type: 3}
       propertyPath: m_Name
       value: Main_Display (1)
@@ -5688,6 +5692,10 @@ PrefabInstance:
     - target: {fileID: 2386200137386047956, guid: d170f1a30405d634e84aeca872a46298, type: 3}
       propertyPath: m_fontSizeBase
       value: 28
+      objectReference: {fileID: 0}
+    - target: {fileID: 2386200137386047956, guid: d170f1a30405d634e84aeca872a46298, type: 3}
+      propertyPath: m_overflowMode
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 2386200137386047956, guid: d170f1a30405d634e84aeca872a46298, type: 3}
       propertyPath: m_enableAutoSizing
@@ -11115,6 +11123,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -68.20001
       objectReference: {fileID: 0}
+    - target: {fileID: 762452894403173411, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
+      propertyPath: m_AdditionalShaderChannelsFlag
+      value: 25
+      objectReference: {fileID: 0}
     - target: {fileID: 1353372395962235708, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
       propertyPath: m_Name
       value: Main_Display_ribbon
@@ -11266,6 +11278,14 @@ PrefabInstance:
     - target: {fileID: 6427247033723599783, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7173039098740475952, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
+      propertyPath: m_AdditionalShaderChannelsFlag
+      value: 25
+      objectReference: {fileID: 0}
+    - target: {fileID: 7174649589833111885, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
+      propertyPath: m_AdditionalShaderChannelsFlag
+      value: 25
       objectReference: {fileID: 0}
     - target: {fileID: 7377847830405006517, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
       propertyPath: m_AnchoredPosition.y

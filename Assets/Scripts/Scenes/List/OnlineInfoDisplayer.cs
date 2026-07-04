@@ -8,9 +8,8 @@ using UnityEngine.UI;
 #nullable enable
 namespace MajdataPlay.Scenes.List
 {
-    public class SubInfoDisplayer : MonoBehaviour
+    public class OnlineInfoDisplayer : MonoBehaviour
     {
-        public TMP_Text id_text;
         public TMP_Text LikeCount;
         public TMP_Text PlayCount;
         public TMP_Text CommentCount;
@@ -31,7 +30,6 @@ namespace MajdataPlay.Scenes.List
                 _cts = new();
                 if (detail is OnlineSongDetail onlineDetail)
                 {
-                    id_text.text = "ID: " + onlineDetail.Id;
                     await UniTask.SwitchToThreadPool();
                     using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(token, _cts.Token);
                     token = linkedCts.Token;
@@ -70,7 +68,6 @@ namespace MajdataPlay.Scenes.List
         }
         public void Hide()
         {
-            id_text.text = "";
             HideInteraction();
         }
 

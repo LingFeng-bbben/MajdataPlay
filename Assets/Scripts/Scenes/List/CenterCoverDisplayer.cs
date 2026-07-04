@@ -14,15 +14,18 @@ using MajdataPlay.Settings;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Serialization;
 #nullable enable
 namespace MajdataPlay.Scenes.List
 {
     public class CenterCoverDisplayer : MonoBehaviour
     {
         [SerializeField]
-        Image _bgCard;
+        [FormerlySerializedAs("levelRingDisplayer")]
+        Image _levelRingDisplayer;
         [SerializeField]
-        Image _cover;
+        [FormerlySerializedAs("songCoverDisplayer")]
+        Image _songCoverDisplayer;
         [SerializeField]
         TMP_Text _level;
         [SerializeField]
@@ -67,7 +70,7 @@ namespace MajdataPlay.Scenes.List
         }
         public void SetDifficulty(int i)
         {
-            _bgCard.color = diffColors[i];
+            _levelRingDisplayer.color = diffColors[i];
             diff = i;
             if (i + 1 < diffColors.Length)
             {
@@ -99,7 +102,7 @@ namespace MajdataPlay.Scenes.List
         }
         public void SetNoCover()
         {
-            _cover.sprite = null!;
+            _songCoverDisplayer.sprite = null!;
         }
         void OnDestroy()
         {
@@ -108,11 +111,11 @@ namespace MajdataPlay.Scenes.List
         async Task SetCoverAsync(ISongDetail detail, CancellationToken ct = default)
         {
             _loadingObj.SetActive(true);
-            _cover.sprite = SpriteLoader.EmptySprite;
+            _songCoverDisplayer.sprite = SpriteLoader.EmptySprite;
             var cover = await detail.GetCoverAsync(true, token: ct);
             await UniTask.SwitchToMainThread();
             ct.ThrowIfCancellationRequested();
-            _cover.sprite = cover;
+            _songCoverDisplayer.sprite = cover;
             _loadingObj.SetActive(false);
         }
 
