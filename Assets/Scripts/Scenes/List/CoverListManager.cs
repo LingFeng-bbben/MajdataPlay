@@ -3,6 +3,7 @@ using MajdataPlay.Buffers;
 using MajdataPlay.Collections;
 using MajdataPlay.Editor;
 using MajdataPlay.IO;
+using MajdataPlay.Numerics;
 using MajdataPlay.Scenes.Game;
 using MajdataPlay.Scenes.List.Models;
 using MajdataPlay.Settings.Runtime;
@@ -339,7 +340,53 @@ namespace MajdataPlay.Scenes.List
         //        binding.SongDetail = _currentCollection[i];
         //    }
         //}
-        
+
+        Vector2 GetCoverDisplayerPositionFromDelta(float delta)
+        {
+            const int X_POS_STEP = 169;
+            const int X_POS_WITH_DELTA_1 = 264;
+
+            var absDelta = Mathf.Abs(delta);
+            if (delta == 0)
+            {
+                return Vector2.zero;
+            }
+            else if (absDelta.InRange(0, 1))
+            {
+                return new Vector2(X_POS_WITH_DELTA_1 * absDelta * Mathf.Sign(delta), 0);
+            }
+            else
+            {
+                var index = (int)absDelta;
+                var posStartAt = X_POS_WITH_DELTA_1 * index;
+                var middle = X_POS_STEP * Mathf.Floor(absDelta);
+
+                return new Vector2((posStartAt + middle) * Mathf.Sign(delta), 0);
+            }
+        }
+        Vector2 GetThumbnailDisplayerPositionFromDelta(float delta)
+        {
+            const int X_POS_STEP = 80;
+            const int X_POS_WITH_DELTA_1 = 203;
+            
+            var absDelta = Mathf.Abs(delta);
+            if (delta == 0)
+            {
+                return Vector2.zero;
+            }
+            else if (absDelta.InRange(0, 1))
+            {
+                return new Vector2(X_POS_WITH_DELTA_1 * absDelta * Mathf.Sign(delta), 0);
+            }
+            else
+            {
+                var index = (int)absDelta;
+                var posStartAt = X_POS_WITH_DELTA_1 * index;
+                var middle = X_POS_STEP * Mathf.Floor(absDelta);
+
+                return new Vector2((posStartAt + middle) * Mathf.Sign(delta), 0);
+            }
+        }
         struct SongCoverBinding
         {
             public ISongDetail SongDetail { get; set; }
