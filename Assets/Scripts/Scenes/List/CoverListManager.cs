@@ -176,9 +176,9 @@ namespace MajdataPlay.Scenes.List
         {
             SlideList(int.MaxValue / 2);
         }
-        void Update()
+        internal void OnUpdate()
         {
-
+            UpdateSongCoverAndThumbnailBinding();
         }
         void Clear()
         {
@@ -199,7 +199,7 @@ namespace MajdataPlay.Scenes.List
                 _idleSongThumbnailDisplayer.Enqueue(displayer);
             }
         }
-        void UpdateSongCoverBinding()
+        void UpdateSongCoverAndThumbnailBinding()
         {
             if(_isEmptyCollection)
             {
@@ -271,64 +271,7 @@ namespace MajdataPlay.Scenes.List
                 }
             }
         }
-        void UpdateSongThumbnailBinding()
-        {
 
-        }
-        //void SongCoverUpdate(Memory<SongDetailBinding> bindingsMemory)
-        //{
-        //    var bindings = bindingsMemory.Span;
-        //    for (int i = 0; i < bindingsMemory.Length; i++)
-        //    {
-        //        var distance = i - listPosReal;
-        //        var absDistance = Mathf.Abs(distance);
-        //        ref var binding = ref bindings[i];
-        //        SongCoverSmallDisplayer cover;
-
-        //        if (absDistance > 5)
-        //        {
-        //            if(binding.Displayer is not null)
-        //            {
-        //                cover = binding.Displayer;
-        //                binding.Displayer = null;
-        //                cover.gameObject.SetActive(false);
-        //                _idleSongCoverDisplayer.Enqueue(cover);
-        //            }
-        //            continue;
-        //        }
-        //        else
-        //        {
-        //            if(binding.Displayer is null)
-        //            {
-        //                if(_idleSongCoverDisplayer.TryDequeue(out cover))
-        //                {
-        //                    binding.Displayer = cover;
-        //                    cover.gameObject.SetActive(true);
-        //                    cover.SetSongDetail(binding.SongDetail);
-        //                }
-        //                else
-        //                {
-        //                    continue;
-        //                }
-        //            }
-        //            else
-        //            {
-        //                cover = binding.Displayer;
-        //            }
-        //        }
-
-        //        if (absDistance > 4)
-        //        {
-        //            cover.SetOpacity(-Mathf.Abs(distance) + 5);
-        //        }
-        //        else
-        //        {
-        //            cover.SetOpacity(1f);
-        //        }
-
-        //        cover.RectTransform.anchoredPosition = GetCoverPosition(radius, (distance * angle - 90) * Mathf.Deg2Rad);
-        //    }
-        //}
         internal void SetCursor(ISongDetail songDetail)
         {
             var pos = SongStorage.CollectionIndex;
