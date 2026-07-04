@@ -92,6 +92,10 @@ namespace MajdataPlay.Scenes.List.Models
                 }
             }
         }
+        public void SetActive(bool state)
+        {
+            gameObject.SetActive(state);
+        }
         async Task SetCoverAsync(CancellationToken token = default)
         {
             _loading.SetActive(true);

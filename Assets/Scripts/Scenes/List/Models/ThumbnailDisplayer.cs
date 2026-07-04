@@ -8,5 +8,13 @@ namespace MajdataPlay.Scenes.List.Models
 {
     public class ThumbnailDisplayer : CoverSmallDisplayer
     {
+        public void SetActive(bool state)
+        {
+            gameObject.SetActive(state);
+        }
+        public void SetSongDetail(ISongDetail detail)
+        {
+
+        }
     }
 }

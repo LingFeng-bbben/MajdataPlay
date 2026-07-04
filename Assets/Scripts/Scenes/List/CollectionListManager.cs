@@ -221,7 +221,7 @@ namespace MajdataPlay.Scenes.List
                     }
                     if (!_idleCollectionDisplayers.TryDequeue(out displayer))
                     {
-                        Debug.LogWarning("No idle collection displayer available.");
+                        MajDebug.LogWarning("No idle collection displayer available.");
                         continue;
                     }
                     binding.Displayer = displayer;

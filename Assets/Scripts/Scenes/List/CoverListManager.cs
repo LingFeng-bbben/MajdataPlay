@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Serialization;
+using UnityEngine.UIElements;
 #nullable enable
 namespace MajdataPlay.Scenes.List
 {
@@ -55,8 +56,8 @@ namespace MajdataPlay.Scenes.List
         int _selectedDifficulty = 0;
 
         int _songCount = 0;
-        int _songListCursor = 0;
-        float _songListDesiredPos = 0;
+        float _listCursorPos = 0;
+        int _listDesiredPos = 0;
 
         float _preloadCooldownTimer = 0.5f;
         bool _isNeedPreload = false;
@@ -70,7 +71,7 @@ namespace MajdataPlay.Scenes.List
         SongCoverDisplayer[] _songCoverDisplayers = Array.Empty<SongCoverDisplayer>();
         ThumbnailDisplayer[] _songThumbnailDisplayers = Array.Empty<ThumbnailDisplayer>();
 
-        readonly RentedList<SongDetailBinding> _songDetailBindings = new();
+        readonly RentedList<SongCoverBinding> _songCoverBindings = new();
         readonly RentedList<SongThumbnailBinding> _songThumbnailBindings = new();
 
         readonly Queue<SongCoverDisplayer> _idleSongCoverDisplayer = new();
@@ -141,11 +142,11 @@ namespace MajdataPlay.Scenes.List
                 _isEmptyCollection = false;                
                 
                 _songCount = _currentCollection.Count;
-                _songListCursor = 0;
+                _listCursorPos = 0;
                 for (var i = 0; i < _songCount; i++)
                 {
                     var songDetail = _currentCollection[i];
-                    var coverBinding = new SongDetailBinding()
+                    var coverBinding = new SongCoverBinding()
                     {
                         SongDetail = songDetail
                     };
@@ -153,7 +154,7 @@ namespace MajdataPlay.Scenes.List
                     {
                         SongDetail = songDetail
                     }; 
-                    _songDetailBindings.Add(coverBinding);
+                    _songCoverBindings.Add(coverBinding);
                     _songThumbnailBindings.Add(thumbnailBinding);
                 }
             }
@@ -182,7 +183,8 @@ namespace MajdataPlay.Scenes.List
         void Clear()
         {
             SelectedSong = null;
-            _songDetailBindings.Clear();
+            _songCount = 0;
+            _songCoverBindings.Clear();
             _songThumbnailBindings.Clear();
             for (var i = 0; i < _songCoverDisplayers.Length; i++)
             {
@@ -196,6 +198,82 @@ namespace MajdataPlay.Scenes.List
                 displayer.gameObject.SetActive(false);
                 _idleSongThumbnailDisplayer.Enqueue(displayer);
             }
+        }
+        void UpdateSongCoverBinding()
+        {
+            if(_isEmptyCollection)
+            {
+                return;
+            }
+            var songCoverBindings = _songCoverBindings.AsSpan();
+            var songThumbnailBindings = _songThumbnailBindings.AsSpan();
+            var currentListCursorPos = (int)_listCursorPos;
+            for (var i = 0; i < _songCount; i++)
+            {
+                ref var coverBinding = ref songCoverBindings[i];
+                ref var thumbnailBinding = ref songThumbnailBindings[i];
+                var absDistance = Math.Abs(i - currentListCursorPos);
+
+                // Update song cover binding
+                var coverDisplayer = coverBinding.Displayer;
+                if (absDistance > 3)
+                {
+                    if(coverDisplayer is not null)
+                    {
+                        coverBinding.Displayer = null;
+                        coverDisplayer.SetActive(false);
+                        _idleSongCoverDisplayer.Enqueue(coverDisplayer);
+                    }                    
+                }
+                else
+                {
+                    if (coverDisplayer is null)
+                    {
+                        if (_idleSongCoverDisplayer.TryDequeue(out coverDisplayer))
+                        {
+                            coverBinding.Displayer = coverDisplayer;
+                            coverDisplayer.SetSongDetail(coverBinding.SongDetail);
+                            coverDisplayer.SetActive(true);
+                        }
+                        else
+                        {
+                            MajDebug.LogWarning("No idle song cover displayer available.");
+                        }                            
+                    }                    
+                }
+
+                // Update thumbnail binding
+                var thumbnailDisplayer = thumbnailBinding.Displayer;
+                if (absDistance > 6)
+                {
+                    if (thumbnailDisplayer is not null)
+                    {
+                        thumbnailBinding.Displayer = null;
+                        thumbnailDisplayer.SetActive(false);
+                        _idleSongThumbnailDisplayer.Enqueue(thumbnailDisplayer);
+                    }
+                }
+                else
+                {
+                    if (thumbnailDisplayer is null)
+                    {
+                        if (!_idleSongThumbnailDisplayer.TryDequeue(out thumbnailDisplayer))
+                        {
+                            thumbnailBinding.Displayer = thumbnailDisplayer;
+                            thumbnailDisplayer.SetSongDetail(thumbnailBinding.SongDetail);
+                            thumbnailDisplayer.SetActive(true);
+                        }
+                        else
+                        {
+                            MajDebug.LogWarning("No idle song thumbnail displayer available.");
+                        }                            
+                    }
+                }
+            }
+        }
+        void UpdateSongThumbnailBinding()
+        {
+
         }
         //void SongCoverUpdate(Memory<SongDetailBinding> bindingsMemory)
         //{
@@ -319,14 +397,14 @@ namespace MajdataPlay.Scenes.List
         //    }
         //}
         
-        struct SongDetailBinding
+        struct SongCoverBinding
         {
             public ISongDetail SongDetail { get; set; }
             public SongCoverDisplayer? Displayer { get; set; }
             public ValueTask? PreloadTask { get; set; }
 
 
-            public SongDetailBinding(ISongDetail songDetail, SongCoverDisplayer? displayer)
+            public SongCoverBinding(ISongDetail songDetail, SongCoverDisplayer? displayer)
             {
                 SongDetail = songDetail;
                 Displayer = displayer;
