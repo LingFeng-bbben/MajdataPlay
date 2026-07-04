@@ -17,7 +17,7 @@ using UnityEngine.UI;
 #nullable enable
 namespace MajdataPlay.Scenes.List
 {
-    public class CoverBigDisplayer : MonoBehaviour
+    public class CenterCoverDisplayer : MonoBehaviour
     {
         [SerializeField]
         Image _bgCard;

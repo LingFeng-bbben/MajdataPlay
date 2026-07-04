@@ -38,7 +38,7 @@ namespace MajdataPlay.Scenes.List
 
         [SerializeField]
         [FormerlySerializedAs("centerCoverDisplayer")]
-        CoverBigDisplayer _centerCoverDisplayer;
+        CenterCoverDisplayer _centerCoverDisplayer;
 
         [SerializeField]
         [FormerlySerializedAs("songCoverListRoot")]
