@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 #nullable enable
-namespace MajdataPlay.Scenes.List
+namespace MajdataPlay.Scenes.List.Models
 {
     public class CollectionDisplayer : MonoBehaviour
     {

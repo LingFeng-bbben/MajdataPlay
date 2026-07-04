@@ -10,9 +10,9 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 #nullable enable
-namespace MajdataPlay.Scenes.List
+namespace MajdataPlay.Scenes.List.Models
 {
-    internal class SongCoverSmallDisplayer : CoverSmallDisplayer
+    internal class SongCoverDisplayer : CoverSmallDisplayer
     {
         public int SelectedDifficulty { get; set; } = 0;
         [SerializeField]

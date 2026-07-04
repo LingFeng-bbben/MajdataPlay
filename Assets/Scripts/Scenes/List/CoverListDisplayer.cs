@@ -4,6 +4,7 @@ using MajdataPlay.Collections;
 using MajdataPlay.Editor;
 using MajdataPlay.IO;
 using MajdataPlay.Scenes.Game;
+using MajdataPlay.Scenes.List.Models;
 using MajdataPlay.Settings.Runtime;
 using MajdataPlay.Utils;
 using System;
@@ -38,12 +39,12 @@ namespace MajdataPlay.Scenes.List
         CoverBigDisplayer _centerCoverDisplayer;
 
         [SerializeField]
-        [FormerlySerializedAs("songCoverParent")]
-        GameObject _songCoverParent;
+        [FormerlySerializedAs("songCoverListRoot")]
+        GameObject _songCoverListRoot;
 
         [SerializeField]
-        [FormerlySerializedAs("thumbnailParent")]
-        GameObject _thumbnailParent;
+        [FormerlySerializedAs("thumbnailListRoot")]
+        GameObject _thumbnailListRoot;
 
         [SerializeField]
         [ReadOnlyField]
@@ -63,8 +64,8 @@ namespace MajdataPlay.Scenes.List
         SongCollection _currentCollection = SongCollection.Empty("Empty");
 
         readonly RentedList<SongDetailBinding> _songDetailBindings = new();
-        readonly Queue<SongCoverSmallDisplayer> _allocatedSongCoverDisplayer = new(POOL_SONG_COVER_CAPACITY);
-        readonly Queue<SongCoverSmallDisplayer> _idleSongCoverDisplayer = new(POOL_SONG_COVER_CAPACITY);
+        readonly Queue<SongCoverDisplayer> _allocatedSongCoverDisplayer = new(POOL_SONG_COVER_CAPACITY);
+        readonly Queue<SongCoverDisplayer> _idleSongCoverDisplayer = new(POOL_SONG_COVER_CAPACITY);
 
         readonly ListConfig _listConfig = MajEnv.RuntimeConfig?.List ?? new();
 
@@ -74,8 +75,8 @@ namespace MajdataPlay.Scenes.List
             _previewSoundPlayer = GetComponent<PreviewSoundPlayer>();
             for (var i = 0; i < POOL_SONG_COVER_CAPACITY; i++)
             {
-                var obj = Instantiate(_songCoverDisplayerPrefab, _songCoverParent.transform);
-                var displayer = obj.GetComponent<SongCoverSmallDisplayer>();
+                var obj = Instantiate(_songCoverDisplayerPrefab, _songCoverListRoot.transform);
+                var displayer = obj.GetComponent<SongCoverDisplayer>();
                 displayer.gameObject.SetActive(false);
                 _idleSongCoverDisplayer.Enqueue(displayer);
             }
@@ -275,11 +276,11 @@ namespace MajdataPlay.Scenes.List
         struct SongDetailBinding
         {
             public ISongDetail SongDetail { get; set; }
-            public SongCoverSmallDisplayer? Displayer { get; set; }
+            public SongCoverDisplayer? Displayer { get; set; }
             public ValueTask? PreloadTask { get; set; }
 
 
-            public SongDetailBinding(ISongDetail songDetail, SongCoverSmallDisplayer? displayer)
+            public SongDetailBinding(ISongDetail songDetail, SongCoverDisplayer? displayer)
             {
                 SongDetail = songDetail;
                 Displayer = displayer;
