@@ -26,22 +26,6 @@ namespace MajdataPlay.Scenes.List
         [SerializeField]
         [FormerlySerializedAs("songCoverDisplayer")]
         Image _songCoverDisplayer;
-        
-        [SerializeField]
-        [FormerlySerializedAs("archieveRate")]
-        TMP_Text _archieveRate;
-
-        [SerializeField]
-        [FormerlySerializedAs("apbg")]
-        GameObject _APbg;
-
-        [SerializeField]
-        [FormerlySerializedAs("clearMark")]
-        TMP_Text _clearMark;
-
-        [SerializeField]
-        [FormerlySerializedAs("rank")]
-        TMP_Text _rank;
 
         [SerializeField]
         [FormerlySerializedAs("loadingObj")]
@@ -51,7 +35,7 @@ namespace MajdataPlay.Scenes.List
         [FormerlySerializedAs("diffColors")]
         Color[] _diffColors = new Color[6];
 
-        int diff = 0;
+        int _diff = 0;
 
         CancellationTokenSource? _cts = null;
         ChartAnalyzer _chartAnalyzer;
@@ -75,7 +59,7 @@ namespace MajdataPlay.Scenes.List
         public void SetDifficulty(int i)
         {
             _levelRingDisplayer.color = _diffColors[i];
-            diff = i;
+            _diff = i;
             if (i + 1 < _diffColors.Length)
             {
                 CabinetLed.SetButtonLight(_diffColors[i + 1], 0);
@@ -106,7 +90,7 @@ namespace MajdataPlay.Scenes.List
         }
         public void SetNoCover()
         {
-            _songCoverDisplayer.sprite = null!;
+            _songCoverDisplayer.sprite = SpriteLoader.EmptySprite;
         }
         void OnDestroy()
         {
@@ -123,71 +107,6 @@ namespace MajdataPlay.Scenes.List
             _loadingObj.SetActive(false);
         }
 
-        public void SetScore(MaiScore score)
-        {
-            if (score.PlayCount == 0)
-            {
-                _APbg.SetActive(false);
-                _archieveRate.enabled = false;
-                _rank.text = "";
-            }
-            else
-            {
-                var isClassic = MajInstances.GameManager.Settings.Judge.Mode == JudgeModeOption.Classic;
-                _archieveRate.text = isClassic ? $"{score.Acc.Classic:F2}%" : $"{score.Acc.DX:F4}%";
-                _archieveRate.enabled = true;
-                _APbg.SetActive(false);
-                if (score.ComboState == ComboState.APPlus)
-                {
-                    _APbg.SetActive(true);
-                    _clearMark.text = "AP+";
-                }
-                else if (score.ComboState == ComboState.AP)
-                {
-                    _APbg.SetActive(true);
-                    _clearMark.text = "AP";
-                }
-                else if (score.ComboState == ComboState.FCPlus)
-                {
-                    _APbg.SetActive(true);
-                    _clearMark.text = "FC+";
-                }
-                else if (score.ComboState == ComboState.FC)
-                {
-                    _APbg.SetActive(true);
-                    _clearMark.text = "FC";
-                }
-                var dxacc = score.Acc.DX;
-                var rank = _rank;
-                if (dxacc >= 100.5f)
-                {
-                    rank.text = "SSS+";
-                }
-                else if (dxacc >= 100f)
-                {
-                    rank.text = "SSS";
-                }
-                else if (dxacc >= 99.5f)
-                {
-                    rank.text = "SS+";
-                }
-                else if (dxacc >= 99f)
-                {
-                    rank.text = "SS";
-                }
-                else if (dxacc >= 98f)
-                {
-                    rank.text = "S+";
-                }
-                else if (dxacc >= 97f)
-                {
-                    rank.text = "S";
-                }
-                else
-                {
-                    _rank.text = "";
-                }
-            }
-        }
+        
     }
 }
