@@ -175,7 +175,7 @@ namespace MajdataPlay.Collections
             var filtered = Filter(Origin, orderBy.Keyword);
             var sorted = Sort(filtered, orderBy.SortBy);
 
-            SetCursor(Current, sorted);
+            SetCursor(Current.Hash, sorted);
             this.Sorted = sorted;
         }
         public async Task SortAndFilterAsync(SongOrder orderBy)
@@ -203,15 +203,23 @@ namespace MajdataPlay.Collections
         }
         public void SetCursor(ISongDetail target)
         {
-            SetCursor(target, Sorted);
-        }
-        void SetCursor(ISongDetail target, ISongDetail[] dataSet)
-        {
-            if(IsEmpty)
+            if (IsEmpty)
             {
                 return;
             }
-            var newIndex = dataSet.FindIndex(x => x.Hash == target.Hash);
+            SetCursor(target.Hash, Sorted);
+        }
+        public void SetCursor(string hash)
+        {
+            if (IsEmpty)
+            {
+                return;
+            }
+            SetCursor(hash, Sorted);
+        }
+        void SetCursor(string hash, ISongDetail[] dataSet)
+        {
+            var newIndex = dataSet.FindIndex(x => x.Hash == hash);
             newIndex = newIndex is -1 ? 0 : newIndex;
             _index = newIndex;
         }

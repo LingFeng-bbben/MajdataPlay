@@ -430,6 +430,7 @@ namespace MajdataPlay.Scenes.List
         void RestoreContextFromConfiguration()
         {
             var selectedCollectionUUID = _listConfig.SelectedDirGuid;
+            var selectedSongHash = _listConfig.SelectedSongHash;
             var index = Array.FindIndex(_collections, x => x.Id == selectedCollectionUUID);
             if(index == -1)
             {
@@ -437,6 +438,14 @@ namespace MajdataPlay.Scenes.List
             }
             SlideToList(index);
             SlideToDifficulty((int)_listConfig.SelectedDiff);
+            if(string.IsNullOrEmpty(selectedSongHash))
+            {
+                _coverListDisplayer.SlideListToTop();
+            }
+            else
+            {
+                _coverListDisplayer.SetCursor(selectedSongHash);
+            }            
         }
 
         struct SongCollectionBinding

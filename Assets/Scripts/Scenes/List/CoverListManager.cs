@@ -291,7 +291,7 @@ namespace MajdataPlay.Scenes.List
                 {
                     if (thumbnailDisplayer is null)
                     {
-                        if (!_idleSongThumbnailDisplayer.TryDequeue(out thumbnailDisplayer))
+                        if (_idleSongThumbnailDisplayer.TryDequeue(out thumbnailDisplayer))
                         {
                             thumbnailBinding.Displayer = thumbnailDisplayer;
                             thumbnailDisplayer.SetSongDetail(thumbnailBinding.SongDetail);
@@ -351,7 +351,19 @@ namespace MajdataPlay.Scenes.List
             {
                 return;
             }
-            _currentCollection.SetCursor(songDetail);
+            SetCursorInternal(songDetail.Hash);
+        }
+        internal void SetCursor(string hash)
+        {
+            if (_isEmptyCollection)
+            {
+                return;
+            }
+            SetCursorInternal(hash);
+        }
+        void SetCursorInternal(string hash)
+        {
+            _currentCollection.SetCursor(hash);
             _listDesiredPos = _currentCollection.Index;
             UpdateListConfiguration();
         }
@@ -432,8 +444,8 @@ namespace MajdataPlay.Scenes.List
             else
             {
                 var index = (int)absDelta;
-                var posStartAt = X_POS_WITH_DELTA_1 * index;
-                var middle = X_POS_STEP * Mathf.Floor(absDelta);
+                var posStartAt = X_POS_WITH_DELTA_1 + (X_POS_STEP * (index - 1));
+                var middle = X_POS_STEP * (absDelta - Mathf.Floor(absDelta));
 
                 return new Vector2((posStartAt + middle) * Mathf.Sign(delta), 0);
             }
