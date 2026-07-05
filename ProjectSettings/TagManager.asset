@@ -2,7 +2,7 @@
 %TAG !u! tag:unity3d.com,2011:
 --- !u!78 &1
 TagManager:
-  serializedVersion: 2
+  serializedVersion: 3
   tags: []
   layers:
   - Default
@@ -43,6 +43,15 @@ TagManager:
     locked: 0
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: UI After Mask
+    uniqueID: 2124158571
+    locked: 0
+  - name: UI Mask
+    uniqueID: 1199593265
+    locked: 0
+  - name: UI Before Mask
+    uniqueID: 3583098257
     locked: 0
   - name: BGCover
     uniqueID: 1307213585
@@ -86,3 +95,5 @@ TagManager:
   - name: Debug
     uniqueID: 1299929141
     locked: 0
+  m_RenderingLayers:
+  - Default

@@ -1703,7 +1703,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2800794618870294913}
+  - component: {fileID: 4086060769853655662}
   - component: {fileID: 1238866493186942958}
+  - component: {fileID: 8142111092342664001}
   m_Layer: 5
   m_Name: Main_Display_ribbon
   m_TagString: Untagged
@@ -1724,6 +1726,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 454665815053952832}
+  - {fileID: 7296019304819062462}
   - {fileID: 347761307061707918}
   - {fileID: 7679459466932714727}
   - {fileID: 3843031510597153803}
@@ -1737,6 +1740,29 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: -420}
   m_SizeDelta: {x: 1080, y: 1080}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!223 &4086060769853655662
+Canvas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1353372395962235708}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_RenderMode: 2
+  m_Camera: {fileID: 0}
+  m_PlaneDistance: 100
+  m_PixelPerfect: 0
+  m_ReceivesEvents: 1
+  m_OverrideSorting: 0
+  m_OverridePixelPerfect: 0
+  m_SortingBucketNormalizedSize: 0
+  m_VertexColorAlwaysGammaSpace: 0
+  m_AdditionalShaderChannelsFlag: 0
+  m_UpdateRectTransformForStandalone: 0
+  m_SortingLayerID: 0
+  m_SortingOrder: 0
+  m_TargetDisplay: 0
 --- !u!222 &1238866493186942958
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1745,6 +1771,41 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1353372395962235708}
   m_CullTransparentMesh: 1
+--- !u!114 &8142111092342664001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1353372395962235708}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4b176ff446f80b488686f76d54d6e09, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _basePosY: 0
+  _originalPosY: 0
+  _parentRt: {fileID: 0}
+  _screenHeight: 1920
+  _screenWidth: 1080
+  _canvasScaleFactor: 1
+  _lastMainDisplayOffset: NaN
+  _lastMainDisplayScale: NaN
+  _lastSubDisplayOffset: NaN
+  _lastSubDisplayScale: NaN
+  _lastTransformDisplay: 0
+  _cachedScreenCenterY: 0
+  _canvasScaler: {fileID: 0}
+  _baseReferenceResolution: {x: 0, y: 0}
+  _persistentCanvasScaler: {fileID: 0}
+  _persistentMainDisplay: {fileID: 0}
+  _subCover: {fileID: 0}
+  _subCoverTransform: {fileID: 0}
+  _subCoverRectTransform: {fileID: 0}
+  _subCoverBottom: {fileID: 0}
+  _subCoverBottomTransform: {fileID: 0}
+  _subCoverBottomRectTransform: {fileID: 0}
+  _subDisplay: {fileID: 0}
 --- !u!1 &1414765239191835818
 GameObject:
   m_ObjectHideFlags: 0
@@ -2600,6 +2661,57 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!1 &2248587935114754602
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7296019304819062462}
+  - component: {fileID: 6169915772698499818}
+  m_Layer: 0
+  m_Name: ListManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &7296019304819062462
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2248587935114754602}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2800794618870294913}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &6169915772698499818
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2248587935114754602}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f958c77c083bbb84fb7283b6d18b4c84, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.Scenes.List.ListManager
+  _coverListManager: {fileID: 3871508246094013892}
+  _collectionListManager: {fileID: 8559549775166674051}
+  _userProfileDisplayer: {fileID: 0}
 --- !u!1 &2259155907895019496
 GameObject:
   m_ObjectHideFlags: 0
@@ -3126,7 +3238,7 @@ GameObject:
   - component: {fileID: 2029331605652001459}
   - component: {fileID: 4809691420882572571}
   m_Layer: 5
-  m_Name: ref
+  m_Name: CircleMask
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

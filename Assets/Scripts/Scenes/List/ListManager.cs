@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MajdataPlay.Net;
 using UnityEngine;
+using UnityEngine.Serialization;
 #nullable enable
 namespace MajdataPlay.Scenes.List
 {
@@ -46,10 +47,17 @@ namespace MajdataPlay.Scenes.List
         float _enterPracticeTimer = 0f;
         float _inactiveTimeSec = 0f;
 
-        CoverListManager _coverListDisplayer;
-        CollectionListManager _collectionListDisplayer;
         [SerializeField]
-        UserInfoDisplayer _userInfoDisplayer;
+        [FormerlySerializedAs("coverListManager")]
+        CoverListManager _coverListManager;
+
+        [SerializeField]
+        [FormerlySerializedAs("collectionListManager")]
+        CollectionListManager _collectionListManager;
+
+        [SerializeField]
+        [FormerlySerializedAs("userProfileDisplayer")]
+        UserInfoDisplayer _userProfileDisplayer;
 
         const float AUTO_SLIDE_INTERVAL_SEC = 0.15f;
         const float AUTO_SLIDE_TRIGGER_TIME_SEC = 0.4f;
@@ -106,8 +114,8 @@ namespace MajdataPlay.Scenes.List
         }
         void Start()
         {
-            _coverListDisplayer = Majdata<CoverListManager>.Instance!;
-            _collectionListDisplayer = Majdata<CollectionListManager>.Instance!;
+            _coverListManager = Majdata<CoverListManager>.Instance!;
+            _collectionListManager = Majdata<CollectionListManager>.Instance!;
             InitializeCoverListAsync().Forget();
             var selectsfx = MajInstances.AudioManager.GetSFX("bgm_select.mp3");
             if (!selectsfx.IsPlaying)
@@ -125,11 +133,11 @@ namespace MajdataPlay.Scenes.List
             var apiendpoint = MajEnv.Settings.Online.ApiEndpoints.FirstOrDefault();
             if (apiendpoint is not null)
             {
-                _userInfoDisplayer.DisplayUserInfo(apiendpoint);
+                _userProfileDisplayer.DisplayUserInfo(apiendpoint);
             }
             else
             {
-                _userInfoDisplayer.gameObject.SetActive(false);
+                _userProfileDisplayer.gameObject.SetActive(false);
             }
         }
 
@@ -145,7 +153,7 @@ namespace MajdataPlay.Scenes.List
             finally
             {
                 MajInstances.SceneSwitcher.FadeOut();
-                _collectionListDisplayer.SlideToDifficulty((int)_listConfig.SelectedDiff);
+                _collectionListManager.SlideToDifficulty((int)_listConfig.SelectedDiff);
                 _isInited = true;
                 CabinetLed.SetButtonLight(Color.green, 3);
                 CabinetLed.SetButtonLight(Color.red, 4);
@@ -193,27 +201,27 @@ namespace MajdataPlay.Scenes.List
 
             if (InputManager.IsSensorClickedInThisFrame_OR(SensorArea.A7, SensorArea.E8))
             {
-                _coverListDisplayer.SlideList(1);
+                _coverListManager.SlideList(1);
             }
             else if (InputManager.IsSensorClickedInThisFrame_OR(SensorArea.B8, SensorArea.A8))
             {
-                _coverListDisplayer.SlideList(2);
+                _coverListManager.SlideList(2);
             }
             else if (InputManager.IsSensorClickedInThisFrame_OR(SensorArea.E1, SensorArea.D1, SensorArea.A1))
             {
-                _coverListDisplayer.SlideList(3);
+                _coverListManager.SlideList(3);
             }
             else if (InputManager.IsSensorClickedInThisFrame_OR(SensorArea.A6, SensorArea.E6))
             {
-                _coverListDisplayer.SlideList(-1);
+                _coverListManager.SlideList(-1);
             }
             else if (InputManager.IsSensorClickedInThisFrame_OR(SensorArea.A5, SensorArea.B5))
             {
-                _coverListDisplayer.SlideList(-2);
+                _coverListManager.SlideList(-2);
             }
             else if (InputManager.IsSensorClickedInThisFrame_OR(SensorArea.E5, SensorArea.D5, SensorArea.A4))
             {
-                _coverListDisplayer.SlideList(-3);
+                _coverListManager.SlideList(-3);
             }
             else if (InputManager.IsSensorClickedInThisFrame(SensorArea.C))
             {
@@ -307,7 +315,7 @@ namespace MajdataPlay.Scenes.List
                 _delta = 1;
                 if (a3Statistic.IsClicked)
                 {
-                    _coverListDisplayer.SlideList(1);
+                    _coverListManager.SlideList(1);
                 }
                 else
                 {
@@ -316,7 +324,7 @@ namespace MajdataPlay.Scenes.List
                         if(_autoSlideTimer > AUTO_SLIDE_INTERVAL_SEC)
                         {
                             //_coverListDisplayer.DisableAnimation = true;
-                            _coverListDisplayer.SlideList(_delta);
+                            _coverListManager.SlideList(_delta);
                             _autoSlideTimer = 0;
                         }
                         else
@@ -332,7 +340,7 @@ namespace MajdataPlay.Scenes.List
                 _delta = -1;
                 if (a6Statistic.IsClicked)
                 {
-                    _coverListDisplayer.SlideList(-1);
+                    _coverListManager.SlideList(-1);
                 }
                 else
                 {
@@ -341,7 +349,7 @@ namespace MajdataPlay.Scenes.List
                         if (_autoSlideTimer > AUTO_SLIDE_INTERVAL_SEC)
                         {
                             //_coverListDisplayer.DisableAnimation = true;
-                            _coverListDisplayer.SlideList(_delta);
+                            _coverListManager.SlideList(_delta);
                             _autoSlideTimer = 0;
                         }
                         else
@@ -383,7 +391,7 @@ namespace MajdataPlay.Scenes.List
                     {
                         EnterPractice();
                     }
-                    else if (_collectionListDisplayer.SelectedCollection.Type == ChartStorageType.Dan)
+                    else if (_collectionListManager.SelectedCollection.Type == ChartStorageType.Dan)
                     {
                         EnterDan();
                     }
@@ -455,13 +463,13 @@ namespace MajdataPlay.Scenes.List
 
             if (a8Statistic.IsClicked)
             {
-                _collectionListDisplayer.SlideDifficulty(-1);
+                _collectionListManager.SlideDifficulty(-1);
                 var list = new string[] { "easy.wav", "basic.wav", "advanced.wav", "expert.wav", "master.wav", "remaster.wav", "original.wav" };
                 MajInstances.AudioManager.PlaySFX(list[(int)_listConfig.SelectedDiff]);
             }
             else if (a1Statistic.IsClicked)
             {
-                _collectionListDisplayer.SlideDifficulty(1);
+                _collectionListManager.SlideDifficulty(1);
                 var list = new string[] { "easy.wav", "basic.wav", "advanced.wav", "expert.wav", "master.wav", "remaster.wav", "original.wav" };
                 MajInstances.AudioManager.PlaySFX(list[(int)_listConfig.SelectedDiff]);
             }
@@ -478,7 +486,7 @@ namespace MajdataPlay.Scenes.List
             };
             var charts = new ISongDetail[]
             {
-                _coverListDisplayer.SelectedSong
+                _coverListManager.SelectedSong
             };
             var info = new GameInfo(GameMode.Normal, charts, levels);
             Majdata<GameInfo>.Instance = info;
@@ -495,7 +503,7 @@ namespace MajdataPlay.Scenes.List
             };
             var charts = new ISongDetail[]
             {
-                _coverListDisplayer.SelectedSong
+                _coverListManager.SelectedSong
             };
             var oldinfo = Majdata<GameInfo>.Instance;
             var info = new GameInfo(GameMode.Practice, charts, levels, 114514);
@@ -560,8 +568,8 @@ namespace MajdataPlay.Scenes.List
         void EnterDan()
         {
             _cts.Cancel();
-            var danInfo = _collectionListDisplayer.SelectedCollection.DanInfo;
-            var collection = _collectionListDisplayer.SelectedCollection;
+            var danInfo = _collectionListManager.SelectedCollection.DanInfo;
+            var collection = _collectionListManager.SelectedCollection;
             if (danInfo is null)
             {
                 return;
@@ -585,7 +593,7 @@ namespace MajdataPlay.Scenes.List
                 DanInfo = danInfo
             };
             Majdata<GameInfo>.Instance = info;
-            _collectionListDisplayer.SelectedCollection.Index = 0;
+            _collectionListManager.SelectedCollection.Index = 0;
             _isExited = true;
             MajInstances.SceneSwitcher.SwitchScene("Game", false);
         }
