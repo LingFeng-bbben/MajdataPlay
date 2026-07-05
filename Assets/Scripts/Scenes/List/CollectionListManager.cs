@@ -93,11 +93,21 @@ namespace MajdataPlay.Scenes.List
         {
             InitCollectionStorage();
             InitCollectionBinding();
+            RestoreContextFromConfiguration();
         }
         internal void SlideList(int delta)
         {
+            var pos = _listDesiredPos + delta;
+            SlideToList(pos);
+        }
+        public void SlideDifficulty(int delta)
+        {
+            var pos = _selectedDifficulty + delta;
+            SlideToDifficulty(pos);
+        }
+        void SlideToList(int pos)
+        {
             var lastDesiredPos = _listDesiredPos;
-            _listDesiredPos += delta;
             if (_listDesiredPos < 0)
             {
                 _listDesiredPos = _collections.Length - 1;
@@ -107,17 +117,12 @@ namespace MajdataPlay.Scenes.List
                 _listDesiredPos = 0;
             }
             UpdateSelectedSongCollection();
-            if(lastDesiredPos != _listDesiredPos)
+            if (lastDesiredPos != _listDesiredPos)
             {
                 _listCursorPosStepPerSec = Mathf.Abs(_listDesiredPos - _listCursorPos) / (DISPLAYER_ANIM_DURATION_MS / 1000f);
             }
         }
-        public void SlideDifficulty(int delta)
-        {
-            _selectedDifficulty += delta;
-            SlideToDifficulty(_selectedDifficulty);
-        }
-        public void SlideToDifficulty(int pos)
+        void SlideToDifficulty(int pos)
         {
             _selectedDifficulty = pos;
             if (_selectedDifficulty > 6)
@@ -421,6 +426,17 @@ namespace MajdataPlay.Scenes.List
                 };
                 _collectionBindings[i] = binding;
             }
+        }
+        void RestoreContextFromConfiguration()
+        {
+            var selectedCollectionUUID = _listConfig.SelectedDirGuid;
+            var index = Array.FindIndex(_collections, x => x.Id == selectedCollectionUUID);
+            if(index == -1)
+            {
+                index = 0;
+            }
+            SlideToList(index);
+            SlideToDifficulty((int)_listConfig.SelectedDiff);
         }
 
         struct SongCollectionBinding

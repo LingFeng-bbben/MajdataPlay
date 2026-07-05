@@ -154,7 +154,6 @@ namespace MajdataPlay.Scenes.List
             finally
             {
                 MajInstances.SceneSwitcher.FadeOut();
-                _collectionListManager.SlideToDifficulty((int)_listConfig.SelectedDiff);
                 _isInited = true;
                 CabinetLed.SetButtonLight(Color.green, 3);
                 CabinetLed.SetButtonLight(Color.red, 4);
