@@ -46,7 +46,7 @@ namespace MajdataPlay.Scenes.List
 
         [SerializeField]
         [FormerlySerializedAs("chartAnalyzer")]
-        ChartAnalyzer _chartAnalyzer;
+        ChartVisualDisplayer _chartAnalyzer;
 
         int _diff = 0;
 

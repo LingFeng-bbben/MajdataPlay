@@ -89,7 +89,7 @@ namespace MajdataPlay.Scenes.View
         NotePoolManager _notePoolManager;
         BGManager _bgManager;
         TimeDisplayer _timeDisplayer;
-        ChartAnalyzer _chartAnalyzer;
+        ChartVisualDisplayer _chartAnalyzer;
 
         SimaiChart? _chart;
         
@@ -119,7 +119,7 @@ namespace MajdataPlay.Scenes.View
             _noteAudioManager = Majdata<NoteAudioManager>.Instance!;
             _notePoolManager = Majdata<NotePoolManager>.Instance!;
             _timeDisplayer = Majdata<TimeDisplayer>.Instance!;
-            _chartAnalyzer = Majdata<ChartAnalyzer>.Instance!;
+            _chartAnalyzer = Majdata<ChartVisualDisplayer>.Instance!;
 
             if (!string.IsNullOrEmpty(_videoPath))
             {

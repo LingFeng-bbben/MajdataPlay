@@ -21,7 +21,7 @@ using UnityEngine.UIElements;
 #nullable enable
 namespace MajdataPlay.Scenes.Game
 {
-    public class ChartAnalyzer : MonoBehaviour
+    public class ChartVisualDisplayer : MonoBehaviour
     {
         
         public UnityEngine.Color tapColor;
@@ -53,12 +53,12 @@ namespace MajdataPlay.Scenes.Game
 #endif
         CancellationTokenSource _cts = new();
         readonly AsyncLock _lock = new();
-        readonly Dictionary<SimaiChart, WeakReference<MaidataAnalyzeResult>> _cachedTextures = new(MAX_CACHE_COUNT);
+        readonly Dictionary<SimaiChart, WeakReference<MaidataLineGraphAnalyzeResult>> _cachedTextures = new(MAX_CACHE_COUNT);
         readonly RentedList<SimaiChart> _cachedMaiCharts = new(MAX_CACHE_COUNT);
 
         private void Awake()
         {
-            Majdata<ChartAnalyzer>.Instance = this;
+            Majdata<ChartVisualDisplayer>.Instance = this;
 
             if(_iconPrefab != null)
             {
@@ -82,7 +82,7 @@ namespace MajdataPlay.Scenes.Game
         }
         void OnDestroy()
         {
-            Majdata<ChartAnalyzer>.Free();
+            Majdata<ChartVisualDisplayer>.Free();
             foreach(var (k, v) in _cachedTextures)
             {
                 if(v.TryGetTarget(out var result))
@@ -302,7 +302,7 @@ namespace MajdataPlay.Scenes.Game
             _loadingPrefab?.SetActive(false);
             _rawImage.texture = texture;
         }
-        async UniTask<MaidataAnalyzeResult> AnalyzeMaidataAsync(SimaiChart data, float totalLength, bool noCache = false, CancellationToken token = default)
+        async UniTask<MaidataLineGraphAnalyzeResult> AnalyzeMaidataAsync(SimaiChart data, float totalLength, bool noCache = false, CancellationToken token = default)
         {
             await UniTask.SwitchToThreadPool();
             if (!noCache)
@@ -379,7 +379,7 @@ namespace MajdataPlay.Scenes.Game
             }
 
             var tex = await DrawGraphAsync(tapPoints, slidePoints, touchPoints, token);
-            var result = new MaidataAnalyzeResult()
+            var result = new MaidataLineGraphAnalyzeResult()
             {
                 Esti = esti,
                 Length = length,

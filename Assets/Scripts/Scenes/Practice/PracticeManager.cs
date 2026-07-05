@@ -25,7 +25,7 @@ namespace MajdataPlay.Scenes.Practice
     {
         public TextMeshProUGUI startTimeText;
         public TextMeshProUGUI endTimeText;
-        public ChartAnalyzer chartAnalyzer;
+        public ChartVisualDisplayer chartAnalyzer;
         public RectTransform selectionBox;
         public Text timeText;
         public Text rTimeText;
