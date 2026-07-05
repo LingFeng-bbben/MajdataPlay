@@ -146,6 +146,7 @@ namespace MajdataPlay.Scenes.List
             try
             {
                 await UniTask.Yield();
+                _collectionListManager.Init();
                 //_coverListDisplayer.SwitchToDirList();
                 //_coverListDisplayer.SwitchToSongList();
                 await UniTask.Yield();
