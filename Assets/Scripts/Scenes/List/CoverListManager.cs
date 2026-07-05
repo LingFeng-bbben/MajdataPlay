@@ -213,21 +213,30 @@ namespace MajdataPlay.Scenes.List
         void Clear()
         {
             SelectedSong = null;
+            var songCoverBindings = _songCoverBindings.AsSpan();
+            var songThumbnailBindings = _songThumbnailBindings.AsSpan();
+            for (var i = 0; i < _songCount; i++)
+            {
+                ref var coverBinding = ref songCoverBindings[i];
+                ref var thumbnailBinding = ref songThumbnailBindings[i];
+                var coverDisplayer = coverBinding.Displayer;
+                var thumbnailDisplayer = thumbnailBinding.Displayer;
+                if (coverDisplayer is not null)
+                {
+                    coverBinding.Displayer = null;
+                    coverDisplayer.SetActive(false);
+                    _idleSongCoverDisplayer.Enqueue(coverDisplayer);
+                }
+                if (thumbnailDisplayer is not null)
+                {
+                    thumbnailBinding.Displayer = null;
+                    thumbnailDisplayer.SetActive(false);
+                    _idleSongThumbnailDisplayer.Enqueue(thumbnailDisplayer);
+                }
+            }
             _songCount = 0;
             _songCoverBindings.Clear();
             _songThumbnailBindings.Clear();
-            for (var i = 0; i < _songCoverDisplayers.Length; i++)
-            {
-                var displayer = _songCoverDisplayers[i];
-                displayer.gameObject.SetActive(false);
-                _idleSongCoverDisplayer.Enqueue(displayer);
-            }
-            for (var i = 0; i < _songThumbnailDisplayers.Length; i++)
-            {
-                var displayer = _songThumbnailDisplayers[i];
-                displayer.gameObject.SetActive(false);
-                _idleSongThumbnailDisplayer.Enqueue(displayer);
-            }
         }
         void UpdateCenterDisplayer()
         {
@@ -256,8 +265,12 @@ namespace MajdataPlay.Scenes.List
                     {
                         coverBinding.Displayer = null;
                         coverDisplayer.SetActive(false);
+                        if(_idleSongCoverDisplayer.Contains(coverDisplayer))
+                        {
+
+                        }
                         _idleSongCoverDisplayer.Enqueue(coverDisplayer);
-                    }                    
+                    }
                 }
                 else
                 {
@@ -277,32 +290,32 @@ namespace MajdataPlay.Scenes.List
                 }
 
                 // Update thumbnail binding
-                var thumbnailDisplayer = thumbnailBinding.Displayer;
-                if (absDistance > 6)
-                {
-                    if (thumbnailDisplayer is not null)
-                    {
-                        thumbnailBinding.Displayer = null;
-                        thumbnailDisplayer.SetActive(false);
-                        _idleSongThumbnailDisplayer.Enqueue(thumbnailDisplayer);
-                    }
-                }
-                else
-                {
-                    if (thumbnailDisplayer is null)
-                    {
-                        if (_idleSongThumbnailDisplayer.TryDequeue(out thumbnailDisplayer))
-                        {
-                            thumbnailBinding.Displayer = thumbnailDisplayer;
-                            thumbnailDisplayer.SetSongDetail(thumbnailBinding.SongDetail);
-                            thumbnailDisplayer.SetActive(true);
-                        }
-                        else
-                        {
-                            MajDebug.LogWarning("No idle song thumbnail displayer available.");
-                        }                            
-                    }
-                }
+                //var thumbnailDisplayer = thumbnailBinding.Displayer;
+                //if (absDistance > 6)
+                //{
+                //    if (thumbnailDisplayer is not null)
+                //    {
+                //        thumbnailBinding.Displayer = null;
+                //        thumbnailDisplayer.SetActive(false);
+                //        _idleSongThumbnailDisplayer.Enqueue(thumbnailDisplayer);
+                //    }
+                //}
+                //else
+                //{
+                //    if (thumbnailDisplayer is null)
+                //    {
+                //        if (_idleSongThumbnailDisplayer.TryDequeue(out thumbnailDisplayer))
+                //        {
+                //            thumbnailBinding.Displayer = thumbnailDisplayer;
+                //            thumbnailDisplayer.SetSongDetail(thumbnailBinding.SongDetail);
+                //            thumbnailDisplayer.SetActive(true);
+                //        }
+                //        else
+                //        {
+                //            MajDebug.LogWarning("No idle song thumbnail displayer available.");
+                //        }                            
+                //    }
+                //}
             }
         }
         void UpdateDisplayerPosition()
@@ -410,22 +423,6 @@ namespace MajdataPlay.Scenes.List
         //    CabinetLed.SetSineFunc(3, Color.green, (long)halfNoteMs);
         //    CabinetLed.SetCabinetLightSineFunc(1.0f, (long)(halfNoteMs * 2));
         //}
-        //void RefreshSongCoverBindings()
-        //{
-        //    var bindings = _songDetailBindings.Span;
-        //    for (int i = 0; i < bindings.Length; i++)
-        //    {
-        //        ref var binding = ref bindings[i];
-        //        if (binding.Displayer is not null)
-        //        {
-        //            var cover = binding.Displayer;
-        //            binding.Displayer = null;
-        //            cover.gameObject.SetActive(false);
-        //            _idleSongCoverDisplayer.Enqueue(cover);
-        //        }
-        //        binding.SongDetail = _currentCollection[i];
-        //    }
-        //}
 
         Vector2 GetCoverDisplayerPositionFromDelta(float delta)
         {
@@ -467,8 +464,8 @@ namespace MajdataPlay.Scenes.List
             else
             {
                 var index = (int)absDelta;
-                var posStartAt = X_POS_WITH_DELTA_1 * index;
-                var middle = X_POS_STEP * Mathf.Floor(absDelta);
+                var posStartAt = X_POS_WITH_DELTA_1 * (index - 1);
+                var middle = X_POS_STEP * (absDelta - Mathf.Floor(absDelta));
 
                 return new Vector2((posStartAt + middle) * Mathf.Sign(delta), 0);
             }
