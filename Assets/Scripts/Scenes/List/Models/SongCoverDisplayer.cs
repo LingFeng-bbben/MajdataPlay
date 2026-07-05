@@ -56,6 +56,7 @@ namespace MajdataPlay.Scenes.List.Models
                 }
                 _levelDisplayers[i] = new LevelDisplayer
                 {
+                    Object = child.gameObject,
                     Transform = child,
                     TextTransform = textTransform,
                     TextDisplayer = textDisplayer
@@ -88,12 +89,14 @@ namespace MajdataPlay.Scenes.List.Models
             var posIndex = _levelDPOriginPositions.Length - 1;
             for (var i = songDetail.Levels.Length - 1; i >= 0; i--)
             {
+                var displayer = _levelDisplayers[i];
                 var level = songDetail.Levels[i];
                 if(string.IsNullOrEmpty(level))
                 {
+                    displayer.Object.SetActive(false);
                     continue;
                 }
-                var displayer = _levelDisplayers[i];
+                displayer.Object.SetActive(true);
                 var originPos = _levelDPOriginPositions[posIndex--];
                 displayer.Transform.localPosition = originPos.Position;
                 displayer.Transform.localRotation = originPos.Rotation;
@@ -117,6 +120,7 @@ namespace MajdataPlay.Scenes.List.Models
 
         readonly struct LevelDisplayer
         {
+            public required GameObject Object { get; init; }
             public required Transform Transform { get; init; }
             public required Transform TextTransform { get; init; }
             public required TextMeshProUGUI TextDisplayer { get; init; }
