@@ -105,6 +105,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.Scenes.List.Models.ThumbnailDisplayer
   _coverDisplayer: {fileID: 234687209036855421}
+  _loadingComponent: {fileID: 3801954511574390509}
 --- !u!1 &8279228112649159462
 GameObject:
   m_ObjectHideFlags: 0
@@ -293,6 +294,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f112a8cf86302c44587d18e48fb8319a, type: 3}
+--- !u!1 &3801954511574390509 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7663314528721028555, guid: f112a8cf86302c44587d18e48fb8319a, type: 3}
+  m_PrefabInstance: {fileID: 6816988078818988838}
+  m_PrefabAsset: {fileID: 0}
 --- !u!224 &8958235829290410871 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 2506467099436396625, guid: f112a8cf86302c44587d18e48fb8319a, type: 3}
