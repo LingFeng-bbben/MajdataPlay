@@ -1,4 +1,6 @@
 ﻿using Cysharp.Threading.Tasks;
+using MajdataPlay.Drawing;
+using MajdataPlay.Settings.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,102 +10,122 @@ using System.Threading.Tasks;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 #nullable enable
 namespace MajdataPlay.Scenes.List.Models
 {
     internal class SongCoverDisplayer : CoverSmallDisplayer
     {
-        public int SelectedDifficulty { get; set; } = 0;
         [SerializeField]
-        Image _songCover;
-        [SerializeField]
-        Image _levelBackground;
-        [SerializeField]
-        Image _background;
-        [SerializeField]
-        TextMeshProUGUI _levelText;
-        [SerializeField]
-        GameObject _loading;
+        [FormerlySerializedAs("coverDisplayer")]
+        Image _coverDisplayer;
 
-        bool _isRefreshed = false;
-        ISongDetail _boundSong;
+        [SerializeField]
+        [FormerlySerializedAs("levelDisplayerListRoot")]
+        GameObject _levelDisplayerListRoot;
+
+        [SerializeField]
+        [FormerlySerializedAs("loadingComponent")]
+        GameObject _loadingComponent;
+
         CancellationTokenSource _cts = new();
-        CoverListManager? _listDisplayer;
+
+        LevelDisplayer[] _levelDisplayers = Array.Empty<LevelDisplayer>();
+        LevelDPOriginPosition[] _levelDPOriginPositions = Array.Empty<LevelDPOriginPosition>();
 
         protected override void Awake()
         {
             base.Awake();
-            if (!_loading.IsUnityNull())
+            var levelDisplayerListRoot = _levelDisplayerListRoot.transform;
+            var displayerCount = levelDisplayerListRoot.childCount;
+            _levelDisplayers = new LevelDisplayer[displayerCount];
+            _levelDPOriginPositions = new LevelDPOriginPosition[displayerCount];
+            for (var i = 0; i < displayerCount; i++)
             {
-                _loading.SetActive(false);
-            }
-        }
-        void Start()
-        {
-            _listDisplayer = Majdata<CoverListManager>.Instance;
-        }
-        public void SetOpacity(float alpha)
-        {
-            _songCover.color = new Color(_songCover.color.r, _songCover.color.g, _songCover.color.b, alpha);
-            _levelBackground.color = new Color(_levelBackground.color.r, _levelBackground.color.g, _levelBackground.color.b, alpha);
-            _levelText.color = new Color(_levelText.color.r, _levelText.color.g, _levelText.color.b, alpha);
-            _background.color = new Color(_background.color.r, _background.color.g, _background.color.b, alpha);
-            if (alpha > 0.5f)
-            {
-                ShowCoverAsync();
-            }
-        }
-        public void SetLevel(int selectedDifficulty)
-        {
-            SelectedDifficulty = selectedDifficulty;
-            if(_boundSong is not null)
-            {
-                var text = _boundSong.Levels[SelectedDifficulty];
-                if(string.IsNullOrEmpty(text))
+                var child = levelDisplayerListRoot.GetChild(i);
+                var textTransform = child.Find("Text");
+                if (textTransform == null)
                 {
-                    text = "-";
+                    throw new Exception($"Level displayer {i} does not have a child named 'Text'.");
                 }
-                _levelText.text = text;
+                var textDisplayer = textTransform.GetComponent<TextMeshProUGUI>();
+                if (textDisplayer == null)
+                {
+                    throw new Exception($"Level displayer {i}'s 'Text' child does not have a TextMeshProUGUI component.");
+                }
+                _levelDisplayers[i] = new LevelDisplayer
+                {
+                    Transform = child,
+                    TextTransform = textTransform,
+                    TextDisplayer = textDisplayer
+                };
+                _levelDPOriginPositions[i] = new LevelDPOriginPosition
+                {
+                    Position = child.localPosition,
+                    Rotation = child.localRotation,
+                    TextRotation = textTransform.localRotation
+                };
             }
         }
         public void SetSongDetail(ISongDetail detail)
         {
-            _boundSong = detail;
-            var text = _boundSong.Levels[SelectedDifficulty];
-            if (string.IsNullOrEmpty(text))
+            SetLevelText(detail);
+            _coverDisplayer.sprite = SpriteLoader.EmptySprite;
+            if(!_cts.IsCancellationRequested)
             {
-                text = "-";
+                _cts.Cancel();
+                _cts = new();
             }
-            _songCover.sprite = null;
-            _levelText.text = text;
-            _isRefreshed = false;
-            _cts.Cancel();
-            _cts = new();
-        }
-        public void ShowCoverAsync()
-        {
-            if (_boundSong != null)
-            {
-                if (!_isRefreshed)
-                {
-                    ListManager.AllBackgroundTasks.Add(SetCoverAsync(_cts.Token));
-                    _isRefreshed = true;
-                }
-            }
+            ListManager.AllBackgroundTasks.Add(SetCoverAsync(detail, _cts.Token));
         }
         public void SetActive(bool state)
         {
             gameObject.SetActive(state);
         }
-        async Task SetCoverAsync(CancellationToken token = default)
+        void SetLevelText(ISongDetail songDetail)
         {
-            _loading.SetActive(true);
-            var cover = await _boundSong.GetCoverAsync(true,token: token);
+            var posIndex = _levelDPOriginPositions.Length - 1;
+            for (var i = songDetail.Levels.Length - 1; i >= 0; i--)
+            {
+                var level = songDetail.Levels[i];
+                if(string.IsNullOrEmpty(level))
+                {
+                    continue;
+                }
+                var displayer = _levelDisplayers[i];
+                var originPos = _levelDPOriginPositions[posIndex--];
+                displayer.Transform.localPosition = originPos.Position;
+                displayer.Transform.localRotation = originPos.Rotation;
+                displayer.TextTransform.localRotation = originPos.TextRotation;
+                displayer.TextDisplayer.text = level;
+            }
+        }
+        async Task SetCoverAsync(ISongDetail songDetail, CancellationToken token = default)
+        {
+            _loadingComponent.SetActive(true);
+            _coverDisplayer.sprite = SpriteLoader.EmptySprite;
+            var cover = await songDetail.GetCoverAsync(true, token: token);
+            if(token.IsCancellationRequested)
+            {
+                return;
+            }
             await UniTask.SwitchToMainThread();
-            token.ThrowIfCancellationRequested();
-            _songCover.sprite = cover;
-            _loading.SetActive(false);
+            _coverDisplayer.sprite = cover;
+            _loadingComponent.SetActive(false);
+        }
+
+        readonly struct LevelDisplayer
+        {
+            public required Transform Transform { get; init; }
+            public required Transform TextTransform { get; init; }
+            public required TextMeshProUGUI TextDisplayer { get; init; }
+        }
+        readonly struct LevelDPOriginPosition
+        {
+            public Vector3 Position { get; init; }
+            public Quaternion Rotation { get; init; }
+            public Quaternion TextRotation { get; init; }
         }
     }
 }

@@ -685,7 +685,7 @@ GameObject:
   - component: {fileID: 1871514223448166602}
   - component: {fileID: 5322621527391851573}
   m_Layer: 5
-  m_Name: bg
+  m_Name: BG
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -800,11 +800,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a57d4ef4071bad9458680b4883d8c662, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.Scenes.List.SongCoverDisplayer
-  _songCover: {fileID: 0}
-  _levelBackground: {fileID: 0}
-  _background: {fileID: 0}
-  _levelText: {fileID: 0}
-  _loading: {fileID: 0}
+  _coverDisplayer: {fileID: 2115732643789034301}
+  _levelDisplayerListRoot: {fileID: 4481279998059538077}
+  _loadingComponent: {fileID: 6306661897941759503}
 --- !u!1 &2282201556434482189
 GameObject:
   m_ObjectHideFlags: 0
@@ -2093,7 +2091,7 @@ GameObject:
   - component: {fileID: 1454666275172962700}
   - component: {fileID: 2219107794247785417}
   m_Layer: 5
-  m_Name: BigCoverMask
+  m_Name: SongCoverMask
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2182,7 +2180,7 @@ GameObject:
   - component: {fileID: 6670144736908727674}
   - component: {fileID: 2115732643789034301}
   m_Layer: 5
-  m_Name: Cover
+  m_Name: SongCover
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2828,5 +2826,10 @@ PrefabInstance:
 --- !u!224 &2239572072677426069 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 2506467099436396625, guid: f112a8cf86302c44587d18e48fb8319a, type: 3}
+  m_PrefabInstance: {fileID: 4457521720345949124}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &6306661897941759503 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7663314528721028555, guid: f112a8cf86302c44587d18e48fb8319a, type: 3}
   m_PrefabInstance: {fileID: 4457521720345949124}
   m_PrefabAsset: {fileID: 0}
