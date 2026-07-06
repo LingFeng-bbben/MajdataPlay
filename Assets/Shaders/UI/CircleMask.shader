@@ -93,10 +93,8 @@ Shader "UI/Circle Mask"
 
                 float dist = distance(i.uv, _Center);
 
-                // ×Ô¶¯¿¹¾â³Ý¿í¶È
                 float aa = fwidth(dist);
 
-                // Feather + AA
                 float alpha = 1.0 - smoothstep(
                     _Radius - _Feather - aa,
                     _Radius + aa,
