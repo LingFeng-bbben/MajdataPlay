@@ -118,8 +118,8 @@ MonoBehaviour:
   _screenHeight: 1920
   _screenWidth: 1080
   _canvasScaleFactor: 1
-  _lastOffset: NaN
-  _lastScale: NaN
+  _lastMainDisplayOffset: NaN
+  _lastMainDisplayScale: NaN
   _lastSubDisplayOffset: NaN
   _lastSubDisplayScale: NaN
   _lastTransformDisplay: 0
@@ -442,7 +442,7 @@ Canvas:
   m_GameObject: {fileID: 7942307277902318624}
   m_Enabled: 1
   serializedVersion: 3
-  m_RenderMode: 0
+  m_RenderMode: 1
   m_Camera: {fileID: 0}
   m_PlaneDistance: 100
   m_PixelPerfect: 1

@@ -205,6 +205,7 @@ namespace MajdataPlay.Scenes.List
                 _listCursorPosStepPerSec = (_listDesiredPos - _listCursorPos) / (DISPLAYER_ANIM_DURATION_MS / 1000f);
             }
             SelectedSong = _currentCollection[_listDesiredPos];
+            _progressDisplayer.text = $"{_listDesiredPos + 1}/{_songCount}";
             UpdateCenterDisplayer();
         }
         public void SlideListToTop()
