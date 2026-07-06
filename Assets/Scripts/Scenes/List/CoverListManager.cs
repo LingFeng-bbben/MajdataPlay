@@ -184,6 +184,7 @@ namespace MajdataPlay.Scenes.List
             {
                 return;
             }
+            var oldDesiredPos = _listDesiredPos;
             _listDesiredPos += delta;
             if (_listDesiredPos < 0)
             {
@@ -194,7 +195,10 @@ namespace MajdataPlay.Scenes.List
                 _listDesiredPos = _songCount - 1;
             }
 
-            _listCursorPosStepPerSec = (_listDesiredPos - _listCursorPos) / (DISPLAYER_ANIM_DURATION_MS / 1000f);
+            if(_listCursorPosStepPerSec == 0 || _listDesiredPos != oldDesiredPos)
+            {
+                _listCursorPosStepPerSec = (_listDesiredPos - _listCursorPos) / (DISPLAYER_ANIM_DURATION_MS / 1000f);
+            }
             SelectedSong = _currentCollection[_listDesiredPos];
             UpdateCenterDisplayer();
         }
@@ -327,6 +331,10 @@ namespace MajdataPlay.Scenes.List
                 else
                 {
                     _listCursorPos = Mathf.Max(_listCursorPos, _listDesiredPos);
+                }
+                if (_listCursorPos == _listDesiredPos)
+                {
+                    _listCursorPosStepPerSec = 0f;
                 }
             }
 
