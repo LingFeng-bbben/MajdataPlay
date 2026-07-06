@@ -149,11 +149,23 @@ namespace MajdataPlay.Scenes.List
         
         internal void NextCollection()
         {
+            var oP = _listDesiredPos;
             SlideList(1);
+            var nP = _listDesiredPos;
+            if(oP != nP)
+            {
+                _coverListManager.SlideListToTop();
+            }            
         }
         internal void PreviousCollection()
         {
+            var oP = _listDesiredPos;
             SlideList(-1);
+            var nP = _listDesiredPos;
+            if (oP != nP)
+            {
+                _coverListManager.SlideListToTail();
+            }
         }
 
         void UpdateSelectedSongCollection()
@@ -187,16 +199,7 @@ namespace MajdataPlay.Scenes.List
             }
             if (_currentCollection != oldSelected)
             {
-                var oldSelectedSong = default(ISongDetail);
-                if (oldSelected.Count != 0)
-                {
-                    oldSelectedSong = oldSelected.Current;
-                }
                 _coverListManager.SetCollection(_currentCollection);
-                if (oldSelectedSong is not null)
-                {
-                    _coverListManager.SetCursor(oldSelectedSong);
-                }
             }
         }
         void UpdateSongCollectionBinding()

@@ -148,13 +148,14 @@ namespace MajdataPlay.Scenes.List
             {
                 return;
             }
+            var oldSelectedHash = SelectedSong?.Hash ?? string.Empty;
             Clear();
             if (!collection.IsEmpty)
             {
                 collection.Index = 0;
                 _currentCollection = collection;
-                _isEmptyCollection = false;                
-                
+                _isEmptyCollection = false;
+
                 _songCount = _currentCollection.Count;
                 _listCursorPos = 0;
                 for (var i = 0; i < _songCount; i++)
@@ -167,9 +168,13 @@ namespace MajdataPlay.Scenes.List
                     var thumbnailBinding = new SongThumbnailBinding()
                     {
                         SongDetail = songDetail
-                    }; 
+                    };
                     _songCoverBindings.Add(coverBinding);
                     _songThumbnailBindings.Add(thumbnailBinding);
+                }
+                if (!string.IsNullOrEmpty(oldSelectedHash))
+                {
+                    SetCursorInternal(oldSelectedHash);
                 }
             }
             else

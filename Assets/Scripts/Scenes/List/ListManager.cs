@@ -205,6 +205,14 @@ namespace MajdataPlay.Scenes.List
             {
                 //_coverListDisplayer.RandomSelect();
             }
+            if (InputManager.IsSensorClickedInThisFrame(SensorArea.B8))
+            {
+                _collectionListManager.PreviousCollection();
+            }
+            else if(InputManager.IsSensorClickedInThisFrame(SensorArea.B1))
+            {
+                _collectionListManager.NextCollection();
+            }
 
             if (InputManager.IsSensorClickedInThisFrame_OR(SensorArea.B7, SensorArea.B6, SensorArea.E7))
             {
