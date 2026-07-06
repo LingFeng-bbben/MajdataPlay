@@ -119,7 +119,7 @@ namespace MajdataPlay.Scenes.List
             UpdateSelectedSongCollection();
             if (lastDesiredPos != _listDesiredPos)
             {
-                _listCursorPosStepPerSec = Mathf.Abs(_listDesiredPos - _listCursorPos) / (DISPLAYER_ANIM_DURATION_MS / 1000f);
+                _listCursorPosStepPerSec = (_listDesiredPos - _listCursorPos) / (DISPLAYER_ANIM_DURATION_MS / 1000f);
             }
         }
         void SlideToDifficulty(int pos)
@@ -244,7 +244,14 @@ namespace MajdataPlay.Scenes.List
             else
             {
                 _listCursorPos += _listCursorPosStepPerSec * MajTimeline.DeltaTime;
-                _listCursorPos = Mathf.Min(_listCursorPos, _listDesiredPos);
+                if (Mathf.Sign(_listCursorPosStepPerSec) == 1)
+                {
+                    _listCursorPos = Mathf.Min(_listCursorPos, _listDesiredPos);
+                }
+                else
+                {
+                    _listCursorPos = Mathf.Max(_listCursorPos, _listDesiredPos);
+                }
             }
             for (var i = 0; i < _collectionBindings.Length; i++)
             {

@@ -184,7 +184,6 @@ namespace MajdataPlay.Scenes.List
             {
                 return;
             }
-            var lastDesiredPos = _listDesiredPos;
             _listDesiredPos += delta;
             if (_listDesiredPos < 0)
             {
@@ -195,12 +194,9 @@ namespace MajdataPlay.Scenes.List
                 _listDesiredPos = _songCount - 1;
             }
 
-            if (lastDesiredPos != _listDesiredPos)
-            {
-                _listCursorPosStepPerSec = Mathf.Abs(_listDesiredPos - _listCursorPos) / (DISPLAYER_ANIM_DURATION_MS / 1000f);
-                SelectedSong = _currentCollection[_listDesiredPos];
-                UpdateCenterDisplayer();
-            }
+            _listCursorPosStepPerSec = (_listDesiredPos - _listCursorPos) / (DISPLAYER_ANIM_DURATION_MS / 1000f);
+            SelectedSong = _currentCollection[_listDesiredPos];
+            UpdateCenterDisplayer();
         }
         public void SlideListToTop()
         {
@@ -295,32 +291,32 @@ namespace MajdataPlay.Scenes.List
                 }
 
                 // Update thumbnail binding
-                //var thumbnailDisplayer = thumbnailBinding.Displayer;
-                //if (absDistance > 6)
-                //{
-                //    if (thumbnailDisplayer is not null)
-                //    {
-                //        thumbnailBinding.Displayer = null;
-                //        thumbnailDisplayer.SetActive(false);
-                //        _idleSongThumbnailDisplayer.Enqueue(thumbnailDisplayer);
-                //    }
-                //}
-                //else
-                //{
-                //    if (thumbnailDisplayer is null)
-                //    {
-                //        if (_idleSongThumbnailDisplayer.TryDequeue(out thumbnailDisplayer))
-                //        {
-                //            thumbnailBinding.Displayer = thumbnailDisplayer;
-                //            thumbnailDisplayer.SetSongDetail(thumbnailBinding.SongDetail);
-                //            thumbnailDisplayer.SetActive(true);
-                //        }
-                //        else
-                //        {
-                //            MajDebug.LogWarning("No idle song thumbnail displayer available.");
-                //        }                            
-                //    }
-                //}
+                var thumbnailDisplayer = thumbnailBinding.Displayer;
+                if (absDistance > 6)
+                {
+                    if (thumbnailDisplayer is not null)
+                    {
+                        thumbnailBinding.Displayer = null;
+                        thumbnailDisplayer.SetActive(false);
+                        _idleSongThumbnailDisplayer.Enqueue(thumbnailDisplayer);
+                    }
+                }
+                else
+                {
+                    if (thumbnailDisplayer is null)
+                    {
+                        if (_idleSongThumbnailDisplayer.TryDequeue(out thumbnailDisplayer))
+                        {
+                            thumbnailBinding.Displayer = thumbnailDisplayer;
+                            thumbnailDisplayer.SetSongDetail(thumbnailBinding.SongDetail);
+                            thumbnailDisplayer.SetActive(true);
+                        }
+                        else
+                        {
+                            MajDebug.LogWarning("No idle song thumbnail displayer available.");
+                        }
+                    }
+                }
             }
         }
         void UpdateDisplayerPosition()
@@ -332,7 +328,14 @@ namespace MajdataPlay.Scenes.List
             else
             {
                 _listCursorPos += _listCursorPosStepPerSec * MajTimeline.DeltaTime;
-                _listCursorPos = Mathf.Min(_listCursorPos, _listDesiredPos);
+                if(Mathf.Sign(_listCursorPosStepPerSec) == 1)
+                {
+                    _listCursorPos = Mathf.Min(_listCursorPos, _listDesiredPos);
+                }
+                else
+                {
+                    _listCursorPos = Mathf.Max(_listCursorPos, _listDesiredPos);
+                }   
             }
             var songCoverBindings = _songCoverBindings.AsSpan();
             var songThumbnailBindings = _songThumbnailBindings.AsSpan();
