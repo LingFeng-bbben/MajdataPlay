@@ -201,31 +201,7 @@ namespace MajdataPlay.Scenes.List
                 return;
             }
 
-            if (InputManager.IsSensorClickedInThisFrame_OR(SensorArea.A7, SensorArea.E8))
-            {
-                _coverListManager.SlideList(1);
-            }
-            else if (InputManager.IsSensorClickedInThisFrame_OR(SensorArea.B8, SensorArea.A8))
-            {
-                _coverListManager.SlideList(2);
-            }
-            else if (InputManager.IsSensorClickedInThisFrame_OR(SensorArea.E1, SensorArea.D1, SensorArea.A1))
-            {
-                _coverListManager.SlideList(3);
-            }
-            else if (InputManager.IsSensorClickedInThisFrame_OR(SensorArea.A6, SensorArea.E6))
-            {
-                _coverListManager.SlideList(-1);
-            }
-            else if (InputManager.IsSensorClickedInThisFrame_OR(SensorArea.A5, SensorArea.B5))
-            {
-                _coverListManager.SlideList(-2);
-            }
-            else if (InputManager.IsSensorClickedInThisFrame_OR(SensorArea.E5, SensorArea.D5, SensorArea.A4))
-            {
-                _coverListManager.SlideList(-3);
-            }
-            else if (InputManager.IsSensorClickedInThisFrame(SensorArea.C))
+            if (InputManager.IsSensorClickedInThisFrame(SensorArea.C))
             {
                 //_coverListDisplayer.RandomSelect();
             }
@@ -233,15 +209,15 @@ namespace MajdataPlay.Scenes.List
             if (InputManager.IsSensorClickedInThisFrame_OR(SensorArea.B7, SensorArea.B6, SensorArea.E7))
             {
                 var list = new string[]
-                            {
-                                "no_touch.wav",
-                                "no_touch_2.wav",
-                                "no_touch_3.wav",
-                                "no_touch_4.wav",
-                                "no_touch_5.wav",
-                                "no_touch_6.wav",
-                                "no_touch_7.wav"
-                            };
+                {
+                    "no_touch.wav",
+                    "no_touch_2.wav",
+                    "no_touch_3.wav",
+                    "no_touch_4.wav",
+                    "no_touch_5.wav",
+                    "no_touch_6.wav",
+                    "no_touch_7.wav"
+                };
                 MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
                 XxlbAnimation.instance.PlayTouchAnimation();
             }
