@@ -25,7 +25,7 @@ namespace MajdataPlay.Scenes.List.Models
         CancellationTokenSource _cts = new();
         public void SetActive(bool state)
         {
-            _coverDisplayer.enabled = state;
+            gameObject.SetActive(state);
         }
         public void SetSongDetail(ISongDetail detail)
         {

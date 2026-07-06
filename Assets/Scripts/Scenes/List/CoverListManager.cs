@@ -266,10 +266,6 @@ namespace MajdataPlay.Scenes.List
                     {
                         coverBinding.Displayer = null;
                         coverDisplayer.SetActive(false);
-                        if(_idleSongCoverDisplayer.Contains(coverDisplayer))
-                        {
-
-                        }
                         _idleSongCoverDisplayer.Enqueue(coverDisplayer);
                     }
                 }
@@ -472,7 +468,7 @@ namespace MajdataPlay.Scenes.List
             else
             {
                 var index = (int)absDelta;
-                var posStartAt = X_POS_WITH_DELTA_1 * (index - 1);
+                var posStartAt = X_POS_WITH_DELTA_1 + (X_POS_STEP * (index - 1));
                 var middle = X_POS_STEP * (absDelta - Mathf.Floor(absDelta));
 
                 return new Vector2((posStartAt + middle) * Mathf.Sign(delta), 0);
