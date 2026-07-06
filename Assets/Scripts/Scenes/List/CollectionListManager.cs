@@ -88,6 +88,7 @@ namespace MajdataPlay.Scenes.List
                     throw new InvalidOperationException($"Child {child.name} does not have a CollectionDisplayer component.");
                 }
                 _collectionDisplayers[i] = displayer;
+                displayer.gameObject.SetActive(false);
                 _idleCollectionDisplayers.Enqueue(displayer);
             }
         }

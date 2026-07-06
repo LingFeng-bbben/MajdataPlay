@@ -5496,7 +5496,7 @@ MonoBehaviour:
   _levelDisplayerListRoot: {fileID: 3707173270505227020}
   _selectedLevelTitle: {fileID: 4453142988551436510}
   _selectedLevelText: {fileID: 2215203094463507212}
-  _selectedLevelColor: {fileID: 0}
+  _selectedLevelColor: {fileID: 6791033221005480019}
 --- !u!1 &6007360602042356710
 GameObject:
   m_ObjectHideFlags: 0
@@ -12336,7 +12336,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9138515207495692674, guid: 77c96f7abd53126469dcf09ca8409892, type: 3}
       propertyPath: m_Name
-      value: LevelDisplayer
+      value: SelectedLevel
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -12362,6 +12362,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 2801995808127223295, guid: 77c96f7abd53126469dcf09ca8409892, type: 3}
   m_PrefabInstance: {fileID: 8277760629056061624}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &6791033221005480019 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3233052182755496171, guid: 77c96f7abd53126469dcf09ca8409892, type: 3}
+  m_PrefabInstance: {fileID: 8277760629056061624}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
 --- !u!1001 &8502338922637231063
 PrefabInstance:
   m_ObjectHideFlags: 0
