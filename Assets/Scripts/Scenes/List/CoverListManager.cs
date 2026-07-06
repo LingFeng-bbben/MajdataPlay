@@ -52,15 +52,20 @@ namespace MajdataPlay.Scenes.List
         [FormerlySerializedAs("progressDisplayer")]
         TextMeshProUGUI _progressDisplayer;
 
-        [SerializeField]
-        [ReadOnlyField]
+        [SerializeField, ReadOnlyField]
         int _selectedDifficulty = 0;
 
+        [SerializeField, ReadOnlyField]
         int _songCount = 0;
 
         // List cursor position and desired position
+        [SerializeField, ReadOnlyField]
         int _listDesiredPos = 0;
+
+        [SerializeField, ReadOnlyField]
         float _listCursorPos = 0;
+
+        [SerializeField, ReadOnlyField]
         float _listCursorPosStepPerSec = 0f;
 
         float _preloadCooldownTimer = 0.5f;
