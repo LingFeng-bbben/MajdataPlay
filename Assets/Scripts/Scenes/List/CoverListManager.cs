@@ -317,22 +317,19 @@ namespace MajdataPlay.Scenes.List
         }
         void UpdateDisplayerPosition()
         {
-            if (_listCursorPos == _listDesiredPos)
-            {
-                return;
-            }
-            else
+            if (_listCursorPos != _listDesiredPos)
             {
                 _listCursorPos += _listCursorPosStepPerSec * MajTimeline.DeltaTime;
-                if(Mathf.Sign(_listCursorPosStepPerSec) == 1)
+                if (Mathf.Sign(_listCursorPosStepPerSec) == 1)
                 {
                     _listCursorPos = Mathf.Min(_listCursorPos, _listDesiredPos);
                 }
                 else
                 {
                     _listCursorPos = Mathf.Max(_listCursorPos, _listDesiredPos);
-                }   
+                }
             }
+
             var songCoverBindings = _songCoverBindings.AsSpan();
             var songThumbnailBindings = _songThumbnailBindings.AsSpan();
             for (var i = 0; i < _songCount; i++)
