@@ -37,6 +37,7 @@ namespace MajdataPlay.Drawing
                 var bytes = File.ReadAllBytes(path);
                 var texture = new Texture2D(0, 0);
                 texture.LoadImage(bytes, markNonReadable);
+                texture.filterMode = FilterMode.Trilinear;
                 return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
             }
             catch (Exception e)
@@ -60,6 +61,7 @@ namespace MajdataPlay.Drawing
                 ct.ThrowIfCancellationRequested();
                 var texture = await ImageDecodeAsync(bytes);
                 await UniTask.SwitchToMainThread();
+                texture.filterMode = FilterMode.Trilinear;
                 return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
             }
             catch (Exception e)
@@ -77,6 +79,7 @@ namespace MajdataPlay.Drawing
                 ct.ThrowIfCancellationRequested();
                 var texture = await ImageDecodeAsync(buffer);
                 await UniTask.SwitchToMainThread();
+                texture.filterMode = FilterMode.Trilinear;
                 return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
             }
             catch (Exception e)
@@ -98,6 +101,7 @@ namespace MajdataPlay.Drawing
                 var bytes = File.ReadAllBytes(path);
                 var texture = new Texture2D(0, 0);
                 texture.LoadImage(bytes, markNonReadable);
+                texture.filterMode = FilterMode.Trilinear;
                 return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), 100, 1,
                     SpriteMeshType.FullRect, border);
             }
@@ -115,8 +119,9 @@ namespace MajdataPlay.Drawing
                 var bitmap = SKBitmap.Decode(data.Span);
 
                 await UniTask.SwitchToMainThread();
-
-                return bitmap.ToTexture2D();
+                var texture = bitmap.ToTexture2D();
+                texture.filterMode = FilterMode.Trilinear;
+                return texture;
             }
         }
     }
