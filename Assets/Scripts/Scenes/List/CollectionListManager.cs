@@ -46,12 +46,14 @@ namespace MajdataPlay.Scenes.List
         [FormerlySerializedAs("iconDisplayer")]
         Image _iconDisplayer;
 
-        [SerializeField]
-        [ReadOnlyField]
+        [SerializeField, ReadOnlyField]
         int _selectedDifficulty = 0;
 
+        [SerializeField, ReadOnlyField]
         int _listDesiredPos = 0;
+        [SerializeField, ReadOnlyField]
         float _listCursorPos = 0;
+        [SerializeField, ReadOnlyField]
         float _listCursorPosStepPerSec = 0f;
 
         SongCollection _currentCollection = SongCollection.Empty("Empty");
@@ -107,7 +109,8 @@ namespace MajdataPlay.Scenes.List
         }
         void SlideToList(int pos)
         {
-            var lastDesiredPos = _listDesiredPos;
+            var oldDesiredPos = _listDesiredPos;
+            _listDesiredPos = pos;
             if (_listDesiredPos < 0)
             {
                 _listDesiredPos = _collections.Length - 1;
@@ -117,7 +120,7 @@ namespace MajdataPlay.Scenes.List
                 _listDesiredPos = 0;
             }
             UpdateSelectedSongCollection();
-            if (lastDesiredPos != _listDesiredPos)
+            if (_listCursorPosStepPerSec == 0 || _listDesiredPos != oldDesiredPos)
             {
                 _listCursorPosStepPerSec = (_listDesiredPos - _listCursorPos) / (DISPLAYER_ANIM_DURATION_MS / 1000f);
             }
@@ -201,6 +204,7 @@ namespace MajdataPlay.Scenes.List
             {
                 _coverListManager.SetCollection(_currentCollection);
             }
+            _nameDisplayer.text = _currentCollection.Name;
         }
         void UpdateSongCollectionBinding()
         {
@@ -240,11 +244,7 @@ namespace MajdataPlay.Scenes.List
         }
         void UpdateDisplayerPosition()
         {
-            if(_listCursorPos == _listDesiredPos)
-            {
-                return;
-            }
-            else
+            if(_listCursorPos != _listDesiredPos)
             {
                 _listCursorPos += _listCursorPosStepPerSec * MajTimeline.DeltaTime;
                 if (Mathf.Sign(_listCursorPosStepPerSec) == 1)
