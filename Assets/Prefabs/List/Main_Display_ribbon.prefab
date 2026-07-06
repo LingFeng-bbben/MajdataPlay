@@ -2581,7 +2581,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.Scenes.List.CollectionListDisplayer
   _centerCoverDisplayer: {fileID: 5793241147777706893}
-  _coverListDisplayer: {fileID: 3871508246094013892}
+  _coverListManager: {fileID: 3871508246094013892}
   _collectionListRoot: {fileID: 7999400292341158867}
   _nameDisplayer: {fileID: 5651021545453185851}
   _iconDisplayer: {fileID: 6641030779259986060}
@@ -9681,6 +9681,10 @@ MonoBehaviour:
   _thumbnailListRoot: {fileID: 530472979142932611}
   _progressDisplayer: {fileID: 4070376292483634590}
   _selectedDifficulty: 0
+  _songCount: 0
+  _listDesiredPos: 0
+  _listCursorPos: 0
+  _listCursorPosStepPerSec: 0
 --- !u!114 &9117727706001606341
 MonoBehaviour:
   m_ObjectHideFlags: 0

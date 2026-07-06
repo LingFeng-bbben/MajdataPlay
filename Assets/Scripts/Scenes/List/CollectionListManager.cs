@@ -31,8 +31,8 @@ namespace MajdataPlay.Scenes.List
         CenterCoverDisplayer _centerCoverDisplayer;
 
         [SerializeField]
-        [FormerlySerializedAs("coverListDisplayer")]
-        CoverListManager _coverListDisplayer;
+        [FormerlySerializedAs("coverListManager")]
+        CoverListManager _coverListManager;
 
         [SerializeField]
         [FormerlySerializedAs("collectionListRoot")]
@@ -138,7 +138,7 @@ namespace MajdataPlay.Scenes.List
             UpdateSelectedSongCollection();
 
             _centerCoverDisplayer.SetDifficulty(_selectedDifficulty);
-            _coverListDisplayer.SetCollection(_currentCollection);
+            _coverListManager.SetCollection(_currentCollection);
         }
 
         internal void OnUpdate()
@@ -192,10 +192,10 @@ namespace MajdataPlay.Scenes.List
                 {
                     oldSelectedSong = oldSelected.Current;
                 }
-                _coverListDisplayer.SetCollection(_currentCollection);
+                _coverListManager.SetCollection(_currentCollection);
                 if (oldSelectedSong is not null)
                 {
-                    _coverListDisplayer.SetCursor(oldSelectedSong);
+                    _coverListManager.SetCursor(oldSelectedSong);
                 }
             }
         }
@@ -447,11 +447,11 @@ namespace MajdataPlay.Scenes.List
             SlideToDifficulty((int)_listConfig.SelectedDiff);
             if(string.IsNullOrEmpty(selectedSongHash))
             {
-                _coverListDisplayer.SlideListToTop();
+                _coverListManager.SlideListToTop();
             }
             else
             {
-                _coverListDisplayer.SetCursor(selectedSongHash);
+                _coverListManager.SetCursor(selectedSongHash);
             }            
         }
 
