@@ -187,7 +187,6 @@ namespace MajdataPlay.Scenes.List
                 EnterLogin();
                 return;
             }
-            _collectionListManager.OnUpdate();
         }
         void OnAnyInput(object? sender, InputEventArgs args)
         {

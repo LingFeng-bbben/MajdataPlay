@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Collections;
+﻿using LitMotion;
+using MajdataPlay.Collections;
 using MajdataPlay.Editor;
 using MajdataPlay.Scenes.List.Models;
 using MajdataPlay.Settings.Runtime;
@@ -53,8 +54,6 @@ namespace MajdataPlay.Scenes.List
         int _listDesiredPos = 0;
         [SerializeField, ReadOnlyField]
         float _listCursorPos = 0;
-        [SerializeField, ReadOnlyField]
-        float _listCursorPosStepPerSec = 0f;
 
         SongCollection _currentCollection = SongCollection.Empty("Empty");
         SongCollection[] _collections = Array.Empty<SongCollection>();
@@ -69,6 +68,8 @@ namespace MajdataPlay.Scenes.List
         SongCollection[] _masterSortedCollections = Array.Empty<SongCollection>();
         SongCollection[] _reMasterSortedCollections = Array.Empty<SongCollection>();
         SongCollection[] _utageSortedCollections = Array.Empty<SongCollection>();
+
+        MotionHandle _scrollMotion;
 
         readonly Queue<CollectionDisplayer> _idleCollectionDisplayers = new();
         readonly ListConfig _listConfig = MajEnv.RuntimeConfig?.List ?? new();
@@ -98,17 +99,17 @@ namespace MajdataPlay.Scenes.List
             InitCollectionBinding();
             RestoreContextFromConfiguration();
         }
-        internal void SlideList(int delta)
+        internal void SlideList(int delta, bool disableAnimation = false, bool forceUpdate = false)
         {
             var pos = _listDesiredPos + delta;
-            SlideListTo(pos);
+            SlideListTo(pos, disableAnimation, forceUpdate);
         }
         public void SlideDifficulty(int delta)
         {
             var pos = _selectedDifficulty + delta;
             SlideToDifficulty(pos);
         }
-        void SlideListTo(int pos)
+        void SlideListTo(int pos, bool disableAnimation, bool forceUpdate)
         {
             var oldDesiredPos = _listDesiredPos;
             _listDesiredPos = pos;
@@ -121,9 +122,21 @@ namespace MajdataPlay.Scenes.List
                 _listDesiredPos = 0;
             }
             UpdateSelectedSongCollection();
-            if (_listCursorPosStepPerSec == 0 || _listDesiredPos != oldDesiredPos)
+            if (disableAnimation)
             {
-                _listCursorPosStepPerSec = (_listDesiredPos - _listCursorPos) / (DISPLAYER_ANIM_DURATION_MS / 1000f);
+                if (_listDesiredPos != oldDesiredPos || forceUpdate)
+                {
+                    _listCursorPos = _listDesiredPos;
+                    UpdateSongCollectionBinding();
+                    UpdateDisplayerPosition();
+                }
+            }
+            else
+            {
+                if (_listDesiredPos != oldDesiredPos || forceUpdate)
+                {
+                    DisplayerMoveTo(_listDesiredPos, DISPLAYER_ANIM_DURATION_MS / 1000f);
+                }
             }
         }
         void SlideToDifficulty(int pos)
@@ -145,11 +158,6 @@ namespace MajdataPlay.Scenes.List
             _coverListManager.SetCollection(_currentCollection);
         }
 
-        internal void OnUpdate()
-        {
-            UpdateSongCollectionBinding();
-            UpdateDisplayerPosition();
-        }
         
         internal void NextCollection()
         {
@@ -172,6 +180,19 @@ namespace MajdataPlay.Scenes.List
             }
         }
 
+        void DisplayerMoveTo(float targetPos, float duration)
+        {
+            _scrollMotion.TryCancel();
+            _scrollMotion = LMotion.Create(_listCursorPos, targetPos, duration)
+                                   .WithScheduler(MotionScheduler.PostLateUpdate)
+                                   .WithEase(Ease.Linear)
+                                   .Bind(x =>
+                                   {
+                                       _listCursorPos = x;
+                                       UpdateSongCollectionBinding();
+                                       UpdateDisplayerPosition();
+                                   });
+        }
         void UpdateSelectedSongCollection()
         {
             var oldSelected = _currentCollection;
@@ -245,18 +266,6 @@ namespace MajdataPlay.Scenes.List
         }
         void UpdateDisplayerPosition()
         {
-            if(_listCursorPos != _listDesiredPos)
-            {
-                _listCursorPos += _listCursorPosStepPerSec * MajTimeline.DeltaTime;
-                if (Mathf.Sign(_listCursorPosStepPerSec) == 1)
-                {
-                    _listCursorPos = Mathf.Min(_listCursorPos, _listDesiredPos);
-                }
-                else
-                {
-                    _listCursorPos = Mathf.Max(_listCursorPos, _listDesiredPos);
-                }
-            }
             for (var i = 0; i < _collectionBindings.Length; i++)
             {
                 ref var binding = ref _collectionBindings[i];
@@ -269,25 +278,7 @@ namespace MajdataPlay.Scenes.List
                 displayer.RectTransform.anchoredPosition = GetDisplayerPositionFromDelta(delta);
             }
         }
-        Vector2 GetDisplayerPositionFromDelta(float delta)
-        {
-            const int X_POS_WITH_DELTA_1 = 240;
-            const int X_POS_WITH_DELTA_2 = 390;
-            const int X_POS_WITH_DELTA_3 = 540;
-            const int X_POS_WITH_DELTA_4 = 690;
-            var absDelta = Mathf.Abs(delta);
-
-            var x = absDelta switch
-            {
-                <= 1f => 240f * absDelta,
-                <= 2f => Mathf.Lerp(X_POS_WITH_DELTA_1, X_POS_WITH_DELTA_2, absDelta - 1f),
-                <= 3f => Mathf.Lerp(X_POS_WITH_DELTA_2, X_POS_WITH_DELTA_3, absDelta - 2f),
-                <= 4f => Mathf.Lerp(X_POS_WITH_DELTA_3, X_POS_WITH_DELTA_4, absDelta - 3f),
-                _ => X_POS_WITH_DELTA_4
-            };
-
-            return new Vector2(Mathf.Sign(delta) * x, 0);
-        }
+        
         void InitCollectionStorage()
         {
             var collections = SongStorage.Collections;
@@ -447,7 +438,7 @@ namespace MajdataPlay.Scenes.List
             {
                 index = 0;
             }
-            SlideListTo(index);
+            SlideListTo(index, true, true);
             SlideToDifficulty((int)_listConfig.SelectedDiff);
             if(string.IsNullOrEmpty(selectedSongHash))
             {
@@ -457,6 +448,26 @@ namespace MajdataPlay.Scenes.List
             {
                 _coverListManager.SetCursor(selectedSongHash, true, true);
             }            
+        }
+
+        Vector2 GetDisplayerPositionFromDelta(float delta)
+        {
+            const int X_POS_WITH_DELTA_1 = 240;
+            const int X_POS_WITH_DELTA_2 = 390;
+            const int X_POS_WITH_DELTA_3 = 540;
+            const int X_POS_WITH_DELTA_4 = 690;
+            var absDelta = Mathf.Abs(delta);
+
+            var x = absDelta switch
+            {
+                <= 1f => 240f * absDelta,
+                <= 2f => Mathf.Lerp(X_POS_WITH_DELTA_1, X_POS_WITH_DELTA_2, absDelta - 1f),
+                <= 3f => Mathf.Lerp(X_POS_WITH_DELTA_2, X_POS_WITH_DELTA_3, absDelta - 2f),
+                <= 4f => Mathf.Lerp(X_POS_WITH_DELTA_3, X_POS_WITH_DELTA_4, absDelta - 3f),
+                _ => X_POS_WITH_DELTA_4
+            };
+
+            return new Vector2(Mathf.Sign(delta) * x, 0);
         }
 
         struct SongCollectionBinding
