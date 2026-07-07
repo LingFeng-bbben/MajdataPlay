@@ -188,7 +188,6 @@ namespace MajdataPlay.Scenes.List
                 return;
             }
             _collectionListManager.OnUpdate();
-            _coverListManager.OnUpdate();
         }
         void OnAnyInput(object? sender, InputEventArgs args)
         {

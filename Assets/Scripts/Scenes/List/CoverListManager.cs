@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using LitMotion;
 using MajdataPlay.Buffers;
 using MajdataPlay.Collections;
 using MajdataPlay.Editor;
@@ -18,6 +19,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UIElements;
+using static UnityEditor.PlayerSettings;
 #nullable enable
 namespace MajdataPlay.Scenes.List
 {
@@ -65,9 +67,6 @@ namespace MajdataPlay.Scenes.List
         [SerializeField, ReadOnlyField]
         float _listCursorPos = 0;
 
-        [SerializeField, ReadOnlyField]
-        float _listCursorPosStepPerSec = 0f;
-
         float _preloadCooldownTimer = 0.5f;
         bool _isNeedPreload = false;
         bool _isEmptyCollection = true;
@@ -79,6 +78,8 @@ namespace MajdataPlay.Scenes.List
 
         SongCoverDisplayer[] _songCoverDisplayers = Array.Empty<SongCoverDisplayer>();
         ThumbnailDisplayer[] _songThumbnailDisplayers = Array.Empty<ThumbnailDisplayer>();
+
+        MotionHandle _scrollMotion;
 
         readonly RentedList<SongCoverBinding> _songCoverBindings = new();
         readonly RentedList<SongThumbnailBinding> _songThumbnailBindings = new();
@@ -174,7 +175,7 @@ namespace MajdataPlay.Scenes.List
                 }
                 if (!string.IsNullOrEmpty(oldSelectedHash))
                 {
-                    SetCursorInternal(oldSelectedHash);
+                    SetCursorInternal(oldSelectedHash, true, true);
                 }
             }
             else
@@ -183,14 +184,28 @@ namespace MajdataPlay.Scenes.List
             }
         }
 
-        public void SlideList(int delta)
+        public void SlideList(int delta, bool disableAnimation = false, bool forceUpdate = false)
         {
             if(_isEmptyCollection)
             {
                 return;
             }
+            
+            var nP = _listDesiredPos + delta;
+            SlideListTo(nP, disableAnimation, forceUpdate);
+        }
+        public void SlideListToTop()
+        {
+            SlideList(0, true);
+        }
+        public void SlideListToTail()
+        {
+            SlideList(_songCount - 1, true);
+        }
+        void SlideListTo(int pos, bool disableAnimation, bool forceUpdate)
+        {
             var oldDesiredPos = _listDesiredPos;
-            _listDesiredPos += delta;
+            _listDesiredPos = pos;
             if (_listDesiredPos < 0)
             {
                 _listDesiredPos = 0;
@@ -200,27 +215,28 @@ namespace MajdataPlay.Scenes.List
                 _listDesiredPos = _songCount - 1;
             }
 
-            if(_listCursorPosStepPerSec == 0 || _listDesiredPos != oldDesiredPos)
-            {
-                _listCursorPosStepPerSec = (_listDesiredPos - _listCursorPos) / (DISPLAYER_ANIM_DURATION_MS / 1000f);
-            }
+            
             SelectedSong = _currentCollection[_listDesiredPos];
             _progressDisplayer.text = $"{_listDesiredPos + 1}/{_songCount}";
             UpdateCenterDisplayer();
+            if(disableAnimation)
+            {
+                if (_listDesiredPos != oldDesiredPos || forceUpdate)
+                {
+                    _listCursorPos = _listDesiredPos;
+                    UpdateDisplayerBinding();
+                    UpdateDisplayerPosition();
+                }                    
+            }
+            else
+            {
+                if (_listDesiredPos != oldDesiredPos || forceUpdate)
+                {
+                    DisplayerMoveTo(_listDesiredPos, DISPLAYER_ANIM_DURATION_MS / 1000f);
+                }
+            }            
         }
-        public void SlideListToTop()
-        {
-            SlideList(int.MinValue / 2);
-        }
-        public void SlideListToTail()
-        {
-            SlideList(int.MaxValue / 2);
-        }
-        internal void OnUpdate()
-        {
-            UpdateDisplayerBinding();
-            UpdateDisplayerPosition();
-        }
+
         void Clear()
         {
             SelectedSong = null;
@@ -248,6 +264,19 @@ namespace MajdataPlay.Scenes.List
             _songCount = 0;
             _songCoverBindings.Clear();
             _songThumbnailBindings.Clear();
+        }
+        void DisplayerMoveTo(float targetPos, float duration)
+        {
+            _scrollMotion.TryCancel();
+            _scrollMotion = LMotion.Create(_listCursorPos, targetPos, duration)
+                                   .WithScheduler(MotionScheduler.PostLateUpdate)
+                                   .WithEase(Ease.Linear)
+                                   .Bind(x =>
+                                   {
+                                       _listCursorPos = x;
+                                       UpdateDisplayerBinding();
+                                       UpdateDisplayerPosition();
+                                   });
         }
         void UpdateCenterDisplayer()
         {
@@ -327,23 +356,6 @@ namespace MajdataPlay.Scenes.List
         }
         void UpdateDisplayerPosition()
         {
-            if (_listCursorPos != _listDesiredPos)
-            {
-                _listCursorPos += _listCursorPosStepPerSec * MajTimeline.DeltaTime;
-                if (Mathf.Sign(_listCursorPosStepPerSec) == 1)
-                {
-                    _listCursorPos = Mathf.Min(_listCursorPos, _listDesiredPos);
-                }
-                else
-                {
-                    _listCursorPos = Mathf.Max(_listCursorPos, _listDesiredPos);
-                }
-                if (_listCursorPos == _listDesiredPos)
-                {
-                    _listCursorPosStepPerSec = 0f;
-                }
-            }
-
             var songCoverBindings = _songCoverBindings.AsSpan();
             var songThumbnailBindings = _songThumbnailBindings.AsSpan();
             for (var i = 0; i < _songCount; i++)
@@ -372,27 +384,28 @@ namespace MajdataPlay.Scenes.List
             _listConfig.SelectedSongIndex = _listDesiredPos;
             _listConfig.SelectedSongHash = SelectedSong?.Hash ?? string.Empty;
         }
+        
 
-        internal void SetCursor(ISongDetail songDetail)
+        internal void SetCursor(ISongDetail songDetail, bool disableAnimation = false, bool forceUpdate = false)
         {
             if(_isEmptyCollection)
             {
                 return;
             }
-            SetCursorInternal(songDetail.Hash);
+            SetCursorInternal(songDetail.Hash, disableAnimation, forceUpdate);
         }
-        internal void SetCursor(string hash)
+        internal void SetCursor(string hash, bool disableAnimation = false, bool forceUpdate = false)
         {
             if (_isEmptyCollection)
             {
                 return;
             }
-            SetCursorInternal(hash);
+            SetCursorInternal(hash, disableAnimation, forceUpdate);
         }
-        void SetCursorInternal(string hash)
+        void SetCursorInternal(string hash, bool disableAnimation, bool forceUpdate)
         {
             _currentCollection.SetCursor(hash);
-            _listDesiredPos = _currentCollection.Index;
+            SlideListTo(_currentCollection.Index, disableAnimation, forceUpdate);
             UpdateListConfiguration();
         }
         //async Task AnalyzeAndUpdateBpmLedAsync(ISongDetail songDetail, ChartLevel level)

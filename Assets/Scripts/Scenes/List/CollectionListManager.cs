@@ -101,14 +101,14 @@ namespace MajdataPlay.Scenes.List
         internal void SlideList(int delta)
         {
             var pos = _listDesiredPos + delta;
-            SlideToList(pos);
+            SlideListTo(pos);
         }
         public void SlideDifficulty(int delta)
         {
             var pos = _selectedDifficulty + delta;
             SlideToDifficulty(pos);
         }
-        void SlideToList(int pos)
+        void SlideListTo(int pos)
         {
             var oldDesiredPos = _listDesiredPos;
             _listDesiredPos = pos;
@@ -447,7 +447,7 @@ namespace MajdataPlay.Scenes.List
             {
                 index = 0;
             }
-            SlideToList(index);
+            SlideListTo(index);
             SlideToDifficulty((int)_listConfig.SelectedDiff);
             if(string.IsNullOrEmpty(selectedSongHash))
             {
@@ -455,7 +455,7 @@ namespace MajdataPlay.Scenes.List
             }
             else
             {
-                _coverListManager.SetCursor(selectedSongHash);
+                _coverListManager.SetCursor(selectedSongHash, true, true);
             }            
         }
 
