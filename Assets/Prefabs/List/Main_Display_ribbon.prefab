@@ -1300,6 +1300,7 @@ MonoBehaviour:
   _thumbUpImage: {fileID: 5017399584980354437}
   _thumbUpGoldColor: {r: 0.9559748, g: 0.7541765, b: 0, a: 1}
   _thumbUpGreenColor: {r: 0.09729564, g: 0.836478, b: 0, a: 1}
+  _thumbUpNormalColor: {r: 0.3254902, g: 0.3254902, b: 0.3254902, a: 1}
 --- !u!1 &1532729581834908079
 GameObject:
   m_ObjectHideFlags: 0
