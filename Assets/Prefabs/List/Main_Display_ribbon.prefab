@@ -1292,15 +1292,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e666af063f859784b87600234e4f085c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  LikeCount: {fileID: 0}
-  PlayCount: {fileID: 0}
-  CommentCount: {fileID: 0}
-  CommentText: {fileID: 3684277896155353045}
-  CommentBox: {fileID: 5216211417724343022}
-  Icons: []
-  ThumbUpImage: {fileID: 0}
-  ThumbUpGoldColor: {r: 0, g: 0, b: 0, a: 0}
-  ThumbUpGreenColor: {r: 0, g: 0, b: 0, a: 0}
+  _likeCountDisplayer: {fileID: 6984040734880702379}
+  _playCountDisplayer: {fileID: 1039596019697581261}
+  _commentCountDisplayer: {fileID: 1348200802612743458}
+  _commentTextDisplayer: {fileID: 3684277896155353045}
+  _commentBox: {fileID: 5216211417724343022}
+  _thumbUpImage: {fileID: 5017399584980354437}
+  _thumbUpGoldColor: {r: 0.9559748, g: 0.7541765, b: 0, a: 1}
+  _thumbUpGreenColor: {r: 0.09729564, g: 0.836478, b: 0, a: 1}
 --- !u!1 &1532729581834908079
 GameObject:
   m_ObjectHideFlags: 0
@@ -5506,6 +5505,7 @@ MonoBehaviour:
   _scoreDisplayer: {fileID: 1605295673057992418}
   _metadataDisplayer: {fileID: 3559887092446061320}
   _chartAnalyzer: {fileID: 0}
+  _onlineInfoDisplayer: {fileID: 654444965399099254}
   _levelDisplayerListRoot: {fileID: 3707173270505227020}
   _selectedLevelTitle: {fileID: 4453142988551436510}
   _selectedLevelText: {fileID: 2215203094463507212}

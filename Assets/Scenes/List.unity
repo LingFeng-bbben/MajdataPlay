@@ -9528,6 +9528,22 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -68.20001
       objectReference: {fileID: 0}
+    - target: {fileID: 654444965399099254, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
+      propertyPath: _thumbUpNormalColor.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 654444965399099254, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
+      propertyPath: _thumbUpNormalColor.b
+      value: 0.3254902
+      objectReference: {fileID: 0}
+    - target: {fileID: 654444965399099254, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
+      propertyPath: _thumbUpNormalColor.g
+      value: 0.3254902
+      objectReference: {fileID: 0}
+    - target: {fileID: 654444965399099254, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
+      propertyPath: _thumbUpNormalColor.r
+      value: 0.3254902
+      objectReference: {fileID: 0}
     - target: {fileID: 762452894403173411, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
       propertyPath: m_AdditionalShaderChannelsFlag
       value: 25

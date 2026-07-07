@@ -49,6 +49,10 @@ namespace MajdataPlay.Scenes.List
         ChartVisualDisplayer _chartAnalyzer;
 
         [SerializeField]
+        [FormerlySerializedAs("onlineInfoDisplayer")]
+        OnlineInfoDisplayer _onlineInfoDisplayer;
+
+        [SerializeField]
         [FormerlySerializedAs("levelDisplayerListRoot")]
         GameObject _levelDisplayerListRoot;
 
@@ -271,6 +275,7 @@ namespace MajdataPlay.Scenes.List
             }
             _metadataDisplayer.SetMetadataFromSongDetail(_currentSongDetail, (ChartLevel)_diff);
             _scoreDisplayer.SetScore(_currentSongDetail, (ChartLevel)_diff);
+            _onlineInfoDisplayer.SetSongDetail(_currentSongDetail, _cts?.Token ?? default);
         }
         
         async Task SetCoverAsync(ISongDetail detail, CancellationToken ct = default)
