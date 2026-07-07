@@ -1958,7 +1958,6 @@ MonoBehaviour:
   _selectedDifficulty: 0
   _listDesiredPos: 0
   _listCursorPos: 0
-  _listCursorPosStepPerSec: 0
 --- !u!1 &2198170768956682176
 GameObject:
   m_ObjectHideFlags: 0
@@ -4982,8 +4981,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: maimai dx Finale
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: dbc58334dc23ba04fbfee4bf5298b6a0, type: 2}
+  m_sharedMaterial: {fileID: -9050617650548543871, guid: dbc58334dc23ba04fbfee4bf5298b6a0, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -5007,7 +5006,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 25.25
+  m_fontSize: 27.7
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -7220,7 +7219,6 @@ MonoBehaviour:
   _songCount: 0
   _listDesiredPos: 0
   _listCursorPos: 0
-  _listCursorPosStepPerSec: 0
 --- !u!114 &9117727706001606341
 MonoBehaviour:
   m_ObjectHideFlags: 0

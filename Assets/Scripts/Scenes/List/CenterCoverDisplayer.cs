@@ -158,7 +158,11 @@ namespace MajdataPlay.Scenes.List
         }
         public void SetSongDetail(ISongDetail detail)
         {
-            if(_cts is not null)
+            if(detail == _currentSongDetail)
+            {
+                return;
+            }
+            else if(_cts is not null)
             {
                 _cts.Cancel();
             }
