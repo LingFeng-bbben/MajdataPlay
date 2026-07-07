@@ -123,9 +123,14 @@ namespace MajdataPlay.Utils
         static InternalMaidataAnalyzeResult AnalyzeMaidataCore(ReadOnlySpan<SimaiTimingPoint> data, float length)
         {
             var pointIndex = 0;
-            var tapPoints = new NativeArray<Vector2>((int)(length / 0.5f), Allocator.Temp);
-            var slidePoints = new NativeArray<Vector2>((int)(length / 0.5f), Allocator.Temp);
-            var touchPoints = new NativeArray<Vector2>((int)(length / 0.5f), Allocator.Temp);
+            var sampleCount = (int)(length / 0.5f);
+            if(length - Mathf.Floor(length) > 0.5)
+            {
+                sampleCount += 1;
+            }
+            var tapPoints = new NativeArray<Vector2>(sampleCount, Allocator.Temp);
+            var slidePoints = new NativeArray<Vector2>(sampleCount, Allocator.Temp);
+            var touchPoints = new NativeArray<Vector2>(sampleCount, Allocator.Temp);
             var max = 0f;
             var maxBPM = 0f;
             var minBPM = float.MaxValue;
