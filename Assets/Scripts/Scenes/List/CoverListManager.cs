@@ -139,7 +139,7 @@ namespace MajdataPlay.Scenes.List
             _idleSongCoverDisplayer.Clear();
         }
         #endregion
-        internal void SetCollection(SongCollection collection)
+        internal void SetCollection(SongCollection collection, bool keepCursor)
         {
             if(collection is null)
             {
@@ -159,6 +159,7 @@ namespace MajdataPlay.Scenes.List
 
                 _songCount = _currentCollection.Count;
                 _listCursorPos = 0;
+                _listDesiredPos = 0;
                 for (var i = 0; i < _songCount; i++)
                 {
                     var songDetail = _currentCollection[i];
@@ -173,9 +174,15 @@ namespace MajdataPlay.Scenes.List
                     _songCoverBindings.Add(coverBinding);
                     _songThumbnailBindings.Add(thumbnailBinding);
                 }
-                if (!string.IsNullOrEmpty(oldSelectedHash))
+                if (keepCursor && !string.IsNullOrEmpty(oldSelectedHash))
                 {
                     SetCursorInternal(oldSelectedHash, true, true);
+                }
+                else
+                {
+                    UpdateListConfiguration();
+                    UpdateDisplayerBinding();
+                    UpdateDisplayerPosition();
                 }
             }
             else
@@ -194,13 +201,13 @@ namespace MajdataPlay.Scenes.List
             var nP = _listDesiredPos + delta;
             SlideListTo(nP, disableAnimation, forceUpdate);
         }
-        public void SlideListToTop()
+        public void SlideListToHead()
         {
-            SlideList(0, true);
+            SlideListTo(0, true, false);
         }
         public void SlideListToTail()
         {
-            SlideList(_songCount - 1, true);
+            SlideListTo(_songCount - 1, true, false);
         }
         void SlideListTo(int pos, bool disableAnimation, bool forceUpdate)
         {

@@ -120,8 +120,13 @@ namespace MajdataPlay.Scenes.List
             else if (_listDesiredPos >= _collections.Length)
             {
                 _listDesiredPos = 0;
-            }
+            }            
             UpdateSelectedSongCollection();
+            UpdateListConfiguration();
+            if (_listDesiredPos != oldDesiredPos || forceUpdate)
+            {
+                _coverListManager.SetCollection(_currentCollection, false);
+            }
             if (disableAnimation)
             {
                 if (_listDesiredPos != oldDesiredPos || forceUpdate)
@@ -155,7 +160,7 @@ namespace MajdataPlay.Scenes.List
             UpdateSelectedSongCollection();
 
             _centerCoverDisplayer.SetDifficulty(_selectedDifficulty);
-            _coverListManager.SetCollection(_currentCollection);
+            _coverListManager.SetCollection(_currentCollection, true);
         }
 
         
@@ -166,7 +171,7 @@ namespace MajdataPlay.Scenes.List
             var nP = _listDesiredPos;
             if(oP != nP)
             {
-                _coverListManager.SlideListToTop();
+                _coverListManager.SlideListToHead();
             }            
         }
         internal void PreviousCollection()
@@ -195,7 +200,6 @@ namespace MajdataPlay.Scenes.List
         }
         void UpdateSelectedSongCollection()
         {
-            var oldSelected = _currentCollection;
             switch (_listConfig.SelectedDiff)
             {
                 case ChartLevel.Easy:
@@ -221,10 +225,6 @@ namespace MajdataPlay.Scenes.List
                     break;
                 default:
                     throw new ArgumentOutOfRangeException("sb");
-            }
-            if (_currentCollection != oldSelected)
-            {
-                _coverListManager.SetCollection(_currentCollection);
             }
             _nameDisplayer.text = _currentCollection.Name;
         }
@@ -278,6 +278,11 @@ namespace MajdataPlay.Scenes.List
                 displayer.RectTransform.anchoredPosition = GetDisplayerPositionFromDelta(delta);
             }
         }
+        void UpdateListConfiguration()
+        {
+            _listConfig.SelectedDir = _listDesiredPos;
+            _listConfig.SelectedDirGuid = _currentCollection.Id;
+        }
         
         void InitCollectionStorage()
         {
@@ -295,6 +300,7 @@ namespace MajdataPlay.Scenes.List
                 {
                     newCollections[i] = new OnlineSongCollection(onlineCollection.Source, onlineCollection.Name, onlineCollection.ToArray())
                     {
+                        Id = onlineCollection.Id,
                         DanInfo = collection.DanInfo,
                         Type = collection.Type,
                     };
@@ -303,6 +309,7 @@ namespace MajdataPlay.Scenes.List
                 {
                     newCollections[i] = new SongCollection(collection.Name, collection.ToArray())
                     {
+                        Id = collection.Id,
                         DanInfo = collection.DanInfo,
                         Type = collection.Type,
                     };
@@ -388,13 +395,34 @@ namespace MajdataPlay.Scenes.List
                                                        .Select(x => x.x)
                                                        .ToArray();
                     }
-                    _easySortedCollections[i] = new SongCollection(originCollection.Name, sortedEasy);
-                    _basicSortedCollections[i] = new SongCollection(originCollection.Name, sortedBasic);
-                    _advanceSortedCollections[i] = new SongCollection(originCollection.Name, sortedAdvance);
-                    _expertSortedCollections[i] = new SongCollection(originCollection.Name, sortedExpert);
-                    _masterSortedCollections[i] = new SongCollection(originCollection.Name, sortedMaster);
-                    _reMasterSortedCollections[i] = new SongCollection(originCollection.Name, sortedReMaster);
-                    _utageSortedCollections[i] = new SongCollection(originCollection.Name, sortedUTAGE);
+                    _easySortedCollections[i] = new SongCollection(originCollection.Name, sortedEasy)
+                    {
+                        Id = originCollection.Id
+                    };
+                    _basicSortedCollections[i] = new SongCollection(originCollection.Name, sortedBasic)
+                    {
+                        Id = originCollection.Id
+                    };
+                    _advanceSortedCollections[i] = new SongCollection(originCollection.Name, sortedAdvance)
+                    {
+                        Id = originCollection.Id
+                    };
+                    _expertSortedCollections[i] = new SongCollection(originCollection.Name, sortedExpert)
+                    {
+                        Id = originCollection.Id
+                    };
+                    _masterSortedCollections[i] = new SongCollection(originCollection.Name, sortedMaster)
+                    {
+                        Id = originCollection.Id
+                    };
+                    _reMasterSortedCollections[i] = new SongCollection(originCollection.Name, sortedReMaster)
+                    {
+                        Id = originCollection.Id
+                    };
+                    _utageSortedCollections[i] = new SongCollection(originCollection.Name, sortedUTAGE)
+                    {
+                        Id = originCollection.Id
+                    };
 
                     //_easySortedCollections[i].SortAndFilter(SongStorage.OrderBy);
                     //_basicSortedCollections[i].SortAndFilter(SongStorage.OrderBy);
@@ -442,7 +470,7 @@ namespace MajdataPlay.Scenes.List
             SlideToDifficulty((int)_listConfig.SelectedDiff);
             if(string.IsNullOrEmpty(selectedSongHash))
             {
-                _coverListManager.SlideListToTop();
+                _coverListManager.SlideListToHead();
             }
             else
             {
