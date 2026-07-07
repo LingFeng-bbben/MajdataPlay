@@ -41,12 +41,12 @@ namespace MajdataPlay.Drawing
                 width,
                 height,
                 TextureFormat.RGBA32,
-                false
+                true
             );
 
             UploadBitmap(texture, converted);
 
-            texture.Apply(false, false);
+            texture.Apply(true, false);
 
             return texture;
         }
