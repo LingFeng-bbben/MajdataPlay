@@ -386,7 +386,7 @@ namespace MajdataPlay.Scenes.View
             {
                 _chart = await SimaiParser.ParseChartAsync(string.Empty, string.Empty, fumen);
                 AudioLength = (float)_audioSample!.Length.TotalSeconds;
-                await _chartAnalyzer.AnalyzeAndDrawGraphAsync(_chart, (float)_audioSample.Length.TotalSeconds);
+                _chartAnalyzer.SetSimaiChart(_chart, (float)_audioSample.Length.TotalSeconds);
                 await UniTask.SwitchToMainThread();
                 var range = new Range<double>(startAt-Offset, double.MaxValue);
                 _chart = _chart.Clamp(range);

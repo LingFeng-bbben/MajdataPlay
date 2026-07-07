@@ -817,7 +817,7 @@ namespace MajdataPlay.Scenes.Game
             }
             _chart = _chart.AddOffset(-_displayOffsetSec);
             await UniTask.SwitchToMainThread();
-            GameObject.Find("ChartAnalyzer").GetComponent<ChartVisualDisplayer>().AnalyzeAndDrawGraphAsync(_chart, AudioLength).Forget();
+            GameObject.Find("ChartAnalyzer").GetComponent<ChartVisualDisplayer>().SetSimaiChart(_chart, AudioLength);
             await UniTask.SwitchToThreadPool();
             var simaiCmd = _simaiFile.Commands.FirstOrDefault(x => x.Prefix == "clock_count");
             var countnum = 4;

@@ -276,6 +276,7 @@ namespace MajdataPlay.Scenes.List
             _metadataDisplayer.SetMetadataFromSongDetail(_currentSongDetail, (ChartLevel)_diff);
             _scoreDisplayer.SetScore(_currentSongDetail, (ChartLevel)_diff);
             _onlineInfoDisplayer.SetSongDetail(_currentSongDetail, _cts?.Token ?? default);
+            _chartAnalyzer.SetSongDeatil(_currentSongDetail, (ChartLevel)_diff, null, _cts?.Token ?? default);
         }
         
         async Task SetCoverAsync(ISongDetail detail, CancellationToken ct = default)
