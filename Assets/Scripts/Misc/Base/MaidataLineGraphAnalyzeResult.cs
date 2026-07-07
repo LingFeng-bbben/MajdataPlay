@@ -7,7 +7,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay
 {
-    internal class MaidataLineGraphAnalyzeResult
+    internal readonly struct MaidataLineGraphAnalyzeResult
     {
         public float PeakDensity { get; init; }
         public float Esti { get; init; }

@@ -32,24 +32,24 @@ namespace MajdataPlay.Utils
         [ThreadStatic]
         static SKPath? s_touchPath;
 
-        readonly static Color TapColor = new Color();
-        readonly static Color TouchColor = new Color();
-        readonly static Color SlideColor = new Color();
+        readonly static Color TapColor = new Color(1f, 0.490566f, 0.7993075f);
+        readonly static Color TouchColor = new Color(1f, 0.9354098f, 0.5707547f);
+        readonly static Color SlideColor = new Color(0.5330188f, 0.7586297f, 1f);
 
-        public static MaidataAnalyzeResult AnalyzeMaidata(SimaiChart data, CancellationToken token = default)
+        public static MaidataAnalyzeResult AnalyzeMaidata(SimaiChart data, float? chartLength = null)
         {
             if(data.NoteTimings.IsEmpty)
             {
                 return default;
             }
             var noteTimings = data.NoteTimings;
-            var length = (float)noteTimings[noteTimings.Length - 1].Timing;
+            var length = chartLength ?? (float)noteTimings[noteTimings.Length - 1].Timing;
             var result = AnalyzeMaidataCore(noteTimings, length);
 
             result.TapPoints.Dispose();
             result.TouchPoints.Dispose();
             result.SlidePoints.Dispose();
-            return new MaidataAnalyzeResult()
+            return new ()
             {
                 Esti = result.Esti,
                 Length = result.Length,
@@ -58,13 +58,40 @@ namespace MajdataPlay.Utils
                 PeakDensity = result.PeakDensity,
             };
         }
+        public static MaidataLineGraphAnalyzeResult AnalyzeMaidataWithGraph(SimaiChart data, 
+                                                                            int height, 
+                                                                            int width, 
+                                                                            float? chartLength = null)
+        {
+            if (data.NoteTimings.IsEmpty)
+            {
+                return default;
+            }
+            var noteTimings = data.NoteTimings;
+            var length = chartLength ?? (float)noteTimings[noteTimings.Length - 1].Timing;
+            var result = AnalyzeMaidataCore(noteTimings, length);
+            var graph = DrawGraph(result.TapPoints, result.SlidePoints, result.TouchPoints, height, width);
+
+            result.TapPoints.Dispose();
+            result.TouchPoints.Dispose();
+            result.SlidePoints.Dispose();
+            return new ()
+            {
+                Esti = result.Esti,
+                Length = result.Length,
+                MaxBPM = result.MaxBPM,
+                MinBPM = result.MinBPM,
+                PeakDensity = result.PeakDensity,
+                LineGraph = graph
+            };
+        }
         static Texture DrawGraph(NativeArray<Vector2> tapPoints,
                                  NativeArray<Vector2> slidePoints,
-                                 NativeArray<Vector2> touchPoints)
+                                 NativeArray<Vector2> touchPoints,
+                                 int height,
+                                 int width)
         {
             EnsureSakaComponentIsInited();
-            var width = 1018;
-            var height = 187;
             var imageInfo = new SKImageInfo(width, height);
             using var surface = SKSurface.Create(imageInfo);
             var canvas = surface.Canvas;
