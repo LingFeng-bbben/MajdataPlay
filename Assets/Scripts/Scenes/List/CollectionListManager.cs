@@ -190,7 +190,7 @@ namespace MajdataPlay.Scenes.List
             _scrollMotion.TryCancel();
             _scrollMotion = LMotion.Create(_listCursorPos, targetPos, duration)
                                    .WithScheduler(MotionScheduler.PostLateUpdate)
-                                   .WithEase(Ease.Linear)
+                                   .WithEase(Ease.OutQuad)
                                    .Bind(x =>
                                    {
                                        _listCursorPos = x;
