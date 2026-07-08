@@ -51,9 +51,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.Scenes.List.CollectionDisplayer
   _onlineCollectionIcon: {fileID: -1115900829, guid: 736513dcbc18dec438227ea2c0cb9831, type: 3}
+  _onlineCollectionIconColor: {r: 0.25882354, g: 0.48627454, b: 0.08627451, a: 1}
   _folderCollectionIcon: {fileID: -609679733, guid: 736513dcbc18dec438227ea2c0cb9831, type: 3}
-  _favoriteCollectionIcon: {fileID: -1815173495, guid: 736513dcbc18dec438227ea2c0cb9831, type: 3}
-  _onlineFavoriteCollectionIcon: {fileID: -2001406545, guid: 736513dcbc18dec438227ea2c0cb9831, type: 3}
+  _folderCollectionIconColor: {r: 0.36078432, g: 0.30980393, b: 0.28627452, a: 1}
+  _favoriteCollectionIcon: {fileID: -1836983295, guid: 736513dcbc18dec438227ea2c0cb9831, type: 3}
+  _favoriteCollectionIconColor: {r: 0.84276724, g: 0.11766719, b: 0, a: 1}
+  _onlineFavoriteCollectionIcon: {fileID: -1815173495, guid: 736513dcbc18dec438227ea2c0cb9831, type: 3}
+  _onlineFavoriteCollectionIconColor: {r: 0.36078432, g: 0.30980393, b: 0.28627452, a: 1}
+  _danCollectionIcon: {fileID: 21300000, guid: 86c38e90f487d99449d39adbb70e9bb3, type: 3}
+  _danCollectionIconColor: {r: 0.36078432, g: 0.30980393, b: 0.28627452, a: 1}
   _iconDisplayer: {fileID: 7350579639491559817}
   _nameDisplayer: {fileID: 1705395606225953187}
 --- !u!1 &884715101376578001
@@ -166,7 +172,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.4792, y: -24.74348}
+  m_AnchoredPosition: {x: 0, y: -25}
   m_SizeDelta: {x: 114.7643, y: 24.7433}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &286287338398358437
@@ -334,7 +340,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -609679733, guid: 736513dcbc18dec438227ea2c0cb9831, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1

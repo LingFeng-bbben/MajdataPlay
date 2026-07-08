@@ -93,7 +93,20 @@ namespace MajdataPlay.Scenes.Game
                 return;
             }
             var maidataLoadTask = _loadTask.MaidataLoadTask!;
-            if (maidataLoadTask.IsCompleted)
+            if(maidataLoadTask is null)
+            {
+                try
+                {
+                    AnalyzeMaidata(_loadTask.Chart!, _loadTask.Length);
+                }
+                catch (Exception e)
+                {
+                    MajDebug.LogException(e);
+                    SetError();
+                }
+                _loadTask.IsFinished = true;
+            }
+            else if (maidataLoadTask.IsCompleted)
             {
                 if(maidataLoadTask.IsCompletedSuccessfully)
                 {

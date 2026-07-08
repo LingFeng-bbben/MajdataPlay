@@ -21,15 +21,42 @@ namespace MajdataPlay.Scenes.List.Models
         [SerializeField]
         [FormerlySerializedAs("onlineCollectionIcon")]
         Sprite _onlineCollectionIcon;
+
+        [SerializeField]
+        [FormerlySerializedAs("onlineCollectionIconColor")]
+        Color _onlineCollectionIconColor;
+
         [SerializeField]
         [FormerlySerializedAs("folderCollectionIcon")]
         Sprite _folderCollectionIcon;
+
+        [SerializeField]
+        [FormerlySerializedAs("folderCollectionIconColor")]
+        Color _folderCollectionIconColor;
+
         [SerializeField]
         [FormerlySerializedAs("favoriteCollectionIcon")]
         Sprite _favoriteCollectionIcon;
+
+        [SerializeField]
+        [FormerlySerializedAs("favoriteCollectionIconColor")]
+        Color _favoriteCollectionIconColor;
+
         [SerializeField]
         [FormerlySerializedAs("onlineFavoriteCollectionIcon")]
         Sprite _onlineFavoriteCollectionIcon;
+
+        [SerializeField]
+        [FormerlySerializedAs("onlineFavoriteCollectionIconColor")]
+        Color _onlineFavoriteCollectionIconColor;
+
+        [SerializeField]
+        [FormerlySerializedAs("danCollectionIcon")]
+        Sprite _danCollectionIcon;
+
+        [SerializeField]
+        [FormerlySerializedAs("danCollectionIconColor")]
+        Color _danCollectionIconColor;
 
         [SerializeField]
         [FormerlySerializedAs("iconDisplayer")]
@@ -40,11 +67,13 @@ namespace MajdataPlay.Scenes.List.Models
         TextMeshProUGUI _nameDisplayer;
 
         RectTransform _rectTransform;
+        RectTransform _nameRectTransform;
         SongCollection? _bindingCollection;
 
         void Awake()
         {
             _rectTransform = GetComponent<RectTransform>();
+            _nameRectTransform = _nameDisplayer.GetComponent<RectTransform>();
         }
 
         internal void SetCollection(SongCollection collection)
@@ -56,6 +85,38 @@ namespace MajdataPlay.Scenes.List.Models
             _bindingCollection = collection;
 
             _nameDisplayer.text = collection.Name;
+            _nameRectTransform.anchoredPosition = new Vector2(0, -25);
+            switch (collection.Type)
+            {
+                case ChartStorageType.List:
+                    if(collection.IsOnline)
+                    {
+                        _iconDisplayer.enabled = true;
+                        _iconDisplayer.sprite = _onlineCollectionIcon;
+                        _iconDisplayer.color = _onlineCollectionIconColor;
+                    }
+                    else
+                    {
+                        _iconDisplayer.enabled = false;
+                        _nameRectTransform.anchoredPosition = Vector2.zero;
+                    }
+                    break;
+                case ChartStorageType.Dan:
+                    _iconDisplayer.enabled = true;
+                    _iconDisplayer.sprite = _danCollectionIcon;
+                    _iconDisplayer.color = _danCollectionIconColor;
+                    break;
+                case ChartStorageType.PlayList:
+                    _iconDisplayer.enabled = true;
+                    _iconDisplayer.sprite = _folderCollectionIcon;
+                    _iconDisplayer.color = _folderCollectionIconColor;
+                    break;
+                case ChartStorageType.FavoriteList:
+                    _iconDisplayer.enabled = true;
+                    _iconDisplayer.sprite = _favoriteCollectionIcon;
+                    _iconDisplayer.color = _favoriteCollectionIconColor;
+                    break;
+            }
         }
 
         public void SetActive(bool state)
