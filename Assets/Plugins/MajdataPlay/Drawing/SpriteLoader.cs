@@ -119,7 +119,7 @@ namespace MajdataPlay.Drawing
                 var bitmap = SKBitmap.Decode(data.Span);
 
                 await UniTask.SwitchToMainThread();
-                var texture = bitmap.ToTexture2D();
+                var texture = await bitmap.ToTexture2D();
                 texture.filterMode = FilterMode.Trilinear;
                 return texture;
             }
