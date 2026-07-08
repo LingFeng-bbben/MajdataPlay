@@ -1951,6 +1951,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c028c9e4207d672408687d8d8f13420b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.Scenes.List.CollectionListDisplayer
+  _onlineCollectionIcon: {fileID: -1115900829, guid: 736513dcbc18dec438227ea2c0cb9831, type: 3}
+  _onlineCollectionIconColor: {r: 0.25882354, g: 0.4862745, b: 0.08627451, a: 1}
+  _folderCollectionIcon: {fileID: -609679733, guid: 736513dcbc18dec438227ea2c0cb9831, type: 3}
+  _folderCollectionIconColor: {r: 0.36078432, g: 0.30980393, b: 0.28627452, a: 1}
+  _favoriteCollectionIcon: {fileID: -1836983295, guid: 736513dcbc18dec438227ea2c0cb9831, type: 3}
+  _favoriteCollectionIconColor: {r: 0.84313726, g: 0.11764706, b: 0, a: 1}
+  _onlineFavoriteCollectionIcon: {fileID: -1815173495, guid: 736513dcbc18dec438227ea2c0cb9831, type: 3}
+  _onlineFavoriteCollectionIconColor: {r: 0.36078432, g: 0.30980393, b: 0.28627452, a: 1}
+  _danCollectionIcon: {fileID: 21300000, guid: 86c38e90f487d99449d39adbb70e9bb3, type: 3}
+  _danCollectionIconColor: {r: 0.36078432, g: 0.30980393, b: 0.28627452, a: 1}
   _centerCoverDisplayer: {fileID: 5793241147777706893}
   _coverListManager: {fileID: 3871508246094013892}
   _collectionListRoot: {fileID: 7999400292341158867}

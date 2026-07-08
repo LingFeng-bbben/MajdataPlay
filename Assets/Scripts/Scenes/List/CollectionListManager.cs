@@ -27,6 +27,48 @@ namespace MajdataPlay.Scenes.List
             }
         }
 
+        #region icon and color ref
+        [SerializeField]
+        [FormerlySerializedAs("onlineCollectionIcon")]
+        Sprite _onlineCollectionIcon;
+
+        [SerializeField]
+        [FormerlySerializedAs("onlineCollectionIconColor")]
+        Color _onlineCollectionIconColor;
+
+        [SerializeField]
+        [FormerlySerializedAs("folderCollectionIcon")]
+        Sprite _folderCollectionIcon;
+
+        [SerializeField]
+        [FormerlySerializedAs("folderCollectionIconColor")]
+        Color _folderCollectionIconColor;
+
+        [SerializeField]
+        [FormerlySerializedAs("favoriteCollectionIcon")]
+        Sprite _favoriteCollectionIcon;
+
+        [SerializeField]
+        [FormerlySerializedAs("favoriteCollectionIconColor")]
+        Color _favoriteCollectionIconColor;
+
+        [SerializeField]
+        [FormerlySerializedAs("onlineFavoriteCollectionIcon")]
+        Sprite _onlineFavoriteCollectionIcon;
+
+        [SerializeField]
+        [FormerlySerializedAs("onlineFavoriteCollectionIconColor")]
+        Color _onlineFavoriteCollectionIconColor;
+
+        [SerializeField]
+        [FormerlySerializedAs("danCollectionIcon")]
+        Sprite _danCollectionIcon;
+
+        [SerializeField]
+        [FormerlySerializedAs("danCollectionIconColor")]
+        Color _danCollectionIconColor;
+        #endregion
+
         [SerializeField]
         [FormerlySerializedAs("centerCoverDisplayer")]
         CenterCoverDisplayer _centerCoverDisplayer;
@@ -123,6 +165,7 @@ namespace MajdataPlay.Scenes.List
             }            
             UpdateSelectedSongCollection();
             UpdateListConfiguration();
+            UpdateCollectionIcon();
             if (_listDesiredPos != oldDesiredPos || forceUpdate)
             {
                 _coverListManager.SetCollection(_currentCollection, false);
@@ -283,7 +326,40 @@ namespace MajdataPlay.Scenes.List
             _listConfig.SelectedDir = _listDesiredPos;
             _listConfig.SelectedDirGuid = _currentCollection.Id;
         }
-        
+        void UpdateCollectionIcon()
+        {
+            switch (_currentCollection.Type)
+            {
+                case ChartStorageType.List:
+                    if (_currentCollection.IsOnline)
+                    {
+                        _iconDisplayer.enabled = true;
+                        _iconDisplayer.sprite = _onlineCollectionIcon;
+                        _iconDisplayer.color = _onlineCollectionIconColor;
+                    }
+                    else
+                    {
+                        _iconDisplayer.enabled = false;
+                    }
+                    break;
+                case ChartStorageType.Dan:
+                    _iconDisplayer.enabled = true;
+                    _iconDisplayer.sprite = _danCollectionIcon;
+                    _iconDisplayer.color = _danCollectionIconColor;
+                    break;
+                case ChartStorageType.PlayList:
+                    _iconDisplayer.enabled = true;
+                    _iconDisplayer.sprite = _folderCollectionIcon;
+                    _iconDisplayer.color = _folderCollectionIconColor;
+                    break;
+                case ChartStorageType.FavoriteList:
+                    _iconDisplayer.enabled = true;
+                    _iconDisplayer.sprite = _favoriteCollectionIcon;
+                    _iconDisplayer.color = _favoriteCollectionIconColor;
+                    break;
+            }
+        }
+
         void InitCollectionStorage()
         {
             var collections = SongStorage.Collections;

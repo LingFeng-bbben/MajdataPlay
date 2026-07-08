@@ -86,10 +86,15 @@ namespace MajdataPlay.Scenes.List.Models
 
             _nameDisplayer.text = collection.Name;
             _nameRectTransform.anchoredPosition = new Vector2(0, -25);
+            SetCollection(collection);
+        }
+
+        void SetCollectionIcon(SongCollection collection)
+        {
             switch (collection.Type)
             {
                 case ChartStorageType.List:
-                    if(collection.IsOnline)
+                    if (collection.IsOnline)
                     {
                         _iconDisplayer.enabled = true;
                         _iconDisplayer.sprite = _onlineCollectionIcon;
