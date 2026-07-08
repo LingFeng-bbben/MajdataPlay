@@ -273,10 +273,11 @@ namespace MajdataPlay.Scenes.List
             {
                 return;
             }
-            _metadataDisplayer.SetMetadataFromSongDetail(_currentSongDetail, (ChartLevel)_diff);
+            var cancellationToken = _cts?.Token ?? default;
+            _metadataDisplayer.SetMetadataFromSongDetail(_currentSongDetail, (ChartLevel)_diff, cancellationToken);
             _scoreDisplayer.SetScore(_currentSongDetail, (ChartLevel)_diff);
-            _onlineInfoDisplayer.SetSongDetail(_currentSongDetail, _cts?.Token ?? default);
-            _chartAnalyzer.SetSongDeatil(_currentSongDetail, (ChartLevel)_diff, null, _cts?.Token ?? default);
+            _onlineInfoDisplayer.SetSongDetail(_currentSongDetail, cancellationToken);
+            _chartAnalyzer.SetSongDeatil(_currentSongDetail, (ChartLevel)_diff, null, cancellationToken);
         }
         
         async Task SetCoverAsync(ISongDetail detail, CancellationToken ct = default)

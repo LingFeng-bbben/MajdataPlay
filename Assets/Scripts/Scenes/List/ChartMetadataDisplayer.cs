@@ -1,12 +1,16 @@
-﻿using System;
+﻿using ExCSS;
+using MajdataPlay.Utils;
+using MajSimai;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Serialization;
-
+#nullable enable
 namespace MajdataPlay.Scenes.List
 {
     public class ChartMetadataDisplayer : MonoBehaviour
@@ -47,7 +51,78 @@ namespace MajdataPlay.Scenes.List
         [FormerlySerializedAs("durationDisplayer")]
         TextMeshProUGUI _durationDisplayer;
 
-        public void SetMetadataFromSongDetail(ISongDetail songDetail, ChartLevel level)
+        float _loadTimer = 0f;
+
+        ISongDetail? _currentSongDetail;
+        ChartLevel _currentLevel;
+        Task<SimaiFile>? _maidataLoadTask;
+        CancellationToken _cancellationToken = default;
+
+        const float LOAD_DEBOUNCE_INTERVAL_SEC = 0.4f;
+
+        void LateUpdate()
+        {
+            if(_currentSongDetail is null)
+            {
+                return;
+            }
+            else if (_loadTimer < LOAD_DEBOUNCE_INTERVAL_SEC)
+            {
+                _loadTimer += MajTimeline.DeltaTime;
+                return;
+            }
+            else if(_maidataLoadTask is null)
+            {
+                if(_cancellationToken.IsCancellationRequested)
+                {
+                    _currentSongDetail = null;
+                    _loadTimer = 0f;
+                    return;
+                }
+                _maidataLoadTask = _currentSongDetail.GetMaidataAsync(true, token: _cancellationToken).AsTask();
+                return;
+            }
+            else if(!_maidataLoadTask.IsCompleted)
+            {
+                return;
+            }
+            try
+            {
+                if (_maidataLoadTask.IsCompletedSuccessfully)
+                {
+                    var simaiFile = _maidataLoadTask.Result;
+                    var simaiChart = simaiFile.Charts[(int)_currentLevel];
+                    var analyzeResult = ChartAnalyzer.AnalyzeMaidata(simaiChart);
+                    if (analyzeResult.Length == TimeSpan.Zero)
+                    {
+                        return;
+                    }
+                    _estiDisplayer.text = $"{analyzeResult.Esti:F2}";
+                    _peakDensityDisplayer.text = $"{analyzeResult.PeakDensity}";
+                    if (analyzeResult.MaxBPM != analyzeResult.MinBPM)
+                    {
+                        _bpmDisplayer.text = $"{analyzeResult.MaxBPM}-{analyzeResult.MinBPM}";
+                    }
+                    else
+                    {
+                        _bpmDisplayer.text = $"{analyzeResult.MaxBPM}";
+                    }
+                    _durationDisplayer.text = $"{(int)analyzeResult.Length.TotalMinutes}:{analyzeResult.Length.Seconds:00}";
+                }
+                else
+                {
+                    MajDebug.LogException(_maidataLoadTask.Exception);
+                }
+            }
+            finally
+            {
+                _currentSongDetail = null;
+                _maidataLoadTask = null;
+                _loadTimer = 0f;
+            }
+        }
+
+        public void SetMetadataFromSongDetail(ISongDetail songDetail, ChartLevel level, CancellationToken token = default)
         {
             if (songDetail is OnlineSongDetail onlineSongDetail)
             {
@@ -57,9 +132,19 @@ namespace MajdataPlay.Scenes.List
             {
                 _onlineIdDisplayer.text = string.Empty;
             }
+            _currentSongDetail = songDetail;
+            _currentLevel = level;
             _title.text = songDetail.Title;
             _artist.text = songDetail.Artist;
             _charter.text = songDetail.Designers[(int)level];
+
+            _estiDisplayer.text = "--";
+            _peakDensityDisplayer.text = "--";
+            _avgDensityDisplayer.text = "--";
+            _bpmDisplayer.text = "--";
+            _durationDisplayer.text = "--:--";
+
+            _cancellationToken = token;
         }
     }
 }
