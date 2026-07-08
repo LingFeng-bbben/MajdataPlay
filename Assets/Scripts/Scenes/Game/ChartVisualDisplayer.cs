@@ -150,6 +150,7 @@ namespace MajdataPlay.Scenes.Game
         }
         void AnalyzeMaidata(SimaiChart chart, float? length)
         {
+#if !UNITY_EDITOR
             ref var cachedResult = ref _cachedAnalyzeResults[0];
             if (TryGetCachedResultIndex(chart, out var index))
             {
@@ -176,6 +177,9 @@ namespace MajdataPlay.Scenes.Game
                 };
                 _cacheCursor++;
             }
+#else
+            var cachedResult = default(CacheItem);
+#endif
 
             var anaResult = cachedResult.AnalyzeResult ??= ChartAnalyzer.AnalyzeMaidataWithGraph(chart, 1018, 187, length);
             if(anaResult.Length == TimeSpan.Zero)

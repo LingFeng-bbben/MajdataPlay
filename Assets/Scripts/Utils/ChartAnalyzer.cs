@@ -8,15 +8,20 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Unity.Burst;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
+using Unity.Jobs;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Utils
 {
+    [BurstCompile]
     internal static class ChartAnalyzer
     {
         [ThreadStatic]
@@ -70,7 +75,7 @@ namespace MajdataPlay.Utils
             var noteTimings = data.NoteTimings;
             var length = chartLength ?? (float)noteTimings[noteTimings.Length - 1].Timing;
             var result = AnalyzeMaidataCore(noteTimings, length);
-            var graph = DrawGraph(result.TapPoints, result.SlidePoints, result.TouchPoints, height, width);
+            var graph = DrawGraph(result, height, width);
 
             result.TapPoints.Dispose();
             result.TouchPoints.Dispose();
@@ -85,13 +90,23 @@ namespace MajdataPlay.Utils
                 LineGraph = graph
             };
         }
-        static Texture DrawGraph(NativeArray<Vector2> tapPoints,
-                                 NativeArray<Vector2> slidePoints,
-                                 NativeArray<Vector2> touchPoints,
+        static Texture DrawGraph(InternalMaidataAnalyzeResult analyzeResult,
                                  int height,
                                  int width)
         {
             EnsureSakaComponentIsInited();
+            var tapPoints = analyzeResult.TapPoints;
+            var slidePoints = analyzeResult.SlidePoints;
+            var touchPoints = analyzeResult.TouchPoints;
+            var normalizeJob = new SampleNormalizeJob()
+            {
+                TapPoints = tapPoints,
+                SlidePoints = slidePoints,
+                TouchPoints = touchPoints,
+                Max = analyzeResult.PeakDensity
+            };
+            normalizeJob.Schedule(tapPoints.Length, 64)
+                        .Complete();
             var imageInfo = new SKImageInfo(width, height);
             using var surface = SKSurface.Create(imageInfo);
             var canvas = surface.Canvas;
@@ -124,47 +139,50 @@ namespace MajdataPlay.Utils
         {
             var pointIndex = 0;
             var sampleCount = (int)(length / 0.5f);
-            if(length - Mathf.Floor(length) > 0.5)
+            if(Mathf.Floor(length) > 0.5)
             {
                 sampleCount += 1;
             }
-            var tapPoints = new NativeArray<Vector2>(sampleCount, Allocator.Temp);
-            var slidePoints = new NativeArray<Vector2>(sampleCount, Allocator.Temp);
-            var touchPoints = new NativeArray<Vector2>(sampleCount, Allocator.Temp);
+            var tapPoints = new NativeArray<Vector2>(sampleCount, Allocator.TempJob);
+            var slidePoints = new NativeArray<Vector2>(sampleCount, Allocator.TempJob);
+            var touchPoints = new NativeArray<Vector2>(sampleCount, Allocator.TempJob);
             var max = 0f;
             var maxBPM = 0f;
             var minBPM = float.MaxValue;
-            var esti = 0f;
             var y0 = 0f;
             var y1 = 0f;
             var y2 = 0f;
             var window = new Range<int>(0, 0, ContainsType.RightOpen);
+            var tapYSum = 0f;
+            var touchYSum = 0f;
+            var slideYSum = 0f;
             for (float time = 0; time < length; time += 0.5f)
             {
                 var windowStartTiming = time - 0.75f;
                 var windowEndTiming = time + 0.75f;
-                for (var rIndex = 0; rIndex < data.Length; rIndex++)
+                var rIndex = window.End;
+                var lIndex = window.Start;
+                for (; rIndex < data.Length; rIndex++)
                 {
                     var timingPoint = data[rIndex];
                     if(timingPoint.Timing > windowEndTiming)
                     {
-                        window = new Range<int>(window.Start, rIndex, ContainsType.RightOpen);
                         break;
                     }
                     maxBPM = Mathf.Max(maxBPM, timingPoint.Bpm);
                     minBPM = Mathf.Min(minBPM, timingPoint.Bpm);
                     AddSample(timingPoint.Notes, ref y0, ref y1, ref y2);
                 }
-                for (var lIndex = 0; lIndex < window.End; lIndex++)
+                for (; lIndex < window.End; lIndex++)
                 {
                     var timingPoint = data[lIndex];
                     if (timingPoint.Timing >= windowStartTiming)
                     {
-                        window = new Range<int>(lIndex, window.End, ContainsType.RightOpen);
                         break;
                     }
                     DelSample(timingPoint.Notes, ref y0, ref y1, ref y2);
                 }
+                window = new Range<int>(lIndex, rIndex, ContainsType.RightOpen);
                 var sum = y0 + y1 + y2;
                 max = Mathf.Max(sum, max);
 
@@ -172,11 +190,20 @@ namespace MajdataPlay.Utils
                 tapPoints[pointIndex] = new Vector2(x, y0);
                 slidePoints[pointIndex] = new Vector2(x, y1);
                 touchPoints[pointIndex] = new Vector2(x, y2);
+                tapYSum += y0;
+                slideYSum += y1;
+                touchYSum += y2;
                 pointIndex++;
             }
+            var tapYAvg = tapYSum / tapPoints.Length;
+            var touchYAvg = touchYSum / touchPoints.Length;
+            var slideYAvg = slideYSum / slidePoints.Length;
+            var avg = tapYAvg + (3f * slideYAvg) + (0.5f * touchYAvg);
+            var esti = 7.5f * Mathf.Log10(3.8f * (avg + (0.3f * max)));
 
             return new()
             {
+                Average = avg,
                 Esti = esti,
                 Length = TimeSpan.FromSeconds(length),
                 MaxBPM = maxBPM,
@@ -286,13 +313,37 @@ namespace MajdataPlay.Utils
         {
             public float PeakDensity { get; init; }
             public float Esti { get; init; }
+            public float Average { get; init; }
             public TimeSpan Length { get; init; }
             public float MaxBPM { get; init; }
-            public float MinBPM { get; init; }
+            public float MinBPM { get; init; }            
 
             public NativeArray<Vector2> TapPoints { get; init; }
             public NativeArray<Vector2> TouchPoints { get; init; }
             public NativeArray<Vector2> SlidePoints { get; init; }
+        }
+
+        [BurstCompile]
+        struct SampleNormalizeJob : IJobParallelFor
+        {
+            public NativeArray<Vector2> TapPoints;
+            public NativeArray<Vector2> SlidePoints;
+            public NativeArray<Vector2> TouchPoints;
+
+            [ReadOnly]
+            public float Max;
+
+            public void Execute(int i)
+            {
+                var invMax = 1f / Max;
+                var tapPoint = TapPoints[i];
+                var slidePoint = SlidePoints[i];
+                var touchPoint = TouchPoints[i];
+
+                TapPoints[i] = new Vector2(tapPoint.x, tapPoint.y * invMax);
+                SlidePoints[i] = new Vector2(slidePoint.x, slidePoint.y * invMax);
+                TouchPoints[i] = new Vector2(touchPoint.x, touchPoint.y * invMax);
+            }
         }
     }
 }
