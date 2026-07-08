@@ -100,7 +100,7 @@ namespace MajdataPlay.Utils
                                  int width)
         {
             const int BarCount = 64;
-            const float MinBarHeight = 2f;
+            const float MinBarHeight = 6f;
 
             EnsureSakaComponentIsInited();
             var tapPoints = analyzeResult.TapPoints;
@@ -141,8 +141,8 @@ namespace MajdataPlay.Utils
                 var x = (i + 0.5f) * step;
                 ref readonly var barInfo = ref UnsafeUtility.ArrayElementAsRef<GraphBar>(barPtr, i);
                 var tapBarHeight = barInfo.Tap * height;
-                var touchBarHeight = Mathf.Max(barInfo.Touch * height, MinBarHeight);
-                var slideBarHeight = Mathf.Max(barInfo.Slide * height, MinBarHeight);
+                var touchBarHeight = barInfo.Touch * height;
+                var slideBarHeight = barInfo.Slide * height;
 
                 if(barInfo.Tap != 0)
                 {
