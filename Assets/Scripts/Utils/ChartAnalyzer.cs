@@ -94,6 +94,8 @@ namespace MajdataPlay.Utils
                                  int height,
                                  int width)
         {
+            const int BarCount = 64;
+
             EnsureSakaComponentIsInited();
             var tapPoints = analyzeResult.TapPoints;
             var slidePoints = analyzeResult.SlidePoints;
@@ -107,33 +109,124 @@ namespace MajdataPlay.Utils
             };
             normalizeJob.Schedule(tapPoints.Length, 64)
                         .Complete();
+
             var imageInfo = new SKImageInfo(width, height);
             using var surface = SKSurface.Create(imageInfo);
             var canvas = surface.Canvas;
             canvas.Clear(SKColor.Empty);
 
-            s_tapPath.MoveTo(0, height);
-            s_slidePath.MoveTo(0, height);
-            s_touchPath.MoveTo(0, height);
-            for (var i = 0; i < tapPoints.Length; i++)
-            {
-                var x = tapPoints[i].x * width;
-                var y = tapPoints[i].y;
-                s_tapPath.LineTo(x, (1 - y) * height);
-                y += slidePoints[i].y;
-                s_slidePath.LineTo(x, (1 - y) * height);
-                y += touchPoints[i].y;
-                s_touchPath.LineTo(x, (1 - y) * height);
-            }
-            s_tapPath.LineTo(width, height);
-            s_slidePath.LineTo(width, height);
-            s_touchPath.LineTo(width, height);
+            var count = tapPoints.Length;
+            
 
-            canvas.DrawPath(s_touchPath, s_touchPaint);
-            canvas.DrawPath(s_slidePath, s_slidePaint);
-            canvas.DrawPath(s_tapPath, s_tapPaint);
+            var bars = BuildBars(
+                tapPoints,
+                slidePoints,
+                touchPoints,
+                BarCount);
+
+            var step = (float)width / BarCount;
+
+            var barWidth = step * 0.72f;
+            var radius = barWidth * 0.5f;
+
+            for (var i = 0; i < BarCount; i++)
+            {
+                var x = (i + 0.5f) * step;
+
+                DrawBar(
+                    canvas,
+                    x,
+                    height,
+                    bars[i].Touch * height,
+                    barWidth,
+                    radius,
+                    2f,
+                    s_touchPaint);
+
+                DrawBar(
+                    canvas,
+                    x,
+                    height,
+                    bars[i].Slide * height,
+                    barWidth,
+                    radius,
+                    2f,
+                    s_slidePaint);
+
+                DrawBar(
+                    canvas,
+                    x,
+                    height,
+                    bars[i].Tap * height,
+                    barWidth,
+                    radius,
+                    2f,
+                    s_tapPaint);
+            }
 
             return GraphHelper.GraphSnapshot(surface);
+        }
+        static void DrawBar(SKCanvas canvas,
+                            float centerX,
+                            float bottom,
+                            float barHeight,
+                            float width,
+                            float radius,
+                            float minHeight,
+                            SKPaint paint)
+        {
+            if (barHeight <= 0f)
+            {
+                return;
+            }
+
+            if (barHeight < minHeight)
+            {
+                barHeight = minHeight;
+            }
+
+            var rect = new SKRect(
+                centerX - (width * 0.5f),
+                bottom - barHeight,
+                centerX + (width * 0.5f),
+                bottom);
+
+            canvas.DrawRoundRect(rect, radius, radius, paint);
+        }
+        static NativeArray<GraphBar> BuildBars(NativeArray<Vector2> tapPoints,
+                                               NativeArray<Vector2> slidePoints,
+                                               NativeArray<Vector2> touchPoints,
+                                               int barCount)
+        {
+            var sampleCount = tapPoints.Length;
+
+            var bars = new NativeArray<GraphBar>(barCount, Allocator.Temp);
+
+            for (var i = 0; i < barCount; i++)
+            {
+                var begin = i * sampleCount / barCount;
+                var end = (i + 1) * sampleCount / barCount;
+
+                var tap = 0f;
+                var slide = 0f;
+                var touch = 0f;
+
+                for (var j = begin; j < end; j++)
+                {
+                    tap = Mathf.Max(tap, tapPoints[j].y);
+                    slide = Mathf.Max(slide, slidePoints[j].y);
+                    touch = Mathf.Max(touch, touchPoints[j].y);
+                }
+
+                bars[i] = new ()
+                {
+                    Tap = tap,
+                    Slide = slide,
+                    Touch = touch
+                };
+            }
+
+            return bars;
         }
         static InternalMaidataAnalyzeResult AnalyzeMaidataCore(ReadOnlySpan<SimaiTimingPoint> data, float length)
         {
@@ -321,6 +414,12 @@ namespace MajdataPlay.Utils
             public NativeArray<Vector2> TapPoints { get; init; }
             public NativeArray<Vector2> TouchPoints { get; init; }
             public NativeArray<Vector2> SlidePoints { get; init; }
+        }
+        readonly struct GraphBar
+        {
+            public float Tap { get; init; }
+            public float Slide { get; init; }
+            public float Touch { get; init; }
         }
 
         [BurstCompile]
