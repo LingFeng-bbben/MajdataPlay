@@ -86,7 +86,7 @@ namespace MajdataPlay.Scenes.List.Models
 
             _nameDisplayer.text = collection.Name;
             _nameRectTransform.anchoredPosition = new Vector2(0, -25);
-            SetCollection(collection);
+            SetCollectionIcon(collection);
         }
 
         void SetCollectionIcon(SongCollection collection)
