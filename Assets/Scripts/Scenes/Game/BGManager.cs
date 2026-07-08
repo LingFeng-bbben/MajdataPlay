@@ -15,6 +15,7 @@ using LibVLCSharp;
 using UnityEngine.UI;
 using System.Runtime.CompilerServices;
 using System.Diagnostics;
+using MajdataPlay.Settings;
 #nullable enable
 namespace MajdataPlay.Scenes.Game
 {
@@ -74,6 +75,9 @@ namespace MajdataPlay.Scenes.Game
 
         long _mediaLengthMs = 0;
 
+        GameplayScreenRotationAngleOption _screenRotationAngle = GameplayScreenRotationAngleOption.Zero;
+
+
         void Awake()
         {
             Majdata<BGManager>.Instance = this;
@@ -86,10 +90,16 @@ namespace MajdataPlay.Scenes.Game
 #else
             _videoPlayer = GetComponent<VideoPlayer>();
 #endif
-
+            _screenRotationAngle = MajEnv.Settings.Display.GameplayScreenRotationAngle;
             _pictureCover = GameObject.Find("BackgroundCover").GetComponent<SpriteRenderer>();
             _pictureRenderer = GetComponent<SpriteRenderer>();
             _defaultScale = transform.localScale;
+            var angle = Quaternion.Euler(0, 0, (int)_screenRotationAngle * -90);
+            if(_videoRenderer != null)
+            {
+                _videoRenderer.transform.localRotation = angle;
+            }
+            transform.localRotation = angle;
         }
         void OnDestroy()
         {

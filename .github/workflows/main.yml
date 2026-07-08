@@ -3,7 +3,7 @@ run-name: MajdataPlay build
 
 on:
   push:
-    branches: [ "dev", "main", "fastlane-ios", "test_workflow", "github-ci"]
+    branches: [ "dev", "main", "fastlane-ios", "test_workflow", "github-ci" ]
   pull_request:
     branches: [ "main" ]
 
@@ -19,6 +19,7 @@ env:
   UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
   UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
   UNITY_VERSION: 2022.3.62f3
+  IOS_BUILD_NUMBER_OFFSET: 3162
 
 jobs:
   build:
@@ -45,12 +46,9 @@ jobs:
         run: |
           VERSION=$(grep -m1 'bundleVersion:' ProjectSettings/ProjectSettings.asset | awk '{print $2}')
           VERSION_WITH_HASH="${VERSION}-$(date +%Y%m%d)-${GITHUB_SHA::7}"
-          echo "Unity project version: $VERSION"
-          echo "Version with hash: $VERSION_WITH_HASH"
-          
           echo "BUNDLE_VERSION=$VERSION" >> $GITHUB_ENV
           echo "BUNDLE_VERSION_WITH_HASH=$VERSION_WITH_HASH" >> $GITHUB_ENV
-      
+
       - name: Cache Unity Library
         uses: actions/cache@v4
         with:
@@ -58,11 +56,8 @@ jobs:
           key: Library-${{ runner.os }}-${{ env.TARGET_PLATFORM }}-${{ hashFiles('ProjectSettings/ProjectVersion.txt', 'ProjectSettings/**', 'Packages/manifest.json', 'Packages/packages-lock.json') }}
           restore-keys: |
             Library-${{ runner.os }}-${{ env.TARGET_PLATFORM }}-
-    
-      - name: List files in project directory
-        run: ls -laR || true
 
-      - name: Build (Release)
+      - name: Build Release
         uses: game-ci/unity-builder@v4
         with:
           unityVersion: ${{ env.UNITY_VERSION }}
@@ -72,16 +67,14 @@ jobs:
           buildName: MajdataPlay
           buildsPath: ${{ env.CONFIGURATION }}
 
-      - name: List files in build directory
-        run: ls -R ${{ env.CONFIGURATION }} || true
-
       - name: Package output as zip
-        if: ${{ env.TARGET_PLATFORM != 'Android' }}
         run: |
           set -euo pipefail
           mkdir -p out
           ZIP_NAME="MajdataPlay-${{ env.TARGET_PLATFORM }}-nightly.zip"
-          (cd "${{ env.CONFIGURATION }}" && zip -qry "../out/${ZIP_NAME}" .)
+          cd "${{ env.CONFIGURATION }}"
+          zip -qry "../out/${ZIP_NAME}" .
+          cd -
           ls -la out
 
       - name: Upload build outputs as workflow artifact
@@ -101,7 +94,7 @@ jobs:
       matrix:
         configuration: [Release]
         platform: [Android]
-        channel: [foss,play]
+        channel: [foss, play]
 
     env:
       CONFIGURATION: ${{ matrix.configuration }}
@@ -114,24 +107,22 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
-          
+
       - name: Extract version from unity project
         run: |
           VERSION=$(grep -m1 'bundleVersion:' ProjectSettings/ProjectSettings.asset | awk '{print $2}')
           VERSION_WITH_HASH="${VERSION}-$(date +%Y%m%d)-${GITHUB_SHA::7}"
-          echo "Unity project version: $VERSION"
-          echo "Version with hash: $VERSION_WITH_HASH"
-          
           echo "BUNDLE_VERSION=$VERSION" >> $GITHUB_ENV
           echo "BUNDLE_VERSION_WITH_HASH=$VERSION_WITH_HASH" >> $GITHUB_ENV
-          
+
       - name: Calculate Android version code
         run: |
           COMMIT_COUNT=$(git rev-list HEAD --count)
           COUNT=$((COMMIT_COUNT + 100000))
           echo "BUNDLE_VERSION_CODE=$COUNT" >> $GITHUB_ENV
           echo "BUNDLE_VERSION_CODE_FOR_APK=$COMMIT_COUNT" >> $GITHUB_ENV
-          echo $COUNT
+          echo "Android AAB version code: $COUNT"
+          echo "Android APK version code: $COMMIT_COUNT"
 
       - name: Cache Unity Library
         uses: actions/cache@v4
@@ -141,10 +132,7 @@ jobs:
           restore-keys: |
             Library-${{ runner.os }}-${{ env.TARGET_PLATFORM }}-
 
-      - name: List files in project directory
-        run: ls -laR || true
-
-      - name: Build APKs (Release)
+      - name: Build APKs Release
         if: ${{ env.TARGET_CHANNEL == 'foss' }}
         uses: game-ci/unity-builder@v4
         with:
@@ -152,17 +140,17 @@ jobs:
           targetPlatform: ${{ env.TARGET_PLATFORM }}
           versioning: Custom
           version: ${{ env.BUNDLE_VERSION_WITH_HASH }}
-          androidVersionCode: ${{ ENV.BUNDLE_VERSION_CODE_FOR_APK }}
+          androidVersionCode: ${{ env.BUNDLE_VERSION_CODE_FOR_APK }}
           buildName: MajdataPlay
           buildsPath: ${{ env.CONFIGURATION }}
           androidTargetSdkVersion: 29
           androidKeystoreName: android-publish.keystore
-          androidKeystoreBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }} 
-          androidKeystorePass: ${{ secrets.ANDROID_KEYSTORE_PASS }} 
-          androidKeyaliasName: ${{ secrets.ANDROID_KEYALIAS_NAME }} 
+          androidKeystoreBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          androidKeystorePass: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+          androidKeyaliasName: ${{ secrets.ANDROID_KEYALIAS_NAME }}
           androidKeyaliasPass: ${{ secrets.ANDROID_KEYALIAS_PASS }}
 
-      - name: Build AAB (Release)
+      - name: Build AAB Release
         if: ${{ env.TARGET_CHANNEL == 'play' }}
         uses: game-ci/unity-builder@v4
         with:
@@ -173,16 +161,13 @@ jobs:
           androidVersionCode: ${{ env.BUNDLE_VERSION_CODE }}
           buildName: MajdataPlay
           buildsPath: ${{ env.CONFIGURATION }}
-          androidExportType: 'androidAppBundle'
+          androidExportType: androidAppBundle
           androidTargetSdkVersion: 36
           androidKeystoreName: android-publish.keystore
-          androidKeystoreBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }} 
-          androidKeystorePass: ${{ secrets.ANDROID_KEYSTORE_PASS }} 
-          androidKeyaliasName: ${{ secrets.ANDROID_KEYALIAS_NAME }} 
+          androidKeystoreBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          androidKeystorePass: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+          androidKeyaliasName: ${{ secrets.ANDROID_KEYALIAS_NAME }}
           androidKeyaliasPass: ${{ secrets.ANDROID_KEYALIAS_PASS }}
-
-      - name: List files in project directory
-        run: ls -laR || true
 
       - name: Collect Android APKs
         if: ${{ env.TARGET_CHANNEL == 'foss' }}
@@ -192,7 +177,7 @@ jobs:
           cp "${{ env.CONFIGURATION }}/Android/MajdataPlay.apk/MajdataPlay.armeabi-v7a.apk" "out/MajdataPlay-Android-nightly.armeabi-v7a.apk"
           cp "${{ env.CONFIGURATION }}/Android/MajdataPlay.apk/MajdataPlay.arm64-v8a.apk" "out/MajdataPlay-Android-nightly.arm64-v8a.apk"
           ls -la out
-          
+
       - name: Collect Android AAB
         if: ${{ env.TARGET_CHANNEL == 'play' }}
         run: |
@@ -200,7 +185,7 @@ jobs:
           mkdir -p out
           cp "${{ env.CONFIGURATION }}/Android/MajdataPlay.aab" "out/MajdataPlay-Android-nightly.aab"
           ls -la out
-          
+
       - name: Upload build outputs as workflow artifact
         uses: actions/upload-artifact@v4
         with:
@@ -208,7 +193,7 @@ jobs:
           path: out/*
           if-no-files-found: error
           retention-days: 7
-          
+
       - name: Upload to Google Play
         uses: r0adkll/upload-google-play@v1
         if: ${{ env.TARGET_CHANNEL == 'play' }}
@@ -238,24 +223,21 @@ jobs:
       - name: Checkout the repository
         uses: actions/checkout@v4
         with:
-          submodules: true
+          submodules: recursive
           fetch-depth: 0
-
-      - name: Calculate Android version code
-        run: |
-          COMMIT_COUNT=$(git rev-list HEAD --count)
-          echo "BUNDLE_VERSION_CODE=$COMMIT_COUNT" >> $GITHUB_ENV
-          echo $COUNT
 
       - name: Extract version from unity project
         run: |
           VERSION=$(grep -m1 'bundleVersion:' ProjectSettings/ProjectSettings.asset | awk '{print $2}')
           VERSION_WITH_HASH="${VERSION}-${GITHUB_SHA::7}"
-          echo "Unity project version: $VERSION"
-          echo "Version with hash: $VERSION_WITH_HASH"
-          
           echo "BUNDLE_VERSION=$VERSION" >> $GITHUB_ENV
           echo "BUNDLE_VERSION_WITH_HASH=$VERSION_WITH_HASH" >> $GITHUB_ENV
+
+      - name: Calculate Apple build number
+        run: |
+          BUILD_NUMBER=$((GITHUB_RUN_NUMBER + IOS_BUILD_NUMBER_OFFSET))
+          echo "BUNDLE_VERSION_CODE=$BUILD_NUMBER" >> $GITHUB_ENV
+          echo "Apple build number: $BUILD_NUMBER"
 
       - name: Cache Unity Library
         uses: actions/cache@v4
@@ -265,17 +247,15 @@ jobs:
           restore-keys: |
             Library-${{ runner.os }}-${{ env.TARGET_PLATFORM }}-
 
-      - name: Build (Release)
+      - name: Build Release
         uses: game-ci/unity-builder@v4
         with:
           unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: ${{ env.TARGET_PLATFORM }}
-          versioning: Semantic
+          versioning: Custom
+          version: ${{ env.BUNDLE_VERSION }}
           buildName: MajdataPlay
           buildsPath: ${{ env.CONFIGURATION }}
-
-      - name: List files in build directory
-        run: ls -R ${{ env.CONFIGURATION }} || true
 
       - name: Import Apple certificate
         if: ${{ env.TARGET_PLATFORM == 'iOS' }}
@@ -301,16 +281,16 @@ jobs:
       - name: Install fastlane
         if: ${{ env.TARGET_PLATFORM == 'iOS' }}
         run: |
-          gem install bundler        
+          gem install bundler
           cat > Gemfile <<'EOF'
           source "https://rubygems.org"
-          gem "fastlane", "2.235.0"
+          gem "fastlane", "2.236.1"
           gem "xcodeproj"
           gem "multi_json"
           EOF
           bundle install
-    
-      - name: Build IPK (Release)
+
+      - name: Build IPA Release
         if: ${{ env.TARGET_PLATFORM == 'iOS' }}
         env:
           APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
@@ -318,28 +298,17 @@ jobs:
           APPSTORE_PRIVATE_KEY: ${{ secrets.APPSTORE_PRIVATE_KEY }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           APPSTORE_PROFILE_NAME: ${{ secrets.APPSTORE_PROFILE_NAME }}
-          CONFIGURATION: ${{ env.CONFIGURATION }}
           IOS_PROJECT_PATH: ${{ env.CONFIGURATION }}/iOS/MajdataPlay/Unity-iPhone.xcodeproj
           IOS_EXPORT_DIR: ${{ env.CONFIGURATION }}/iOS/export
-          GITHUB_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-        
-          BUILD_AT="$(TZ=Asia/Shanghai date '+%Y-%m-%d %H:%M:%S')"
-          export BUILD_AT
-        
+
           mkdir -p fastlane
           cat > fastlane/Fastfile <<'EOF'
           default_platform(:ios)
-        
+
           platform :ios do
             lane :ci do
-              api_key = app_store_connect_api_key(
-                key_id: ENV["APPSTORE_KEY_ID"],
-                issuer_id: ENV["APPSTORE_ISSUER_ID"],
-                key_content: ENV["APPSTORE_PRIVATE_KEY"]
-              )
-          
               update_code_signing_settings(
                 use_automatic_signing: false,
                 path: ENV["IOS_PROJECT_PATH"],
@@ -348,7 +317,7 @@ jobs:
                 profile_name: ENV["APPSTORE_PROFILE_NAME"],
                 code_sign_identity: "Apple Distribution"
               )
-          
+
               update_code_signing_settings(
                 use_automatic_signing: false,
                 path: ENV["IOS_PROJECT_PATH"],
@@ -356,7 +325,7 @@ jobs:
                 targets: ["UnityFramework"],
                 code_sign_identity: "Apple Distribution"
               )
-              
+
               increment_version_number(
                 xcodeproj: ENV["IOS_PROJECT_PATH"],
                 version_number: ENV["BUNDLE_VERSION"]
@@ -366,10 +335,10 @@ jobs:
                 xcodeproj: ENV["IOS_PROJECT_PATH"],
                 build_number: ENV["BUNDLE_VERSION_CODE"]
               )
-          
+
               UI.message("Version: #{ENV["BUNDLE_VERSION"]}")
-              UI.message("New build number: #{ENV["BUNDLE_VERSION_CODE"]}")
-          
+              UI.message("Build number: #{ENV["BUNDLE_VERSION_CODE"]}")
+
               gym(
                 project: ENV["IOS_PROJECT_PATH"],
                 scheme: "Unity-iPhone",
@@ -389,8 +358,31 @@ jobs:
             end
           end
           EOF
-          
+
           bundle exec fastlane ios ci
+
+      - name: Verify IPA build number
+        if: ${{ env.TARGET_PLATFORM == 'iOS' }}
+        run: |
+          set -euo pipefail
+          IPA_PATH="${{ env.CONFIGURATION }}/iOS/export/MajdataPlay.ipa"
+          TMP_DIR="$(mktemp -d)"
+          unzip -q "$IPA_PATH" -d "$TMP_DIR"
+
+          APP_DIR="$(find "$TMP_DIR/Payload" -maxdepth 1 -name "*.app" -type d | head -n 1)"
+          INFO_PLIST="$APP_DIR/Info.plist"
+
+          echo "App bundle: $APP_DIR"
+          echo "Info.plist: $INFO_PLIST"
+
+          echo "CFBundleIdentifier:"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$INFO_PLIST"
+
+          echo "CFBundleShortVersionString:"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$INFO_PLIST" || true
+
+          echo "CFBundleVersion:"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$INFO_PLIST"
 
       - name: Upload to TestFlight
         if: ${{ env.TARGET_PLATFORM == 'iOS' }}
@@ -399,22 +391,18 @@ jobs:
           APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID }}
           APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID }}
           APPSTORE_PRIVATE_KEY: ${{ secrets.APPSTORE_PRIVATE_KEY }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          APPSTORE_PROFILE_NAME: ${{ secrets.APPSTORE_PROFILE_NAME }}
-          CONFIGURATION: ${{ env.CONFIGURATION }}
-          IOS_PROJECT_PATH: ${{ env.CONFIGURATION }}/iOS/MajdataPlay/Unity-iPhone.xcodeproj
           IOS_EXPORT_DIR: ${{ env.CONFIGURATION }}/iOS/export
           GITHUB_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-        
+
           BUILD_AT="$(TZ=Asia/Shanghai date '+%Y-%m-%d %H:%M:%S')"
           export BUILD_AT
-          
+
           mkdir -p fastlane
           cat > fastlane/Fastfile <<'EOF'
           default_platform(:ios)
-        
+
           platform :ios do
             lane :ci do
               api_key = app_store_connect_api_key(
@@ -422,7 +410,7 @@ jobs:
                 issuer_id: ENV["APPSTORE_ISSUER_ID"],
                 key_content: ENV["APPSTORE_PRIVATE_KEY"]
               )
-          
+
               upload_to_testflight(
                 api_key: api_key,
                 ipa: File.join(ENV["IOS_EXPORT_DIR"], "MajdataPlay.ipa"),
@@ -435,7 +423,7 @@ jobs:
             end
           end
           EOF
-          
+
           bundle exec fastlane ios ci
 
       - name: Package macOS output as zip
@@ -444,7 +432,9 @@ jobs:
           set -euo pipefail
           mkdir -p out
           ZIP_NAME="MajdataPlay-StandaloneOSX-nightly.zip"
-          (cd "${{ env.CONFIGURATION }}" && zip -qry "../out/${ZIP_NAME}" .)
+          cd "${{ env.CONFIGURATION }}"
+          zip -qry "../out/${ZIP_NAME}" .
+          cd -
           ls -la out
 
       - name: Collect iOS IPA to out
@@ -470,7 +460,7 @@ jobs:
     needs: [build, build-android, build-apple]
 
     steps:
-      - name: Checkout (for tagging)
+      - name: Checkout for tagging
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -485,13 +475,13 @@ jobs:
           set -euo pipefail
           ls -R collected || true
 
-      - name: Move nightly tag to this commit (only after builds succeed)
+      - name: Move nightly tag to this commit
         run: |
           set -e
           git tag -f nightly "${GITHUB_SHA}"
           git push origin -f nightly
 
-      - name: Delete old nightly release (if exists)
+      - name: Delete old nightly release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -502,7 +492,7 @@ jobs:
             echo "No existing nightly release."
           fi
 
-      - name: Create new nightly release with notes (UTC+8)
+      - name: Create new nightly release with notes
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
