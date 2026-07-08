@@ -181,7 +181,7 @@ namespace MajdataPlay.Scenes.Game
             var cachedResult = default(CacheItem);
 #endif
 
-            var anaResult = cachedResult.AnalyzeResult ??= ChartAnalyzer.AnalyzeMaidataWithGraph(chart, 1018, 187, length);
+            var anaResult = cachedResult.AnalyzeResult ??= ChartAnalyzer.AnalyzeMaidataWithGraph(chart, 187, 1018, length);
             if(anaResult.Length == TimeSpan.Zero)
             {
                 SetHelp();
