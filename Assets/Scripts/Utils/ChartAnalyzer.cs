@@ -42,9 +42,9 @@ namespace MajdataPlay.Utils
         [ThreadStatic]
         static SKRoundRect? s_roundRect;
 
-        readonly static Color TapColor = new Color(1f, 0.490566f, 0.7993075f);
-        readonly static Color TouchColor = new Color(1f, 0.9354098f, 0.5707547f);
-        readonly static Color SlideColor = new Color(0.5330188f, 0.7586297f, 1f);
+        readonly static Color TapColor = new Color(0.8980393f, 0.3176471f, 0.5607843f);
+        readonly static Color TouchColor = new Color(0.9450981f, 0.654902f, 0.2235294f);
+        readonly static Color SlideColor = new Color(0.2431373f, 0.5568628f, 0.6784314f);
 
         public static MaidataAnalyzeResult AnalyzeMaidata(SimaiChart data, float? chartLength = null)
         {
