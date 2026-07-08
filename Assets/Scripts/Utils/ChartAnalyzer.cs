@@ -37,9 +37,14 @@ namespace MajdataPlay.Utils
         [ThreadStatic]
         static SKPath? s_touchPath;
 
-        readonly static Color TapColor = new Color(1f, 0.490566f, 0.7993075f);
-        readonly static Color TouchColor = new Color(1f, 0.9354098f, 0.5707547f);
-        readonly static Color SlideColor = new Color(0.5330188f, 0.7586297f, 1f);
+        [ThreadStatic]
+        static SKPoint[]? s_radii;
+        [ThreadStatic]
+        static SKRoundRect? s_roundRect;
+
+        readonly static Color TapColor = new Color(0.8980393f, 0.3176471f, 0.5607843f);
+        readonly static Color TouchColor = new Color(0.9450981f, 0.654902f, 0.2235294f);
+        readonly static Color SlideColor = new Color(0.2431373f, 0.5568628f, 0.6784314f);
 
         public static MaidataAnalyzeResult AnalyzeMaidata(SimaiChart data, float? chartLength = null)
         {
@@ -90,11 +95,12 @@ namespace MajdataPlay.Utils
                 LineGraph = graph
             };
         }
-        static Texture DrawGraph(InternalMaidataAnalyzeResult analyzeResult,
+        static unsafe Texture DrawGraph(InternalMaidataAnalyzeResult analyzeResult,
                                  int height,
                                  int width)
         {
             const int BarCount = 64;
+            const float MinBarHeight = 6f;
 
             EnsureSakaComponentIsInited();
             var tapPoints = analyzeResult.TapPoints;
@@ -128,50 +134,142 @@ namespace MajdataPlay.Utils
 
             var barWidth = step * 0.72f;
             var radius = barWidth * 0.5f;
+            var barPtr = bars.GetUnsafePtr();
 
             for (var i = 0; i < BarCount; i++)
             {
                 var x = (i + 0.5f) * step;
+                ref readonly var barInfo = ref UnsafeUtility.ArrayElementAsRef<GraphBar>(barPtr, i);
+                var tapBarHeight = barInfo.Tap * height;
+                var touchBarHeight = barInfo.Touch * height;
+                var slideBarHeight = barInfo.Slide * height;
 
-                DrawBar(
-                    canvas,
-                    x,
-                    height,
-                    bars[i].Touch * height,
-                    barWidth,
-                    radius,
-                    2f,
-                    s_touchPaint);
+                if(barInfo.Tap != 0)
+                {
+                    Mathf.Max(tapBarHeight, MinBarHeight);
+                }
+                else
+                {
+                    tapBarHeight = 0;
+                }
 
-                DrawBar(
-                    canvas,
-                    x,
-                    height,
-                    bars[i].Slide * height,
-                    barWidth,
-                    radius,
-                    2f,
-                    s_slidePaint);
+                if (barInfo.Touch != 0)
+                {
+                    Mathf.Max(touchBarHeight, MinBarHeight);
+                }
+                else
+                {
+                    touchBarHeight = 0;
+                }
 
-                DrawBar(
-                    canvas,
-                    x,
-                    height,
-                    bars[i].Tap * height,
-                    barWidth,
-                    radius,
-                    2f,
-                    s_tapPaint);
+                if (barInfo.Slide != 0)
+                {
+                    Mathf.Max(slideBarHeight, MinBarHeight);
+                }
+                else
+                {
+                    slideBarHeight = 0;
+                }
+
+                // Draw touch bar
+                DrawRoundRectBar(
+                        canvas,
+                        x,
+                        height - slideBarHeight - tapBarHeight,
+                        touchBarHeight,
+                        barWidth,
+                        radius,
+                        MinBarHeight,
+                        s_touchPaint);
+
+                // Draw slide bar
+                if(barInfo.Touch != 0)
+                {
+                    DrawRectBar(
+                        canvas,
+                        x,
+                        height - tapBarHeight,
+                        slideBarHeight,
+                        barWidth,
+                        radius,
+                        s_slidePaint);
+                }
+                else
+                {
+                    DrawRoundRectBar(
+                        canvas,
+                        x,
+                        height - tapBarHeight,
+                        slideBarHeight,
+                        barWidth,
+                        radius,
+                        MinBarHeight,
+                        s_slidePaint);
+                }
+                // Draw tap bar
+                if (barInfo.Slide != 0 || barInfo.Touch != 0)
+                {
+                    DrawRectBar(
+                        canvas,
+                        x,
+                        height,
+                        tapBarHeight,
+                        barWidth,
+                        radius,
+                        s_tapPaint);
+                }
+                else
+                {
+                    DrawRoundRectBar(
+                        canvas,
+                        x,
+                        height,
+                        tapBarHeight,
+                        barWidth,
+                        radius,
+                        MinBarHeight,
+                        s_tapPaint);
+                } 
             }
 
             return GraphHelper.GraphSnapshot(surface);
         }
-        static void DrawBar(SKCanvas canvas,
+        static void DrawRoundRectBar(SKCanvas canvas,
+                                     float centerX,
+                                     float bottom,
+                                     float barHeight,
+                                     float width,
+                                     float radius,
+                                     float minHeight,
+                                     SKPaint paint)
+        {
+            if (barHeight <= 0f)
+            {
+                return;
+            }
+
+            if (barHeight < minHeight)
+            {
+                barHeight = minHeight;
+            }
+
+            var rect = new SKRect(
+                centerX - (width * 0.5f),
+                bottom - barHeight,
+                centerX + (width * 0.5f),
+                bottom);
+
+            s_radii![0] = new SKPoint(radius, radius);// 左上
+            s_radii[1] = new SKPoint(radius, radius);// 右上
+            s_roundRect!.SetRectRadii(rect, s_radii);
+
+            canvas.DrawRoundRect(s_roundRect, paint);
+        }
+        static void DrawRectBar(SKCanvas canvas,
                             float centerX,
                             float bottom,
                             float barHeight,
                             float width,
-                            float radius,
                             float minHeight,
                             SKPaint paint)
         {
@@ -191,7 +289,7 @@ namespace MajdataPlay.Utils
                 centerX + (width * 0.5f),
                 bottom);
 
-            canvas.DrawRoundRect(rect, radius, radius, paint);
+            canvas.DrawRect(rect, paint);
         }
         static NativeArray<GraphBar> BuildBars(NativeArray<Vector2> tapPoints,
                                                NativeArray<Vector2> slidePoints,
@@ -201,6 +299,7 @@ namespace MajdataPlay.Utils
             var sampleCount = tapPoints.Length;
 
             var bars = new NativeArray<GraphBar>(barCount, Allocator.Temp);
+            var max = 0f;
 
             for (var i = 0; i < barCount; i++)
             {
@@ -213,10 +312,11 @@ namespace MajdataPlay.Utils
 
                 for (var j = begin; j < end; j++)
                 {
-                    tap = Mathf.Max(tap, tapPoints[j].y);
-                    slide = Mathf.Max(slide, slidePoints[j].y);
-                    touch = Mathf.Max(touch, touchPoints[j].y);
+                    tap += tapPoints[j].y;
+                    slide += slidePoints[j].y;
+                    touch += touchPoints[j].y;
                 }
+                max = Mathf.Max(max, tap + slide + touch);
 
                 bars[i] = new ()
                 {
@@ -225,6 +325,24 @@ namespace MajdataPlay.Utils
                     Touch = touch
                 };
             }
+            // normalize
+            for (var i = 0; i < barCount; i++)
+            {
+                var bar = bars[i];
+                var sum = bar.Tap + bar.Slide + bar.Touch;
+                var totalHeight = sum / max;
+                var tapHeight = bar.Tap / sum * totalHeight;
+                var slideHeight = bar.Slide / sum * totalHeight;
+                var touchHeight = bar.Touch / sum * totalHeight;
+
+                bars[i] = new()
+                {
+                    Tap = tapHeight,
+                    Slide = slideHeight,
+                    Touch = touchHeight
+                };
+            }
+
 
             return bars;
         }
@@ -354,6 +472,7 @@ namespace MajdataPlay.Utils
         }
         [MemberNotNull(nameof(s_tapPaint), nameof(s_slidePaint), nameof(s_touchPaint))]
         [MemberNotNull(nameof(s_tapPath), nameof(s_slidePath), nameof(s_touchPath))]
+        [MemberNotNull(nameof(s_radii), nameof(s_roundRect))]
         static void EnsureSakaComponentIsInited()
         {
             if(s_tapPaint is null)
@@ -400,6 +519,32 @@ namespace MajdataPlay.Utils
             else
             {
                 s_slidePath.Rewind();
+            }
+
+            if(s_radii is null)
+            {
+                s_radii = new SKPoint[4]
+                {
+                    SKPoint.Empty,
+                    SKPoint.Empty,
+                    SKPoint.Empty,
+                    SKPoint.Empty
+                };
+            }
+            else
+            {
+                s_radii[0] = SKPoint.Empty;
+                s_radii[1] = SKPoint.Empty;
+                s_radii[2] = SKPoint.Empty;
+                s_radii[3] = SKPoint.Empty;
+            }
+            if(s_roundRect is null)
+            {
+                s_roundRect = new();
+            }
+            else
+            {
+                s_roundRect.SetEmpty();
             }
         }
         struct InternalMaidataAnalyzeResult
