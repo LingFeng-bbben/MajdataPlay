@@ -45,6 +45,14 @@ namespace MajdataPlay.Scenes.List
         [FormerlySerializedAs("progressDisplayer")]
         TextMeshProUGUI _progressDisplayer;
 
+        [SerializeField]
+        [FormerlySerializedAs("collectionListManager")]
+        CollectionListManager _collectionListManager;
+
+        [SerializeField]
+        [FormerlySerializedAs("emptyCollectionNotice")]
+        GameObject _emptyCollectionNotice;
+
         [SerializeField, ReadOnlyField]
         int _selectedDifficulty = 0;
 
@@ -144,6 +152,9 @@ namespace MajdataPlay.Scenes.List
             Clear();
             if (!collection.IsEmpty)
             {
+                _songCoverListRoot.SetActive(true);
+                _thumbnailListRoot.SetActive(true);
+                _emptyCollectionNotice.SetActive(false);
                 collection.Index = 0;
                 _currentCollection = collection;
                 _isEmptyCollection = false;
@@ -179,6 +190,10 @@ namespace MajdataPlay.Scenes.List
             else
             {
                 _isEmptyCollection = true;
+                _songCoverListRoot.SetActive(false);
+                _thumbnailListRoot.SetActive(false);
+                _emptyCollectionNotice.SetActive(true);
+                _progressDisplayer.text = $"Ciallo～(∠・ω< )⌒★";
             }
         }
 
@@ -194,10 +209,18 @@ namespace MajdataPlay.Scenes.List
         }
         public void SlideListToHead()
         {
+            if (_isEmptyCollection)
+            {
+                return;
+            }
             SlideListTo(0, true, false);
         }
         public void SlideListToTail()
         {
+            if (_isEmptyCollection)
+            {
+                return;
+            }
             SlideListTo(_songCount - 1, true, false);
         }
         void SlideListTo(int pos, bool disableAnimation, bool forceUpdate)
@@ -207,10 +230,14 @@ namespace MajdataPlay.Scenes.List
             if (_listDesiredPos < 0)
             {
                 _listDesiredPos = 0;
+                _collectionListManager.PreviousCollection();
+                return;
             }
             else if (_listDesiredPos >= _songCount)
             {
                 _listDesiredPos = _songCount - 1;
+                _collectionListManager.NextCollection();
+                return;
             }
 
             
