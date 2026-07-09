@@ -5517,6 +5517,7 @@ MonoBehaviour:
   _metadataDisplayer: {fileID: 3559887092446061320}
   _chartAnalyzer: {fileID: 0}
   _onlineInfoDisplayer: {fileID: 654444965399099254}
+  _bgSongCoverDisplayer: {fileID: 579586896977130437}
   _levelDisplayerListRoot: {fileID: 3707173270505227020}
   _selectedLevelTitle: {fileID: 4453142988551436510}
   _selectedLevelText: {fileID: 2215203094463507212}

@@ -53,6 +53,10 @@ namespace MajdataPlay.Scenes.List
         OnlineInfoDisplayer _onlineInfoDisplayer;
 
         [SerializeField]
+        [FormerlySerializedAs("bgSongCoverDisplayer")]
+        Image _bgSongCoverDisplayer;
+
+        [SerializeField]
         [FormerlySerializedAs("levelDisplayerListRoot")]
         GameObject _levelDisplayerListRoot;
 
@@ -69,20 +73,18 @@ namespace MajdataPlay.Scenes.List
         Image _selectedLevelColor;
 
         int _diff = 0;
-        int _chartLevelCount = 0;
 
         ISongDetail? _currentSongDetail = null;
 
         CancellationTokenSource? _cts = null;
         
-        CoverListManager _listDisplayer;
         ListManager _listManager;
 
-        ChartLevel[] _levelValues = (ChartLevel[])Enum.GetValues(typeof(ChartLevel));
         LevelBinding[] _levelBindings = Array.Empty<LevelBinding>();
         LevelDisplayer[] _levelDisplayers = Array.Empty<LevelDisplayer>();
 
         readonly ListConfig _listConfig = MajEnv.RuntimeConfig?.List ?? new();
+        readonly ChartLevel[] _levelValues = (ChartLevel[])Enum.GetValues(typeof(ChartLevel));
 
         const float LEVEL_RING_LEFT_START_ROTATION = 67.5f;
         const float LEVEL_RING_RIGHT_START_ROTATION = 32.5f;
@@ -128,7 +130,6 @@ namespace MajdataPlay.Scenes.List
         }
         void Start()
         {
-            _listDisplayer = Majdata<CoverListManager>.Instance!;
             _listManager = Majdata<ListManager>.Instance!;
         }
         void OnDestroy()
