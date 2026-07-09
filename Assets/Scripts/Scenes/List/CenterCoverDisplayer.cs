@@ -289,7 +289,7 @@ namespace MajdataPlay.Scenes.List
         }
         void UpdateBGSongCoverAnim(float progress)
         {
-            const float MaxFadeInAlpha = 0.3529412f;
+            const float MaxFadeInAlpha = 0.3f;
             const float CoverEndYPos = 0;
             const float CoverStartYPos = -100f;
 

@@ -61,16 +61,16 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _BlurSize: 2
+    - _BlurSize: 1
     - _BlurStrength: 1
     - _BumpScale: 1
-    - _CircleRadius: 0.4
+    - _CircleRadius: 0.45
     - _CircleSoftness: 0.005
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
-    - _FadeEndY: 0.4
-    - _FadeStartY: 0.5
+    - _FadeEndY: 0.5
+    - _FadeStartY: 0.6
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
