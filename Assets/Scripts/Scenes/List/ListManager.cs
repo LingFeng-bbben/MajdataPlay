@@ -350,7 +350,7 @@ namespace MajdataPlay.Scenes.List
                 //_coverListDisplayer.DisableAnimation = false;
             }
 
-            if (a4Statistic.IsPressed)
+            if (a4Statistic.IsPressed && _coverListManager.SelectedSong is not null)
             {
                 if (!_isPlayedExplosion)
                 {
@@ -379,7 +379,7 @@ namespace MajdataPlay.Scenes.List
                     {
                         EnterDan();
                     }
-                    else
+                    else if(_coverListManager.SelectedSong is not null)
                     {
                         EnterGame();
                     }

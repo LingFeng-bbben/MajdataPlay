@@ -191,6 +191,7 @@ namespace MajdataPlay.Scenes.List
             else
             {
                 _isEmptyCollection = true;
+                SelectedSong = null;
                 _songCoverListRoot.SetActive(false);
                 _thumbnailListRoot.SetActive(false);
                 _centerCoverDisplayer.SetActive(false);
