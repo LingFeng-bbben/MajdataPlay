@@ -38,6 +38,7 @@ namespace MajdataPlay.Scenes.Game
         GameObject? _helpIcon;
 
         RawImage _rawImage;
+        RectTransform _rectTransform;
         static Texture2D? _emptyTexture;
 
 #if UNITY_ANDROID || UNITY_IOS
@@ -63,6 +64,7 @@ namespace MajdataPlay.Scenes.Game
                 _errorIcon = iconTransform.GetChild(2).gameObject;
             }
             _rawImage = GetComponent<RawImage>();
+            _rectTransform = GetComponent<RectTransform>();
             if(_emptyTexture is null)
             {
                 _emptyTexture = new Texture2D(0, 0);
@@ -189,8 +191,8 @@ namespace MajdataPlay.Scenes.Game
 #else
             var cachedResult = default(CacheItem);
 #endif
-
-            var anaResult = cachedResult.AnalyzeResult ??= ChartAnalyzer.AnalyzeMaidataWithGraph(chart, 187, 1018, length);
+            var rect = _rectTransform.rect;
+            var anaResult = cachedResult.AnalyzeResult ??= ChartAnalyzer.AnalyzeMaidataWithGraph(chart, (int)rect.height, (int)rect.width, length);
             if(anaResult.Length == TimeSpan.Zero)
             {
                 SetHelp();
