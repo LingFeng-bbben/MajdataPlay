@@ -2,15 +2,20 @@ Shader "UI/Rect Mask"
 {
     Properties
     {
-        [PerRendererData]_MainTex ("Texture",2D)="white"{}
-        _Color ("Tint", Color) = (1,1,1,1)
+        [PerRendererData]
+        _MainTex ("Sprite",2D)="white"{}
 
-        _Width ("Width", Float) = 200
-        _Height ("Height", Float) = 100
+        _Color("Color",Color)=(1,1,1,1)
 
-        _Radius ("Corner Radius", Float) = 20
-        _Feather ("Feather", Float) = 1
+
+        _Width("Width",Float)=200
+        _Height("Height",Float)=200
+
+
+        _FadeX("Fade X",Float)=20
+        _FadeY("Fade Y",Float)=20
     }
+
 
     SubShader
     {
@@ -22,10 +27,13 @@ Shader "UI/Rect Mask"
             "CanUseSpriteAtlas"="True"
         }
 
+
         Cull Off
         Lighting Off
         ZWrite Off
+
         Blend SrcAlpha OneMinusSrcAlpha
+
 
         Pass
         {
@@ -34,74 +42,174 @@ Shader "UI/Rect Mask"
             #pragma vertex vert
             #pragma fragment frag
 
+
             #include "UnityCG.cginc"
+
+
 
             sampler2D _MainTex;
 
-            fixed4 _Color;
+            float4 _Color;
+
 
             float _Width;
             float _Height;
-            float _Radius;
-            float _Feather;
+
+            float _FadeX;
+            float _FadeY;
+
+
 
             struct appdata
             {
                 float4 vertex : POSITION;
+
                 float2 uv : TEXCOORD0;
-                fixed4 color : COLOR;
+
+                float4 color : COLOR;
             };
+
+
 
             struct v2f
             {
-                float4 pos : SV_POSITION;
+                float4 vertex : SV_POSITION;
+
                 float2 uv : TEXCOORD0;
+
+                float4 color : COLOR;
+
+
+                // RectTransform local position
                 float2 localPos : TEXCOORD1;
-                fixed4 color : COLOR;
             };
+
+
 
             v2f vert(appdata v)
             {
                 v2f o;
 
-                o.pos = UnityObjectToClipPos(v.vertex);
-                o.uv = v.uv;
-                o.localPos = v.vertex.xy;
-                o.color = v.color * _Color;
+
+                o.vertex =
+                    UnityObjectToClipPos(v.vertex);
+
+
+                o.uv =
+                    v.uv;
+
+
+                o.color =
+                    v.color * _Color;
+
+
+                // 这里就是RectTransform本地坐标
+                o.localPos =
+                    v.vertex.xy;
+
 
                 return o;
             }
 
-            float sdRoundRect(float2 p,float2 halfSize,float radius)
-            {
-                float2 q = abs(p) - halfSize + radius;
 
-                return
-                    length(max(q,0))
-                    + min(max(q.x,q.y),0)
-                    - radius;
+
+
+            float AxisMask(
+                float pos,
+                float size,
+                float fade
+            )
+            {
+
+                float start =
+                    min(0,size);
+
+
+                float end =
+                    max(0,size);
+
+
+
+                float inside =
+                    step(start,pos)
+                    *
+                    step(pos,end);
+
+
+
+                if(fade <= 0)
+                    return inside;
+
+
+
+                float fadeStart =
+                    saturate(
+                        (pos-start)
+                        /
+                        fade
+                    );
+
+
+                float fadeEnd =
+                    saturate(
+                        (end-pos)
+                        /
+                        fade
+                    );
+
+
+
+                return inside *
+                    min(
+                        fadeStart,
+                        fadeEnd
+                    );
             }
 
-            fixed4 frag(v2f i) : SV_Target
+
+
+
+
+            fixed4 frag(v2f i)
+                :SV_Target
             {
-                fixed4 col = tex2D(_MainTex,i.uv) * i.color;
 
-                float2 halfSize =
-                    float2(_Width,_Height) * 0.5;
+                fixed4 col =
+                    tex2D(
+                        _MainTex,
+                        i.uv
+                    )
+                    *
+                    i.color;
 
-                float d =
-                    sdRoundRect(
-                        i.localPos,
-                        halfSize,
-                        _Radius);
 
-                float alpha =
-                    saturate((-d) / max(_Feather,0.0001));
 
-                col.a *= alpha;
+                float maskX =
+                    AxisMask(
+                        i.localPos.x,
+                        _Width,
+                        _FadeX
+                    );
+
+
+                float maskY =
+                    AxisMask(
+                        i.localPos.y,
+                        _Height,
+                        _FadeY
+                    );
+
+
+
+                col.a *=
+                    maskX *
+                    maskY;
+
+
 
                 return col;
             }
+
 
             ENDCG
         }

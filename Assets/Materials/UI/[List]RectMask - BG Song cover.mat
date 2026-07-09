@@ -65,11 +65,13 @@ Material:
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
+    - _FadeX: 20
+    - _FadeY: 20
     - _Feather: 1
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _Height: 846
+    - _Height: 1974
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
@@ -79,7 +81,7 @@ Material:
     - _SpecularHighlights: 1
     - _SrcBlend: 1
     - _UVSec: 0
-    - _Width: 1080
+    - _Width: 1586.3
     - _ZWrite: 1
     m_Colors:
     - _Color: {r: 1, g: 1, b: 1, a: 1}

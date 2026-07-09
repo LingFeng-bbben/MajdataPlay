@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using LitMotion;
 using MajdataPlay.Drawing;
 using MajdataPlay.IO;
 using MajdataPlay.Scenes.Game;
@@ -75,13 +76,16 @@ namespace MajdataPlay.Scenes.List
         int _diff = 0;
 
         ISongDetail? _currentSongDetail = null;
-
-        CancellationTokenSource? _cts = null;
         
         ListManager _listManager;
+        RectTransform _bgSongCoverTransform;
+
+        MotionHandle _bgSongCoverAnim;
 
         LevelBinding[] _levelBindings = Array.Empty<LevelBinding>();
         LevelDisplayer[] _levelDisplayers = Array.Empty<LevelDisplayer>();
+
+        CancellationTokenSource? _cts = null;
 
         readonly ListConfig _listConfig = MajEnv.RuntimeConfig?.List ?? new();
         readonly ChartLevel[] _levelValues = (ChartLevel[])Enum.GetValues(typeof(ChartLevel));
@@ -89,6 +93,7 @@ namespace MajdataPlay.Scenes.List
         const float LEVEL_RING_LEFT_START_ROTATION = 67.5f;
         const float LEVEL_RING_RIGHT_START_ROTATION = 32.5f;
         const float LEVEL_RING_ROTATION_STEP = 10f;
+        const float BG_COVER_FADE_IN_DURATION_SEC = 0.3f;
         
         void Awake()
         {
@@ -127,6 +132,8 @@ namespace MajdataPlay.Scenes.List
                 };
             }
             SetDifficulty((int)_listConfig.SelectedDiff);
+
+            _bgSongCoverTransform = _bgSongCoverDisplayer.GetComponent<RectTransform>();
         }
         void Start()
         {
@@ -280,15 +287,37 @@ namespace MajdataPlay.Scenes.List
             _onlineInfoDisplayer.SetSongDetail(_currentSongDetail, cancellationToken);
             _chartAnalyzer.SetSongDeatil(_currentSongDetail, (ChartLevel)_diff, null, cancellationToken);
         }
+        void UpdateBGSongCoverAnim(float progress)
+        {
+            const float MaxFadeInAlpha = 0.3529412f;
+            const float CoverEndYPos = -480f;
+            const float CoverStartYPos = -540f;
+
+            var nP = Vector3.Lerp(new Vector3(0, CoverStartYPos), new(0, CoverEndYPos), progress);
+            var nAlpha = Mathf.Lerp(0, MaxFadeInAlpha, progress);
+
+            _bgSongCoverDisplayer.color = new Color(1, 1, 1, nAlpha);
+            _bgSongCoverTransform.anchoredPosition = nP;
+        }
         
         async Task SetCoverAsync(ISongDetail detail, CancellationToken token = default)
         {
+            _bgSongCoverAnim.TryCancel();
+            _bgSongCoverDisplayer.sprite = SpriteLoader.EmptySprite;
             _loadingObj.SetActive(true);
             _songCoverDisplayer.sprite = SpriteLoader.EmptySprite;
             var cover = await detail.GetCoverAsync(true, token: token);
             await UniTask.SwitchToMainThread();
             token.ThrowIfCancellationRequested();
             _songCoverDisplayer.sprite = cover;
+            _bgSongCoverDisplayer.sprite = cover;
+            _bgSongCoverAnim = LMotion.Create(0f, 1f, BG_COVER_FADE_IN_DURATION_SEC)
+                                      .WithScheduler(MotionScheduler.PostLateUpdate)
+                                      .WithEase(Ease.OutQuad)
+                                      .Bind(x =>
+                                      {
+                                          UpdateBGSongCoverAnim(x);
+                                      });
             _loadingObj.SetActive(false);
         }
 
