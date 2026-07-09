@@ -742,13 +742,13 @@ TextureImporter:
       name: newui@3x_81
       rect:
         serializedVersion: 2
-        x: 1991
-        y: 101
-        width: 1532
-        height: 1400
+        x: 1976
+        y: 29
+        width: 1550
+        height: 1550
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 516, y: 0, z: 516, w: 775}
       customData: 
       outline: []
       physicsShape: []
