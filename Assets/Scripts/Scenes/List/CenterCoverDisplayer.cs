@@ -290,8 +290,8 @@ namespace MajdataPlay.Scenes.List
         void UpdateBGSongCoverAnim(float progress)
         {
             const float MaxFadeInAlpha = 0.3529412f;
-            const float CoverEndYPos = -480f;
-            const float CoverStartYPos = -540f;
+            const float CoverEndYPos = 0;
+            const float CoverStartYPos = -100f;
 
             var nP = Vector3.Lerp(new Vector3(0, CoverStartYPos), new(0, CoverEndYPos), progress);
             var nAlpha = Mathf.Lerp(0, MaxFadeInAlpha, progress);
