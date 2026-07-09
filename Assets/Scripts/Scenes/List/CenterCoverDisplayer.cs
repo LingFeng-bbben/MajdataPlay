@@ -54,6 +54,10 @@ namespace MajdataPlay.Scenes.List
         OnlineInfoDisplayer _onlineInfoDisplayer;
 
         [SerializeField]
+        [FormerlySerializedAs("onlineScoreRankDisplayer")]
+        OnlineScoreRankDisplayer _onlineScoreRankDisplayer;
+
+        [SerializeField]
         [FormerlySerializedAs("bgSongCoverDisplayer")]
         Image _bgSongCoverDisplayer;
 
@@ -171,7 +175,8 @@ namespace MajdataPlay.Scenes.List
                 CabinetLed.SetButtonLight(_diffColors.Last(), 7);
             }
             UpdateLevelRing();
-            UpdateMetadataAndScoreDisplayer();            
+            UpdateMetadataAndScoreDisplayer();
+            
         }
         public void SetSongDetail(ISongDetail detail, Sprite? immediateCover = null)
         {
@@ -185,7 +190,6 @@ namespace MajdataPlay.Scenes.List
             }
             _currentSongDetail = detail;
             _cts = new();
-            var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_listManager.CancellationToken, _cts.Token);
             var chartLevels = detail.Levels;
             for (var i = 0; i < chartLevels.Length; i++)
             {
@@ -208,7 +212,7 @@ namespace MajdataPlay.Scenes.List
             }
             UpdateLevelRing();
             UpdateMetadataAndScoreDisplayer();
-            ListManager.AllBackgroundTasks.Add(SetCoverAsync(detail, linkedCts.Token, immediateCover));
+            ListManager.AllBackgroundTasks.Add(SetCoverAsync(detail, _cts.Token, immediateCover));
         }
         public void SetEmbeddedCoverVisible(bool visible)
         {
@@ -303,6 +307,7 @@ namespace MajdataPlay.Scenes.List
             _scoreDisplayer.SetScore(_currentSongDetail, (ChartLevel)_diff);
             _onlineInfoDisplayer.SetSongDetail(_currentSongDetail, cancellationToken);
             _chartAnalyzer.SetSongDeatil(_currentSongDetail, (ChartLevel)_diff, null, cancellationToken);
+            _onlineScoreRankDisplayer.SetSongDetail(_currentSongDetail, (ChartLevel)_diff, cancellationToken);
         }
         void UpdateBGSongCoverAnim(float progress)
         {

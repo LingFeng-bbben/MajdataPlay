@@ -80,6 +80,7 @@ namespace MajdataPlay.Scenes.List
                     return;
                 }
                 _maidataLoadTask = _currentSongDetail.GetMaidataAsync(true, token: _cancellationToken).AsTask();
+                ListManager.AllBackgroundTasks.Add(_maidataLoadTask);
                 return;
             }
             else if(!_maidataLoadTask.IsCompleted)
