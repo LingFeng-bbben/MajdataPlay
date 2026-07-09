@@ -215,7 +215,7 @@ namespace MajdataPlay.Scenes.List
 
             
             SelectedSong = _currentCollection[_listDesiredPos];
-            _progressDisplayer.text = $"{_listDesiredPos + 1}/{_songCount}";
+            _progressDisplayer.text = $"{_listDesiredPos + 1}/<size=70%>{_songCount}";
             UpdateCenterDisplayer();
             if(disableAnimation)
             {
