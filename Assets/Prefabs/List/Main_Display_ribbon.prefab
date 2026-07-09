@@ -4744,7 +4744,7 @@ GameObject:
   - component: {fileID: 3427884758182651682}
   - component: {fileID: 579586896977130437}
   m_Layer: 5
-  m_Name: Cover (1)
+  m_Name: SongCover
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4789,7 +4789,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2100000, guid: ae0fddd9a84a6bb45bec1fbdbe7f1e6e, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 0.3529412}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
@@ -6519,7 +6519,6 @@ GameObject:
   - component: {fileID: 2055815218591294177}
   - component: {fileID: 7510146771132219932}
   - component: {fileID: 688067527619544319}
-  - component: {fileID: 1740025594604851432}
   m_Layer: 5
   m_Name: Image
   m_TagString: Untagged
@@ -6585,19 +6584,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &1740025594604851432
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7103061724219914955}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 31a19414c41e5ae4aae2af33fee712f6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_ShowMaskGraphic: 1
 --- !u!1 &7263914819922092148
 GameObject:
   m_ObjectHideFlags: 0

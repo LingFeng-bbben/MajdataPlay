@@ -280,13 +280,13 @@ namespace MajdataPlay.Scenes.List
             _chartAnalyzer.SetSongDeatil(_currentSongDetail, (ChartLevel)_diff, null, cancellationToken);
         }
         
-        async Task SetCoverAsync(ISongDetail detail, CancellationToken ct = default)
+        async Task SetCoverAsync(ISongDetail detail, CancellationToken token = default)
         {
             _loadingObj.SetActive(true);
             _songCoverDisplayer.sprite = SpriteLoader.EmptySprite;
-            var cover = await detail.GetCoverAsync(true, token: ct);
+            var cover = await detail.GetCoverAsync(true, token: token);
             await UniTask.SwitchToMainThread();
-            ct.ThrowIfCancellationRequested();
+            token.ThrowIfCancellationRequested();
             _songCoverDisplayer.sprite = cover;
             _loadingObj.SetActive(false);
         }

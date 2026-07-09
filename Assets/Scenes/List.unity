@@ -9172,6 +9172,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -68.20001
       objectReference: {fileID: 0}
+    - target: {fileID: 579586896977130437, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 654444965399099254, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
       propertyPath: _thumbUpNormalColor.a
       value: 1
@@ -9188,6 +9192,10 @@ PrefabInstance:
       propertyPath: _thumbUpNormalColor.r
       value: 0.3254902
       objectReference: {fileID: 0}
+    - target: {fileID: 663810788901394355, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 762452894403173411, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
       propertyPath: m_AdditionalShaderChannelsFlag
       value: 25
@@ -9196,9 +9204,21 @@ PrefabInstance:
       propertyPath: m_Name
       value: Main_Display
       objectReference: {fileID: 0}
+    - target: {fileID: 1532729581834908079, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1740025594604851432, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2022780090502538029, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: -105.20001
+      objectReference: {fileID: 0}
+    - target: {fileID: 2198170768956682176, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2800794618870294913, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
       propertyPath: m_Pivot.x
@@ -9320,9 +9340,17 @@ PrefabInstance:
       propertyPath: m_SizeDelta.y
       value: 142.61
       objectReference: {fileID: 0}
+    - target: {fileID: 4351124569268545297, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5180000131444125406, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
       propertyPath: m_AnchoredPosition.x
       value: 218.36
+      objectReference: {fileID: 0}
+    - target: {fileID: 5214861660004389311, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5793241147777706893, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
       propertyPath: _chartAnalyzer
@@ -9363,6 +9391,10 @@ PrefabInstance:
     - target: {fileID: 6427247033723599783, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7103061724219914955, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7173039098740475952, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
       propertyPath: m_AdditionalShaderChannelsFlag
