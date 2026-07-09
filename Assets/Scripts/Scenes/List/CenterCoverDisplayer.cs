@@ -78,6 +78,8 @@ namespace MajdataPlay.Scenes.List
         ISongDetail? _currentSongDetail = null;
         
         ListManager _listManager;
+        GameObject? _embeddedCoverRoot;
+        GameObject? _favoriteRoot;
         RectTransform _bgSongCoverTransform;
 
         MotionHandle _bgSongCoverAnim;
@@ -133,6 +135,9 @@ namespace MajdataPlay.Scenes.List
             }
             SetDifficulty((int)_listConfig.SelectedDiff);
 
+            var coverTransform = _songCoverDisplayer.GetComponent<RectTransform>();
+            _embeddedCoverRoot = coverTransform.parent?.gameObject;
+            _favoriteRoot = transform.Find("Favorite")?.gameObject;
             _bgSongCoverTransform = _bgSongCoverDisplayer.GetComponent<RectTransform>();
         }
         void Start()
@@ -168,7 +173,7 @@ namespace MajdataPlay.Scenes.List
             UpdateLevelRing();
             UpdateMetadataAndScoreDisplayer();            
         }
-        public void SetSongDetail(ISongDetail detail)
+        public void SetSongDetail(ISongDetail detail, Sprite? immediateCover = null)
         {
             if(detail == _currentSongDetail)
             {
@@ -203,7 +208,12 @@ namespace MajdataPlay.Scenes.List
             }
             UpdateLevelRing();
             UpdateMetadataAndScoreDisplayer();
-            ListManager.AllBackgroundTasks.Add(SetCoverAsync(detail, linkedCts.Token));
+            ListManager.AllBackgroundTasks.Add(SetCoverAsync(detail, linkedCts.Token, immediateCover));
+        }
+        public void SetEmbeddedCoverVisible(bool visible)
+        {
+            _embeddedCoverRoot?.SetActive(visible);
+            _favoriteRoot?.SetActive(visible);
         }
         public void SetActive(bool state)
         {
@@ -307,12 +317,20 @@ namespace MajdataPlay.Scenes.List
             _bgSongCoverTransform.anchoredPosition = nP;
         }
         
-        async Task SetCoverAsync(ISongDetail detail, CancellationToken token = default)
+        async Task SetCoverAsync(ISongDetail detail, CancellationToken token = default, Sprite? immediateCover = null)
         {
             _bgSongCoverAnim.TryCancel();
             _bgSongCoverDisplayer.sprite = SpriteLoader.EmptySprite;
-            _loadingObj.SetActive(true);
-            _songCoverDisplayer.sprite = SpriteLoader.EmptySprite;
+            if (immediateCover != null && immediateCover.rect.width > 0 && immediateCover.rect.height > 0)
+            {
+                _songCoverDisplayer.sprite = immediateCover;
+                _loadingObj.SetActive(false);
+            }
+            else
+            {
+                _loadingObj.SetActive(true);
+                _songCoverDisplayer.sprite = SpriteLoader.EmptySprite;
+            }
             var cover = await detail.GetCoverAsync(true, token: token);
             await UniTask.SwitchToMainThread();
             token.ThrowIfCancellationRequested();

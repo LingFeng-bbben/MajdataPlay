@@ -69,6 +69,7 @@ namespace MajdataPlay.Scenes.List
         float _preloadCooldownTimer = 0.5f;
         bool _isNeedPreload = false;
         bool _isEmptyCollection = true;
+        int _scrollMotionVersion = 0;
 
         ListManager _listManager;
         PreviewSoundPlayer _previewSoundPlayer;
@@ -89,6 +90,8 @@ namespace MajdataPlay.Scenes.List
         readonly ListConfig _listConfig = MajEnv.RuntimeConfig?.List ?? new();
 
         const int DISPLAYER_ANIM_DURATION_MS = 250;
+        const float SELECTED_COVER_SCALE = 1f;
+        const float UNSELECTED_COVER_SCALE = 0.86f;
 
         #region Unity Lifecycle
         void Awake()
@@ -130,6 +133,7 @@ namespace MajdataPlay.Scenes.List
                 _songThumbnailDisplayers[i] = displayer;
                 _idleSongThumbnailDisplayer.Enqueue(displayer);
             }
+            _centerCoverDisplayer.SetEmbeddedCoverVisible(false);
         }
         void OnDestroy()
         {
@@ -244,23 +248,28 @@ namespace MajdataPlay.Scenes.List
             }
 
             
+            var shouldUpdateDisplayer = _listDesiredPos != oldDesiredPos || forceUpdate;
             SelectedSong = _currentCollection[_listDesiredPos];
             _progressDisplayer.text = $"{_listDesiredPos + 1}/<size=70%>{_songCount}";
-            UpdateCenterDisplayer();
             if(disableAnimation)
             {
-                if (_listDesiredPos != oldDesiredPos || forceUpdate)
+                if (shouldUpdateDisplayer)
                 {
                     _listCursorPos = _listDesiredPos;
                     UpdateDisplayerBinding();
                     UpdateDisplayerPosition();
-                }                    
+                }
+                UpdateCenterDisplayer();
             }
             else
             {
-                if (_listDesiredPos != oldDesiredPos || forceUpdate)
+                if (shouldUpdateDisplayer)
                 {
-                    DisplayerMoveTo(_listDesiredPos, DISPLAYER_ANIM_DURATION_MS / 1000f);
+                    _centerCoverDisplayer.SetEmbeddedCoverVisible(false);
+                    DisplayerMoveTo(
+                        _listDesiredPos,
+                        DISPLAYER_ANIM_DURATION_MS / 1000f,
+                        UpdateCenterDisplayer);
                 }
             }            
         }
@@ -293,12 +302,20 @@ namespace MajdataPlay.Scenes.List
             _songCoverBindings.Clear();
             _songThumbnailBindings.Clear();
         }
-        void DisplayerMoveTo(float targetPos, float duration)
+        void DisplayerMoveTo(float targetPos, float duration, Action? onComplete = null)
         {
             _scrollMotion.TryCancel();
+            var motionVersion = ++_scrollMotionVersion;
             _scrollMotion = LMotion.Create(_listCursorPos, targetPos, duration)
                                    .WithScheduler(MotionScheduler.PostLateUpdate)
                                    .WithEase(Ease.OutQuad)
+                                   .WithOnComplete(() =>
+                                   {
+                                       if (motionVersion == _scrollMotionVersion)
+                                       {
+                                           onComplete?.Invoke();
+                                       }
+                                   })
                                    .Bind(x =>
                                    {
                                        _listCursorPos = x;
@@ -308,7 +325,14 @@ namespace MajdataPlay.Scenes.List
         }
         void UpdateCenterDisplayer()
         {
-            _centerCoverDisplayer.SetSongDetail(SelectedSong!);
+            _centerCoverDisplayer.SetSongDetail(SelectedSong!, GetSelectedCoverSpriteSnapshot());
+            _centerCoverDisplayer.SetEmbeddedCoverVisible(true);
+        }
+        Sprite? GetSelectedCoverSpriteSnapshot()
+        {
+            var coverDisplayer = _songCoverBindings.AsSpan()[_listDesiredPos].Displayer;
+
+            return coverDisplayer?.CurrentCoverSprite;
         }
         void UpdateDisplayerBinding()
         {
@@ -386,6 +410,8 @@ namespace MajdataPlay.Scenes.List
         {
             var songCoverBindings = _songCoverBindings.AsSpan();
             var songThumbnailBindings = _songThumbnailBindings.AsSpan();
+            SongCoverDisplayer? frontCoverDisplayer = null;
+            var frontCoverAbsDelta = float.MaxValue;
             for (var i = 0; i < _songCount; i++)
             {
                 ref var coverBinding = ref songCoverBindings[i];
@@ -397,6 +423,15 @@ namespace MajdataPlay.Scenes.List
                 if (coverDisplayer is not null)
                 {
                     coverDisplayer.RectTransform.anchoredPosition = GetCoverDisplayerPositionFromDelta(delta);
+                    coverDisplayer.RectTransform.localScale = GetCoverDisplayerScaleFromDelta(delta);
+                    coverDisplayer.SetSelectedProgress(GetCoverDisplayerSelectedProgressFromDelta(delta));
+
+                    var absDelta = Mathf.Abs(delta);
+                    if (absDelta < frontCoverAbsDelta)
+                    {
+                        frontCoverAbsDelta = absDelta;
+                        frontCoverDisplayer = coverDisplayer;
+                    }
                 }
 
                 // Update thumbnail position
@@ -406,6 +441,7 @@ namespace MajdataPlay.Scenes.List
                     thumbnailDisplayer.RectTransform.anchoredPosition = GetThumbnailDisplayerPositionFromDelta(delta);
                 }
             }
+            frontCoverDisplayer?.RectTransform.SetAsLastSibling();
         }
         void UpdateListConfiguration()
         {
@@ -502,6 +538,21 @@ namespace MajdataPlay.Scenes.List
 
                 return new Vector2((posStartAt + middle) * Mathf.Sign(delta), 0);
             }
+        }
+        Vector3 GetCoverDisplayerScaleFromDelta(float delta)
+        {
+            var t = Mathf.Clamp01(Mathf.Abs(delta));
+            t = Mathf.SmoothStep(0f, 1f, t);
+            var scale = Mathf.Lerp(SELECTED_COVER_SCALE, UNSELECTED_COVER_SCALE, t);
+
+            return new Vector3(scale, scale, 1f);
+        }
+        float GetCoverDisplayerSelectedProgressFromDelta(float delta)
+        {
+            var t = Mathf.Clamp01(Mathf.Abs(delta));
+            t = Mathf.SmoothStep(0f, 1f, t);
+
+            return 1f - t;
         }
         Vector2 GetThumbnailDisplayerPositionFromDelta(float delta)
         {

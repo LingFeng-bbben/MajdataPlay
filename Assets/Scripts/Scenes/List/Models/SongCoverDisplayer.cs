@@ -17,6 +17,20 @@ namespace MajdataPlay.Scenes.List.Models
 {
     internal class SongCoverDisplayer : CoverSmallDisplayer
     {
+        public Sprite? CurrentCoverSprite
+        {
+            get
+            {
+                var sprite = _coverDisplayer.sprite;
+                if (sprite == null || sprite.rect.width <= 0 || sprite.rect.height <= 0)
+                {
+                    return null;
+                }
+
+                return sprite;
+            }
+        }
+
         [SerializeField]
         [FormerlySerializedAs("coverDisplayer")]
         Image _coverDisplayer;
@@ -31,13 +45,29 @@ namespace MajdataPlay.Scenes.List.Models
 
         CancellationTokenSource _cts = new();
 
+        RectTransform? _backgroundTransform;
+        RectTransform? _coverTransform;
+        Vector2 _backgroundOriginPosition;
+        Vector2 _backgroundOriginSize;
+        Vector2 _coverOriginPosition;
+        Vector2 _coverOriginSize;
+
         LevelDisplayer[] _levelDisplayers = Array.Empty<LevelDisplayer>();
         LevelDPOriginPosition[] _levelDPOriginPositions = Array.Empty<LevelDPOriginPosition>();
+
+        const float CENTER_STYLE_BACKGROUND_SIZE = 356.32f;
+        const float CENTER_STYLE_BACKGROUND_Y = -4f;
+        const float CENTER_STYLE_COVER_SIZE = 285.22f;
+        const float SMALL_LEVELS_VISIBLE_PROGRESS_THRESHOLD = 0.01f;
 
         protected override void Awake()
         {
             base.Awake();
+            _backgroundTransform = transform.Find("BG") as RectTransform ?? transform.Find("bg") as RectTransform;
+            _coverTransform = _coverDisplayer.GetComponent<RectTransform>();
+
             var levelDisplayerListRoot = _levelDisplayerListRoot.transform;
+            CaptureVisualOrigin();
             var displayerCount = levelDisplayerListRoot.childCount;
             _levelDisplayers = new LevelDisplayer[displayerCount];
             _levelDPOriginPositions = new LevelDPOriginPosition[displayerCount];
@@ -68,6 +98,7 @@ namespace MajdataPlay.Scenes.List.Models
                     TextRotation = textTransform.localRotation
                 };
             }
+            SetSelectedProgress(0f);
         }
         public void SetSongDetail(ISongDetail detail)
         {
@@ -82,7 +113,54 @@ namespace MajdataPlay.Scenes.List.Models
         }
         public void SetActive(bool state)
         {
+            if (!state)
+            {
+                SetSelectedProgress(0f);
+            }
             gameObject.SetActive(state);
+        }
+        public void SetSelectedProgress(float progress)
+        {
+            progress = Mathf.Clamp01(progress);
+
+            var t = Mathf.SmoothStep(0f, 1f, progress);
+            ApplySelectedProgress(t);
+        }
+        void CaptureVisualOrigin()
+        {
+            if (_backgroundTransform is not null)
+            {
+                _backgroundOriginPosition = _backgroundTransform.anchoredPosition;
+                _backgroundOriginSize = _backgroundTransform.sizeDelta;
+            }
+            if (_coverTransform is not null)
+            {
+                _coverOriginPosition = _coverTransform.anchoredPosition;
+                _coverOriginSize = _coverTransform.sizeDelta;
+            }
+        }
+        void ApplySelectedProgress(float progress)
+        {
+            if (_backgroundTransform is not null)
+            {
+                _backgroundTransform.anchoredPosition = Vector2.Lerp(
+                    _backgroundOriginPosition,
+                    new Vector2(0, CENTER_STYLE_BACKGROUND_Y),
+                    progress);
+                _backgroundTransform.sizeDelta = Vector2.Lerp(
+                    _backgroundOriginSize,
+                    Vector2.one * CENTER_STYLE_BACKGROUND_SIZE,
+                    progress);
+            }
+            if (_coverTransform is not null)
+            {
+                _coverTransform.anchoredPosition = Vector2.Lerp(_coverOriginPosition, Vector2.zero, progress);
+                _coverTransform.sizeDelta = Vector2.Lerp(
+                    _coverOriginSize,
+                    Vector2.one * CENTER_STYLE_COVER_SIZE,
+                    progress);
+            }
+            _levelDisplayerListRoot.SetActive(progress <= SMALL_LEVELS_VISIBLE_PROGRESS_THRESHOLD);
         }
         void SetLevelText(ISongDetail songDetail)
         {
