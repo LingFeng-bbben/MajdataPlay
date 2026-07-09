@@ -129,17 +129,44 @@ namespace MajdataPlay.Scenes.List
             _loadingIndicator.SetActive(false);
             _emptyIndicator.SetActive(false);
             var rankerIndex = 0;
+            var apiEndpoint = _currentSongDetail!.ServerInfo;
+            var apiRuntimeInfo = apiEndpoint.RuntimeConfig;
+            var selfUsername = string.Empty;
+            if(apiRuntimeInfo.IsLoggedIn)
+            {
+                selfUsername = apiRuntimeInfo.Username;
+                _rankDisplayer.text = "--";
+            }
             foreach(var scoreInfo in scores.OrderByDescending(x => x.Acc))
             {
-                if(rankerIndex >= _rankerDisplayers.Length)
+                try
                 {
-                    break;
+                    var playerInfo = scoreInfo.Player;
+                    if (rankerIndex >= _rankerDisplayers.Length)
+                    {
+                        if (string.IsNullOrEmpty(selfUsername))
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            if (playerInfo.Username == selfUsername)
+                            {
+                                _rankDisplayer.text = $"#{rankerIndex + 1}";
+                                break;
+                            }
+                        }
+                        continue;
+                    }
+                    var displayer = _rankerDisplayers[rankerIndex];
+                    displayer.Object.SetActive(true);
+                    displayer.UsernameDisplayer.text = playerInfo.Username;
+                    displayer.AccurateDisplayer.text = $"{(int)scoreInfo.Acc}.<size=70%>{(int)((scoreInfo.Acc - MathF.Truncate(scoreInfo.Acc)) * 10000)}%";
                 }
-                var displayer = _rankerDisplayers[rankerIndex++];
-                var playerInfo = scoreInfo.Player;
-                displayer.Object.SetActive(true);
-                displayer.UsernameDisplayer.text = playerInfo.Username;
-                displayer.AccurateDisplayer.text = $"{(int)scoreInfo.Acc}.<size=70%>{(int)((scoreInfo.Acc - MathF.Truncate(scoreInfo.Acc)) * 1000)}%";
+                finally
+                {
+                    rankerIndex++;
+                }
             }
         }
         void SetLoading()
@@ -199,6 +226,7 @@ namespace MajdataPlay.Scenes.List
             _currentSongDetail = onlineSongDetail;
             _currentLevel = level;
             _onlineScoreFetchTask = null;
+            _rankDisplayer.text = string.Empty;
             _loadTimer = 0f;
         }
 

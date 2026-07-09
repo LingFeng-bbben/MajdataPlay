@@ -148,6 +148,7 @@ GameObject:
   - component: {fileID: 6746446543977936520}
   - component: {fileID: 2531373551822969238}
   - component: {fileID: 4237068230029506044}
+  - component: {fileID: 6616205585248946250}
   m_Layer: 5
   m_Name: Username
   m_TagString: Untagged
@@ -171,8 +172,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -1.43, y: 0.9}
-  m_SizeDelta: {x: 148.05, y: 25}
+  m_AnchoredPosition: {x: -1.43, y: 0.11343}
+  m_SizeDelta: {x: 148.05, y: 56.003}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2531373551822969238
 CanvasRenderer:
@@ -246,9 +247,9 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 1
+  m_TextWrappingMode: 0
   m_wordWrappingRatios: 0.4
-  m_overflowMode: 0
+  m_overflowMode: 1
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 0
@@ -274,6 +275,18 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &6616205585248946250
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3276200423105543626}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21f710d3416f4ef9a3094773791dd4bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.Misc.Base.TMPMarqueeText
 --- !u!1 &3673713977737525585
 GameObject:
   m_ObjectHideFlags: 0
