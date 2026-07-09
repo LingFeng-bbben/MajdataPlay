@@ -154,6 +154,7 @@ namespace MajdataPlay.Scenes.List
             {
                 _songCoverListRoot.SetActive(true);
                 _thumbnailListRoot.SetActive(true);
+                _centerCoverDisplayer.SetActive(true);
                 _emptyCollectionNotice.SetActive(false);
                 collection.Index = 0;
                 _currentCollection = collection;
@@ -192,6 +193,7 @@ namespace MajdataPlay.Scenes.List
                 _isEmptyCollection = true;
                 _songCoverListRoot.SetActive(false);
                 _thumbnailListRoot.SetActive(false);
+                _centerCoverDisplayer.SetActive(false);
                 _emptyCollectionNotice.SetActive(true);
                 _progressDisplayer.text = $"Ciallo～(∠・ω< )⌒★";
             }

@@ -205,7 +205,14 @@ namespace MajdataPlay.Scenes.List
             UpdateMetadataAndScoreDisplayer();
             ListManager.AllBackgroundTasks.Add(SetCoverAsync(detail, linkedCts.Token));
         }
-
+        public void SetActive(bool state)
+        {
+            gameObject.SetActive(state);
+            if(!state)
+            {
+                _bgSongCoverDisplayer.sprite = SpriteLoader.EmptySprite;
+            }
+        }
         void UpdateLevelRing()
         {
             var currentLevel = (ChartLevel)_diff;
