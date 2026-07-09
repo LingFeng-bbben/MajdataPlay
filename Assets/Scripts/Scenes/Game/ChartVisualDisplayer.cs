@@ -33,10 +33,6 @@ namespace MajdataPlay.Scenes.Game
         [SerializeField]
         GameObject? _iconPrefab;
 
-        [SerializeField]
-        [FormerlySerializedAs("anaText")]
-        Text? _anaText;
-
         GameObject? _loadingPrefab;
         GameObject? _errorIcon;
         GameObject? _helpIcon;
@@ -201,35 +197,6 @@ namespace MajdataPlay.Scenes.Game
                 return;
             }
             SetTexture(anaResult.LineGraph);
-            if (_anaText is not null)
-            {
-                var max = anaResult.PeakDensity;
-                var esti = anaResult.Esti;
-                var minBPM = anaResult.MinBPM;
-                var maxBPM = anaResult.MaxBPM;
-                var time = anaResult.Length;
-                using var sb = ZString.CreateStringBuilder();
-                sb.Append("Peak Density = "); sb.Append(max);
-                sb.AppendLine();
-                sb.Append("Esti = Lv."); sb.Append(esti);
-                sb.AppendLine();
-                sb.Append("Length = "); sb.AppendFormat("{0}:{1:00}.{2:000}", time.Minutes, time.Seconds, time.Milliseconds);
-                sb.AppendLine();
-
-                if (minBPM == maxBPM)
-                {
-                    sb.Append("BPM = "); sb.Append(minBPM);
-                }
-                else
-                {
-                    sb.Append("BPM = "); sb.Append(minBPM); sb.Append(" - "); sb.Append(maxBPM);
-                }
-                //anaText.text = "Peak Density = " + max + "\n";
-                //anaText.text += "Esti = Lv." + (esti) + "\n";
-                //anaText.text += "Length = " + ZString.Format("{0}:{1:00}.{2:000}", time.Minutes, time.Seconds, time.Milliseconds) + "\n";
-                //anaText.text += "BPM = " + minBPM + " - " + maxBPM;
-                _anaText.text = sb.ToString();
-            }
         }
 
         void SetLoading()

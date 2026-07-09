@@ -303,10 +303,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96f3b2cce929c414988335b5e23d81e4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  username_text: {fileID: 1388072977844254262}
-  usericon: {fileID: 8162835714883272809}
-  Loading_icon: {fileID: 9111676595230968594}
-  Error_icon: {fileID: 4755227742656152876}
+  _usernameDisplayer: {fileID: 1388072977844254262}
+  _userAvatarDisplayer: {fileID: 8162835714883272809}
+  _defaultAvatar: {fileID: 21300000, guid: b5a594f6d0ffe6a49bc372fc19a7a224, type: 3}
+  _loadingIcon: {fileID: 9111676595230968594}
+  _errorIcon: {fileID: 4755227742656152876}
 --- !u!1 &4755227742656152876
 GameObject:
   m_ObjectHideFlags: 0
