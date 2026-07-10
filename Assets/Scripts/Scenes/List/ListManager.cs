@@ -201,7 +201,7 @@ namespace MajdataPlay.Scenes.List
 
             if (InputManager.IsSensorClickedInThisFrame(SensorArea.C))
             {
-                //_coverListDisplayer.RandomSelect();
+                //TODO: _coverListDisplayer.RandomSelect();
             }
             if (InputManager.IsSensorClickedInThisFrame(SensorArea.B8))
             {
@@ -212,7 +212,7 @@ namespace MajdataPlay.Scenes.List
                 _collectionListManager.NextCollection();
             }
 
-            if (InputManager.IsSensorClickedInThisFrame_OR(SensorArea.B7, SensorArea.B6, SensorArea.E7))
+            if (InputManager.IsSensorClickedInThisFrame_OR(SensorArea.D5, SensorArea.E5))
             {
                 var list = new string[]
                 {
@@ -229,7 +229,7 @@ namespace MajdataPlay.Scenes.List
             }
             if (InputManager.IsSensorClickedInThisFrame(SensorArea.B2))
             {
-                //_coverListDisplayer.FavoriteAdder.FavoratePressed();
+                //TODO: _coverListDisplayer.FavoriteAdder.FavoratePressed();
             }
         }
         void ButtonStatisticsUpdate()
