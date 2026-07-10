@@ -3915,7 +3915,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 60, y: -32.54}
+  m_AnchoredPosition: {x: 60, y: -32.539993}
   m_SizeDelta: {x: -184.08, y: -96.79}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &529737723
@@ -11540,8 +11540,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -101.400024, y: 153.4}
-  m_SizeDelta: {x: -599.01, y: -198.95}
+  m_AnchoredPosition: {x: -148.45, y: 156.1}
+  m_SizeDelta: {x: -546.37, y: -198.95}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1385714916
 MonoBehaviour:
@@ -11597,7 +11597,7 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 1
-  m_HorizontalAlignment: 1
+  m_HorizontalAlignment: 4
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
@@ -11730,6 +11730,30 @@ PrefabInstance:
       propertyPath: m_Name
       value: UserInfo
       objectReference: {fileID: 0}
+    - target: {fileID: 2516982680295786048, guid: 92067dc9350e4724081ee085aa8273f1, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 124.9
+      objectReference: {fileID: 0}
+    - target: {fileID: 2516982680295786048, guid: 92067dc9350e4724081ee085aa8273f1, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 136.92
+      objectReference: {fileID: 0}
+    - target: {fileID: 2516982680295786048, guid: 92067dc9350e4724081ee085aa8273f1, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 106.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 2516982680295786048, guid: 92067dc9350e4724081ee085aa8273f1, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -2.7
+      objectReference: {fileID: 0}
+    - target: {fileID: 6795748693841960484, guid: 92067dc9350e4724081ee085aa8273f1, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: -182.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 6795748693841960484, guid: 92067dc9350e4724081ee085aa8273f1, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 91.2
+      objectReference: {fileID: 0}
     - target: {fileID: 8922793658067106272, guid: 92067dc9350e4724081ee085aa8273f1, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -11756,11 +11780,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8922793658067106272, guid: 92067dc9350e4724081ee085aa8273f1, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 483.91
+      value: 427.22
       objectReference: {fileID: 0}
     - target: {fileID: 8922793658067106272, guid: 92067dc9350e4724081ee085aa8273f1, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 154.29
+      value: 120.86
       objectReference: {fileID: 0}
     - target: {fileID: 8922793658067106272, guid: 92067dc9350e4724081ee085aa8273f1, type: 3}
       propertyPath: m_LocalPosition.x
@@ -11792,11 +11816,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8922793658067106272, guid: 92067dc9350e4724081ee085aa8273f1, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -8
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8922793658067106272, guid: 92067dc9350e4724081ee085aa8273f1, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 391.11
+      value: 394
       objectReference: {fileID: 0}
     - target: {fileID: 8922793658067106272, guid: 92067dc9350e4724081ee085aa8273f1, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -13529,8 +13553,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -170.4, y: 8}
-  m_SizeDelta: {x: 524.18, y: 114.98}
+  m_AnchoredPosition: {x: -237.25, y: 8}
+  m_SizeDelta: {x: 474.49, y: 114.98}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1593491266
 MonoBehaviour:
@@ -13586,7 +13610,7 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 1
-  m_HorizontalAlignment: 1
+  m_HorizontalAlignment: 4
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
