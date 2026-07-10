@@ -184,40 +184,12 @@ namespace MajdataPlay.Scenes.List
         {
             if(songDetail is not OnlineSongDetail onlineSongDetail)
             {
-                if(_isIn)
-                {
-                    _isIn = false;
-                    _displayerAnim.TryCancel();
-                    _displayerAnim = LMotion.Create(0f, 1f, DISPLAYER_ANIM_DURATION_SEC)
-                                            .WithEase(Ease.OutQuad)
-                                            .Bind(x =>
-                                            {
-                                                const float X_POS_START_AT = 260.92f;
-                                                const float X_POS_END_AT = 745f;
-
-                                                var nP = Vector2.Lerp(new Vector2(X_POS_START_AT, 75.053f), new Vector2(X_POS_END_AT, 75.053f), x);
-                                                _rectTransform.anchoredPosition = nP;
-                                            });
-                }
+                Hide();
                 return;
             }
             else
             {
-                if (!_isIn)
-                {
-                    _isIn = true;
-                    _displayerAnim.TryCancel();
-                    _displayerAnim = LMotion.Create(1f, 0f, DISPLAYER_ANIM_DURATION_SEC)
-                                            .WithEase(Ease.OutQuad)
-                                            .Bind(x =>
-                                            {
-                                                const float X_POS_START_AT = 260.92f;
-                                                const float X_POS_END_AT = 745f;
-
-                                                var nP = Vector2.Lerp(new Vector2(X_POS_START_AT, 75.053f), new Vector2(X_POS_END_AT, 75.053f), x);
-                                                _rectTransform.anchoredPosition = nP;
-                                            });
-                }
+                Show();
             }
             
             SetLoading();
@@ -228,6 +200,42 @@ namespace MajdataPlay.Scenes.List
             _onlineScoreFetchTask = null;
             _rankDisplayer.text = string.Empty;
             _loadTimer = 0f;
+        }
+        public void Hide()
+        {
+            if (_isIn)
+            {
+                _isIn = false;
+                _displayerAnim.TryCancel();
+                _displayerAnim = LMotion.Create(0f, 1f, DISPLAYER_ANIM_DURATION_SEC)
+                                        .WithEase(Ease.OutQuad)
+                                        .Bind(x =>
+                                        {
+                                            const float X_POS_START_AT = 260.92f;
+                                            const float X_POS_END_AT = 745f;
+
+                                            var nP = Vector2.Lerp(new Vector2(X_POS_START_AT, 75.053f), new Vector2(X_POS_END_AT, 75.053f), x);
+                                            _rectTransform.anchoredPosition = nP;
+                                        });
+            }
+        }
+        public void Show()
+        {
+            if (!_isIn)
+            {
+                _isIn = true;
+                _displayerAnim.TryCancel();
+                _displayerAnim = LMotion.Create(1f, 0f, DISPLAYER_ANIM_DURATION_SEC)
+                                        .WithEase(Ease.OutQuad)
+                                        .Bind(x =>
+                                        {
+                                            const float X_POS_START_AT = 260.92f;
+                                            const float X_POS_END_AT = 745f;
+
+                                            var nP = Vector2.Lerp(new Vector2(X_POS_START_AT, 75.053f), new Vector2(X_POS_END_AT, 75.053f), x);
+                                            _rectTransform.anchoredPosition = nP;
+                                        });
+            }
         }
 
         void HideAllDisplayer()

@@ -216,6 +216,10 @@ namespace MajdataPlay.Scenes.List
         }
         public void SetEmbeddedCoverVisible(bool visible)
         {
+            if (!visible)
+            {
+                _onlineScoreRankDisplayer.Hide();
+            }
             _embeddedCoverRoot?.SetActive(visible);
             _favoriteRoot?.SetActive(visible);
         }

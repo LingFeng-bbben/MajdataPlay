@@ -253,6 +253,7 @@ namespace MajdataPlay.Scenes.List
             _progressDisplayer.text = $"{_listDesiredPos + 1}/<size=70%>{_songCount}";
             if(disableAnimation)
             {
+                _scrollMotion.TryCancel();
                 if (shouldUpdateDisplayer)
                 {
                     _listCursorPos = _listDesiredPos;
