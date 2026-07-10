@@ -35,7 +35,7 @@ namespace MajdataPlay
         public TextMeshProUGUI Break_Miss;
 
 
-        public void Update(JudgeDetail details)
+        public void SetJudgeDetail(JudgeDetail details)
         {
             var HoldJudgeInfo = JudgeDetail.UnpackJudgeRecord(details[ScoreNoteType.Hold]);
             var TouchJudgeInfo = JudgeDetail.UnpackJudgeRecord(details[ScoreNoteType.Touch]);

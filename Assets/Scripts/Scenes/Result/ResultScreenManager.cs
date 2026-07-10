@@ -132,7 +132,7 @@ namespace MajdataPlay.Scenes.Result
             fastCount.text = $"{result.Fast}";
             lateCount.text = $"{result.Late}";
 
-            subMonitorManager.Update(result.JudgeRecord);
+            subMonitorManager.SetJudgeDetail(result.JudgeRecord);
 
             _noteJudgeDiffGraph.texture = DrawNoteJudgeDiffGraph(result.NoteJudgeDiffs);
             if(MajEnv.Settings.Debug.OffsetUnit == OffsetUnitOption.Second)
