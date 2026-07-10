@@ -550,34 +550,32 @@ namespace MajdataPlay.Scenes.Login
                         Name = "MajdataPlay Client",
                         Description = "MajdataPlay Client QR Code Authentication",
                     }, token);
+                    if (!rsp.IsSuccessfully)
+                    {
+                        throw _exception;
+                    }
                 }
                 catch
                 {
                     MajDebug.LogError("Failed to register QR Code login session");
                     throw;
-                }
-            }            
-            if(!rsp.IsSuccessfully)
-            {
-                MajDebug.LogError("Failed to register QR Code login session");
-                MajDebug.LogError(rsp);
-                throw _exception;
-            }
+                }                
+            }       
+            
             try
             {
                 rsp = await Online.AuthRequestAsync(endpoint, token);
+                if (!rsp.IsDeserializable || rsp.StatusCode != HttpStatusCode.Created)
+                {
+                    throw _exception;
+                }
             }
             catch
             {
                 MajDebug.LogError("Attempt to request authorization session failed");
                 throw;
             }
-            if (!rsp.IsDeserializable || rsp.StatusCode != HttpStatusCode.Created)
-            {
-                MajDebug.LogError("Attempt to request authorization session failed");
-                MajDebug.LogError(rsp);
-                throw _exception;
-            }
+            
             var location = string.Empty;
             if (rsp.Headers.TryGetValue("location", out var headers))
             {
