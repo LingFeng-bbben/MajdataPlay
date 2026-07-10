@@ -45,9 +45,7 @@ namespace MajdataPlay.Scenes.Result
         public TextMeshProUGUI avgJudgeTime;
 
         public TextMeshProUGUI omg;
-
-        public TextMeshProUGUI subMonitor;
-
+        public ResultsSubDisplayManager subMonitorManager;
         public Color perfectColor;
         public Color greatColor;
         public Color goodColor;
@@ -134,7 +132,7 @@ namespace MajdataPlay.Scenes.Result
             fastCount.text = $"{result.Fast}";
             lateCount.text = $"{result.Late}";
 
-            subMonitor.text = BuildSubDisplayText(result.JudgeRecord);
+            subMonitorManager.Update(result.JudgeRecord);
 
             _noteJudgeDiffGraph.texture = DrawNoteJudgeDiffGraph(result.NoteJudgeDiffs);
             if(MajEnv.Settings.Debug.OffsetUnit == OffsetUnitOption.Second)
@@ -301,39 +299,6 @@ namespace MajdataPlay.Scenes.Result
             _isAllTaskFinished = true;
             CabinetLed.SetButtonLight(Color.green, 3);
         }
-
-
-        string BuildSubDisplayText(JudgeDetail judgeRecord)
-        {
-            var tapJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Tap]);
-            var holdJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Hold]);
-            var slideJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Slide]);
-            var touchJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Touch]);
-            var breakJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Break]);
-            var breakJudgeRecord = judgeRecord[ScoreNoteType.Break];
-            var break2550Count = breakJudgeRecord[JudgeGrade.FastPerfect2nd] + breakJudgeRecord[JudgeGrade.LatePerfect2nd];
-            var break2500Count = breakJudgeRecord[JudgeGrade.FastPerfect3rd] + breakJudgeRecord[JudgeGrade.LatePerfect3rd];
-            var breakPerfectCountText = string.Empty;
-            if((break2550Count + break2500Count) == 0)
-            {
-                breakPerfectCountText = "0";
-            }
-            else
-            {
-                breakPerfectCountText = $"{break2550Count}+{break2500Count}";
-            }
-            string[] nmsl = new string[]
-            {
-                $"<color=#FFFFFF><indent=0%>NOTES<indent=16.6%><color=#FFF90E>Critical<indent=33.3%><color=#FFB30D>Perfect<indent=50%><color=#FFA2F1>Great<indent=66.6%><color=#00DF0E>Good<indent=83.3%><color=#C7C7C7>Miss",
-                $"<color=#FFFFFF><indent=0%>Tap<indent=16.6%><color=#FFF90E>{tapJudgeInfo.CriticalPerfect}<indent=33.3%><color=#FFB30D>{tapJudgeInfo.Perfect}<indent=50%><color=#FFA2F1>{tapJudgeInfo.Great}<indent=66.6%><color=#00DF0E>{tapJudgeInfo.Good}<indent=83.3%><color=#C7C7C7>{tapJudgeInfo.Miss}",
-                $"<color=#FFFFFF><indent=0%>Hold<indent=16.6%><color=#FFF90E>{holdJudgeInfo.CriticalPerfect}<indent=33.3%><color=#FFB30D>{holdJudgeInfo.Perfect}<indent=50%><color=#FFA2F1>{holdJudgeInfo.Great}<indent=66.6%><color=#00DF0E>{holdJudgeInfo.Good}<indent=83.3%><color=#C7C7C7>{holdJudgeInfo.Miss}",
-                $"<color=#FFFFFF><indent=0%>Slide<indent=16.6%><color=#FFF90E>{slideJudgeInfo.CriticalPerfect}<indent=33.3%><color=#FFB30D>{slideJudgeInfo.Perfect}<indent=50%><color=#FFA2F1>{slideJudgeInfo.Great}<indent=66.6%><color=#00DF0E>{slideJudgeInfo.Good}<indent=83.3%><color=#C7C7C7>{slideJudgeInfo.Miss}",
-                $"<color=#FFFFFF><indent=0%>Touch<indent=16.6%><color=#FFF90E>{touchJudgeInfo.CriticalPerfect}<indent=33.3%><color=#FFB30D>{touchJudgeInfo.Perfect}<indent=50%><color=#FFA2F1>{touchJudgeInfo.Great}<indent=66.6%><color=#00DF0E>{touchJudgeInfo.Good}<indent=83.3%><color=#C7C7C7>{touchJudgeInfo.Miss}",
-                $"<color=#FFFFFF><indent=0%>Break<indent=16.6%><color=#FFF90E>{breakJudgeInfo.CriticalPerfect}<indent=33.3%><color=#FFB30D>{breakPerfectCountText}<indent=50%><color=#FFA2F1>{breakJudgeInfo.Great}<indent=66.6%><color=#00DF0E>{breakJudgeInfo.Good}<indent=83.3%><color=#C7C7C7>{breakJudgeInfo.Miss}",
-            };
-            return string.Join("\n", nmsl);
-        }
-
 
         void Update()
         {
