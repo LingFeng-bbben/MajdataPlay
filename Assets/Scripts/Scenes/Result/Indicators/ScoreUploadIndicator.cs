@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TMPro;
 using Unity.VectorGraphics;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -25,6 +26,10 @@ namespace MajdataPlay.Scenes.Result.Indicators
         [FormerlySerializedAs("errorIconDisplayer")]
         SVGImage _errorIconDisplayer;
 
+        [SerializeField]
+        [FormerlySerializedAs("textDisplayer")]
+        TextMeshProUGUI _textDisplayer;
+
         MotionHandle _iconAnimHandle;
 
 
@@ -41,6 +46,11 @@ namespace MajdataPlay.Scenes.Result.Indicators
                                      {
                                          _uploadingIconDisplayer.color = new Color(0.3098039f, 0.2470588f, 0.2156863f, x);
                                      });
+        }
+
+        public void SetText(string text)
+        {
+            _textDisplayer.text = text;
         }
         public void SetSuccess()
         {

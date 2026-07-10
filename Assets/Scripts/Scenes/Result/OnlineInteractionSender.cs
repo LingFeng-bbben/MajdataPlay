@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using MajdataPlay.IO;
 using MajdataPlay.Net;
+using MajdataPlay.Scenes.Result.Indicators;
 using MajdataPlay.Utils;
 using Nito.AsyncEx;
 using System;
@@ -14,6 +15,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 #nullable enable
 namespace MajdataPlay.Scenes.Result
@@ -21,8 +23,11 @@ namespace MajdataPlay.Scenes.Result
     public class OnlineInteractionSender : MonoBehaviour
     {
         public Text infotext;
-        public Text uploadtext;
         public Image thumb;
+
+        [SerializeField]
+        [FormerlySerializedAs("scoreUploadIndicator")]
+        ScoreUploadIndicator _scoreUploadIndicator;
 
         OnlineSongDetail? _onlineDetail;
         MaiScore? _score;
@@ -136,11 +141,11 @@ namespace MajdataPlay.Scenes.Result
                     {
                         if (rsp.StatusCode is HttpStatusCode.Unauthorized)
                         {
-                            uploadtext.text = "MAJTEXT_LOGIN_SESSION_EXPIRED".i18n();
+                            infotext.text = "MAJTEXT_LOGIN_SESSION_EXPIRED".i18n();
                         }
                         else
                         {
-                            uploadtext.text = "MAJTEXT_THUMBUP_FAILED".i18n();
+                            infotext.text = "MAJTEXT_THUMBUP_FAILED".i18n();
                         }
                     }
                 }
@@ -163,25 +168,28 @@ namespace MajdataPlay.Scenes.Result
                         return;
                     }
                     await UniTask.SwitchToMainThread();
-                    uploadtext.text = "MAJTEXT_SCORE_SENDING".i18n();
+                    _scoreUploadIndicator.SetUploading();
+                    _scoreUploadIndicator.SetText("MAJTEXT_SCORE_SENDING".i18n());
                     await UniTask.SwitchToThreadPool();
                     var rsp = await Online.PostScoreAsync(_onlineDetail, _score, token);
                     await UniTask.SwitchToMainThread();
 
                     if (rsp.IsSuccessfully)
                     {
-                        uploadtext.text = "MAJTEXT_SCORE_SENDED".i18n();
+                        _scoreUploadIndicator.SetText("MAJTEXT_SCORE_SENDED".i18n());
+                        _scoreUploadIndicator.SetSuccess();
                         _isScorePosted = true;
                     }
                     else
                     {
+                        _scoreUploadIndicator.SetError();
                         if(rsp.StatusCode is HttpStatusCode.Unauthorized)
                         {
-                            uploadtext.text = "MAJTEXT_LOGIN_SESSION_EXPIRED".i18n();
+                            _scoreUploadIndicator.SetText("MAJTEXT_LOGIN_SESSION_EXPIRED".i18n());
                         }
                         else
                         {
-                            uploadtext.text = "MAJTEXT_SCORE_FAILED".i18n();
+                            _scoreUploadIndicator.SetText("MAJTEXT_SCORE_FAILED".i18n());
                         }
                     }
                 }
