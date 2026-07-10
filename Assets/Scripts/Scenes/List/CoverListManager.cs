@@ -153,6 +153,7 @@ namespace MajdataPlay.Scenes.List
                 return;
             }
             var oldSelectedHash = SelectedSong?.Hash ?? string.Empty;
+            _currentCollection = collection;
             Clear();
             if (!collection.IsEmpty)
             {
@@ -160,8 +161,7 @@ namespace MajdataPlay.Scenes.List
                 _thumbnailListRoot.SetActive(true);
                 _centerCoverDisplayer.SetActive(true);
                 _emptyCollectionNotice.SetActive(false);
-                collection.Index = 0;
-                _currentCollection = collection;
+                collection.Index = 0;                
                 _isEmptyCollection = false;
 
                 _songCount = _currentCollection.Count;

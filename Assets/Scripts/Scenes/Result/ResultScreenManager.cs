@@ -34,6 +34,7 @@ namespace MajdataPlay.Scenes.Result
         public TextMeshProUGUI dxScore;
         public TextMeshProUGUI rank;
 
+        public TextMeshProUGUI criticalCount;
         public TextMeshProUGUI perfectCount;
         public TextMeshProUGUI greatCount;
         public TextMeshProUGUI goodCount;
@@ -109,7 +110,7 @@ namespace MajdataPlay.Scenes.Result
             title.text = song.Title;
             artist.text = song.Artist;
             designer.text = song.Designers[(int)_gameInfo.CurrentLevel] ?? "Undefined";
-            level.text = _gameInfo.CurrentLevel.ToString() + " " + song.Levels[(int)_gameInfo.CurrentLevel];
+            level.text = song.Levels[(int)_gameInfo.CurrentLevel];
 
             accDX.text = isClassic ? $"{Math.Floor(result.Acc.Classic * 100) / 100:F2}%" : $"{Math.Floor(result.Acc.DX * 10000) / 10000:F4}%";
             var nowAcc = isClassic ? result.Acc.Classic : result.Acc.DX;
@@ -124,10 +125,8 @@ namespace MajdataPlay.Scenes.Result
             {
                 dxScore.text = $"{result.DXScore}/{result.TotalDXScore}";
             }
-
-            perfectCount.text = string.Format(PERFECT_COUNT_TEXT_TEMPLATE, 
-                                              totalJudgeRecord.CriticalPerfect + totalJudgeRecord.Perfect, 
-                                              totalJudgeRecord.Perfect);
+            criticalCount.text = $"{totalJudgeRecord.CriticalPerfect}";
+            perfectCount.text = $"{totalJudgeRecord.Perfect}";
             greatCount.text = $"{totalJudgeRecord.Great}";
             goodCount.text = $"{totalJudgeRecord.Good}";
             missCount.text = $"{totalJudgeRecord.Miss}";
