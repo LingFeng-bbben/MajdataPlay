@@ -208,6 +208,14 @@ namespace MajdataPlay.Scenes.List
         {
             if(_isEmptyCollection)
             {
+                if(delta > 0)
+                {
+                    _collectionListManager.NextCollection();
+                }
+                else if(delta < 0)
+                {
+                    _collectionListManager.PreviousCollection();
+                }
                 return;
             }
             
