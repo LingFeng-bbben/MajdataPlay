@@ -3,8 +3,8 @@ guid: eb2b8a667692e5a409416413047dd605
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 8343904678032609604
-    second: "\u7EC4 692_0"
+      213: -3580166021499960588
+    second: fast_late_detail_displayer_bg_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,7 +126,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: "\u7EC4 692_0"
+      name: fast_late_detail_displayer_bg_0
       rect:
         serializedVersion: 2
         x: 15
@@ -135,14 +135,14 @@ TextureImporter:
         height: 69
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 33, y: 0, z: 33, w: 34}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 4419ad5c8118bc370800000000000000
-      internalID: 8343904678032609604
+      spriteID: 4f24293d8f1b05ec0800000000000000
+      internalID: -3580166021499960588
       vertices: []
       indices: 
       edges: []
@@ -151,7 +151,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: ffa7ab721f5f172499c38f213067336b
+    spriteID: 4c11c1a47a6c19a44b02245be15850cc
     internalID: 0
     vertices: []
     indices: 
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      "\u7EC4 692_0": 8343904678032609604
+      fast_late_detail_displayer_bg_0: -3580166021499960588
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
