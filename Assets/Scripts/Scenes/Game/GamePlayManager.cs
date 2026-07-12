@@ -606,7 +606,7 @@ namespace MajdataPlay.Scenes.Game
                     _sceneSwitcher.SetLoadingText(string.Empty);
                 }
 
-                _chartInfoDisplayer.SetCover(_songDetail.GetCoverAsync(false).Result);
+                _chartInfoDisplayer.SetCover(await _songDetail.GetCoverAsync(false));
                 await LoadAudioTrack();
                 token.ThrowIfCancellationRequested();
                 await InitBackground();
