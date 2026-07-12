@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Profiling;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace MajdataPlay.Scenes.Game
@@ -89,6 +90,14 @@ namespace MajdataPlay.Scenes.Game
         GameObject _fullComboAnimation;
         [SerializeField]
         GameObject _gameOverAnimation;
+
+        [SerializeField]
+        [FormerlySerializedAs("chartVisualDisplayer")]
+        ChartVisualDisplayer _chartVisualDisplayer;
+
+        [SerializeField]
+        [FormerlySerializedAs("timeDisplayer")]
+        TimeDisplayer _timeDisplayer;
 
         [SerializeField]
         Sprite _maskSpriteA;
@@ -182,7 +191,6 @@ namespace MajdataPlay.Scenes.Game
         NotePoolManager _notePoolManager;
         NoteEffectPool _noteEffectPool;
         ObjectCounter _objectCounter;
-        TimeDisplayer _timeDisplayer;
         RecorderStatusDisplayer _recorderStateDisplayer;
 
         readonly CancellationTokenSource _cts = new();
@@ -818,7 +826,7 @@ namespace MajdataPlay.Scenes.Game
             }
             _chart = _chart.AddOffset(-_displayOffsetSec);
             await UniTask.SwitchToMainThread();
-            GameObject.Find("ChartAnalyzer").GetComponent<ChartVisualDisplayer>().SetSimaiChart(_chart, AudioLength);
+            _chartVisualDisplayer.SetSimaiChart(_chart, AudioLength);
             await UniTask.SwitchToThreadPool();
             var simaiCmd = _simaiFile.Commands.FirstOrDefault(x => x.Prefix == "clock_count");
             var countnum = 4;
