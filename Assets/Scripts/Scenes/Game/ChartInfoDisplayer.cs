@@ -31,7 +31,7 @@ namespace MajdataPlay.Scenes.Game
             title.text = songDetail.Title;
             artist.text = songDetail.Artist;
             designer.text = songDetail.Designers[(int)currentLevel];
-            level.text = currentLevel.ToString() + " " + songDetail.Levels[(int)currentLevel];
+            level.text = songDetail.Levels[(int)currentLevel];
         }
         public void SetCover(Sprite cover)
         {
