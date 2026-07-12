@@ -100,6 +100,10 @@ namespace MajdataPlay.Scenes.Game
         TimeDisplayer _timeDisplayer;
 
         [SerializeField]
+        [FormerlySerializedAs("chartInfoDisplayer")]
+        ChartInfoDisplayer _chartInfoDisplayer;
+
+        [SerializeField]
         Sprite _maskSpriteA;
         [SerializeField]
         Sprite _maskSpriteB;
@@ -266,6 +270,8 @@ namespace MajdataPlay.Scenes.Game
 #endif
             InputManager.TouchButtonRingEdge = 5.4f;
             MajInstances.SceneSwitcher.HideMV();
+
+            _chartInfoDisplayer.SetMetadata(_songDetail, _gameInfo.CurrentLevel);
         }
         void Start()
         {
@@ -600,6 +606,7 @@ namespace MajdataPlay.Scenes.Game
                     _sceneSwitcher.SetLoadingText(string.Empty);
                 }
 
+                _chartInfoDisplayer.SetCover(_songDetail.GetCoverAsync(false).Result);
                 await LoadAudioTrack();
                 token.ThrowIfCancellationRequested();
                 await InitBackground();
@@ -860,7 +867,7 @@ namespace MajdataPlay.Scenes.Game
                     var cover = await _songDetail.GetCoverAsync(false);
                     await UniTask.SwitchToMainThread();
                     _bgManager.SetBackgroundPic(cover);
-                }        
+                }
             }
 
             _bgManager.SetBackgroundDim(1.0f);

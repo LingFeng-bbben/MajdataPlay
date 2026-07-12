@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace MajdataPlay.Scenes.Game
@@ -21,26 +22,21 @@ namespace MajdataPlay.Scenes.Game
 
         public Image coverImg;
 
-        GameInfo _gameInfo = Majdata<GameInfo>.Instance!;
-        private void Start()
-        {
-            if (_gameInfo is null)
-            {
-                return;
-            }
-            var song = _gameInfo.Current;
-            title.text = song.Title;
-            artist.text = song.Artist;
-            designer.text = song.Designers[(int)_gameInfo.CurrentLevel];
-            level.text = _gameInfo.CurrentLevel.ToString() + " " + song.Levels[(int)_gameInfo.CurrentLevel];
-            LoadCover(song).Forget();
-        }
+        [SerializeField]
+        [FormerlySerializedAs("loadingObj")]
+        GameObject _loadingObj;
 
-        async UniTask LoadCover(ISongDetail song)
+        public void SetMetadata(ISongDetail songDetail, ChartLevel currentLevel)
         {
-            var cover = await song.GetCoverAsync(true);
-            await UniTask.SwitchToMainThread();
+            title.text = songDetail.Title;
+            artist.text = songDetail.Artist;
+            designer.text = songDetail.Designers[(int)currentLevel];
+            level.text = currentLevel.ToString() + " " + songDetail.Levels[(int)currentLevel];
+        }
+        public void SetCover(Sprite cover)
+        {
             coverImg.sprite = cover;
+            _loadingObj.SetActive(false);
         }
     }
 }
