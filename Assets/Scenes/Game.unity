@@ -1110,7 +1110,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 0
-  m_AdditionalShaderChannelsFlag: 0
+  m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
   m_SortingOrder: 0
@@ -6538,6 +6538,13 @@ MonoBehaviour:
   - {r: 0.15294118, g: 0.827451, b: 0.15294118, a: 1}
   - {r: 0.39607844, g: 0.64705884, b: 1, a: 1}
   - {r: 0.94509804, g: 0.25490198, b: 0.29411766, a: 1}
+  _criticalCountDisplayer: {fileID: 380504799}
+  _perfectCountDisplayer: {fileID: 443449946}
+  _greatCountDisplayer: {fileID: 1052402960}
+  _goodCountDisplayer: {fileID: 588955606}
+  _missCountDisplayer: {fileID: 514673368}
+  _fastCountDisplayer: {fileID: 168329328}
+  _lateCountDisplayer: {fileID: 3093096}
   _centerInfoDisplayerHeader: {fileID: 663044733}
   _centerInfoDisplayerText: {fileID: 1076127509}
   _secondaryInfoDisplayerHeader: {fileID: 1837503083}
