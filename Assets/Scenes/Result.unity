@@ -15773,7 +15773,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -137.9, y: 154}
+  m_AnchoredPosition: {x: -137.90002, y: 154}
   m_SizeDelta: {x: -546.37, y: -198.95}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1385714916
@@ -22123,6 +22123,7 @@ MonoBehaviour:
   _noteJudgeDiffGraph: {fileID: 1577740834}
   favoriteAdder: {fileID: 476587851}
   _dxScoreDisplayer: {fileID: 408631054}
+  _onlineInteractionSender: {fileID: 1914771586}
 --- !u!1 &3234089997214234528 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 7848876556989961994, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}

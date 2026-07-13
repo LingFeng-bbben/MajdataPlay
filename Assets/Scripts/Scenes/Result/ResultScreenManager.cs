@@ -68,6 +68,10 @@ namespace MajdataPlay.Scenes.Result
         [FormerlySerializedAs("dxScoreDisplayer")]
         DXScoreDisplayer _dxScoreDisplayer;
 
+        [SerializeField]
+        [FormerlySerializedAs("onlineInteractionSender")]
+        OnlineInteractionSender _onlineInteractionSender;
+
         GameInfo _gameInfo = Majdata<GameInfo>.Instance!;
 
         Task _scoreSaveTask = Task.CompletedTask;
@@ -94,8 +98,7 @@ namespace MajdataPlay.Scenes.Result
             var song = result.SongDetail;
             var historyResult = ScoreManager.GetScore(song, listConfig.SelectedDiff);
             var score = MaiScore.CreateFromResult(result, result.Level);
-            var intractSender = GetComponent<OnlineInteractionSender>();
-            intractSender.Init(song, score);
+            _onlineInteractionSender.Init(song, score);
             favoriteAdder.SetSong(song);
             userInfoDisplayer.DisplayFromSong(song);
 
@@ -190,7 +193,7 @@ namespace MajdataPlay.Scenes.Result
                 var localScoreSaveTask = ScoreManager.SaveScore(result, result.Level);
                 if (song is OnlineSongDetail onlineSong && onlineSong.ServerInfo.RuntimeConfig.AuthMethod != NetAuthMethodOption.None)
                 {
-                    var task = intractSender.SendScoreAsync();
+                    var task = _onlineInteractionSender.SendScoreAsync();
                     _scoreSaveTask = Task.WhenAll(localScoreSaveTask, task);
                 }
                 else
