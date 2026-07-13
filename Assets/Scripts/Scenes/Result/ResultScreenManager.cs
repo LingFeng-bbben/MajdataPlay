@@ -18,6 +18,8 @@ using MajdataPlay.Settings;
 using System.Threading.Tasks;
 using MajdataPlay.Recording;
 using MajdataPlay.Net;
+using MajdataPlay.Scenes.Result.Components;
+using UnityEngine.Serialization;
 
 #nullable enable
 namespace MajdataPlay.Scenes.Result
@@ -61,6 +63,10 @@ namespace MajdataPlay.Scenes.Result
         public RawImage _noteJudgeDiffGraph;
 
         public FavoriteAdder favoriteAdder;
+
+        [SerializeField]
+        [FormerlySerializedAs("dxScoreDisplayer")]
+        DXScoreDisplayer _dxScoreDisplayer;
 
         GameInfo _gameInfo = Majdata<GameInfo>.Instance!;
 
@@ -114,15 +120,9 @@ namespace MajdataPlay.Scenes.Result
             var nowAcc = isClassic ? result.Acc.Classic : result.Acc.DX;
             var historyAcc = isClassic ? historyResult.Acc.Classic : historyResult.Acc.DX;
             accHistory.text = $"{nowAcc - historyAcc:+0.0000;-0.0000;0}%";
-            var dxScoreRank = new DXScoreRank(result.DXScore, result.TotalDXScore);
-            if (dxScoreRank.Rank > 0)
-            {
-                dxScore.text = $"✧ {dxScoreRank.Rank} {result.DXScore}/{result.TotalDXScore}";
-            }
-            else
-            {
-                dxScore.text = $"{result.DXScore}/{result.TotalDXScore}";
-            }
+
+            _dxScoreDisplayer.SetScore(result);
+
             criticalCount.text = $"{totalJudgeRecord.CriticalPerfect}";
             perfectCount.text = $"{totalJudgeRecord.Perfect}";
             greatCount.text = $"{totalJudgeRecord.Great}";

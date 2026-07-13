@@ -1,7 +1,7 @@
 using Cysharp.Threading.Tasks;
 using MajdataPlay.IO;
 using MajdataPlay.Net;
-using MajdataPlay.Scenes.Result.Indicators;
+using MajdataPlay.Scenes.Result.Components.Indicators;
 using MajdataPlay.Utils;
 using Nito.AsyncEx;
 using System;
@@ -14,15 +14,16 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 #nullable enable
-namespace MajdataPlay.Scenes.Result
+namespace MajdataPlay.Scenes.Result.Components
 {
     public class OnlineInteractionSender : MonoBehaviour
     {
-        public Text infotext;
+        public TextMeshProUGUI infotext;
         public Image thumb;
 
         [SerializeField]

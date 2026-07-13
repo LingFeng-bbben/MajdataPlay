@@ -10,7 +10,7 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
-namespace MajdataPlay.Scenes.Result.Indicators
+namespace MajdataPlay.Scenes.Result.Components.Indicators
 {
     public class ScoreUploadIndicator : MonoBehaviour
     {
