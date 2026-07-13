@@ -137,7 +137,8 @@ namespace MajdataPlay.Scenes.Result
 
             subMonitorManager.SetJudgeDetail(result.JudgeRecord);
 
-            _noteJudgeDiffGraph.texture = DrawNoteJudgeDiffGraph(result.NoteJudgeDiffs);
+            var rect = _noteJudgeDiffGraph.GetComponent<RectTransform>().rect;
+            _noteJudgeDiffGraph.texture = DrawNoteJudgeDiffGraph(result.NoteJudgeDiffs.Span, (int)rect.height, (int)rect.width);
             if(MajEnv.Settings.Debug.OffsetUnit == OffsetUnitOption.Second)
             {
                 if (result.NoteJudgeDiffs.IsEmpty)
@@ -350,20 +351,19 @@ namespace MajdataPlay.Scenes.Result
             InputManager.TouchButtonRingEdge = 5.4f;
             DestroyImmediate(_noteJudgeDiffGraph.texture, true);
         }
-        Texture DrawNoteJudgeDiffGraph(ReadOnlyMemory<float> noteJudgeDiffs)
+        Texture DrawNoteJudgeDiffGraph(ReadOnlySpan<float> dataset,
+                                       int height,
+                                       int width)
         {
-            ReadOnlySpan<float> dataset = noteJudgeDiffs.Span;
             const float SAMPLE_DIFF_STEP = 1.6667f / 2;
             const int CHART_PADDING_LEFT = 20;
             const int CHART_PADDING_RIGHT = 20;
             const int CHART_PADDING_TOP = 0;
-            const int CHART_PADDING_BOTTOM = 30;
+            const int CHART_PADDING_BOTTOM = 5;
 
-            var width = 690;
-            var height = 139;
             var chartWidth = width - CHART_PADDING_LEFT - CHART_PADDING_RIGHT;
             var chartHeight = height - CHART_PADDING_TOP - CHART_PADDING_BOTTOM;
-            
+
             var imageInfo = new SKImageInfo(width, height);
             Span<Point> points = stackalloc Point[180];
             var maxSampleCount = 0;
@@ -378,7 +378,7 @@ namespace MajdataPlay.Scenes.Result
             using var greatPath = new SKPath();
             using var goodPath = new SKPath();
             var canvas = surface.Canvas;
-            
+
             canvas.Clear(SKColor.Empty);
             perfectPaint.Color = perfectColor.ToSkColor();
             perfectPaint.IsAntialias = true;
@@ -399,7 +399,7 @@ namespace MajdataPlay.Scenes.Result
             textPaint.StrokeWidth = 4f;
             textFont.Size = 20;
 
-            for (float sampleDiff = -150f,i = 0; sampleDiff <= 150f; sampleDiff += SAMPLE_DIFF_STEP * 2,i++)
+            for (float sampleDiff = -150f, i = 0; sampleDiff <= 150f; sampleDiff += SAMPLE_DIFF_STEP * 2, i++)
             {
                 var range = new Range<float>(sampleDiff - SAMPLE_DIFF_STEP, sampleDiff + SAMPLE_DIFF_STEP, ContainsType.Closed);
                 var samples = dataset.FindAll(x => range.InRange(x));
@@ -439,7 +439,7 @@ namespace MajdataPlay.Scenes.Result
                 var isGreat = Math.Abs(point.Diff) <= 100f;
                 var isGood = Math.Abs(point.Diff) <= 150f;
 
-                if(point.IsEmpty)
+                if (point.IsEmpty)
                 {
                     perfectPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
                     greatPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
@@ -474,15 +474,15 @@ namespace MajdataPlay.Scenes.Result
             canvas.DrawPath(perfectPath, perfectPaint);
             canvas.DrawPath(greatPath, greatPaint);
             canvas.DrawPath(goodPath, goodPaint);
-            canvas.DrawLine(CHART_PADDING_LEFT, 
-                            CHART_PADDING_TOP + chartHeight + 0.5f, 
-                            CHART_PADDING_LEFT + chartWidth, 
+            canvas.DrawLine(CHART_PADDING_LEFT,
+                            CHART_PADDING_TOP + chartHeight + 0.5f,
+                            CHART_PADDING_LEFT + chartWidth,
                             CHART_PADDING_TOP + chartHeight + 0.5f, linePaint);
-            
+
             for (var i = -9; i < 10; i++)
             {
                 var index = i + 9f;
-                var x =  (chartWidth  * (index / 18)) + CHART_PADDING_LEFT;
+                var x = (chartWidth * (index / 18)) + CHART_PADDING_LEFT;
                 var start = new SKPoint()
                 {
                     X = x,
@@ -493,16 +493,17 @@ namespace MajdataPlay.Scenes.Result
                     X = x,
                     Y = CHART_PADDING_TOP + chartHeight
                 };
-                var textPoint = new SKPoint()
-                {
-                    X = x + 6f,
-                    Y = CHART_PADDING_TOP + chartHeight + 18f
-                };
+                //var textPoint = new SKPoint()
+                //{
+                //    X = x + 6f,
+                //    Y = CHART_PADDING_TOP + chartHeight + 18f
+                //};
                 canvas.DrawLine(start, end, linePaint);
-                canvas.DrawText($"{i}f", textPoint,SKTextAlign.Right,textFont, textPaint);
+                //canvas.DrawText($"{i}f", textPoint,SKTextAlign.Right,textFont, textPaint);
             }
             return GraphHelper.GraphSnapshot(surface);
         }
+
         readonly struct Point
         {
             public float X { get; init; }

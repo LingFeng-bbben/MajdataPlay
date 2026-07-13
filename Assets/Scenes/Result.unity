@@ -13096,7 +13096,7 @@ GameObject:
   - component: {fileID: 1021267791}
   - component: {fileID: 1021267790}
   m_Layer: 5
-  m_Name: DiffGraph
+  m_Name: NoteDiffGraph
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -18363,7 +18363,7 @@ GameObject:
   - component: {fileID: 1577740835}
   - component: {fileID: 1577740834}
   m_Layer: 5
-  m_Name: NoteDiffGraph
+  m_Name: Graph
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -18385,8 +18385,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 3}
-  m_SizeDelta: {x: -20, y: -30}
+  m_AnchoredPosition: {x: 0, y: 5.27}
+  m_SizeDelta: {x: -20, y: -25.47}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1577740834
 MonoBehaviour:
