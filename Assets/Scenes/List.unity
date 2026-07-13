@@ -6172,6 +6172,29 @@ Mesh:
       - serializedVersion: 1
         m_IndexStart: 0
         m_IndexCount: 0
+--- !u!1 &803381140 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2162009298958613718, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
+  m_PrefabInstance: {fileID: 1136825841}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &803381141
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 803381140}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ae676a105b153c449b10f977d8a884e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.ButtonAnimation
+  BindSensor: 09000000
+  BindButton: 
+  ReleasedScale: 1
+  PressedScale: 0.9
+  AnimationDuration: 0.1
+  EaseType: 5
 --- !u!1 &829807408
 GameObject:
   m_ObjectHideFlags: 0
@@ -9270,6 +9293,9 @@ PrefabInstance:
     - {fileID: 4888490099154071921, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2162009298958613718, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 803381141}
     - targetCorrespondingSourceObject: {fileID: 9184013408899084989, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1136825857}

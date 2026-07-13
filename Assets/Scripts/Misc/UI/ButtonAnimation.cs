@@ -4,9 +4,9 @@ using UnityEngine;
 using LitMotion;
 using LitMotion.Extensions;
 
-namespace MajdataPlay
+namespace MajdataPlay.UI
 {
-    public class ButtonAnimation : MonoBehaviour
+    public class ButtonAnimawiption : MonoBehaviour
     {
         public SensorArea[] BindSensor;
         public ButtonZone[] BindButton;
