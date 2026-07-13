@@ -60,6 +60,10 @@ namespace MajdataPlay.Scenes.List
         [FormerlySerializedAs("userProfileDisplayer")]
         UserInfoDisplayer _userProfileDisplayer;
 
+        [SerializeField]
+        [FormerlySerializedAs("favoriteAdder")]
+        FavoriteAdder _favoriteAdder;
+
         const float AUTO_SLIDE_INTERVAL_SEC = 0.15f;
         const float AUTO_SLIDE_TRIGGER_TIME_SEC = 0.4f;
         const int QUICK_SLIDE_POSITION_INCREASE = 9;
@@ -302,7 +306,7 @@ namespace MajdataPlay.Scenes.List
             }
             if (InputManager.IsSensorClickedInThisFrame(SensorArea.B2))
             {
-                //TODO: _coverListDisplayer.FavoriteAdder.FavoratePressed();
+                _favoriteAdder.FavoratePressed();
             }
         }
         void ButtonStatisticsUpdate()

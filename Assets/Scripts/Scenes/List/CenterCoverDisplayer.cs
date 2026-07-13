@@ -58,6 +58,14 @@ namespace MajdataPlay.Scenes.List
         OnlineScoreRankDisplayer _onlineScoreRankDisplayer;
 
         [SerializeField]
+        [FormerlySerializedAs("previewPlayer")]
+        PreviewSoundPlayer _previewPlayer;
+
+        [SerializeField]
+        [FormerlySerializedAs("favoriteAdder")]
+        FavoriteAdder _favoriteAdder;
+
+        [SerializeField]
         [FormerlySerializedAs("bgSongCoverDisplayer")]
         Image _bgSongCoverDisplayer;
 
@@ -212,6 +220,8 @@ namespace MajdataPlay.Scenes.List
             }
             UpdateLevelRing();
             UpdateMetadataAndScoreDisplayer();
+            _previewPlayer.PlayPreviewSound(detail, _cts.Token);
+            _favoriteAdder.SetSong(detail);
             ListManager.AllBackgroundTasks.Add(SetCoverAsync(detail, _cts.Token, immediateCover));
         }
         public void SetEmbeddedCoverVisible(bool visible)

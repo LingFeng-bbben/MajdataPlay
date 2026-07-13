@@ -15,7 +15,6 @@ namespace MajdataPlay.Scenes.List
 #nullable enable
     public class PreviewSoundPlayer : MonoBehaviour
     {
-        CancellationTokenSource? _cancellationTokenSource = null;
         ISongDetail? _currentPreviewSong = null;
         bool _isPreviewPlaying = false;
         int _previewVersion = 0;
@@ -30,22 +29,14 @@ namespace MajdataPlay.Scenes.List
             return ReferenceEquals(_currentPreviewSong, info) && _isPreviewPlaying;
         }
 
-        public void PlayPreviewSound(ISongDetail info)
+        public void PlayPreviewSound(ISongDetail info, CancellationToken token = default)
         {
-            if (_cancellationTokenSource is not null)
-            {
-                if (!_cancellationTokenSource.IsCancellationRequested)
-                {
-                    _cancellationTokenSource.Cancel();
-                }
-            }
             _currentPreviewSong = info;
             _isPreviewPlaying = false;
             var previewVersion = ++_previewVersion;
             CabinetLed.SetButtonLight(Color.green, 3);
             CabinetLed.SetCabinetLight(1.0f);
-            _cancellationTokenSource = new();
-            ListManager.AllBackgroundTasks.Add(PlayPreviewAsync(info, _cancellationTokenSource.Token, previewVersion));
+            ListManager.AllBackgroundTasks.Add(PlayPreviewAsync(info, token, previewVersion));
         }
         async Task PlayPreviewAsync(ISongDetail info, CancellationToken token, int previewVersion)
         {
@@ -207,7 +198,6 @@ namespace MajdataPlay.Scenes.List
         }
         private void OnDestroy()
         {
-            _cancellationTokenSource?.Cancel();
             var selectSound = MajInstances.AudioManager.GetSFX("bgm_select.mp3");
             selectSound.SetVolume(MajEnv.Settings.Audio.Volume.BGM);
         }

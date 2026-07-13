@@ -9046,6 +9046,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2907716026692585019, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: f8071b6f7cc127148999de388f80fd23, type: 3}
     - target: {fileID: 3102848830916320965, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: -8.899994
@@ -9152,7 +9156,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5651021545453185851, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
       propertyPath: m_fontSize
-      value: 28.2
+      value: 28.25
       objectReference: {fileID: 0}
     - target: {fileID: 5793241147777706893, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
       propertyPath: _chartAnalyzer
