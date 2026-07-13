@@ -9,6 +9,8 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using MajdataPlay.Settings.Runtime;
+using UnityEngine.Serialization;
+using TMPro;
 
 namespace MajdataPlay.Scenes.Setting
 {
@@ -21,6 +23,14 @@ namespace MajdataPlay.Scenes.Setting
         public GameSetting Setting => MajEnv.Settings;
 
         public GameObject menuPrefab;
+
+        [SerializeField]
+        [FormerlySerializedAs("menuListRoot")]
+        GameObject _menuListRoot;
+
+        [SerializeField]
+        [FormerlySerializedAs("currentMenuNameDisplayer")]
+        TextMeshProUGUI _currentMenuNameDisplayer;
 
         Menu[] menus = Array.Empty<Menu>();
         bool _isExited = false;
@@ -38,15 +48,15 @@ namespace MajdataPlay.Scenes.Setting
                                  .Where(x => x.GetCustomAttributes<HideInSettingUIAttribute>().Count() == 0)
                                  .ToArray();
             var offset = 0;
-
-            if(!_settingConfig.IgnoreChartSettingPage)
+            var listRoot = _menuListRoot.transform;
+            if (!_settingConfig.IgnoreChartSettingPage)
             {
                 menus = new Menu[properties.Length + 1];
                 offset = 0;
                 var selectedChart = SongStorage.WorkingCollection.Current;
                 var chartSetting = ChartSettingStorage.GetSetting(selectedChart);
                 var chartSettingType = chartSetting.GetType();
-                var menuObj = Instantiate(menuPrefab, transform);
+                var menuObj = Instantiate(menuPrefab, listRoot);
                 menuObj.name = chartSettingType.Name;
                 var menu = menuObj.GetComponent<Menu>();
                 menus[properties.Length] = menu;
@@ -68,7 +78,7 @@ namespace MajdataPlay.Scenes.Setting
                     _property = property.PropertyType.GetProperty("Volume");
                 }
 
-                var menuObj = Instantiate(menuPrefab, transform);
+                var menuObj = Instantiate(menuPrefab, listRoot);
                 menuObj.name = _property.Name;
                 var menu = menuObj.GetComponent<Menu>();
                 menus[i + offset] = menu;
