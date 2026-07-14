@@ -205,13 +205,15 @@ namespace MajdataPlay.Scenes.Setting
                 option.gameObject.SetActive(true);
             }
         }
-        public void ToLast()
+        public void ToTail()
         {
             SelectedIndex = _options.Length - 1;
+            DisplayerMoveTo(SelectedIndex, 0.3f);
         }
-        public void ToFirst()
+        public void ToHead()
         {
             SelectedIndex = 0;
+            DisplayerMoveTo(SelectedIndex, 0.3f);
         }
 
         public void ToIndex(int index)
@@ -247,7 +249,7 @@ namespace MajdataPlay.Scenes.Setting
         }
         Vector3 GetOptionTransformPosition(float diff)
         {
-            return new Vector3(330 * diff, -220, 0);
+            return new Vector3(380 * diff, -220, 0);
         }
     }
 }

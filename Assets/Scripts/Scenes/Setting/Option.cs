@@ -250,16 +250,9 @@ namespace MajdataPlay.Scenes.Setting
         void UpdateOption()
         {
             _valueTextDisplayer.text = _optionEnumerator.LocalizedValueText;
-            switch (PropertyInfo.Name)
+            if(_isSelected)
             {
-                case "SlideFadeInOffset":
-                case "AudioOffset":
-                case "JudgeOffset":
-                case "AnswerOffset":
-                case "TouchPanelOffset":
-                case "DisplayOffset":
-                    _manager.SetDescriptionText(_optionDescription.i18n() + $"\n{$"MAJTEXT_SETTING_OFFSETUNIT_{MajEnv.Settings.Debug.OffsetUnit}".i18n()}");
-                    break;
+                SetDescriptionText();
             }
         }
         void OnDestroy()

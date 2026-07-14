@@ -230,7 +230,7 @@ namespace MajdataPlay.Scenes.Setting
         }
         public void SetDescriptionText(string text)
         {
-            _descriptionTextDisplayer.text = text;
+            _descriptionTextDisplayer.text = text.Replace('\n', ',');
         }
         void UpdateMenu(int oldIndex,int newIndex)
         {
@@ -241,11 +241,11 @@ namespace MajdataPlay.Scenes.Setting
             
             if (newIndex > oldIndex)
             {
-                menus[Index].ToFirst();
+                menus[Index].ToHead();
             }
             else
             {
-                menus[Index].ToLast();
+                menus[Index].ToTail();
             }
             menus[Index].gameObject.SetActive(true);
             foreach (var (i, menu) in menus.WithIndex())
