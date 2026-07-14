@@ -250,8 +250,12 @@ namespace MajdataPlay.IO
                 if (normalize)
                 {
                     double channelmax = 0;
-                    while (Bass.ChannelGetPosition(decode, PositionFlags.Decode | PositionFlags.Bytes) < bytelength)
+                    var thisCursorPos = 0L;
+                    var lastCursorPos = -1L;
+                    while (((thisCursorPos = Bass.ChannelGetPosition(decode, PositionFlags.Decode | PositionFlags.Bytes)) < bytelength) &&
+                            thisCursorPos != lastCursorPos)
                     {
+                        lastCursorPos = thisCursorPos;
                         var level = (double)BitHelper.LoWord(Bass.ChannelGetLevel(decode)) / 32768;
                         if (level > channelmax)
                         {
