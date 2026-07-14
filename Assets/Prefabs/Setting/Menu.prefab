@@ -90,7 +90,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4271563624211619973}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
@@ -125,9 +125,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 758046d944f9d4a4f8892f3a5ee51c39, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  optionPrefab: {fileID: 1465471285917790012, guid: c25c5aabdc14bb947badea6153f18064, type: 3}
-  _selectedIndex: 0
-  titleText: {fileID: 0}
+  <Name>k__BackingField: 
+  <SelectedIndex>k__BackingField: 0
+  _optionPrefab: {fileID: 1465471285917790012, guid: c25c5aabdc14bb947badea6153f18064, type: 3}
+  _titleTextDisplayer: {fileID: 4023344356384345453}
+  _listCursorPos: 0
 --- !u!1 &4819810690012104839
 GameObject:
   m_ObjectHideFlags: 0
@@ -162,7 +164,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 4.7562, y: -0.00042915}
+  m_AnchoredPosition: {x: 4.7562, y: 30}
   m_SizeDelta: {x: 110.6714, y: 83.069}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2973531710112266122
@@ -193,7 +195,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 
+  m_text: 111
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: dbc58334dc23ba04fbfee4bf5298b6a0, type: 2}
   m_sharedMaterial: {fileID: -9050617650548543871, guid: dbc58334dc23ba04fbfee4bf5298b6a0, type: 2}
@@ -220,7 +222,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 18
+  m_fontSize: 32
   m_fontSizeBase: 18
   m_fontWeight: 400
   m_enableAutoSizing: 1

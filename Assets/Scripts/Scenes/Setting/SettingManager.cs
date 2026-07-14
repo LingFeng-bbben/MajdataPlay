@@ -32,6 +32,10 @@ namespace MajdataPlay.Scenes.Setting
         [FormerlySerializedAs("currentMenuNameDisplayer")]
         TextMeshProUGUI _currentMenuNameDisplayer;
 
+        [SerializeField]
+        [FormerlySerializedAs("descriptionText")]
+        TextMeshProUGUI _descriptionTextDisplayer;
+
         Menu[] menus = Array.Empty<Menu>();
         bool _isExited = false;
         bool _isInited = false;
@@ -60,7 +64,7 @@ namespace MajdataPlay.Scenes.Setting
                 menuObj.name = chartSettingType.Name;
                 var menu = menuObj.GetComponent<Menu>();
                 menus[properties.Length] = menu;
-                menu.SubOptionObject = chartSetting;
+                menu.Instance = chartSetting;
                 menu.Name = chartSettingType.Name;
             }
             else
@@ -82,7 +86,7 @@ namespace MajdataPlay.Scenes.Setting
                 menuObj.name = _property.Name;
                 var menu = menuObj.GetComponent<Menu>();
                 menus[i + offset] = menu;
-                menu.SubOptionObject = _property.GetValue(root);
+                menu.Instance = _property.GetValue(root);
                 menu.Name = _property.Name;
             }
             foreach (var (i, menu) in menus.WithIndex())
@@ -223,6 +227,10 @@ namespace MajdataPlay.Scenes.Setting
             }
             _settingConfig.SelectedMenu = menus[Index].Name;
             UpdateMenu(oldIndex, Index);
+        }
+        public void SetDescriptionText(string text)
+        {
+            _descriptionTextDisplayer.text = text;
         }
         void UpdateMenu(int oldIndex,int newIndex)
         {
