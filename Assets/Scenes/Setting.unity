@@ -1711,6 +1711,7 @@ GameObject:
   - component: {fileID: 1623762597}
   - component: {fileID: 1623762599}
   - component: {fileID: 1623762598}
+  - component: {fileID: 1623762600}
   m_Layer: 5
   m_Name: Left
   m_TagString: Untagged
@@ -1775,6 +1776,24 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1623762596}
   m_CullTransparentMesh: 1
+--- !u!114 &1623762600
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1623762596}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ae676a105b153c449b10f977d8a884e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.UI.ButtonAnimawiption
+  BindSensor: 0c0000001e000000
+  BindButton: 
+  ReleasedScale: 1
+  PressedScale: 0.9
+  AnimationDuration: 0.1
+  EaseType: 5
 --- !u!1 &1650264894
 GameObject:
   m_ObjectHideFlags: 0
@@ -1858,6 +1877,7 @@ GameObject:
   - component: {fileID: 2074874835}
   - component: {fileID: 2074874837}
   - component: {fileID: 2074874836}
+  - component: {fileID: 2074874838}
   m_Layer: 5
   m_Name: Right
   m_TagString: Untagged
@@ -1922,6 +1942,24 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2074874834}
   m_CullTransparentMesh: 1
+--- !u!114 &2074874838
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2074874834}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ae676a105b153c449b10f977d8a884e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.UI.ButtonAnimawiption
+  BindSensor: 0b0000001c000000
+  BindButton: 
+  ReleasedScale: 1
+  PressedScale: 0.9
+  AnimationDuration: 0.1
+  EaseType: 5
 --- !u!1001 &2106329959
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1933,6 +1971,22 @@ PrefabInstance:
     - target: {fileID: 162027289803103054, guid: 246320a2741b25248ab6e94bc499d92a, type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 331728025709138099, guid: 246320a2741b25248ab6e94bc499d92a, type: 3}
+      propertyPath: BindButton.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 331728025709138099, guid: 246320a2741b25248ab6e94bc499d92a, type: 3}
+      propertyPath: 'BindButton.Array.data[0]'
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 482708155752093497, guid: 246320a2741b25248ab6e94bc499d92a, type: 3}
+      propertyPath: BindButton.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 482708155752093497, guid: 246320a2741b25248ab6e94bc499d92a, type: 3}
+      propertyPath: 'BindButton.Array.data[0]'
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 2004999774212340158, guid: 246320a2741b25248ab6e94bc499d92a, type: 3}
       propertyPath: m_Pivot.x
@@ -2018,9 +2072,41 @@ PrefabInstance:
       propertyPath: m_Name
       value: Buttons
       objectReference: {fileID: 0}
+    - target: {fileID: 5317505558870171490, guid: 246320a2741b25248ab6e94bc499d92a, type: 3}
+      propertyPath: BindButton.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5317505558870171490, guid: 246320a2741b25248ab6e94bc499d92a, type: 3}
+      propertyPath: 'BindButton.Array.data[0]'
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 6765661420530731545, guid: 246320a2741b25248ab6e94bc499d92a, type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7142667378218051414, guid: 246320a2741b25248ab6e94bc499d92a, type: 3}
+      propertyPath: BindButton.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7142667378218051414, guid: 246320a2741b25248ab6e94bc499d92a, type: 3}
+      propertyPath: 'BindButton.Array.data[0]'
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 7601799197624780693, guid: 246320a2741b25248ab6e94bc499d92a, type: 3}
+      propertyPath: BindButton.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7601799197624780693, guid: 246320a2741b25248ab6e94bc499d92a, type: 3}
+      propertyPath: 'BindButton.Array.data[0]'
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8732380100131357693, guid: 246320a2741b25248ab6e94bc499d92a, type: 3}
+      propertyPath: BindButton.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8732380100131357693, guid: 246320a2741b25248ab6e94bc499d92a, type: 3}
+      propertyPath: 'BindButton.Array.data[0]'
+      value: 2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
