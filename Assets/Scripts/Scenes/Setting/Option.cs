@@ -87,6 +87,11 @@ namespace MajdataPlay.Scenes.Setting
         {
             _isSelected = false;
         }
+        internal void SetTextColor(Color newColor)
+        {
+            _nameTextDisplayer.color = newColor;
+            _valueTextDisplayer.color = newColor;
+        }
 
         void OnLangChanged(object? sender,Language newLanguage)
         {

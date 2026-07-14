@@ -171,6 +171,7 @@ namespace MajdataPlay.Scenes.Setting
 
                 optionDisplayer.transform.localPosition = GetOptionTransformPosition(distance);
                 optionDisplayer.transform.localScale = GetOptionTransformScale(distance);
+                optionDisplayer.SetTextColor(GetOptionTextColor(distance));
             }
         }
         void UpdateOptionSelectionState()
@@ -250,6 +251,24 @@ namespace MajdataPlay.Scenes.Setting
         Vector3 GetOptionTransformPosition(float diff)
         {
             return new Vector3(380 * diff, -220, 0);
+        }
+        Color GetOptionTextColor(float diff)
+        {
+            if (diff == 0)
+            {
+                return new Color(0.8823529f, 0.8078431f, 0.6392157f, 1f);
+            }
+            else if (diff.InRange(-1f, 1f))
+            {
+                return Color.Lerp(
+                            new Color(0.8823529f, 0.8078431f, 0.6392157f, 1f), 
+                            new Color(0.3607843f, 0.3098039f, 0.2862745f, 1f), 
+                            Mathf.Abs(diff));
+            }
+            else
+            {
+                return new Color(0.3607843f, 0.3098039f, 0.2862745f, 1f);
+            }
         }
     }
 }
