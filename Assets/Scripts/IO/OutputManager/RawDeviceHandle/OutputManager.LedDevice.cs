@@ -31,6 +31,7 @@ namespace MajdataPlay.IO
             static bool _isEnabled = true;
             static float _brightness = 1.0f;
             static bool _isThrottlerEnabled = false;
+            static int _refreshRateMs = 16;
 
             static Task _ledDeviceUpdateLoop = Task.CompletedTask;
 
@@ -43,10 +44,7 @@ namespace MajdataPlay.IO
                 MajDebug.LogInfo("[Led]Start initialization");
                 _isEnabled = MajEnv.Settings.IO.OutputDevice.Led.Enable;
                 _isThrottlerEnabled = MajEnv.Settings.IO.OutputDevice.Led.Throttler;
-                if (MajEnv.Settings.IO.OutputDevice.Led.RefreshRateMs <= 16)
-                {
-                    MajEnv.Settings.IO.OutputDevice.Led.RefreshRateMs = 16;
-                }
+                _refreshRateMs = MajEnv.Settings.IO.OutputDevice.Led.RefreshRateMs;
                 _brightness = MajEnv.Settings.IO.OutputDevice.Led.Brightness.Clamp(0, 1f);
                 if (!_isEnabled)
                 {
@@ -60,7 +58,10 @@ namespace MajdataPlay.IO
                 try
                 {
                     var manufacturer = IODetector.DeviceManufacturer;
-
+                    if(manufacturer is DeviceManufacturerOption.Yuan)
+                    {
+                        _refreshRateMs = Mathf.Max(_refreshRateMs, 100);
+                    }
                     switch (manufacturer)
                     {
                         case DeviceManufacturerOption.General:

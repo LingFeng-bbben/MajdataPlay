@@ -534,7 +534,7 @@ namespace MajdataPlay.Settings
         
         public int RefreshRateMs { get; set; } = 16;
         
-        public bool Throttler { get; set; } = false;
+        public bool Throttler { get; set; } = true;
         
         public SerialPortOptions SerialPortOptions { get; set; } = new();
         
