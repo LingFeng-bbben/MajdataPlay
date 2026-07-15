@@ -152,11 +152,11 @@ namespace MajdataPlay.Scenes.Setting
                     IsPressed = true;
                     PressTime = 0;
                 }
-                else if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A1))
+                else if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A2))
                 {
                     NextMenu();
                 }
-                else if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A8))
+                else if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A7))
                 {
                     PreviousMenu();
                 }
