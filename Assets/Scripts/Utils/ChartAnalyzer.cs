@@ -240,6 +240,8 @@ namespace MajdataPlay.Utils
                             0,
                             0);
             return bitmap.ToTexture2D();
+
+            //return GraphHelper.GraphSnapshot(surface);
         }
         static void DrawRoundRectBar(SKCanvas canvas,
                                      float centerX,

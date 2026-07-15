@@ -47,7 +47,7 @@ namespace MajdataPlay.Drawing
                 true
             );
 
-            
+            texture.wrapMode = TextureWrapMode.Clamp;
             int mipCount = texture.mipmapCount;
 
             // 1) 计算所有 mip 层总字节数
@@ -71,7 +71,7 @@ namespace MajdataPlay.Drawing
             GenerateMipMaps(texture, converted, ref raw, mipCount);
             
             texture.LoadRawTextureData(raw);
-            texture.Apply(true, false);
+            texture.Apply(false, false);
 
             return texture;
         }
