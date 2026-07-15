@@ -501,7 +501,7 @@ namespace MajdataPlay.Scenes.Result
                 canvas.DrawLine(start, end, linePaint);
                 //canvas.DrawText($"{i}f", textPoint,SKTextAlign.Right,textFont, textPaint);
             }
-            return GraphHelper.GraphSnapshot(surface);
+            return surface.ToTexture2D(imageInfo);
         }
 
         readonly struct Point
