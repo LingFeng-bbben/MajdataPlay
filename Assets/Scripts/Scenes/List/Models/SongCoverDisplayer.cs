@@ -185,7 +185,7 @@ namespace MajdataPlay.Scenes.List.Models
         async Task SetCoverAsync(ISongDetail songDetail, int loadDelayMS, CancellationToken token = default)
         {
             _loadingComponent.SetActive(true);
-            _coverDisplayer.sprite = SpriteLoader.EmptySprite;
+            _coverDisplayer.sprite = null!;
             if(!songDetail.IsCompressedCoverLoaded)
             {
                 await Task.Delay(loadDelayMS, token);

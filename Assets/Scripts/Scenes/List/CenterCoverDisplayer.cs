@@ -107,7 +107,7 @@ namespace MajdataPlay.Scenes.List
         LevelBinding[] _levelBindings = Array.Empty<LevelBinding>();
         LevelDisplayer[] _levelDisplayers = Array.Empty<LevelDisplayer>();
 
-        CancellationTokenSource? _cts = null;
+        CancellationTokenSource _cts = new();
 
         readonly ListConfig _listConfig = MajEnv.RuntimeConfig?.List ?? new();
         readonly ChartLevel[] _levelValues = (ChartLevel[])Enum.GetValues(typeof(ChartLevel));
@@ -170,7 +170,11 @@ namespace MajdataPlay.Scenes.List
         }
         void OnDestroy()
         {
-            _cts?.Cancel();
+            _cts.Cancel();
+        }
+        void OnDisable()
+        {
+            _cts.Cancel();
         }
 
         public void SetDifficulty(int i)
@@ -204,12 +208,13 @@ namespace MajdataPlay.Scenes.List
             {
                 return;
             }
-            else if(_cts is not null)
+            else if(!_cts.IsCancellationRequested)
             {
                 _cts.Cancel();
             }
-            _currentSongDetail = detail;
             _cts = new();
+            _currentSongDetail = detail;
+            
             var chartLevels = detail.Levels;
             for (var i = 0; i < chartLevels.Length; i++)
             {
@@ -232,7 +237,7 @@ namespace MajdataPlay.Scenes.List
             }
             UpdateLevelRing();
             UpdateMetadataAndScoreDisplayer(loadDelayMS);
-            _previewPlayer.PlayPreviewSound(detail, loadDelayMS, _cts.Token);
+            _previewPlayer.PlayPreviewSound(detail, 1000, _cts.Token);
             _favoriteAdder.SetSong(detail);
             ListManager.AllBackgroundTasks.Add(SetCoverAsync(detail, loadDelayMS, _cts.Token, immediateCover));
         }
@@ -360,7 +365,7 @@ namespace MajdataPlay.Scenes.List
             else
             {
                 _loadingObj.SetActive(true);
-                _songCoverDisplayer.sprite = SpriteLoader.EmptySprite;
+                _songCoverDisplayer.sprite = null!;
             }
             if (!detail.IsCompressedCoverLoaded)
             {
