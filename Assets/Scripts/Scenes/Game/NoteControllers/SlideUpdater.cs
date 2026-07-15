@@ -115,11 +115,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             using (UnityProfiler.Create(UPDATE_METHOD_NAME))
             {
                 ref var activatedSlides = ref MemoryMarshal.GetReference(_activatedSlides.AsSpan());
-                var slideCount = _slideBindings.Count;
+                var slideCount = _activatedSlides.Count;
                 for (var i = 0; i < slideCount; i++)
                 {
                     ref readonly var instance = ref Unsafe.Add(ref activatedSlides, i);
-                    if (instance.State > NoteStatus.Start && instance.State < NoteStatus.End)
+                    var instanceState = instance.State;
+                    if (instanceState > NoteStatus.Start && instanceState < NoteStatus.End)
                     {
                         instance.OnUpdate();
                     }
@@ -153,11 +154,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                     }
                 }
                 ref var activatedSlides = ref MemoryMarshal.GetReference(_activatedSlides.AsSpan());
-                var slideCount = _slideBindings.Count;
+                var slideCount = _activatedSlides.Count;
                 for (var i = 0; i < slideCount; i++)
                 {
                     ref readonly var instance = ref Unsafe.Add(ref activatedSlides, i);
-                    if (instance.State > NoteStatus.Start && instance.State < NoteStatus.End)
+                    var instanceState = instance.State;
+                    if (instanceState > NoteStatus.Start && instanceState < NoteStatus.End)
                     {
                         instance.OnPreUpdate();
                     }
