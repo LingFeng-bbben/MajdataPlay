@@ -35,9 +35,9 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: -22.5}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 219.79587, y: 530.63416}
   m_SizeDelta: {x: 283.32, y: 232.25}
-  m_Pivot: {x: 0.5, y: -1.973}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7119697561143192987
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -89,7 +89,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.UI.ButtonAnimawiption
   BindSensor: 
-  BindButton: 
+  BindButton: 00000000
   ReleasedScale: 1
   PressedScale: 0.9
   AnimationDuration: 0.1
@@ -129,9 +129,9 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: -112.5}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 533.97, y: -221.17764}
   m_SizeDelta: {x: 285.1, y: 233.71}
-  m_Pivot: {x: 0.5, y: -1.973}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4223702879157302703
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -183,7 +183,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.UI.ButtonAnimawiption
   BindSensor: 
-  BindButton: 
+  BindButton: 02000000
   ReleasedScale: 1
   PressedScale: 0.9
   AnimationDuration: 0.1
@@ -223,9 +223,9 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 67.5}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: -529.1262, y: 219.17128}
   m_SizeDelta: {x: 282.52, y: 231.59}
-  m_Pivot: {x: 0.5, y: -1.973}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4424538786864246864
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -277,7 +277,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.UI.ButtonAnimawiption
   BindSensor: 
-  BindButton: 
+  BindButton: 06000000
   ReleasedScale: 1
   PressedScale: 0.9
   AnimationDuration: 0.1
@@ -360,9 +360,9 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 112.5}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: -528.2351, y: -218.80217}
   m_SizeDelta: {x: 282.03, y: 231.2}
-  m_Pivot: {x: 0.5, y: -1.973}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4673578656042789809
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -414,7 +414,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.UI.ButtonAnimawiption
   BindSensor: 
-  BindButton: 
+  BindButton: 05000000
   ReleasedScale: 1
   PressedScale: 0.9
   AnimationDuration: 0.1
@@ -454,9 +454,9 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: -157.5}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 223.8086, y: -540.32153}
   m_SizeDelta: {x: 288.49, y: 236.49}
-  m_Pivot: {x: 0.5, y: -1.973}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2250365777352414642
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -508,7 +508,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.UI.ButtonAnimawiption
   BindSensor: 
-  BindButton: 
+  BindButton: 03000000
   ReleasedScale: 1
   PressedScale: 0.9
   AnimationDuration: 0.1
@@ -548,9 +548,9 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: -67.5}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 531.2511, y: 220.05144}
   m_SizeDelta: {x: 283.65, y: 232.52}
-  m_Pivot: {x: 0.5, y: -1.973}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &856005148180339814
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -602,7 +602,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.UI.ButtonAnimawiption
   BindSensor: 
-  BindButton: 
+  BindButton: 01000000
   ReleasedScale: 1
   PressedScale: 0.9
   AnimationDuration: 0.1
@@ -642,9 +642,9 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 22.5}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: -219.61607, y: 530.2001}
   m_SizeDelta: {x: 283.09, y: 232.06}
-  m_Pivot: {x: 0.5, y: -1.973}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7672076026106904249
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -696,7 +696,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.UI.ButtonAnimawiption
   BindSensor: 
-  BindButton: 
+  BindButton: 07000000
   ReleasedScale: 1
   PressedScale: 0.9
   AnimationDuration: 0.1
@@ -736,9 +736,9 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: -202.5}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: -222.04825, y: -536.072}
   m_SizeDelta: {x: 286.23, y: 234.63}
-  m_Pivot: {x: 0.5, y: -1.973}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3539160736080789976
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -790,7 +790,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.UI.ButtonAnimawiption
   BindSensor: 
-  BindButton: 
+  BindButton: 04000000
   ReleasedScale: 1
   PressedScale: 0.9
   AnimationDuration: 0.1
