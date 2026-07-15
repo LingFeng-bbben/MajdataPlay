@@ -66,16 +66,20 @@ namespace MajdataPlay.Drawing
                 h = Math.Max(1, h / 2);
             }
 
-            if (totalSize > int.MaxValue) throw new Exception("Texture too large for single buffer.");
+            if (totalSize > int.MaxValue)
+            {
+                throw new Exception("Texture too large for single buffer.");
+            }
             int totalBytes = (int)totalSize;
 
             // 2) ∑÷≈‰ raw ª∫≥Â«¯
-            var rawBuffer = new NativeArray<byte>(totalBytes, Allocator.TempJob);
+            using (var rawBuffer = new NativeArray<byte>(totalBytes, Allocator.TempJob))
+            {
+                GenerateMipMaps(texture, converted, rawBuffer, mipCount);
 
-            GenerateMipMaps(texture, converted, rawBuffer, mipCount);
-            
-            texture.LoadRawTextureData(rawBuffer);
-            texture.Apply(false, false);
+                texture.LoadRawTextureData(rawBuffer);
+                texture.Apply(false, false);
+            }                
 
             return texture;
         }
