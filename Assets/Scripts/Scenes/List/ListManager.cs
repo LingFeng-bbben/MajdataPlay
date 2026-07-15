@@ -250,7 +250,7 @@ namespace MajdataPlay.Scenes.List
                                              }
                                              lastIndex = x;
                                              _quickSlideRemaining -= 1;
-                                             _coverListManager.SlideList(1 * _quickSlideDirection);
+                                             _coverListManager.SlideList(1 * _quickSlideDirection, loadDelayMS: 1000);
                                          });
             }
             if (_quickSlideRemaining == 0)

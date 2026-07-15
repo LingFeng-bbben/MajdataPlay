@@ -186,7 +186,7 @@ namespace MajdataPlay.Scenes.List
             UpdateMetadataAndScoreDisplayer();
             
         }
-        public void SetSongDetail(ISongDetail detail, Sprite? immediateCover = null)
+        public void SetSongDetail(ISongDetail detail, int loadDelayMS = 0, Sprite? immediateCover = null)
         {
             if(detail == _currentSongDetail)
             {
@@ -219,10 +219,10 @@ namespace MajdataPlay.Scenes.List
                 displayer.Object.SetActive(true);
             }
             UpdateLevelRing();
-            UpdateMetadataAndScoreDisplayer();
-            _previewPlayer.PlayPreviewSound(detail, _cts.Token);
+            UpdateMetadataAndScoreDisplayer(loadDelayMS);
+            _previewPlayer.PlayPreviewSound(detail, loadDelayMS, _cts.Token);
             _favoriteAdder.SetSong(detail);
-            ListManager.AllBackgroundTasks.Add(SetCoverAsync(detail, _cts.Token, immediateCover));
+            ListManager.AllBackgroundTasks.Add(SetCoverAsync(detail, loadDelayMS, _cts.Token, immediateCover));
         }
         public void SetEmbeddedCoverVisible(bool visible)
         {
@@ -310,18 +310,18 @@ namespace MajdataPlay.Scenes.List
                 }
             }
         }
-        void UpdateMetadataAndScoreDisplayer()
+        void UpdateMetadataAndScoreDisplayer(int loadDelayMS = 0)
         {
             if(_currentSongDetail is null)
             {
                 return;
             }
             var cancellationToken = _cts?.Token ?? default;
-            _metadataDisplayer.SetMetadataFromSongDetail(_currentSongDetail, (ChartLevel)_diff, cancellationToken);
+            _metadataDisplayer.SetMetadataFromSongDetail(_currentSongDetail, (ChartLevel)_diff, loadDelayMS, cancellationToken);
             _scoreDisplayer.SetScore(_currentSongDetail, (ChartLevel)_diff);
-            _onlineInfoDisplayer.SetSongDetail(_currentSongDetail, cancellationToken);
-            _chartAnalyzer.SetSongDeatil(_currentSongDetail, (ChartLevel)_diff, null, cancellationToken);
-            _onlineScoreRankDisplayer.SetSongDetail(_currentSongDetail, (ChartLevel)_diff, cancellationToken);
+            _onlineInfoDisplayer.SetSongDetail(_currentSongDetail, loadDelayMS, cancellationToken);
+            _chartAnalyzer.SetSongDeatil(_currentSongDetail, (ChartLevel)_diff, null, loadDelayMS, cancellationToken);
+            _onlineScoreRankDisplayer.SetSongDetail(_currentSongDetail, (ChartLevel)_diff, loadDelayMS, cancellationToken);
         }
         void UpdateBGSongCoverAnim(float progress)
         {
@@ -336,7 +336,7 @@ namespace MajdataPlay.Scenes.List
             _bgSongCoverTransform.anchoredPosition = nP;
         }
         
-        async Task SetCoverAsync(ISongDetail detail, CancellationToken token = default, Sprite? immediateCover = null)
+        async Task SetCoverAsync(ISongDetail detail, int loadDelayMS, CancellationToken token = default, Sprite? immediateCover = null)
         {
             _bgSongCoverAnim.TryCancel();
             _bgSongCoverDisplayer.sprite = SpriteLoader.EmptySprite;
@@ -349,6 +349,10 @@ namespace MajdataPlay.Scenes.List
             {
                 _loadingObj.SetActive(true);
                 _songCoverDisplayer.sprite = SpriteLoader.EmptySprite;
+            }
+            if (!detail.IsCompressedCoverLoaded)
+            {
+                await Task.Delay(loadDelayMS, token);
             }
             var cover = await detail.GetCoverAsync(true, token: token);
             await UniTask.SwitchToMainThread();

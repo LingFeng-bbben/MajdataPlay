@@ -27,21 +27,25 @@ namespace MajdataPlay.Scenes.List.Models
         {
             gameObject.SetActive(state);
         }
-        public void SetSongDetail(ISongDetail detail)
+        public void SetSongDetail(ISongDetail detail, int loadDelayMS = 0)
         {
             if (!_cts.IsCancellationRequested)
             {
                 _cts.Cancel();
             }
             _cts = new();
-            ListManager.AllBackgroundTasks.Add(SetCoverAsync(detail, _cts.Token));
+            ListManager.AllBackgroundTasks.Add(SetCoverAsync(detail, loadDelayMS, _cts.Token));
         }
 
-        async Task SetCoverAsync(ISongDetail songDetail, CancellationToken token = default)
+        async Task SetCoverAsync(ISongDetail songDetail, int loadDelayMS, CancellationToken token = default)
         {
             await UniTask.SwitchToMainThread();
             _loadingComponent.SetActive(true);
             _coverDisplayer.sprite = SpriteLoader.EmptySprite;
+            if (!songDetail.IsCompressedCoverLoaded)
+            {
+                await Task.Delay(loadDelayMS, token);
+            }
             var cover = await songDetail.GetCoverAsync(true, token: token);
             await UniTask.SwitchToMainThread();
             if(token.IsCancellationRequested)

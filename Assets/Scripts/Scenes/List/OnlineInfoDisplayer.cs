@@ -49,7 +49,7 @@ namespace MajdataPlay.Scenes.List
         Color _thumbUpNormalColor;
 
 
-        public void SetSongDetail(ISongDetail songDetail, CancellationToken token)
+        public void SetSongDetail(ISongDetail songDetail, int loadDelayMS = 0, CancellationToken token = default)
         {
             if (!songDetail.IsOnline)
             {
@@ -60,11 +60,12 @@ namespace MajdataPlay.Scenes.List
             _likeCountDisplayer.text = "--";
             _playCountDisplayer.text = "--";
             _commentCountDisplayer.text = "--";
-            _ = RefreshContentAsync((OnlineSongDetail)songDetail, token);
+            _ = RefreshContentAsync((OnlineSongDetail)songDetail, loadDelayMS, token);
         }
-        async ValueTask RefreshContentAsync(OnlineSongDetail detail, CancellationToken token = default)
+        async ValueTask RefreshContentAsync(OnlineSongDetail detail, int loadDelayMS, CancellationToken token = default)
         {
             await UniTask.SwitchToThreadPool();
+            await Task.Delay(loadDelayMS, token);
             var (isSuccessfully1, interact) = await GetOnlineInteractionAsync(detail, token);
 
             await UniTask.SwitchToMainThread(token);

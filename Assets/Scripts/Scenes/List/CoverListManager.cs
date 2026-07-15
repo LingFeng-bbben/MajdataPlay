@@ -188,7 +188,7 @@ namespace MajdataPlay.Scenes.List
                 else
                 {
                     UpdateListConfiguration();
-                    UpdateDisplayerBinding();
+                    UpdateDisplayerBinding(0);
                     UpdateDisplayerPosition();
                 }
             }
@@ -204,7 +204,7 @@ namespace MajdataPlay.Scenes.List
             }
         }
 
-        public void SlideList(int delta, bool disableAnimation = false, bool forceUpdate = false)
+        public void SlideList(int delta, bool disableAnimation = false, bool forceUpdate = false, int loadDelayMS = DISPLAYER_ANIM_DURATION_MS)
         {
             if(_isEmptyCollection)
             {
@@ -220,7 +220,7 @@ namespace MajdataPlay.Scenes.List
             }
             
             var nP = _listDesiredPos + delta;
-            SlideListTo(nP, disableAnimation, forceUpdate);
+            SlideListTo(nP, disableAnimation, forceUpdate, loadDelayMS);
         }
         public void SlideListToHead()
         {
@@ -228,7 +228,7 @@ namespace MajdataPlay.Scenes.List
             {
                 return;
             }
-            SlideListTo(0, true, false);
+            SlideListTo(0, true, false, 500);
         }
         public void SlideListToTail()
         {
@@ -236,9 +236,9 @@ namespace MajdataPlay.Scenes.List
             {
                 return;
             }
-            SlideListTo(_songCount - 1, true, false);
+            SlideListTo(_songCount - 1, true, false, 500);
         }
-        void SlideListTo(int pos, bool disableAnimation, bool forceUpdate)
+        void SlideListTo(int pos, bool disableAnimation, bool forceUpdate, int loadDelayMS)
         {
             var oldDesiredPos = _listDesiredPos;
             _listDesiredPos = pos;
@@ -265,10 +265,10 @@ namespace MajdataPlay.Scenes.List
                 if (shouldUpdateDisplayer)
                 {
                     _listCursorPos = _listDesiredPos;
-                    UpdateDisplayerBinding();
+                    UpdateDisplayerBinding(loadDelayMS);
                     UpdateDisplayerPosition();
                 }
-                UpdateCenterDisplayer();
+                UpdateCenterDisplayer(loadDelayMS);
             }
             else
             {
@@ -278,7 +278,8 @@ namespace MajdataPlay.Scenes.List
                     DisplayerMoveTo(
                         _listDesiredPos,
                         DISPLAYER_ANIM_DURATION_MS / 1000f,
-                        UpdateCenterDisplayer);
+                        loadDelayMS,
+                        () => UpdateCenterDisplayer(loadDelayMS));
                 }
             }            
         }
@@ -311,7 +312,7 @@ namespace MajdataPlay.Scenes.List
             _songCoverBindings.Clear();
             _songThumbnailBindings.Clear();
         }
-        void DisplayerMoveTo(float targetPos, float duration, Action? onComplete = null)
+        void DisplayerMoveTo(float targetPos, float duration, int loadDelayMS, Action? onComplete = null)
         {
             _scrollMotion.TryCancel();
             var motionVersion = ++_scrollMotionVersion;
@@ -328,13 +329,13 @@ namespace MajdataPlay.Scenes.List
                                    .Bind(x =>
                                    {
                                        _listCursorPos = x;
-                                       UpdateDisplayerBinding();
+                                       UpdateDisplayerBinding(loadDelayMS);
                                        UpdateDisplayerPosition();
                                    });
         }
-        void UpdateCenterDisplayer()
+        void UpdateCenterDisplayer(int loadDelayMS)
         {
-            _centerCoverDisplayer.SetSongDetail(SelectedSong!, GetSelectedCoverSpriteSnapshot());
+            _centerCoverDisplayer.SetSongDetail(SelectedSong!, loadDelayMS, GetSelectedCoverSpriteSnapshot());
             _centerCoverDisplayer.SetEmbeddedCoverVisible(true);
         }
         Sprite? GetSelectedCoverSpriteSnapshot()
@@ -343,7 +344,7 @@ namespace MajdataPlay.Scenes.List
 
             return coverDisplayer?.CurrentCoverSprite;
         }
-        void UpdateDisplayerBinding()
+        void UpdateDisplayerBinding(int loadDelayMS)
         {
             if(_isEmptyCollection)
             {
@@ -376,7 +377,7 @@ namespace MajdataPlay.Scenes.List
                         if (_idleSongCoverDisplayer.TryDequeue(out coverDisplayer))
                         {
                             coverBinding.Displayer = coverDisplayer;
-                            coverDisplayer.SetSongDetail(coverBinding.SongDetail);
+                            coverDisplayer.SetSongDetail(coverBinding.SongDetail, loadDelayMS);
                             coverDisplayer.SetActive(true);
                         }
                         else
@@ -404,7 +405,7 @@ namespace MajdataPlay.Scenes.List
                         if (_idleSongThumbnailDisplayer.TryDequeue(out thumbnailDisplayer))
                         {
                             thumbnailBinding.Displayer = thumbnailDisplayer;
-                            thumbnailDisplayer.SetSongDetail(thumbnailBinding.SongDetail);
+                            thumbnailDisplayer.SetSongDetail(thumbnailBinding.SongDetail, loadDelayMS);
                             thumbnailDisplayer.SetActive(true);
                         }
                         else
@@ -478,7 +479,7 @@ namespace MajdataPlay.Scenes.List
         void SetCursorInternal(string hash, bool disableAnimation, bool forceUpdate)
         {
             _currentCollection.SetCursor(hash);
-            SlideListTo(_currentCollection.Index, disableAnimation, forceUpdate);
+            SlideListTo(_currentCollection.Index, disableAnimation, forceUpdate, DISPLAYER_ANIM_DURATION_MS);
             UpdateListConfiguration();
         }
         //async Task AnalyzeAndUpdateBpmLedAsync(ISongDetail songDetail, ChartLevel level)

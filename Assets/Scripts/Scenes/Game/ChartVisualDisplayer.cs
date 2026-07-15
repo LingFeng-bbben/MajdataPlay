@@ -48,6 +48,8 @@ namespace MajdataPlay.Scenes.Game
 #endif
         int _cacheCursor = 0;
 
+        float _loadDelayTimer = 0f;
+
         readonly LoadTask _loadTask = new();
 
         readonly CacheItem[] _cachedAnalyzeResults = new CacheItem[MAX_CACHE_COUNT];
@@ -88,6 +90,11 @@ namespace MajdataPlay.Scenes.Game
         {
             if(_loadTask.IsFinished || (_loadTask.SongDetail is null && _loadTask.Chart is null))
             {
+                return;
+            }
+            else if(_loadDelayTimer > 0)
+            {
+                _loadDelayTimer -= MajTimeline.DeltaTime;
                 return;
             }
             var maidataLoadTask = _loadTask.MaidataLoadTask!;
@@ -139,7 +146,7 @@ namespace MajdataPlay.Scenes.Game
                 }
             }
         }
-        public void SetSongDeatil(ISongDetail songDetail, ChartLevel chartLevel, float? length = null, CancellationToken token = default)
+        public void SetSongDeatil(ISongDetail songDetail, ChartLevel chartLevel, float? length = null, int loadDelayMS = 0, CancellationToken token = default)
         {
             _loadTask.SongDetail = songDetail;
             _loadTask.Level = chartLevel;
@@ -148,6 +155,7 @@ namespace MajdataPlay.Scenes.Game
             _loadTask.Length = length;
             _loadTask.Maidata = null;
             _loadTask.IsFinished = false;
+            _loadDelayTimer = loadDelayMS / 1000f;
             SetLoading();
         }
         public void SetSimaiChart(SimaiChart chart, float? length = null)
@@ -157,6 +165,7 @@ namespace MajdataPlay.Scenes.Game
             _loadTask.Length = length;
             _loadTask.Chart = chart;
             _loadTask.IsFinished = false;
+            _loadDelayTimer = 0;
             SetLoading();
         }
         void AnalyzeMaidata(SimaiChart chart, float? length)

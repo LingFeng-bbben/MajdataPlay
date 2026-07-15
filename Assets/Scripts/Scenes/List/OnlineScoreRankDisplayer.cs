@@ -35,6 +35,7 @@ namespace MajdataPlay.Scenes.List
         RankerDisplayer[] _rankerDisplayers = Array.Empty<RankerDisplayer>();
 
         float _loadTimer = 0f;
+        float _loadDelayTimer = 0f;
 
         OnlineSongDetail? _currentSongDetail;
         ChartLevel _currentLevel;
@@ -79,6 +80,12 @@ namespace MajdataPlay.Scenes.List
             else if (_loadTimer < LOAD_DEBOUNCE_INTERVAL_SEC)
             {
                 _loadTimer += MajTimeline.DeltaTime;
+                _loadDelayTimer -= MajTimeline.DeltaTime;
+                return;
+            }
+            else if(_loadDelayTimer > 0)
+            {
+                _loadDelayTimer -= MajTimeline.DeltaTime;
                 return;
             }
             else if (_onlineScoreFetchTask is null)
@@ -180,7 +187,7 @@ namespace MajdataPlay.Scenes.List
             _loadingIndicator.SetActive(false);
         }
 
-        public void SetSongDetail(ISongDetail songDetail, ChartLevel level, CancellationToken token = default)
+        public void SetSongDetail(ISongDetail songDetail, ChartLevel level, int loadDelayMS = 0, CancellationToken token = default)
         {
             if(songDetail is not OnlineSongDetail onlineSongDetail)
             {
@@ -200,6 +207,7 @@ namespace MajdataPlay.Scenes.List
             _onlineScoreFetchTask = null;
             _rankDisplayer.text = string.Empty;
             _loadTimer = 0f;
+            _loadDelayTimer = loadDelayMS / 1000f;
         }
         public void Hide()
         {

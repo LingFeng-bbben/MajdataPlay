@@ -29,25 +29,24 @@ namespace MajdataPlay.Scenes.List
             return ReferenceEquals(_currentPreviewSong, info) && _isPreviewPlaying;
         }
 
-        public void PlayPreviewSound(ISongDetail info, CancellationToken token = default)
+        public void PlayPreviewSound(ISongDetail info, int loadDelayMS = 1000, CancellationToken token = default)
         {
             _currentPreviewSong = info;
             _isPreviewPlaying = false;
             var previewVersion = ++_previewVersion;
             CabinetLed.SetButtonLight(Color.green, 3);
             CabinetLed.SetCabinetLight(1.0f);
-            ListManager.AllBackgroundTasks.Add(PlayPreviewAsync(info, token, previewVersion));
+            ListManager.AllBackgroundTasks.Add(PlayPreviewAsync(info, loadDelayMS, token, previewVersion));
         }
-        async Task PlayPreviewAsync(ISongDetail info, CancellationToken token, int previewVersion)
+        async Task PlayPreviewAsync(ISongDetail info, int loadDelayMS, CancellationToken token, int previewVersion)
         {
             var selectSound = MajInstances.AudioManager.GetSFX("bgm_select.mp3");
             AudioSampleWrap? previewSample = null;
             try
             {
                 selectSound.SetVolume(MajEnv.Settings.Audio.Volume.BGM);
-                token.ThrowIfCancellationRequested();
-                await UniTask.Delay(1000, cancellationToken: token, cancelImmediately: true);
-                token.ThrowIfCancellationRequested();
+                await UniTask.SwitchToThreadPool();
+                await Task.Delay(loadDelayMS, cancellationToken: token);
 
                 var simaiChart = await info.GetMaidataAsync(token: token);
                 previewSample = await info.GetPreviewAudioTrackAsync(token: token);

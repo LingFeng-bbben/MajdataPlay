@@ -100,7 +100,7 @@ namespace MajdataPlay.Scenes.List.Models
             }
             SetSelectedProgress(0f);
         }
-        public void SetSongDetail(ISongDetail detail)
+        public void SetSongDetail(ISongDetail detail, int loadDelayMS = 0)
         {
             SetLevelText(detail);
             _coverDisplayer.sprite = SpriteLoader.EmptySprite;
@@ -109,7 +109,7 @@ namespace MajdataPlay.Scenes.List.Models
                 _cts.Cancel();
                 _cts = new();
             }
-            ListManager.AllBackgroundTasks.Add(SetCoverAsync(detail, _cts.Token));
+            ListManager.AllBackgroundTasks.Add(SetCoverAsync(detail, loadDelayMS, _cts.Token));
         }
         public void SetActive(bool state)
         {
@@ -182,10 +182,14 @@ namespace MajdataPlay.Scenes.List.Models
                 displayer.TextDisplayer.text = level;
             }
         }
-        async Task SetCoverAsync(ISongDetail songDetail, CancellationToken token = default)
+        async Task SetCoverAsync(ISongDetail songDetail, int loadDelayMS, CancellationToken token = default)
         {
             _loadingComponent.SetActive(true);
             _coverDisplayer.sprite = SpriteLoader.EmptySprite;
+            if(!songDetail.IsCompressedCoverLoaded)
+            {
+                await Task.Delay(loadDelayMS, token);
+            }
             var cover = await songDetail.GetCoverAsync(true, token: token);
             if(token.IsCancellationRequested)
             {

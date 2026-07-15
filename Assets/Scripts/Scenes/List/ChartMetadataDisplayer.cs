@@ -52,6 +52,7 @@ namespace MajdataPlay.Scenes.List
         TextMeshProUGUI _durationDisplayer;
 
         float _loadTimer = 0f;
+        float _loadDelayTimer = 0f;
 
         ISongDetail? _currentSongDetail;
         ChartLevel _currentLevel;
@@ -69,11 +70,17 @@ namespace MajdataPlay.Scenes.List
             else if (_loadTimer < LOAD_DEBOUNCE_INTERVAL_SEC)
             {
                 _loadTimer += MajTimeline.DeltaTime;
+                _loadDelayTimer -= MajTimeline.DeltaTime;
                 return;
             }
-            else if(_maidataLoadTask is null)
+            else if(_loadDelayTimer > 0)
             {
-                if(_cancellationToken.IsCancellationRequested)
+                _loadDelayTimer -= MajTimeline.DeltaTime;
+                return;
+            }
+            else if (_maidataLoadTask is null)
+            {
+                if (_cancellationToken.IsCancellationRequested)
                 {
                     _currentSongDetail = null;
                     _loadTimer = 0f;
@@ -83,7 +90,7 @@ namespace MajdataPlay.Scenes.List
                 ListManager.AllBackgroundTasks.Add(_maidataLoadTask);
                 return;
             }
-            else if(!_maidataLoadTask.IsCompleted)
+            else if (!_maidataLoadTask.IsCompleted)
             {
                 return;
             }
@@ -123,7 +130,7 @@ namespace MajdataPlay.Scenes.List
             }
         }
 
-        public void SetMetadataFromSongDetail(ISongDetail songDetail, ChartLevel level, CancellationToken token = default)
+        public void SetMetadataFromSongDetail(ISongDetail songDetail, ChartLevel level, int loadDelayMS = 0, CancellationToken token = default)
         {
             if (songDetail is OnlineSongDetail onlineSongDetail)
             {
@@ -146,6 +153,7 @@ namespace MajdataPlay.Scenes.List
             _durationDisplayer.text = "--:--";
 
             _cancellationToken = token;
+            _loadDelayTimer = loadDelayMS / 1000f;
         }
     }
 }
