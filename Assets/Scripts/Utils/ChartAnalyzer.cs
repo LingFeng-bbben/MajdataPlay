@@ -231,8 +231,15 @@ namespace MajdataPlay.Utils
                         s_tapPaint);
                 } 
             }
+            using var bitmap = new SKBitmap(width, height);
 
-            return GraphHelper.GraphSnapshot(surface);
+            surface.ReadPixels(
+                            bitmap.Info,
+                            bitmap.GetPixels(),
+                            bitmap.RowBytes,
+                            0,
+                            0);
+            return bitmap.ToTexture2D();
         }
         static void DrawRoundRectBar(SKCanvas canvas,
                                      float centerX,

@@ -19,7 +19,7 @@ namespace MajdataPlay.Drawing
     {
         const int BYTES_PER_PIXEL = 4;
         const GraphicsFormat GFX_FORMAT = GraphicsFormat.R8G8B8A8_UNorm;
-        public async static UniTask<Texture2D> ToTexture2D(this SKBitmap bitmap)
+        public static Texture2D ToTexture2D(this SKBitmap bitmap)
         {
             var width = bitmap.Width;
             var height = bitmap.Height;
@@ -68,10 +68,8 @@ namespace MajdataPlay.Drawing
             // 2) ∑÷≈‰ raw ª∫≥Â«¯
             byte[] raw = new byte[totalBytes];
 
-            await UniTask.SwitchToThreadPool();
             GenerateMipMaps(texture, converted, ref raw, mipCount);
             
-            await UniTask.SwitchToMainThread();
             texture.LoadRawTextureData(raw);
             texture.Apply(true, false);
 
