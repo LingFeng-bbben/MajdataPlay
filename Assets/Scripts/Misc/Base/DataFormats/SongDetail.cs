@@ -42,12 +42,18 @@ namespace MajdataPlay
         public DateTime Timestamp { get; init; }
         public ChartStorageLocation Location => ChartStorageLocation.Local;
 
+        public bool IsVideoLoaded { get => _videoPath != null; }
+        public bool IsCoverLoaded { get => _coverRef.TryGetTarget(out _); }
+        public bool IsCompressedCoverLoaded { get => _coverRef.TryGetTarget(out _); }
+        public bool IsAudioTrackLoaded { get => _audioTrackRef.TryGetTarget(out _); }
+        public bool IsPreviewAudioTrackLoaded { get => _previewAudioTrackRef.TryGetTarget(out _); }
+        public bool IsMaidataLoaded { get => _maidata != null; }
+
         readonly string _maidataPath = string.Empty;
         readonly string _trackPath = string.Empty;
         readonly string _videoPath = string.Empty;
         readonly string _coverPath = string.Empty;
 
-        static readonly Action _emptyCallback = () => { };
         bool _isPreloaded = false;
         bool _isDisposed = false;
 
@@ -56,8 +62,6 @@ namespace MajdataPlay
         WeakReference<Sprite> _coverRef = new(null!);
         SimaiFile? _maidata = null;
         SimaiMetadata _simaiMetadata;
-
-        ChartSetting _chartSettings;
 
         volatile int _preloadJoinState = 0;
 
@@ -106,7 +110,6 @@ namespace MajdataPlay
                 _isEmptyCover = true;
             }
             _simaiMetadata = metadata;
-            _chartSettings = ChartSettingStorage.GetSetting(_simaiMetadata.Hash);
             Title = metadata.Title;
             Artist = metadata.Artist;
             Timestamp = files.FirstOrDefault(x => x.Name is "maidata.txt")?.LastWriteTime ?? DateTime.UnixEpoch;
@@ -142,10 +145,6 @@ namespace MajdataPlay
         }
         public ValueTask<string> GetVideoPathAsync(INetProgress? progress = null, CancellationToken token = default)
         {
-            if (_chartSettings.DisableVideoBG)
-            {
-                return UniTask.FromResult(string.Empty);
-            }
             ThrowIfDisposed();
             return UniTask.FromResult(_videoPath);
         }

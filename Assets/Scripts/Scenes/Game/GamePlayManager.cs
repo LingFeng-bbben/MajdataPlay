@@ -590,19 +590,22 @@ namespace MajdataPlay.Scenes.Game
                         lastPercent = percent;
                         _sceneSwitcher.SetLoadingText($"{"MAJTEXT_DOWNLOADING_PICTURE".i18n()}...\n{percent * 100:F2}%");
                     }
-                    lastPercent = 0;
-                    progress.Reset();
-                    token.ThrowIfCancellationRequested();
-                    _sceneSwitcher.SetLoadingText($"{"MAJTEXT_DOWNLOADING_VIDEO".i18n()}...");
-                    var task4 = _songDetail.GetVideoPathAsync(progress, token: _cts.Token);
-                    while (!task4.IsCompleted)
+                    if(!_chartSetting.DisableVideoBG)
                     {
-                        await UniTask.Yield(cancellationToken: token);
-                        var percent = progress.Percent.Clamp(0, 1);
-                        LedRingLoadingUpdate(percent, lastPercent);
-                        lastPercent = percent;
-                        _sceneSwitcher.SetLoadingText($"{"MAJTEXT_DOWNLOADING_VIDEO".i18n()}...\n{percent * 100:F2}%");
-                    }
+                        lastPercent = 0;
+                        progress.Reset();
+                        token.ThrowIfCancellationRequested();
+                        _sceneSwitcher.SetLoadingText($"{"MAJTEXT_DOWNLOADING_VIDEO".i18n()}...");
+                        var task4 = _songDetail.GetVideoPathAsync(progress, token: _cts.Token);
+                        while (!task4.IsCompleted)
+                        {
+                            await UniTask.Yield(cancellationToken: token);
+                            var percent = progress.Percent.Clamp(0, 1);
+                            LedRingLoadingUpdate(percent, lastPercent);
+                            lastPercent = percent;
+                            _sceneSwitcher.SetLoadingText($"{"MAJTEXT_DOWNLOADING_VIDEO".i18n()}...\n{percent * 100:F2}%");
+                        }
+                    }                    
                     _sceneSwitcher.SetLoadingText(string.Empty);
                 }
 
@@ -853,10 +856,11 @@ namespace MajdataPlay.Scenes.Game
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
 
             var dim = _gameSettings.Game.BackgroundDim;
+            
             if (dim < 1f)
             {
                 var videoPath = await _songDetail.GetVideoPathAsync();
-                if (!string.IsNullOrEmpty(videoPath))
+                if (!_chartSetting.DisableVideoBG && !string.IsNullOrEmpty(videoPath))
                 {
                     var cover = await _songDetail.GetCoverAsync(false);
                     await UniTask.SwitchToMainThread();
