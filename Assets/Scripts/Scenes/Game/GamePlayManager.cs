@@ -104,6 +104,14 @@ namespace MajdataPlay.Scenes.Game
         ChartInfoDisplayer _chartInfoDisplayer;
 
         [SerializeField]
+        [FormerlySerializedAs("levelCircleDisplayer")]
+        Image _levelCircleDisplayer;
+
+        [SerializeField]
+        [FormerlySerializedAs("levelBGDisplayer")]
+        Image _levelBGDisplayer;
+
+        [SerializeField]
         Sprite _maskSpriteA;
         [SerializeField]
         Sprite _maskSpriteB;
@@ -236,7 +244,10 @@ namespace MajdataPlay.Scenes.Game
             }
             _timer = MajTimeline.CreateTimer();
             _chartSetting = _gameInfo.ChartSettings;
-            if(_gameSettings.Debug.OffsetUnit == OffsetUnitOption.Second)
+            var diffColor = CenterCoverDisplayer.DifficultyColors[(int)_gameInfo.CurrentLevel];
+            _levelCircleDisplayer.color = diffColor;
+            _levelBGDisplayer.color = diffColor;
+            if (_gameSettings.Debug.OffsetUnit == OffsetUnitOption.Second)
             {
                 _audioTimeOffsetSec = _gameSettings.Judge.AudioOffset;
                 _audioTimeOffsetSec += _chartSetting.AudioOffset;

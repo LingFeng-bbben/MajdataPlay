@@ -22,6 +22,14 @@ namespace MajdataPlay.Scenes.List
 {
     public class CenterCoverDisplayer : MonoBehaviour
     {
+        public static ReadOnlySpan<Color> DifficultyColors
+        {
+            get
+            {
+                return _difficultyColors;
+            }
+        }
+
         [SerializeField]
         [FormerlySerializedAs("levelRingDisplayer")]
         Image _levelRingDisplayer;
@@ -104,6 +112,8 @@ namespace MajdataPlay.Scenes.List
         readonly ListConfig _listConfig = MajEnv.RuntimeConfig?.List ?? new();
         readonly ChartLevel[] _levelValues = (ChartLevel[])Enum.GetValues(typeof(ChartLevel));
 
+        static Color[] _difficultyColors = Array.Empty<Color>();
+
         const float LEVEL_RING_LEFT_START_ROTATION = 67.5f;
         const float LEVEL_RING_RIGHT_START_ROTATION = 32.5f;
         const float LEVEL_RING_ROTATION_STEP = 10f;
@@ -111,6 +121,8 @@ namespace MajdataPlay.Scenes.List
         
         void Awake()
         {
+            _difficultyColors = _diffColors;
+
             var levelDisplayerListRoot = _levelDisplayerListRoot.transform;
             var displayerCount = levelDisplayerListRoot.childCount;
             _levelDisplayers = new LevelDisplayer[displayerCount];

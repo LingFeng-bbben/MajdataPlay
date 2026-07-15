@@ -65,6 +65,14 @@ namespace MajdataPlay.Scenes.Result
         public FavoriteAdder favoriteAdder;
 
         [SerializeField]
+        [FormerlySerializedAs("levelCircleDisplayer")]
+        Image _levelCircleDisplayer;
+
+        [SerializeField]
+        [FormerlySerializedAs("levelBGDisplayer")]
+        Image _levelBGDisplayer;
+
+        [SerializeField]
         [FormerlySerializedAs("dxScoreDisplayer")]
         DXScoreDisplayer _dxScoreDisplayer;
 
@@ -98,6 +106,9 @@ namespace MajdataPlay.Scenes.Result
             var song = result.SongDetail;
             var historyResult = ScoreManager.GetScore(song, listConfig.SelectedDiff);
             var score = MaiScore.CreateFromResult(result, result.Level);
+            var diffColor = CenterCoverDisplayer.DifficultyColors[(int)_gameInfo.CurrentLevel];
+            _levelCircleDisplayer.color = diffColor;
+            _levelBGDisplayer.color = diffColor;
             _onlineInteractionSender.Init(song, score);
             favoriteAdder.SetSong(song);
             userInfoDisplayer.DisplayFromSong(song);
