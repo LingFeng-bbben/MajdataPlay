@@ -6,15 +6,19 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
+using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.Experimental.Rendering;
 
 namespace MajdataPlay.Drawing
 {
+    [BurstCompile]
     public static class SKBitmapExtensions
     {
         const int BYTES_PER_PIXEL = 4;
@@ -66,39 +70,41 @@ namespace MajdataPlay.Drawing
             int totalBytes = (int)totalSize;
 
             // 2) 分配 raw 缓冲区
-            byte[] raw = new byte[totalBytes];
+            var rawBuffer = new NativeArray<byte>(totalBytes, Allocator.TempJob);
 
-            GenerateMipMaps(texture, converted, ref raw, mipCount);
+            GenerateMipMaps(texture, converted, rawBuffer, mipCount);
             
-            texture.LoadRawTextureData(raw);
+            texture.LoadRawTextureData(rawBuffer);
             texture.Apply(false, false);
 
             return texture;
         }
 
-        static unsafe void WriteSKBitmapToRaw(SKBitmap srcBitmap, ref byte[]raw, int levelWidth, int levelHeight, int offset)
+        static unsafe void WriteSKBitmapToRaw(SKBitmap srcBitmap, NativeArray<byte> raw, int levelWidth, int levelHeight, int offset)
         {
-            int dstRowBytes = levelWidth * BYTES_PER_PIXEL;
-            byte* srcPtr = (byte*)srcBitmap.GetPixels().ToPointer();
-            int srcRowBytes = srcBitmap.RowBytes;
-
-            // 我们把 Skia 的行翻转写入 Unity（Unity 的纹理通常从底到顶）
-            for (int y = 0; y < levelHeight; y++)
+            var srcRowBytes = srcBitmap.RowBytes;
+            var dstRowBytes = levelWidth * BYTES_PER_PIXEL;            
+            var srcPixels = NativeArrayUnsafeUtility.ConvertExistingDataToNativeArray(srcBitmap.GetPixelSpan(),
+                                                                                      Allocator.None);
+#if ENABLE_UNITY_COLLECTIONS_CHECKS
+            var safety = AtomicSafetyHandle.Create();
+            NativeArrayUnsafeUtility.SetAtomicSafetyHandle(ref srcPixels, safety);
+#endif
+            var jobHandle = new CovertSKBitmapPixelToTexturePixelJob()
             {
-                int srcRow = y; // Skia 行索引（0..h-1）
-                int dstRow = levelHeight - 1 - y; // 写入 Unity 时翻转
-                int srcRowStart = srcRow * srcRowBytes;
-                int dstRowStart = offset + dstRow * dstRowBytes;
+                SrcPixels = srcPixels,
+                DstPixels = raw,
+                LevelWidth = levelWidth,
+                LevelHeight = levelHeight,
+                SrcRowBytes = srcRowBytes,
+                DstRowBytes = dstRowBytes,
+                DstOffset = offset
+            }.Schedule(levelHeight, 64);
 
-                // 只拷贝每行的有效像素部分（levelWidth * 4），忽略 Skia 的 padding
-                for (int x = 0; x < dstRowBytes; x++)
-                {
-                    raw[dstRowStart + x] = srcPtr[srcRowStart + x];
-                }
-            }
+            jobHandle.Complete();
         }
 
-        public unsafe static void GenerateMipMaps(Texture2D texture, SKBitmap bitmap, ref byte[] raw, int mipCount)
+        public unsafe static void GenerateMipMaps(Texture2D texture, SKBitmap bitmap, NativeArray<byte> raw, int mipCount)
         {
              // RGBA32
             int width = bitmap.Width;
@@ -111,7 +117,7 @@ namespace MajdataPlay.Drawing
             // 首先把 base level（mip 0）写入 raw 的偏移 0
             // 注意：确保 bitmap 的 ColorType 是 RGBA8888；若是 BGRA，需要在写入时交换 R/B
             // 我们先把 base 写入 raw
-            WriteSKBitmapToRaw(bitmap, ref raw, width, height, 0);
+            WriteSKBitmapToRaw(bitmap, raw, width, height, 0);
 
             // 计算并写入后续 mip 层（使用 Skia 的 Resize）
             int prevW = width;
@@ -148,7 +154,7 @@ namespace MajdataPlay.Drawing
                 Debug.Log($"Mip {mip}: {mipW}x{mipH}, offset={mipOffset}, rowBytes={mipBitmap.RowBytes}");
 
                 // 写入该 mip 到 raw
-                WriteSKBitmapToRaw(mipBitmap,ref raw, mipW, mipH, mipOffset);
+                WriteSKBitmapToRaw(mipBitmap, raw, mipW, mipH, mipOffset);
 
                 // 准备下一层：prevBitmap 指向当前 mipBitmap（注意释放上一个非 base 的 bitmap）
                 if (prevBitmap != bitmap)
@@ -173,6 +179,35 @@ namespace MajdataPlay.Drawing
             //texture.Apply(updateMipmaps: false, makeNoLongerReadable: false);
 
             //Debug.Log("UploadBitmapWithMips: LoadRawTextureData + Apply complete. Mipmaps provided by CPU.");
+        }
+
+        [BurstCompile]
+        struct CovertSKBitmapPixelToTexturePixelJob : IJobParallelFor
+        {
+            [ReadOnly]
+            public NativeArray<byte> SrcPixels;
+
+            [NativeDisableParallelForRestriction]
+            public NativeArray<byte> DstPixels;
+
+            public int SrcRowBytes;
+            public int DstRowBytes;
+            public int LevelWidth;
+            public int LevelHeight;
+            public int DstOffset;
+
+            public void Execute(int y)
+            {
+                var srcRow = y;
+                var dstRow = LevelHeight - 1 - y;
+                var srcRowStart = srcRow * SrcRowBytes;
+                var dstRowStart = DstOffset + (dstRow * DstRowBytes);
+
+                var srcFragment = SrcPixels.Slice(srcRowStart, DstRowBytes);
+                var dstFragment = DstPixels.Slice(dstRowStart, DstRowBytes);
+
+                dstFragment.CopyFrom(srcFragment);
+            }
         }
     }
 }
