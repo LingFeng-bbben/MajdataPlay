@@ -374,7 +374,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             return index2Hide;
         }
         [OnPreUpdate]
-        void OnPreUpdate()
+        internal void OnPreUpdate()
         {
             using (UnityProfiler.Create("WifiDrop.OnPreUpdate"))
             {
@@ -383,7 +383,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
         }
         [OnUpdate]
-        void OnUpdate()
+        internal void OnUpdate()
         {
             using (UnityProfiler.Create("WifiDrop.OnUpdate"))
             {

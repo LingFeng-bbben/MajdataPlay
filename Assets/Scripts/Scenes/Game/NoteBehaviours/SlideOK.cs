@@ -1,4 +1,5 @@
 ﻿using MajdataPlay.Buffers;
+using MajdataPlay.Scenes.Game.Misc.Notes;
 using MajdataPlay.Scenes.Game.Notes.Slide;
 using MajdataPlay.Utils;
 using System;
@@ -11,6 +12,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+    [NoteComponent]
     internal class SlideOK : MajComponent, IStateful<NoteStatus>
     {
         public NoteStatus State { get; private set; } = NoteStatus.Start;

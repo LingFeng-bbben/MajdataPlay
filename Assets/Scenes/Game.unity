@@ -4841,10 +4841,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce0ddcdbd25ba0c4b855fd87e6c4b99a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  IntPreUpdateElapsedMs: 0
-  IntUpdateElapsedMs: 0
-  IntFixedUpdateElapsedMs: 0
-  IntLateUpdateElapsedMs: 0
+  <PreUpdateElapsedMs>k__BackingField: 0
+  _noteListRoot: {fileID: 470916934}
 --- !u!1 &476117254
 GameObject:
   m_ObjectHideFlags: 0
@@ -5651,10 +5649,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0781b2d7d6ff9b44ab61de025154bbd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  IntPreUpdateElapsedMs: 0
-  IntUpdateElapsedMs: 0
-  IntFixedUpdateElapsedMs: 0
-  IntLateUpdateElapsedMs: 0
+  <PreUpdateElapsedMs>k__BackingField: 0
+  _noteListRoot: {fileID: 531443363}
 --- !u!1 &531542062
 GameObject:
   m_ObjectHideFlags: 0
@@ -10289,10 +10285,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 137dc4cba530eba4285efbd65d13648e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  IntPreUpdateElapsedMs: 0
-  IntUpdateElapsedMs: 0
-  IntFixedUpdateElapsedMs: 0
-  IntLateUpdateElapsedMs: 0
+  <PreUpdateElapsedMs>k__BackingField: 0
+  _noteListRoot: {fileID: 1006855706}
 --- !u!1 &1007525473
 GameObject:
   m_ObjectHideFlags: 0
@@ -12691,10 +12685,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e0f6661de20eaa448a1a8f072da1aef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  IntPreUpdateElapsedMs: 0
-  IntUpdateElapsedMs: 0
-  IntFixedUpdateElapsedMs: 0
-  IntLateUpdateElapsedMs: 0
+  <PreUpdateElapsedMs>k__BackingField: 0
+  _noteListRoot: {fileID: 1265281307}
 --- !u!1 &1266031716
 GameObject:
   m_ObjectHideFlags: 0
@@ -14000,6 +13992,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1390256244}
   - component: {fileID: 1390256245}
+  - component: {fileID: 1390256246}
   m_Layer: 0
   m_Name: SlidePool
   m_TagString: Untagged
@@ -14034,6 +14027,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d12c61ac0bf6b9e479f6395c4d5c9f13, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  <PreUpdateElapsedMs>k__BackingField: 0
+  _noteListRoot: {fileID: 1390256244}
+--- !u!114 &1390256246
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1390256243}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50c03f133e7f75744a98431737eed711, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.Scenes.Game.Notes.Controllers.NoteComponentUpdater
   IntPreUpdateElapsedMs: 0
   IntUpdateElapsedMs: 0
   IntFixedUpdateElapsedMs: 0
@@ -14636,10 +14643,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 734078c86aaf1064aaa15cfec13cda8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  IntPreUpdateElapsedMs: 0
-  IntUpdateElapsedMs: 0
-  IntFixedUpdateElapsedMs: 0
-  IntLateUpdateElapsedMs: 0
+  <PreUpdateElapsedMs>k__BackingField: 0
+  _noteListRoot: {fileID: 1469190172}
 --- !u!1 &1473406852
 GameObject:
   m_ObjectHideFlags: 0

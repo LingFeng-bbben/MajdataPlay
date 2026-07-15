@@ -246,23 +246,21 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         }
         public async UniTask InitAsync()
         {
-            await UniTask.WhenAll(
-                _tapUpdater.InitAsync(),
-                _holdUpdater.InitAsync(),
-                _slideUpdater.InitAsync(),
-                _touchUpdater.InitAsync(),
-                _touchHoldUpdater.InitAsync(),
-                _eachLineUpdater.InitAsync()
-            );
+            _tapUpdater.Init();
+            _holdUpdater.Init();
+            _slideUpdater.Init();
+            _touchUpdater.Init();
+            _touchHoldUpdater.Init();
+            _eachLineUpdater.Init();
         }
         internal void Clear()
         {
-            _tapUpdater.Clear();
-            _holdUpdater.Clear();
-            _slideUpdater.Clear();
-            _touchUpdater.Clear();
-            _touchHoldUpdater.Clear();
-            _eachLineUpdater.Clear();
+            //_tapUpdater.Clear();
+            //_holdUpdater.Clear();
+            //_slideUpdater.Clear();
+            //_touchUpdater.Clear();
+            //_touchHoldUpdater.Clear();
+            //_eachLineUpdater.Clear();
 
             Array.Fill(_btnStatusInNextFrame, SwitchStatus.Off);
             Array.Fill(_btnStatusInThisFrame, SwitchStatus.Off);

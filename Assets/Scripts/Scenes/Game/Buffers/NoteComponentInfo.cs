@@ -1,4 +1,5 @@
 ﻿using MajdataPlay.Buffers;
+using MajdataPlay.Scenes.Game.Misc.Notes;
 using MajdataPlay.Scenes.Game.Notes;
 using MajdataPlay.Scenes.Game.Notes.Behaviours;
 using System;
@@ -17,7 +18,7 @@ namespace MajdataPlay.Scenes.Game.Buffers
 {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
-    public sealed class NoteInfo: IDisposable
+    public sealed class NoteComponentInfo: IDisposable
     {
         public IStateful<NoteStatus>? Component
         {
@@ -68,7 +69,7 @@ namespace MajdataPlay.Scenes.Game.Buffers
         PlayerLoopFunction[] _rentedArrayForOnLateUpdateFunctions = Array.Empty<PlayerLoopFunction>();
 
         delegate void PlayerLoopFunction();
-        public NoteInfo(object component)
+        public NoteComponentInfo(object component)
         {
             if (component is null)
             {
@@ -84,6 +85,15 @@ namespace MajdataPlay.Scenes.Game.Buffers
             _component = component as IMajComponent;
 
             var componentType = component.GetType();
+            if(componentType.GetCustomAttribute<NoteComponentAttribute>() is null)
+            {
+                _noteObject = default;
+                IsUpdatable = false;
+                IsFixedUpdatable = false;
+                IsLateUpdatable = false;
+                _isValid = false;
+                return;
+            }
             var flags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic;
             if(!MajCache<(Type, BindingFlags), MethodInfo[]>.TryGetValue((componentType, flags),out var methods))
             {
@@ -171,7 +181,7 @@ namespace MajdataPlay.Scenes.Game.Buffers
                        !_onFixedUpdateFunctions.IsEmpty ||
                        !_onLateUpdateFunctions.IsEmpty;
         }
-        ~NoteInfo()
+        ~NoteComponentInfo()
         {
             Dispose();
         }
@@ -330,7 +340,7 @@ namespace MajdataPlay.Scenes.Game.Buffers
         {
             if (_isDisposed)
             {
-                throw new ObjectDisposedException(nameof(NoteInfo));
+                throw new ObjectDisposedException(nameof(NoteComponentInfo));
             }
         }
     }

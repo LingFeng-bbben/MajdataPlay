@@ -104,7 +104,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             _poolManager.Collect(this);
         }
         [OnLateUpdate]
-        void OnLateUpdate()
+        internal void OnLateUpdate()
         {
             using (UnityProfiler.Create("EachLineDrop.OnLateUpdate"))
             {
