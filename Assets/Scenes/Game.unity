@@ -1148,6 +1148,8 @@ MonoBehaviour:
   _chartVisualDisplayer: {fileID: 1534054608}
   _timeDisplayer: {fileID: 1614161549}
   _chartInfoDisplayer: {fileID: 1005921079}
+  _levelCircleDisplayer: {fileID: 574725000}
+  _levelBGDisplayer: {fileID: 574724999}
   _maskSpriteA: {fileID: 21300000, guid: bf8bb354d75a8554db54dfa73a69ab97, type: 3}
   _maskSpriteB: {fileID: 21300000, guid: f9d399b34042aa343be8edc8ada4b79a, type: 3}
   _bgInfoHeaderAnim: {fileID: 663044731}
@@ -6244,6 +6246,28 @@ MonoBehaviour:
 --- !u!114 &574724998 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6211650997892801305, guid: 5c0e8a2841be6774c8515036bb34a3d6, type: 3}
+  m_PrefabInstance: {fileID: 574724995}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &574724999 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2952465004624729562, guid: 5c0e8a2841be6774c8515036bb34a3d6, type: 3}
+  m_PrefabInstance: {fileID: 574724995}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &574725000 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7143032780607648450, guid: 5c0e8a2841be6774c8515036bb34a3d6, type: 3}
   m_PrefabInstance: {fileID: 574724995}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
@@ -14981,8 +15005,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -3.3}
-  m_SizeDelta: {x: 1018, y: 106.48}
+  m_AnchoredPosition: {x: -0.03, y: -3.3}
+  m_SizeDelta: {x: 981.76, y: 106.48}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1534054608
 MonoBehaviour:
