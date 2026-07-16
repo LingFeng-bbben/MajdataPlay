@@ -582,7 +582,7 @@ namespace MajdataPlay
                             else
                             {
                                 progress?.Report(1);
-                                cover = await SpriteLoader.LoadFromFileAsync(savePath, token);
+                                cover = await SpriteLoader.LoadFromFileAsync(savePath, true, token);
                             }
                             _coverRef.SetTarget(cover);
                             return cover;
@@ -613,7 +613,7 @@ namespace MajdataPlay
                         }
 
                         token.ThrowIfCancellationRequested();
-                        cover = await SpriteLoader.LoadFromFileAsync(savePath, token);
+                        cover = await SpriteLoader.LoadFromFileAsync(savePath, true, token);
 
                         _coverRef.SetTarget(cover);
                         return cover;
@@ -660,7 +660,7 @@ namespace MajdataPlay
                         else
                         {
                             progress?.Report(1);
-                            cover = await SpriteLoader.LoadFromFileAsync(savePath, token);
+                            cover = await SpriteLoader.LoadFromFileAsync(savePath, true, token);
                         }
                         _fullSizeCoverRef.SetTarget(cover);
                         return cover;
@@ -690,7 +690,7 @@ namespace MajdataPlay
                         progress?.Report(1);
                     }
                     token.ThrowIfCancellationRequested();
-                    cover = await SpriteLoader.LoadFromFileAsync(savePath, token);
+                    cover = await SpriteLoader.LoadFromFileAsync(savePath, true, token);
 
                     _fullSizeCoverRef.SetTarget(cover);
                     return cover;

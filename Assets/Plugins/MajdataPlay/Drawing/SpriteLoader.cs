@@ -11,6 +11,7 @@ using System.Security.Policy;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Unity.Collections;
 using UnityEngine;
 
 namespace MajdataPlay.Drawing
@@ -25,101 +26,117 @@ namespace MajdataPlay.Drawing
             }
         }
 
-        public static Sprite LoadFromFile(string path, bool markNonReadable = true)
+        public static Sprite LoadFromFile(string filePath, bool markNonReadable = true)
         {
-            if (!File.Exists(path))
+            return LoadFromFileWithBorder(filePath, Vector4.zero, markNonReadable);
+        }
+        public static Sprite LoadFromFileWithBorder(string filePath, Vector4 border, bool markNonReadable = true)
+        {
+            var fileInfo = new FileInfo(filePath);
+            if (!fileInfo.Exists)
             {
                 return Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
             }
             try
             {
-                var bytes = File.ReadAllBytes(path);
-                var texture = Decode(bytes);
+                using var buffer = new NativeArray<byte>((int)fileInfo.Length, Allocator.Temp);
+                using var fileStream = fileInfo.OpenRead();
+                fileStream.Read(buffer.AsSpan());
 
-                return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+                return LoadFromMemoryWithBorder(buffer.AsReadOnlySpan(), border, markNonReadable);
             }
             catch (Exception e)
             {
-                Debug.LogError($"Failed to load sprite from path: {path}\nException: {e}");
+                Debug.LogError($"Failed to load sprite from file: {filePath}\nException: {e}");
                 return Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
             }
         }
-        public static Sprite LoadFromFileWithBorder(string path, Vector4 border, bool markNonReadable = true)
+        public static Sprite LoadFromMemory(ReadOnlySpan<byte> data, bool markNonReadable = true)
         {
-            if (!File.Exists(path))
-            {
-                return Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
-            }
+            return LoadFromMemoryWithBorder(data, Vector4.zero, markNonReadable);
+        }
+        public static Sprite LoadFromMemoryWithBorder(ReadOnlySpan<byte> data, Vector4 border, bool markNonReadable = true)
+        {
             try
             {
-                var bytes = File.ReadAllBytes(path);
-                var texture = new Texture2D(0, 0);
-                texture.LoadImage(bytes, markNonReadable);
+                var texture = Decode(data, markNonReadable);
+
                 return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), 100, 1,
                     SpriteMeshType.FullRect, border);
             }
             catch (Exception e)
             {
-                Debug.LogError($"Failed to load sprite from path: {path}\nException: {e}");
+                Debug.LogError($"Failed to load sprite from memory\nException: {e}");
                 return Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
             }
         }
 
 
-        public static async Task<Sprite> LoadFromFileAsync(string path, CancellationToken ct = default)
+        public static Task<Sprite> LoadFromFileAsync(string filePath, bool markNonReadable = true, CancellationToken token = default)
         {
+            return LoadFromFileWithBorderAsync(filePath, Vector4.zero, markNonReadable, token);
+        }
+        public static async Task<Sprite> LoadFromFileWithBorderAsync(string filePath, 
+                                                                     Vector4 border, 
+                                                                     bool markNonReadable = true, 
+                                                                     CancellationToken token = default)
+        {
+            var fileInfo = new FileInfo(filePath);
+            if (!fileInfo.Exists)
+            {
+                return Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
+            }
             try
             {
-                await UniTask.SwitchToThreadPool();
-                if (!File.Exists(path))
-                {
-                    await UniTask.SwitchToMainThread();
-                    return Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
-                }
-                var bytes = await File.ReadAllBytesAsync(path, ct);
-                ct.ThrowIfCancellationRequested();
-                var texture = await DecodeAsync(bytes);
-                await UniTask.SwitchToMainThread();
-                texture.filterMode = FilterMode.Trilinear;
-                return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+                //using var buffer = new NativeArray<byte>((int)fileInfo.Length, Allocator.Temp);
+                var buffer = new byte[(int)fileInfo.Length];
+                using var fileStream = fileInfo.OpenRead();
+
+                await fileStream.ReadAsync(buffer, token);
+
+                return await LoadFromMemoryWithBorderAsync(buffer, border, markNonReadable, token);
             }
             catch (Exception e)
             {
-                await UniTask.SwitchToMainThread();
-                Debug.LogError($"Failed to load sprite from path: {path}\nException: {e}");
+                Debug.LogError($"Failed to load sprite from file: {filePath}\nException: {e}");
                 return Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
             }
         }
-        public static async Task<Sprite> LoadFromMemoryAsync(ReadOnlyMemory<byte> buffer, CancellationToken ct = default)
+        public static Task<Sprite> LoadFromMemoryAsync(ReadOnlyMemory<byte> buffer, 
+                                                       bool markNonReadable = true, 
+                                                       CancellationToken token = default)
+        {
+            return LoadFromMemoryWithBorderAsync(buffer, Vector4.zero, markNonReadable, token);
+        }
+        public static async Task<Sprite> LoadFromMemoryWithBorderAsync(ReadOnlyMemory<byte> dataMemory, 
+                                                                       Vector4 border, 
+                                                                       bool markNonReadable = true, 
+                                                                       CancellationToken token = default)
         {
             try
             {
-                await UniTask.SwitchToThreadPool();
-                ct.ThrowIfCancellationRequested();
-                var texture = await DecodeAsync(buffer);
-                await UniTask.SwitchToMainThread();
-                texture.filterMode = FilterMode.Trilinear;
-                return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+                var texture = await DecodeAsync(dataMemory, markNonReadable);
+
+                return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), 100, 1,
+                    SpriteMeshType.FullRect, border);
             }
             catch (Exception e)
             {
-                await UniTask.SwitchToMainThread();
-                Debug.LogError($"Failed to load sprite from memory\nException: {e}");                
+                Debug.LogError($"Failed to load sprite from memory\nException: {e}");
                 return Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
             }
         }
 
-        
 
 
 
 
-        async static Task<Texture2D> DecodeAsync(ReadOnlyMemory<byte> data, bool markNonReadable)
+        async static Task<Texture2D> DecodeAsync(ReadOnlyMemory<byte> dataMemory, bool markNonReadable)
         {
             await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
                 await UniTask.SwitchToThreadPool();
-                var bitmap = SKBitmap.Decode(data.Span);
+                var bitmap = SKBitmap.Decode(dataMemory.Span);
 
                 await UniTask.SwitchToMainThread();
                 var texture = bitmap.ToTexture2D(markNonReadable);
