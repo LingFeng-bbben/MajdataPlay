@@ -146,7 +146,7 @@ namespace MajdataPlay.Utils
 
                 if(barInfo.Tap != 0)
                 {
-                    Mathf.Max(tapBarHeight, MinBarHeight);
+                    tapBarHeight = Mathf.Max(tapBarHeight, MinBarHeight);
                 }
                 else
                 {
@@ -155,7 +155,7 @@ namespace MajdataPlay.Utils
 
                 if (barInfo.Touch != 0)
                 {
-                    Mathf.Max(touchBarHeight, MinBarHeight);
+                    tapBarHeight = Mathf.Max(touchBarHeight, MinBarHeight);
                 }
                 else
                 {
@@ -164,7 +164,7 @@ namespace MajdataPlay.Utils
 
                 if (barInfo.Slide != 0)
                 {
-                    Mathf.Max(slideBarHeight, MinBarHeight);
+                    tapBarHeight = Mathf.Max(slideBarHeight, MinBarHeight);
                 }
                 else
                 {
