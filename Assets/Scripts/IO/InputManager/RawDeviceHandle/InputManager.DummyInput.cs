@@ -26,6 +26,13 @@ namespace MajdataPlay.IO
         public const int TOUCH_ANGLE_SMAPLE_COUNT = 128;
         public const float FINGER_RADIUS_SEGMENT_LENGTH = 0.5f / 4;
 
+        public static float? Override_TouchSimulationRadius { get; set; }
+        public static float? Override_TouchAAreaExtraRadius { get; set; }
+        public static float? Override_TouchBAreaExtraRadius { get; set; }
+        public static float? Override_TouchCAreaExtraRadius { get; set; }
+        public static float? Override_TouchDAreaExtraRadius { get; set; }
+        public static float? Override_TouchEAreaExtraRadius { get; set; }
+
         // uint64 TouchPosData
         //
         // Button bit (12bit)

@@ -81,6 +81,13 @@ namespace MajdataPlay.Scenes.List
 
         void Awake()
         {
+            InputManager.Override_TouchSimulationRadius = 0.1f;
+            InputManager.Override_TouchAAreaExtraRadius = 0f;
+            InputManager.Override_TouchBAreaExtraRadius = 0f;
+            InputManager.Override_TouchCAreaExtraRadius = 0f;
+            InputManager.Override_TouchDAreaExtraRadius = 0f;
+            InputManager.Override_TouchEAreaExtraRadius = 0f;
+
             Majdata<ListManager>.Instance = this;
             InputManager.TouchButtonRingEdge = 4.8f;
             if (AllBackgroundTasks.Count > 4096)
@@ -179,6 +186,14 @@ namespace MajdataPlay.Scenes.List
         {
             _isExited = true;
             _cts.Cancel();
+
+            InputManager.Override_TouchSimulationRadius = default;
+            InputManager.Override_TouchAAreaExtraRadius = default;
+            InputManager.Override_TouchBAreaExtraRadius = default;
+            InputManager.Override_TouchCAreaExtraRadius = default;
+            InputManager.Override_TouchDAreaExtraRadius = default;
+            InputManager.Override_TouchEAreaExtraRadius = default;
+
             InputManager.TouchButtonRingEdge = 5.4f;
             InputManager.UnbindAnyArea(OnAnyInput);
             Majdata<ListManager>.Free();
@@ -255,7 +270,9 @@ namespace MajdataPlay.Scenes.List
             }
             if (_quickSlideRemaining == 0)
             {
-                SensorCheck();
+                var areaIgnoreList = (stackalloc bool[33]);
+                _quickSlideJudge.GenerateIgnoreAreaList(areaIgnoreList);
+                SensorCheck(areaIgnoreList);
                 ButtonCheck();
                 _inactiveTimeSec += MajTimeline.UnscaledDeltaTime;
                 if (_isOnlineEnabled && TimeSpan.FromSeconds(_inactiveTimeSec) > TimeSpan.FromMinutes(MAX_ALLOWED_INACTIVE_TIME_MIN))
@@ -269,24 +286,22 @@ namespace MajdataPlay.Scenes.List
         {
             _inactiveTimeSec = 0;
         }
-        void SensorCheck()
+        void SensorCheck(ReadOnlySpan<bool> areaIgnoreList)
         {
             if (_isExited || !_isInited)
             {
                 return;
             }
 
-            if (InputManager.IsSensorClickedInThisFrame(SensorArea.C))
-            {
-                //TODO: _coverListDisplayer.RandomSelect();
-            }
             if (InputManager.IsSensorClickedInThisFrame(SensorArea.B8))
             {
                 _collectionListManager.PreviousCollection();
+                return;
             }
             else if(InputManager.IsSensorClickedInThisFrame(SensorArea.B1))
             {
                 _collectionListManager.NextCollection();
+                return;
             }
 
             if (InputManager.IsSensorClickedInThisFrame_OR(SensorArea.D5, SensorArea.E5))
@@ -304,9 +319,13 @@ namespace MajdataPlay.Scenes.List
                 MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
                 XxlbAnimation.instance.PlayTouchAnimation();
             }
-            if (InputManager.IsSensorClickedInThisFrame(SensorArea.B2))
+            if (InputManager.IsSensorClickedInThisFrame(SensorArea.B2) && !areaIgnoreList[(int)SensorArea.B2])
             {
                 _favoriteAdder.FavoratePressed();
+            }
+            if (InputManager.IsSensorClickedInThisFrame(SensorArea.C) && !areaIgnoreList[(int)SensorArea.C])
+            {
+                //TODO: _coverListDisplayer.RandomSelect();
             }
         }
         void ButtonStatisticsUpdate()
@@ -765,7 +784,7 @@ namespace MajdataPlay.Scenes.List
                 for (var i = 0; i < _leftPathList.Length; i++)
                 {
                     ref var path = ref _leftPathList[i];
-                    if(IsLeftMatch)
+                    if(IsLeftMatch || IsRightMatch)
                     {
                         path.Reset();
                     }
@@ -778,7 +797,7 @@ namespace MajdataPlay.Scenes.List
                 for (var i = 0; i < _rightPathList.Length; i++)
                 {
                     ref var path = ref _rightPathList[i];
-                    if(IsRightMatch)
+                    if(IsLeftMatch || IsRightMatch)
                     {
                         path.Reset();
                     }
@@ -787,6 +806,23 @@ namespace MajdataPlay.Scenes.List
                         path.OnUpdate();
                         IsRightMatch |= path.IsMatch;
                     }                        
+                }
+            }
+            public void GenerateIgnoreAreaList(Span<bool> areaList)
+            {
+                for (var i = 0; i < 33; i++)
+                {
+                    var area = (SensorArea)i;
+                    for (var x = 0; x < _leftPathList.Length; x++)
+                    {
+                        var path = _leftPathList[x];
+                        areaList[i] |= path.IsShouldBeIgnored(area);
+                    }
+                    for (var x = 0; x < _rightPathList.Length; x++)
+                    {
+                        var path = _rightPathList[x];
+                        areaList[i] |= path.IsShouldBeIgnored(area);
+                    }
                 }
             }
 
@@ -823,7 +859,7 @@ namespace MajdataPlay.Scenes.List
                     var currentTimestamp = MajTimeline.UnscaledTime;
                     if (_state == 0)
                     {
-                        if (InputManager.CheckSensorStatusInThisFrame(_headArea, SwitchStatus.On))
+                        if (InputManager.IsSensorClickedInThisFrame(_headArea))
                         {
                             _state = 1;
                             _detectStartAt = currentTimestamp;
@@ -840,7 +876,7 @@ namespace MajdataPlay.Scenes.List
                     }
                     if((_state & (1 << 1)) == 0)
                     {
-                        if (InputManager.CheckSensorStatusInThisFrame(_area2, SwitchStatus.On))
+                        if (InputManager.IsSensorClickedInThisFrame(_area2))
                         {
                             _state |= 1 << 1;
                         }
@@ -857,7 +893,7 @@ namespace MajdataPlay.Scenes.List
                         allFinished |= mask;
                         if ((_state & mask) == 0)
                         {
-                            if (InputManager.CheckSensorStatusInThisFrame(area, SwitchStatus.On))
+                            if (InputManager.IsSensorClickedInThisFrame(area))
                             {
                                 _state |= mask;
                             }
@@ -877,6 +913,32 @@ namespace MajdataPlay.Scenes.List
                     IsMatch = false;
                     _state = 0;
                     _detectStartAt = TimeSpan.Zero;
+                }
+                public bool IsShouldBeIgnored(SensorArea area)
+                {
+                    if(_state == 0)
+                    {
+                        return false;
+                    }
+                    if(area == _headArea)
+                    {
+                        return true;
+                    }
+                    else if(area == _area2 && ((_state & (1 << 1)) != 0))
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        for (var i = 0; i < _tailAreaList.Length; i++)
+                        {
+                            if(area == _tailAreaList[i] && ((_state & (1 << (i + 2))) != 0))
+                            {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
                 }
             }
         }

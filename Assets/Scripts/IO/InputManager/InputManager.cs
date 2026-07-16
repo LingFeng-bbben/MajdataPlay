@@ -439,13 +439,13 @@ namespace MajdataPlay.IO
                 var displayOptions = MajEnv.Settings.Display;
                 var height = Screen.height;
                 var width = Screen.width;
-                var fingerRad = FingerRadius;
+                var fingerRad = Override_TouchSimulationRadius ?? FingerRadius;
                 var touchRadiusAdjust = debugOptions.TouchRadiusAdjust;
-                var aExtraRad = debugOptions.TouchAAreaExtraRadius;
-                var bExtraRad = debugOptions.TouchBAreaExtraRadius;
-                var cExtraRad = debugOptions.TouchCAreaExtraRadius;
-                var dExtraRad = debugOptions.TouchDAreaExtraRadius;
-                var eExtraRad = debugOptions.TouchEAreaExtraRadius;
+                var aExtraRad = Override_TouchAAreaExtraRadius ?? debugOptions.TouchAAreaExtraRadius;
+                var bExtraRad = Override_TouchBAreaExtraRadius ?? debugOptions.TouchBAreaExtraRadius;
+                var cExtraRad = Override_TouchCAreaExtraRadius ?? debugOptions.TouchCAreaExtraRadius;
+                var dExtraRad = Override_TouchDAreaExtraRadius ?? debugOptions.TouchDAreaExtraRadius;
+                var eExtraRad = Override_TouchEAreaExtraRadius ?? debugOptions.TouchEAreaExtraRadius;
                 var mainScreenTransform = displayOptions.MainScreenTransform;
                 var mainScreenOffset = displayOptions.MainScreenOffset;
 
