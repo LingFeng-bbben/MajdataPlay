@@ -10,6 +10,7 @@ using UnityEngine.UI;
 namespace MajdataPlay.UI
 {
     [RequireComponent(typeof(RawImage))]
+    [ExecuteAlways]
     public class RawImageCircleMaskUpdater : MonoBehaviour
     {
         [SerializeField]
