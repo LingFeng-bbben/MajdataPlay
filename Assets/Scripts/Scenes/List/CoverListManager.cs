@@ -81,6 +81,7 @@ namespace MajdataPlay.Scenes.List
 
         MotionHandle _scrollMotion;
 
+        readonly RentedList<ISongDetail> _songDetails = new();
         readonly RentedList<SongCoverBinding> _songCoverBindings = new();
         readonly RentedList<SongThumbnailBinding> _songThumbnailBindings = new();
 
@@ -178,6 +179,7 @@ namespace MajdataPlay.Scenes.List
                     {
                         SongDetail = songDetail
                     };
+                    _songDetails.Add(songDetail);
                     _songCoverBindings.Add(coverBinding);
                     _songThumbnailBindings.Add(thumbnailBinding);
                 }
@@ -257,7 +259,7 @@ namespace MajdataPlay.Scenes.List
 
             
             var shouldUpdateDisplayer = _listDesiredPos != oldDesiredPos || forceUpdate;
-            SelectedSong = _currentCollection[_listDesiredPos];
+            SelectedSong = _songDetails[_listDesiredPos];
             _progressDisplayer.text = $"{_listDesiredPos + 1}/<size=70%>{_songCount}";
             if(disableAnimation)
             {
@@ -309,6 +311,7 @@ namespace MajdataPlay.Scenes.List
                 }
             }
             _songCount = 0;
+            _songDetails.Clear();
             _songCoverBindings.Clear();
             _songThumbnailBindings.Clear();
         }
