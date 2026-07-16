@@ -792,7 +792,7 @@ namespace MajdataPlay.Net
                     {
                         statistic.IsUserLoggedIn = true;
                     }
-                    var avatar = await SpriteLoader.LoadAsync(rsp.AsMemory());
+                    var avatar = await SpriteLoader.LoadFromMemoryAsync(rsp.AsMemory());
                     return avatar;
                 }
                 catch (Exception e)

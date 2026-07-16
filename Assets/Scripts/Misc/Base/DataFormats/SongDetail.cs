@@ -170,7 +170,7 @@ namespace MajdataPlay
                         return cover;
                     }
                     progress?.Report(1);
-                    cover = await SpriteLoader.LoadAsync(_coverPath, token);
+                    cover = await SpriteLoader.LoadFromFileAsync(_coverPath, token);
                     _coverRef.SetTarget(cover);
                     return cover;
                 }

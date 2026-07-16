@@ -323,7 +323,7 @@ namespace MajdataPlay.Scenes.View
                 var sample = await MajInstances.AudioManager.LoadMusicAsync(audioPath, true, true);
                 if (File.Exists(bgPath))
                 {
-                    var cover = await SpriteLoader.LoadAsync(bgPath);
+                    var cover = await SpriteLoader.LoadFromFileAsync(bgPath);
                     _bgCover = cover;
                 }
                 else

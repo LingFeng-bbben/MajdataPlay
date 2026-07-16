@@ -53,6 +53,7 @@ namespace MajdataPlay.Drawing
             );
 
             texture.wrapMode = TextureWrapMode.Clamp;
+            texture.filterMode = FilterMode.Trilinear;
             int mipCount = texture.mipmapCount;
 
             // 1) 计算所有 mip 层总字节数

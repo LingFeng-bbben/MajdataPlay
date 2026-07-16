@@ -26,7 +26,7 @@ namespace MajdataPlay.Drawing
         }
 
         //readonly static Sprite _emptySprite = Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
-        public static Sprite Load(string path, bool markNonReadable = true)
+        public static Sprite LoadFromFile(string path, bool markNonReadable = true)
         {
             if (!File.Exists(path))
             {
@@ -35,9 +35,8 @@ namespace MajdataPlay.Drawing
             try
             {
                 var bytes = File.ReadAllBytes(path);
-                var texture = new Texture2D(0, 0);
-                texture.LoadImage(bytes, markNonReadable);
-                texture.filterMode = FilterMode.Trilinear;
+                var texture = Decode(bytes);
+
                 return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
             }
             catch (Exception e)
@@ -47,50 +46,7 @@ namespace MajdataPlay.Drawing
             }
         }
 
-        public static async Task<Sprite> LoadAsync(string path, CancellationToken ct = default)
-        {
-            try
-            {
-                await UniTask.SwitchToThreadPool();
-                if (!File.Exists(path))
-                {
-                    await UniTask.SwitchToMainThread();
-                    return Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
-                }
-                var bytes = await File.ReadAllBytesAsync(path, ct);
-                ct.ThrowIfCancellationRequested();
-                var texture = await ImageDecodeAsync(bytes);
-                await UniTask.SwitchToMainThread();
-                texture.filterMode = FilterMode.Trilinear;
-                return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
-            }
-            catch (Exception e)
-            {
-                await UniTask.SwitchToMainThread();
-                Debug.LogError($"Failed to load sprite from path: {path}\nException: {e}");
-                return Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
-            }
-        }
-        public static async Task<Sprite> LoadAsync(ReadOnlyMemory<byte> buffer, CancellationToken ct = default)
-        {
-            try
-            {
-                await UniTask.SwitchToThreadPool();
-                ct.ThrowIfCancellationRequested();
-                var texture = await ImageDecodeAsync(buffer);
-                await UniTask.SwitchToMainThread();
-                texture.filterMode = FilterMode.Trilinear;
-                return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
-            }
-            catch (Exception e)
-            {
-                await UniTask.SwitchToMainThread();
-                Debug.LogError($"Failed to load sprite from memory\nException: {e}");                
-                return Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
-            }
-        }
-
-        public static Sprite Load(string path, Vector4 border, bool markNonReadable = true)
+        public static Sprite LoadFromFileWithBorder(string path, Vector4 border, bool markNonReadable = true)
         {
             if (!File.Exists(path))
             {
@@ -111,7 +67,55 @@ namespace MajdataPlay.Drawing
                 return Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
             }
         }
-        async static UniTask<Texture2D> ImageDecodeAsync(ReadOnlyMemory<byte> data)
+        public static async Task<Sprite> LoadFromFileAsync(string path, CancellationToken ct = default)
+        {
+            try
+            {
+                await UniTask.SwitchToThreadPool();
+                if (!File.Exists(path))
+                {
+                    await UniTask.SwitchToMainThread();
+                    return Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
+                }
+                var bytes = await File.ReadAllBytesAsync(path, ct);
+                ct.ThrowIfCancellationRequested();
+                var texture = await DecodeAsync(bytes);
+                await UniTask.SwitchToMainThread();
+                texture.filterMode = FilterMode.Trilinear;
+                return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+            }
+            catch (Exception e)
+            {
+                await UniTask.SwitchToMainThread();
+                Debug.LogError($"Failed to load sprite from path: {path}\nException: {e}");
+                return Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
+            }
+        }
+        public static async Task<Sprite> LoadFromMemoryAsync(ReadOnlyMemory<byte> buffer, CancellationToken ct = default)
+        {
+            try
+            {
+                await UniTask.SwitchToThreadPool();
+                ct.ThrowIfCancellationRequested();
+                var texture = await DecodeAsync(buffer);
+                await UniTask.SwitchToMainThread();
+                texture.filterMode = FilterMode.Trilinear;
+                return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+            }
+            catch (Exception e)
+            {
+                await UniTask.SwitchToMainThread();
+                Debug.LogError($"Failed to load sprite from memory\nException: {e}");                
+                return Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
+            }
+        }
+
+        
+
+
+
+
+        async static Task<Texture2D> DecodeAsync(ReadOnlyMemory<byte> data)
         {
             await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
@@ -120,9 +124,14 @@ namespace MajdataPlay.Drawing
 
                 await UniTask.SwitchToMainThread();
                 var texture = bitmap.ToTexture2D();
-                texture.filterMode = FilterMode.Trilinear;
                 return texture;
             }
+        }
+        static Texture2D Decode(ReadOnlySpan<byte> data)
+        {
+            var bitmap = SKBitmap.Decode(data);
+            
+            return bitmap.ToTexture2D();
         }
     }
 }
