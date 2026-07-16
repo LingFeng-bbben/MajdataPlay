@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using MajdataPlay.Buffers;
 using MajdataPlay.Drawing;
 using SkiaSharp;
 using SkiaSharp.Unity;
@@ -89,13 +90,15 @@ namespace MajdataPlay.Drawing
             }
             try
             {
-                //using var buffer = new NativeArray<byte>((int)fileInfo.Length, Allocator.Temp);
-                var buffer = new byte[(int)fileInfo.Length];
+                
+                var length = (int)fileInfo.Length;
+                using var buffer = new NativeArray<byte>(length, Allocator.Persistent);
+                var bufferMemory = buffer.AsMemory();
                 using var fileStream = fileInfo.OpenRead();
 
-                await fileStream.ReadAsync(buffer, token);
+                await fileStream.ReadAsync(bufferMemory, token);
 
-                return await LoadFromMemoryWithBorderAsync(buffer, border, markNonReadable, token);
+                return await LoadFromMemoryWithBorderAsync(bufferMemory, border, markNonReadable, token);
             }
             catch (Exception e)
             {
