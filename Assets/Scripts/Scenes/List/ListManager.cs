@@ -129,6 +129,11 @@ namespace MajdataPlay.Scenes.List
                 }
             }
             _isOnlineEnabled = MajEnv.Settings.Online.Enable;
+
+
+            _favoriteAdder.PressToAddTime = 0;
+            _favoriteAdder.PressToRemoveTime = 0.5f;
+
             InputManager.BindAnyArea(OnAnyInput);
         }
         void Start()
@@ -319,9 +324,17 @@ namespace MajdataPlay.Scenes.List
                 MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
                 XxlbAnimation.instance.PlayTouchAnimation();
             }
-            if (InputManager.IsSensorClickedInThisFrame(SensorArea.B2) && !areaIgnoreList[(int)SensorArea.B2])
+            if (areaIgnoreList[(int)SensorArea.B2])
             {
-                _favoriteAdder.FavoratePressed();
+                _favoriteAdder.SetState(false);
+            }
+            else if (!_favoriteAdder.State && InputManager.IsSensorClickedInThisFrame(SensorArea.B2))
+            {
+                _favoriteAdder.SetState(true);
+            }
+            else if (_favoriteAdder.State && InputManager.CheckSensorStatus(SensorArea.B2, SwitchStatus.Off))
+            {
+                _favoriteAdder.SetState(false);
             }
             if (InputManager.IsSensorClickedInThisFrame(SensorArea.C) && !areaIgnoreList[(int)SensorArea.C])
             {
@@ -838,7 +851,7 @@ namespace MajdataPlay.Scenes.List
                 readonly SensorArea[] _tailAreaList;
                 readonly TimeSpan _timeout;
                 public Path(SensorArea headArea, SensorArea area2, SensorArea[] tailAreaList) 
-                    : this(headArea, area2, tailAreaList, TimeSpan.FromMilliseconds(300))
+                    : this(headArea, area2, tailAreaList, TimeSpan.FromMilliseconds(100))
                 {
 
                 }
@@ -916,15 +929,11 @@ namespace MajdataPlay.Scenes.List
                 }
                 public bool IsShouldBeIgnored(SensorArea area)
                 {
-                    if(_state == 0)
+                    if((_state & (1 << 1)) == 0)
                     {
                         return false;
                     }
-                    if(area == _headArea)
-                    {
-                        return true;
-                    }
-                    else if(area == _area2 && ((_state & (1 << 1)) != 0))
+                    if(area == _area2 || area == _headArea)
                     {
                         return true;
                     }

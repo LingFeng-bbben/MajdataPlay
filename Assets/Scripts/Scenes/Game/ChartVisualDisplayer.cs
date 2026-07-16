@@ -12,7 +12,6 @@ using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Drawing;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -39,7 +38,9 @@ namespace MajdataPlay.Scenes.Game
 
         RawImage _rawImage;
         RectTransform _rectTransform;
-        static Texture2D? _emptyTexture;
+
+
+        Texture2D _emptyTexture;
 
 #if UNITY_ANDROID || UNITY_IOS
         const int MAX_CACHE_COUNT = 8;
@@ -67,10 +68,9 @@ namespace MajdataPlay.Scenes.Game
             }
             _rawImage = GetComponent<RawImage>();
             _rectTransform = GetComponent<RectTransform>();
-            if(_emptyTexture is null)
-            {
-                _emptyTexture = new Texture2D(0, 0);
-            }
+            _emptyTexture = new Texture2D(1, 1, TextureFormat.ARGB32, false);
+            _emptyTexture.SetPixel(0, 0, Color.white);
+            _emptyTexture.Apply();
         }
         void OnDestroy()
         {
@@ -215,21 +215,21 @@ namespace MajdataPlay.Scenes.Game
             _errorIcon?.SetActive(false);
             _helpIcon?.SetActive(false);
             _loadingPrefab?.SetActive(true);
-            _rawImage.texture = _emptyTexture!;
+            _rawImage.texture = _emptyTexture;
         }
         void SetHelp()
         {
             _errorIcon?.SetActive(false);
             _helpIcon?.SetActive(true);
             _loadingPrefab?.SetActive(false);
-            _rawImage.texture = _emptyTexture!;
+            _rawImage.texture = _emptyTexture;
         }
         void SetError()
         {
             _errorIcon?.SetActive(true);
             _helpIcon?.SetActive(false);
             _loadingPrefab?.SetActive(false);
-            _rawImage.texture = _emptyTexture!;
+            _rawImage.texture = _emptyTexture;
         }
         void SetTexture(Texture texture)
         {
