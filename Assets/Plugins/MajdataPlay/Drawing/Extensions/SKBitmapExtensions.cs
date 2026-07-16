@@ -35,15 +35,18 @@ namespace MajdataPlay.Drawing
                 width,
                 height,
                 SKColorType.Rgba8888,
-                SKAlphaType.Premul
+                SKAlphaType.Unpremul
             );
 
             if (!converted.TryAllocPixels(info))
             {
                 throw new Exception("Failed to allocate SKBitmap.");
             }
+            using var srcPixmap = bitmap.PeekPixels();
+            using var dstPixmap = converted.PeekPixels();
 
-            bitmap.CopyTo(converted, SKColorType.Rgba8888);
+            srcPixmap.ReadPixels(dstPixmap);
+            //bitmap.CopyTo(converted, SKColorType.Rgba8888);
 
             var texture = new Texture2D(
                 width,
