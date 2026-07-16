@@ -26,6 +26,7 @@ namespace MajdataPlay.Scenes.Result
 {
     public partial class ResultScreenManager : MonoBehaviour
     {
+        public bool IsDebug;
         public TextMeshProUGUI title;
         public TextMeshProUGUI artist;
         public TextMeshProUGUI designer;
@@ -48,6 +49,7 @@ namespace MajdataPlay.Scenes.Result
 
         public TextMeshProUGUI omg;
         public ResultsSubDisplayManager subMonitorManager;
+        public Color critColor;
         public Color perfectColor;
         public Color greatColor;
         public Color goodColor;
@@ -95,6 +97,30 @@ namespace MajdataPlay.Scenes.Result
         }
         void Start()
         {
+            if (IsDebug)
+            {
+                var rect1 = _noteJudgeDiffGraph.GetComponent<RectTransform>().rect;
+                var width = (int)rect1.width;
+                var height = (int)rect1.height;
+
+
+                // 生成随机样本用于测试
+                const int sampleCount = 1000; // 可调整样本数量
+                var arr = new float[sampleCount];
+                var rng = new System.Random();
+                for (int i = 0; i < sampleCount; i++)
+                {
+                    // 在 -150 .. 150 范围内生成随机浮点数
+                    arr[i] = (float)(rng.NextDouble() * 300.0 - 150.0);
+                }
+                var testSpan = new ReadOnlySpan<float>(arr);
+                
+
+                _noteJudgeDiffGraph.texture = DrawNoteJudgeDiffGraph(testSpan, height, width);
+                return;
+            }
+
+
             rank.text = "";
             var listConfig = MajEnv.RuntimeConfig.List;
             var result = _gameInfo.GetLastResult();
@@ -363,155 +389,179 @@ namespace MajdataPlay.Scenes.Result
             DestroyImmediate(_noteJudgeDiffGraph.texture, true);
         }
         Texture DrawNoteJudgeDiffGraph(ReadOnlySpan<float> dataset,
-                                       int height,
-                                       int width)
+                               int height,
+                               int width)
         {
-            const float SAMPLE_DIFF_STEP = 1.6667f / 2;
-            const int CHART_PADDING_LEFT = 20;
-            const int CHART_PADDING_RIGHT = 20;
+            const float DIFF_MIN = -150f;
+            const float DIFF_MAX = 150f;
+            const float DIFF_RANGE = DIFF_MAX - DIFF_MIN;
+
+            const int CHART_PADDING_LEFT = 0;
+            const int CHART_PADDING_RIGHT = 0;
             const int CHART_PADDING_TOP = 0;
-            const int CHART_PADDING_BOTTOM = 5;
+            const int CHART_PADDING_BOTTOM = 0;
+
+            const int BAR_COUNT = 72; 
 
             var chartWidth = width - CHART_PADDING_LEFT - CHART_PADDING_RIGHT;
             var chartHeight = height - CHART_PADDING_TOP - CHART_PADDING_BOTTOM;
 
             var imageInfo = new SKImageInfo(width, height);
-            Span<Point> points = stackalloc Point[180];
+            Span<Point> points = stackalloc Point[BAR_COUNT];
             var maxSampleCount = 0;
-            var textFont = new SKFont(SKTypeface.Default);
             using var surface = SKSurface.Create(imageInfo);
+            using var critPaint = new SKPaint();
             using var perfectPaint = new SKPaint();
             using var greatPaint = new SKPaint();
             using var goodPaint = new SKPaint();
-            using var linePaint = new SKPaint();
-            using var textPaint = new SKPaint();
-            using var perfectPath = new SKPath();
-            using var greatPath = new SKPath();
-            using var goodPath = new SKPath();
+            using var emptyPaint = new SKPaint();
+            //using var linePaint = new SKPaint();
+            //using var midLinePaint = new SKPaint();
             var canvas = surface.Canvas;
 
             canvas.Clear(SKColor.Empty);
+
+            critPaint.Color = critColor.ToSkColor();
+            critPaint.IsAntialias = true;
+            critPaint.Style = SKPaintStyle.Fill;
+
             perfectPaint.Color = perfectColor.ToSkColor();
             perfectPaint.IsAntialias = true;
             perfectPaint.Style = SKPaintStyle.Fill;
+
             greatPaint.Color = greatColor.ToSkColor();
             greatPaint.IsAntialias = true;
             greatPaint.Style = SKPaintStyle.Fill;
+
             goodPaint.Color = goodColor.ToSkColor();
             goodPaint.IsAntialias = true;
             goodPaint.Style = SKPaintStyle.Fill;
-            linePaint.Color = SKColors.White;
-            linePaint.IsAntialias = true;
-            linePaint.Style = SKPaintStyle.Fill;
-            linePaint.StrokeWidth = 1f;
-            textPaint.Color = SKColors.White;
-            textPaint.IsAntialias = true;
-            textPaint.Style = SKPaintStyle.Fill;
-            textPaint.StrokeWidth = 4f;
-            textFont.Size = 20;
 
-            for (float sampleDiff = -150f, i = 0; sampleDiff <= 150f; sampleDiff += SAMPLE_DIFF_STEP * 2, i++)
+            emptyPaint.Color = SKColors.Transparent;
+            emptyPaint.IsAntialias = true;
+            emptyPaint.Style = SKPaintStyle.Fill;
+
+            //linePaint.Color = SKColors.White.WithAlpha(180);
+            //linePaint.IsAntialias = true;
+            //linePaint.Style = SKPaintStyle.Stroke;
+            //linePaint.StrokeWidth = 1f;
+
+            //midLinePaint.Color = SKColors.Red.WithAlpha(180);
+            //midLinePaint.IsAntialias = true;
+            //midLinePaint.Style = SKPaintStyle.Stroke;
+            //midLinePaint.StrokeWidth = 2f;
+
+            // 计算每个 bin 的区间
+            var binWidthDiff = DIFF_RANGE / (float)BAR_COUNT; // 每个 bin 覆盖的 diff 范围
+            for (int i = 0; i < BAR_COUNT; i++)
             {
-                var range = new Range<float>(sampleDiff - SAMPLE_DIFF_STEP, sampleDiff + SAMPLE_DIFF_STEP, ContainsType.Closed);
+                var binCenter = DIFF_MIN + (i + 0.5f) * binWidthDiff;
+                var binStart = DIFF_MIN + i * binWidthDiff;
+                var binEnd = binStart + binWidthDiff;
+                var range = new Range<float>(binStart, binEnd, ContainsType.Closed);
                 var samples = dataset.FindAll(x => range.InRange(x));
                 var sampleCount = samples.Length;
-                var x = (sampleDiff + 150f) / 300f;
-                var y = sampleCount;
 
-                if (y > maxSampleCount)
-                {
-                    maxSampleCount = y;
-                }
+                if (sampleCount > maxSampleCount) maxSampleCount = sampleCount;
 
-                points[(int)i] = new Point()
+                points[i] = new Point()
                 {
-                    X = x,
-                    Y = y,
-                    Diff = sampleDiff,
+                    X = binCenter, // 存储中心 diff 以便后续判断颜色
+                    Y = sampleCount,
+                    Diff = binCenter,
                     IsEmpty = samples.IsEmpty
                 };
             }
-            perfectPath.MoveTo(CHART_PADDING_LEFT, chartHeight);
-            greatPath.MoveTo(CHART_PADDING_LEFT, chartHeight);
-            goodPath.MoveTo(CHART_PADDING_LEFT, chartHeight);
-            for (var i = 0; i < points.Length; i++)
+
+            // 柱状图参数：间距与圆角
+            var barSpacing = 2f; // 每个柱子之间的 padding（像素），可调整
+            var totalSpacing = barSpacing * (BAR_COUNT - 1);
+            var barWidth = Math.Max(1f, (chartWidth - totalSpacing) / BAR_COUNT);
+            var cornerRadius = MathF.Min(barWidth, chartHeight) * 0.5f;
+
+            // 绘制每个柱子
+            for (int i = 0; i < BAR_COUNT; i++)
             {
                 var origin = points[i];
-                var point = new Point()
+                if (maxSampleCount == 0)
                 {
-                    X = origin.X,
-                    Y = origin.Y / maxSampleCount,
-                    Diff = origin.Diff,
-                    IsEmpty = origin.IsEmpty
-                };
-                var x = chartWidth * point.X + CHART_PADDING_LEFT;
-                var y = chartHeight * (1 - point.Y) - CHART_PADDING_TOP;
-                var isPerfect = Math.Abs(point.Diff) <= 50f;
-                var isGreat = Math.Abs(point.Diff) <= 100f;
-                var isGood = Math.Abs(point.Diff) <= 150f;
+                    // 没有样本，直接跳出（或可绘制占位）
+                    continue;
+                }
 
-                if (point.IsEmpty)
+                // 归一化高度
+                var normalizedHeight = origin.Y / (float)maxSampleCount; // 0..1
+                var drawHeight = normalizedHeight * chartHeight;
+
+                // 计算 x 位置：从左 padding 开始，按宽度+间距排列
+                var x = CHART_PADDING_LEFT + i * (barWidth + barSpacing);
+                var yTop = CHART_PADDING_TOP + (chartHeight - drawHeight);
+                var rect = new SKRect(x, yTop, x + barWidth, CHART_PADDING_TOP + chartHeight);
+
+                // 选择颜色（根据柱子中心 diff）
+                var absDiff = Math.Abs(origin.Diff);
+                SKPaint paintToUse;
+                if (absDiff <= MajEnv.FRAME_LENGTH_MSEC)
+                    paintToUse = critPaint;
+                else if (absDiff <= MajEnv.FRAME_LENGTH_MSEC * 3)
+                    paintToUse = perfectPaint;
+                else if (absDiff <= MajEnv.FRAME_LENGTH_MSEC * 6)
+                    paintToUse = greatPaint;
+                else
+                    paintToUse = goodPaint;
+
+                // 如果你想跳过空桶：保持 continue；否则可绘制浅色占位
+                if (origin.IsEmpty)
                 {
-                    perfectPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
-                    greatPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
-                    goodPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
+                    // 跳过绘制空桶（若想显示占位，改为绘制 emptyPaint）
+                    continue;
                 }
-                else if (isPerfect)
+
+                // 绘制圆角矩形柱子
+                canvas.DrawRoundRect(rect, cornerRadius, cornerRadius, paintToUse);
+
+                // 可选细边框增强分隔感
+                using var borderPaint = new SKPaint
                 {
-                    perfectPath.LineTo(x, y);
-                    greatPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
-                    goodPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
-                }
-                else if (isGreat)
-                {
-                    perfectPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
-                    greatPath.LineTo(x, y);
-                    goodPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
-                }
-                else if (isGood)
-                {
-                    perfectPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
-                    greatPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
-                    goodPath.LineTo(x, y);
-                }
+                    Color = SKColors.White.WithAlpha(0),
+                    Style = SKPaintStyle.Stroke,
+                    StrokeWidth = 0.5f,
+                    IsAntialias = true
+                };
+                canvas.DrawRoundRect(rect, cornerRadius, cornerRadius, borderPaint);
             }
-            perfectPath.LineTo(chartWidth + CHART_PADDING_LEFT, chartHeight + CHART_PADDING_TOP);
-            greatPath.LineTo(chartWidth + CHART_PADDING_LEFT, chartHeight + CHART_PADDING_TOP);
-            goodPath.LineTo(chartWidth + CHART_PADDING_LEFT, chartHeight + CHART_PADDING_TOP);
-            perfectPath.Close();
-            greatPath.Close();
-            goodPath.Close();
 
-            canvas.DrawPath(perfectPath, perfectPaint);
-            canvas.DrawPath(greatPath, greatPaint);
-            canvas.DrawPath(goodPath, goodPaint);
-            canvas.DrawLine(CHART_PADDING_LEFT,
-                            CHART_PADDING_TOP + chartHeight + 0.5f,
-                            CHART_PADDING_LEFT + chartWidth,
-                            CHART_PADDING_TOP + chartHeight + 0.5f, linePaint);
+            // 绘制底线
+            //canvas.DrawLine(CHART_PADDING_LEFT,
+            //                CHART_PADDING_TOP + chartHeight + 0.5f,
+            //                CHART_PADDING_LEFT + chartWidth,
+            //                CHART_PADDING_TOP + chartHeight + 0.5f, linePaint);
 
-            for (var i = -9; i < 10; i++)
-            {
-                var index = i + 9f;
-                var x = (chartWidth * (index / 18)) + CHART_PADDING_LEFT;
-                var start = new SKPoint()
-                {
-                    X = x,
-                    Y = CHART_PADDING_TOP
-                };
-                var end = new SKPoint()
-                {
-                    X = x,
-                    Y = CHART_PADDING_TOP + chartHeight
-                };
-                //var textPoint = new SKPoint()
-                //{
-                //    X = x + 6f,
-                //    Y = CHART_PADDING_TOP + chartHeight + 18f
-                //};
-                canvas.DrawLine(start, end, linePaint);
-                //canvas.DrawText($"{i}f", textPoint,SKTextAlign.Right,textFont, textPaint);
-            }
+            // 绘制竖向网格线（可保留）
+            //for (var i = -9; i < 10; i++)
+            //{
+            //    var index = i + 9f;
+            //    var gridX = (chartWidth * (index / 18f)) + CHART_PADDING_LEFT;
+            //    var start = new SKPoint()
+            //    {
+            //        X = gridX,
+            //        Y = CHART_PADDING_TOP
+            //    };
+            //    var end = new SKPoint()
+            //    {
+            //        X = gridX,
+            //        Y = CHART_PADDING_TOP + chartHeight
+            //    };
+            //    canvas.DrawLine(start, end, linePaint);
+            //}
+
+            // 绘制中线（Diff = 0）
+            // 计算中线 x 坐标：Diff=0 对应的相对位置为 (0 - DIFF_MIN) / DIFF_RANGE
+            //var centerRatio = (0f - DIFF_MIN) / DIFF_RANGE; // 0..1
+            //var centerX = CHART_PADDING_LEFT + centerRatio * chartWidth;
+            //// 中线从顶部到底部
+            //canvas.DrawLine(centerX, CHART_PADDING_TOP, centerX, CHART_PADDING_TOP + chartHeight, midLinePaint);
+
             return surface.ToTexture2D(imageInfo);
         }
 
