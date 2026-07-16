@@ -52,6 +52,13 @@ namespace MajdataPlay
         public string Hash { get; init; }
         public ApiEndpoint ServerInfo => _serverInfo;
 
+        public bool IsVideoLoaded { get => _videoPath != null; }
+        public bool IsCoverLoaded { get => _fullSizeCoverRef.TryGetTarget(out _); }
+        public bool IsCompressedCoverLoaded { get => _coverRef.TryGetTarget(out _); }
+        public bool IsAudioTrackLoaded { get => _audioTrackRef.TryGetTarget(out _); }
+        public bool IsPreviewAudioTrackLoaded { get => _previewAudioTrackRef.TryGetTarget(out _); }
+        public bool IsMaidataLoaded { get => _maidata != null; }
+
         readonly string _hashHexStr = string.Empty;
         readonly string _cachePath = string.Empty;
         readonly ApiEndpoint _serverInfo;
@@ -65,8 +72,6 @@ namespace MajdataPlay
         readonly string[] _designers = new string[7];
         readonly string[] _levels = new string[7];
 
-        static readonly Action _emptyCallback = () => { };
-
         bool _isDisposed = false;
         bool _isPreloaded = false;
 
@@ -76,8 +81,6 @@ namespace MajdataPlay
         WeakReference<Sprite> _coverRef = new(null!);
         WeakReference<Sprite> _fullSizeCoverRef = new(null!);
         SimaiFile? _maidata = null;
-
-        ChartSetting _chartSettings;
 
         volatile int _preloadJoinState = 0;
 
@@ -113,7 +116,6 @@ namespace MajdataPlay
             _coverUri = apiroot.Combine("image");
 
             Hash = songDetail.Hash;
-            _chartSettings = ChartSettingStorage.GetSetting(Hash);
             _hashHexStr = HashHelper.ToHexString(Convert.FromBase64String(Hash));
             _serverInfo = serverInfo;
             _cachePath = Path.Combine(MajEnv.CachePath, $"Net/{_serverInfo.Name}/{_hashHexStr}");
@@ -203,11 +205,7 @@ namespace MajdataPlay
             ThrowIfDisposed();
             try
             {
-                if (_chartSettings.DisableVideoBG)
-                {
-                    return string.Empty;
-                }
-                else if (_videoPath is not null)
+                if (_videoPath is not null)
                 {
                     return _videoPath;
                 }
@@ -584,7 +582,7 @@ namespace MajdataPlay
                             else
                             {
                                 progress?.Report(1);
-                                cover = await SpriteLoader.LoadAsync(savePath, token);
+                                cover = await SpriteLoader.LoadFromFileAsync(savePath, true, token);
                             }
                             _coverRef.SetTarget(cover);
                             return cover;
@@ -615,7 +613,7 @@ namespace MajdataPlay
                         }
 
                         token.ThrowIfCancellationRequested();
-                        cover = await SpriteLoader.LoadAsync(savePath, token);
+                        cover = await SpriteLoader.LoadFromFileAsync(savePath, true, token);
 
                         _coverRef.SetTarget(cover);
                         return cover;
@@ -662,7 +660,7 @@ namespace MajdataPlay
                         else
                         {
                             progress?.Report(1);
-                            cover = await SpriteLoader.LoadAsync(savePath, token);
+                            cover = await SpriteLoader.LoadFromFileAsync(savePath, true, token);
                         }
                         _fullSizeCoverRef.SetTarget(cover);
                         return cover;
@@ -692,7 +690,7 @@ namespace MajdataPlay
                         progress?.Report(1);
                     }
                     token.ThrowIfCancellationRequested();
-                    cover = await SpriteLoader.LoadAsync(savePath, token);
+                    cover = await SpriteLoader.LoadFromFileAsync(savePath, true, token);
 
                     _fullSizeCoverRef.SetTarget(cover);
                     return cover;

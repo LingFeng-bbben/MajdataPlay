@@ -56,6 +56,7 @@ namespace MajdataPlay.Scenes.Title
             }
             MajDebug.LogInfo($"[{nameof(LoadVideoFromSA)}]Load video from {path}");
             player.url = path;
+            player.audioOutputMode = VideoAudioOutputMode.None;
             if (LoadOnly)
             {
                 player.Prepare();

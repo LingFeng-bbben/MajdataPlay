@@ -449,7 +449,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             _lastHoldState = HOLD_STATE_HEAD_JUDGED_AND_NOT_FEEDBACK;
         }
         [OnPreUpdate]
-        void OnPreUpdate()
+        internal void OnPreUpdate()
         {
             using (UnityProfiler.Create("TouchHoldDrop.OnPreUpdate"))
             {
@@ -463,7 +463,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
         }
         [OnUpdate]
-        void OnUpdate()
+        internal void OnUpdate()
         {
             using (UnityProfiler.Create("TouchHoldDrop.OnUpdate"))
             {

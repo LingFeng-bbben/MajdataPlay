@@ -97,3 +97,4 @@ out.log
 /android-publish.keystore
 *.slnx
 /machine_description.json
+/ExtStreamingAssets

@@ -25,7 +25,7 @@ namespace MajdataPlay.Scenes.Practice
     {
         public TextMeshProUGUI startTimeText;
         public TextMeshProUGUI endTimeText;
-        public ChartAnalyzer chartAnalyzer;
+        public ChartVisualDisplayer chartAnalyzer;
         public RectTransform selectionBox;
         public Text timeText;
         public Text rTimeText;
@@ -99,7 +99,7 @@ namespace MajdataPlay.Scenes.Practice
 
                 var chart = await SimaiParser.ParseChartAsync(songinfo.Levels[levelIndex], songinfo.Designers[levelIndex], maidata);
 
-                await chartAnalyzer.AnalyzeAndDrawGraphAsync(chart, _totalTime);
+                chartAnalyzer.SetSimaiChart(chart, _totalTime);
                 if (_gameInfo.TimeRange is not null)
                 {
                     _startTime = (float)_gameInfo.TimeRange.Value.Start;

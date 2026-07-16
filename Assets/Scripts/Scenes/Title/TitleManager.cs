@@ -192,7 +192,7 @@ namespace MajdataPlay.Scenes.Title
                     case SensorArea.A8:
                         MajInstances.AudioManager.OpenAsioPannel();
                         break;
-                    case SensorArea.E5:
+                    case SensorArea.E4:
                         NextScene();
                         break;
                 }

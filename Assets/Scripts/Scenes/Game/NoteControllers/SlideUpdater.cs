@@ -9,12 +9,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Unity.IL2CPP.CompilerServices;
 using UnityEngine.Profiling;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
-    internal sealed class SlideUpdater : NoteUpdater
+    internal sealed class SlideUpdater : NoteUpdater<SlideBase>
     {
         const string UPDATER_NAME = "SlideUpdater";
         const string PRE_UPDATE_METHOD_NAME = UPDATER_NAME + ".PreUpdate";
@@ -25,14 +26,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         ReadOnlyMemory<SlideQueueInfo> _queueInfos = ReadOnlyMemory<SlideQueueInfo>.Empty;
 
         readonly RentedList<SlideBinding> _slideBindings = new RentedList<SlideBinding>();
-
-        readonly RentedList<NoteInfo> _slidePreUpdatableComponents = new RentedList<NoteInfo>(1024);
-        readonly RentedList<NoteInfo> _slideUpdatableComponents = new RentedList<NoteInfo>(1024);
-        readonly RentedList<NoteInfo> _slideLateUpdatableComponents = new RentedList<NoteInfo>(1024);
-
-        readonly RentedList<NoteInfo> _otherPreUpdatableComponents = new RentedList<NoteInfo>();
-        readonly RentedList<NoteInfo> _otherUpdatableComponents = new RentedList<NoteInfo>();
-        readonly RentedList<NoteInfo> _otherLateUpdatableComponents = new RentedList<NoteInfo>();
+        readonly RentedList<SlideBinding> _activatedSlides = new RentedList<SlideBinding>();
 
         int _slideBindingCursor = 0;
 
@@ -44,63 +38,30 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         {
             Majdata<SlideUpdater>.Instance = this;
         }
-        public override async UniTask InitAsync()
+        public override void Init()
         {
-            await base.InitAsync();
-            using var slideComponents = new RentedList<NoteInfo>();
-            for (var i = 0; i < Components.Length; i++)
-            {
-                var component = Components.Span[i];
-                if (component.Component is SlideBase)
-                {
-                    slideComponents.Add(component);
-                }
-                else
-                {
-                    if (component.IsPreUpdatable)
-                    {
-                        _otherPreUpdatableComponents.Add(component);
-                    }
-                    if (component.IsUpdatable)
-                    {
-                        _otherUpdatableComponents.Add(component);
-                    }
-                    if (component.IsLateUpdatable)
-                    {
-                        _otherLateUpdatableComponents.Add(component);
-                    }
-                }
-            }
-
             for (var i = 0; i < _queueInfos.Length; i++)
             {
                 var queueInfo = _queueInfos.Span[i];
-                var compo = slideComponents.Find(x => (object?)x.Component == (object?)queueInfo.SlideObject);
-                if(compo is null)
-                {
-                    continue;
-                }
-                _slideBindings.Add(new()
+                _slideBindings.Add(new(queueInfo)
                 {
                     AppearTiming = queueInfo.AppearTiming - 0.15f,
                     QueueInfo = queueInfo,
-                    NoteInfo = compo
                 });
             }
         }
-        protected override void OnDestroy()
+        void OnDestroy()
         {
             Majdata<SlideUpdater>.Free();
-            base.OnDestroy();
             Clear();
         }
         private void Start()
         {
             _noteTimeProvider = Majdata<INoteController>.Instance!;
+            Clear();
         }
-        internal override void Clear()
+        void Clear()
         {
-            base.Clear();
             _queueInfos = ReadOnlyMemory<SlideQueueInfo>.Empty;
             Pool<SlideQueueInfo>.ReturnArray(_rentedArrayForQueueInfos, true);
             _rentedArrayForQueueInfos = Array.Empty<SlideQueueInfo>();
@@ -121,109 +82,55 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal new void OnFixedUpdate()
+        internal void OnFixedUpdate()
         {
-            Profiler.BeginSample(FIXED_UPDATE_METHOD_NAME);
-            base.OnFixedUpdate();
-            Profiler.EndSample();
+
         }
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal new void OnLateUpdate()
+        internal void OnLateUpdate()
         {
             using (UnityProfiler.Create(LATE_UPDATE_METHOD_NAME))
             {
-                var start = MajTimeline.UnscaledTime;
-                var slideComponents = _slideLateUpdatableComponents;
-                var len = slideComponents.Count;
+                var len = _activatedSlides.Count;
                 for (var i = 0; i < len; i++)
                 {
-                    var component = slideComponents[i];
-                    if (component.State == NoteStatus.End)
+                    var instance = _activatedSlides[i];
+                    if (instance.State == NoteStatus.End)
                     {
-                        slideComponents.RemoveAt(i);
+                        _activatedSlides.RemoveAt(i);
                         i--;
                         len--;
                         continue;
                     }
-                    component.OnLateUpdate();
                 }
-                var otherComponents = _otherLateUpdatableComponents;
-                len = otherComponents.Count;
-                for (var i = 0; i < len; i++) 
-                {
-                    var component = otherComponents[i];
-                    if(component.State is NoteStatus.Start)
-                    {
-                        continue;
-                    }
-                    else if (component.State == NoteStatus.End)
-                    {
-                        otherComponents.RemoveAt(i);
-                        i--;
-                        len--;
-                        continue;
-                    }
-                    component.OnLateUpdate();
-                }
-
-                var end = MajTimeline.UnscaledTime;
-                var timeSpan = end - start;
-                IntUpdateElapsedMs = timeSpan.TotalMilliseconds;
             }
         }
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal new void OnUpdate()
+        internal void OnUpdate()
         {
             using (UnityProfiler.Create(UPDATE_METHOD_NAME))
             {
-                var start = MajTimeline.UnscaledTime;
-                var slideComponents = _slideUpdatableComponents;
-                var len = slideComponents.Count;
-                for (var i = 0; i < len; i++)
+                ref var activatedSlides = ref MemoryMarshal.GetReference(_activatedSlides.AsSpan());
+                var slideCount = _activatedSlides.Count;
+                for (var i = 0; i < slideCount; i++)
                 {
-                    var component = slideComponents[i];
-                    if (component.State == NoteStatus.End)
+                    ref readonly var instance = ref Unsafe.Add(ref activatedSlides, i);
+                    var instanceState = instance.State;
+                    if (instanceState > NoteStatus.Start && instanceState < NoteStatus.End)
                     {
-                        slideComponents.RemoveAt(i);
-                        i--;
-                        len--;
-                        continue;
+                        instance.OnUpdate();
                     }
-                    component.OnUpdate();
                 }
-
-                var otherComponents = _otherUpdatableComponents;
-                len = otherComponents.Count;
-                for (var i = 0; i < len; i++)
-                {
-                    var component = otherComponents[i];
-                    if (component.State is NoteStatus.Start)
-                    {
-                        continue;
-                    }
-                    else if (component.State == NoteStatus.End)
-                    {
-                        otherComponents.RemoveAt(i);
-                        i--;
-                        len--;
-                        continue;
-                    }
-                    component.OnUpdate();
-                }
-
-                var end = MajTimeline.UnscaledTime;
-                var timeSpan = end - start;
-                IntUpdateElapsedMs = timeSpan.TotalMilliseconds;
             }
         }
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal new void OnPreUpdate()
+        internal void OnPreUpdate()
         {
             using (UnityProfiler.Create(PRE_UPDATE_METHOD_NAME))
             {
@@ -234,23 +141,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                     {
                         var binding = _slideBindings[i];
                         var queueInfo = binding.QueueInfo;
-                        var noteInfo = binding.NoteInfo;
                         var appearTiming = binding.AppearTiming;
                         if (thisFrameSec >= appearTiming)
                         {
                             queueInfo.SlideObject.SetActive(true);
-                            if (noteInfo.IsPreUpdatable)
-                            {
-                                _slidePreUpdatableComponents.Add(noteInfo);
-                            }
-                            if (noteInfo.IsUpdatable)
-                            {
-                                _slideUpdatableComponents.Add(noteInfo);
-                            }
-                            if (noteInfo.IsLateUpdatable)
-                            {
-                                _slideLateUpdatableComponents.Add(noteInfo);
-                            }
+                            _activatedSlides.Add(binding);
                         }
                         else
                         {
@@ -258,51 +153,94 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                         }
                     }
                 }
-                var start = MajTimeline.UnscaledTime;
-                var slideComponents = _slidePreUpdatableComponents;
-                var len = slideComponents.Count;
-                for (var i = 0; i < len; i++)
+                ref var activatedSlides = ref MemoryMarshal.GetReference(_activatedSlides.AsSpan());
+                var slideCount = _activatedSlides.Count;
+                for (var i = 0; i < slideCount; i++)
                 {
-                    var component = slideComponents[i];
-                    if (component.State is NoteStatus.Start)
+                    ref readonly var instance = ref Unsafe.Add(ref activatedSlides, i);
+                    var instanceState = instance.State;
+                    if (instanceState > NoteStatus.Start && instanceState < NoteStatus.End)
                     {
-                        continue;
+                        instance.OnPreUpdate();
                     }
-                    else if (component.State == NoteStatus.End)
-                    {
-                        slideComponents.RemoveAt(i);
-                        i--;
-                        len--;
-                        continue;
-                    }
-                    component.OnPreUpdate();
                 }
-
-                var otherComponents = _otherPreUpdatableComponents;
-                len = otherComponents.Count;
-                for (var i = 0; i < len; i++)
-                {
-                    var component = otherComponents[i];
-                    if (component.State == NoteStatus.End)
-                    {
-                        otherComponents.RemoveAt(i);
-                        i--;
-                        len--;
-                        continue;
-                    }
-                    component.OnPreUpdate();
-                }
-
-                var end = MajTimeline.UnscaledTime;
-                var timeSpan = end - start;
-                IntPreUpdateElapsedMs = timeSpan.TotalMilliseconds;
             }
         }
-        struct SlideBinding
+        readonly struct SlideBinding
         {
             public required float AppearTiming { get; init; }
             public required SlideQueueInfo QueueInfo { get; init; }
-            public required NoteInfo NoteInfo { get; init; }
+            public NoteStatus State
+            {
+                [Il2CppSetOption(Option.NullChecks, false)]
+                [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get
+                {
+                    switch (_state)
+                    {
+                        case STATE_SLIDE_DROP:
+                            return _slideInstance!.State;
+                        case STATE_WIFI_DROP:
+                            return _wifiInstance!.State;
+                        default:
+                            return NoteStatus.End;
+                    }
+                }
+            }
+
+            readonly int _state = STATE_INVALID;
+            readonly SlideDrop? _slideInstance;
+            readonly WifiDrop? _wifiInstance;
+
+            const int STATE_INVALID = 0;
+            const int STATE_SLIDE_DROP = 1;
+            const int STATE_WIFI_DROP = 2;
+
+            public SlideBinding(SlideQueueInfo queueInfo)
+            {
+                var instance = queueInfo.SlideObject;
+                if (instance is SlideDrop slideDrop)
+                {
+                    _slideInstance = slideDrop;
+                    _state = STATE_SLIDE_DROP;
+                }
+                else if(instance is WifiDrop wifiDrop)
+                {
+                    _wifiInstance = wifiDrop;
+                    _state = STATE_WIFI_DROP;
+                }
+            }
+            [Il2CppSetOption(Option.NullChecks, false)]
+            [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public readonly void OnPreUpdate()
+            {
+                switch(_state)
+                {
+                    case STATE_SLIDE_DROP:
+                        _slideInstance!.OnPreUpdate();
+                        break;
+                    case STATE_WIFI_DROP:
+                        _wifiInstance!.OnPreUpdate();
+                        break;
+                }
+            }
+            [Il2CppSetOption(Option.NullChecks, false)]
+            [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public readonly void OnUpdate()
+            {
+                switch (_state)
+                {
+                    case STATE_SLIDE_DROP:
+                        _slideInstance!.OnUpdate();
+                        break;
+                    case STATE_WIFI_DROP:
+                        _wifiInstance!.OnUpdate();
+                        break;
+                }
+            }
         }
     }
 }

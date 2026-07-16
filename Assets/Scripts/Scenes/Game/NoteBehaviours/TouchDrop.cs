@@ -410,7 +410,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
         }
         [OnPreUpdate]
-        void OnPreUpdate()
+        internal void OnPreUpdate()
         {
             using (UnityProfiler.Create("TouchDrop.OnPreUpdate"))
             {
@@ -421,7 +421,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
         }
         [OnUpdate]
-        void OnUpdate()
+        internal void OnUpdate()
         {
             using (UnityProfiler.Create("TouchDrop.OnUpdate"))
             {

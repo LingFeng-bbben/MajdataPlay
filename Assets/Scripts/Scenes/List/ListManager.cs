@@ -15,6 +15,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using MajdataPlay.Net;
 using UnityEngine;
+using UnityEngine.Serialization;
+using LitMotion;
 #nullable enable
 namespace MajdataPlay.Scenes.List
 {
@@ -46,16 +48,35 @@ namespace MajdataPlay.Scenes.List
         float _enterPracticeTimer = 0f;
         float _inactiveTimeSec = 0f;
 
-        CoverListDisplayer _coverListDisplayer;
         [SerializeField]
-        UserInfoDisplayer _userInfoDisplayer;
+        [FormerlySerializedAs("coverListManager")]
+        CoverListManager _coverListManager;
+
+        [SerializeField]
+        [FormerlySerializedAs("collectionListManager")]
+        CollectionListManager _collectionListManager;
+
+        [SerializeField]
+        [FormerlySerializedAs("userProfileDisplayer")]
+        UserInfoDisplayer _userProfileDisplayer;
+
+        [SerializeField]
+        [FormerlySerializedAs("favoriteAdder")]
+        FavoriteAdder _favoriteAdder;
 
         const float AUTO_SLIDE_INTERVAL_SEC = 0.15f;
         const float AUTO_SLIDE_TRIGGER_TIME_SEC = 0.4f;
+        const int QUICK_SLIDE_POSITION_INCREASE = 9;
+        const float QUICK_SLIDE_DURATION_SEC = 1f;
+
+        int _quickSlideRemaining = 0;
+        int _quickSlideDirection = 0;
+        MotionHandle _quickSlideAnim;
 
         readonly ListConfig _listConfig = MajEnv.RuntimeConfig?.List ?? new();
         readonly SwitchStatistic[] _buttonPressTimes = new SwitchStatistic[12];
         readonly CancellationTokenSource _cts = new();
+        readonly QuickSlideJudge _quickSlideJudge = new();
 
 
         void Awake()
@@ -105,7 +126,8 @@ namespace MajdataPlay.Scenes.List
         }
         void Start()
         {
-            _coverListDisplayer = Majdata<CoverListDisplayer>.Instance!;
+            _coverListManager = Majdata<CoverListManager>.Instance!;
+            _collectionListManager = Majdata<CollectionListManager>.Instance!;
             InitializeCoverListAsync().Forget();
             var selectsfx = MajInstances.AudioManager.GetSFX("bgm_select.mp3");
             if (!selectsfx.IsPlaying)
@@ -123,11 +145,11 @@ namespace MajdataPlay.Scenes.List
             var apiendpoint = MajEnv.Settings.Online.ApiEndpoints.FirstOrDefault();
             if (apiendpoint is not null)
             {
-                _userInfoDisplayer.DisplayUserInfo(apiendpoint);
+                _userProfileDisplayer.DisplayUserInfo(apiendpoint);
             }
             else
             {
-                _userInfoDisplayer.gameObject.SetActive(false);
+                _userProfileDisplayer.gameObject.SetActive(false);
             }
         }
 
@@ -136,14 +158,14 @@ namespace MajdataPlay.Scenes.List
             try
             {
                 await UniTask.Yield();
-                _coverListDisplayer.SwitchToDirList();
-                _coverListDisplayer.SwitchToSongList();
+                _collectionListManager.Init();
+                //_coverListDisplayer.SwitchToDirList();
+                //_coverListDisplayer.SwitchToSongList();
                 await UniTask.Yield();
             }
             finally
             {
                 MajInstances.SceneSwitcher.FadeOut();
-                _coverListDisplayer.SlideToDifficulty((int)_listConfig.SelectedDiff);
                 _isInited = true;
                 CabinetLed.SetButtonLight(Color.green, 3);
                 CabinetLed.SetButtonLight(Color.red, 4);
@@ -169,14 +191,79 @@ namespace MajdataPlay.Scenes.List
                 return;
             }
             ButtonStatisticsUpdate();
-            SensorCheck();
-            ButtonCheck();
-            _inactiveTimeSec += MajTimeline.UnscaledDeltaTime;
-            if (_isOnlineEnabled && TimeSpan.FromSeconds(_inactiveTimeSec) > TimeSpan.FromMinutes(MAX_ALLOWED_INACTIVE_TIME_MIN))
+            _quickSlideJudge.OnUpdate();
+            var isMathed = false;
+            if(_quickSlideJudge.IsLeftMatch)
             {
-                EnterLogin();
-                return;
+                isMathed = true;
+                if (_quickSlideDirection == -1)
+                {
+                    _quickSlideRemaining -= QUICK_SLIDE_POSITION_INCREASE;
+                    if(_quickSlideRemaining < 0)
+                    {
+                        _quickSlideDirection = 1;
+                        _quickSlideRemaining *= -1;
+                    }
+                }
+                else
+                {
+                    _quickSlideDirection = 1;
+                    _quickSlideRemaining += QUICK_SLIDE_POSITION_INCREASE;
+                }
+                MajDebug.LogDebug($"[List] Quick slide remaining: {_quickSlideRemaining}");
             }
+            else if(_quickSlideJudge.IsRightMatch)
+            {
+                isMathed = true;
+                if (_quickSlideDirection == 1)
+                {
+                    _quickSlideRemaining -= QUICK_SLIDE_POSITION_INCREASE;
+                    if (_quickSlideRemaining < 0)
+                    {
+                        _quickSlideDirection = -1;
+                        _quickSlideRemaining *= -1;
+                    }
+                }
+                else
+                {
+                    _quickSlideDirection = -1;
+                    _quickSlideRemaining += QUICK_SLIDE_POSITION_INCREASE;
+                }
+                MajDebug.LogDebug($"[List] Quick slide remaining: {_quickSlideRemaining}");
+            }
+            if(isMathed)
+            {
+                _quickSlideAnim.TryCancel();
+                var lastIndex = 0;
+                _quickSlideAnim = LMotion.Create(0, _quickSlideRemaining * _quickSlideDirection, QUICK_SLIDE_DURATION_SEC)
+                                         .WithEase(Ease.Linear)
+                                         .WithOnComplete(() =>
+                                         {
+                                             _quickSlideRemaining = 0;
+                                             _quickSlideDirection = 0;
+                                         })
+                                         .Bind(x =>
+                                         {
+                                             if(x == lastIndex)
+                                             {
+                                                 return;
+                                             }
+                                             lastIndex = x;
+                                             _quickSlideRemaining -= 1;
+                                             _coverListManager.SlideList(1 * _quickSlideDirection, loadDelayMS: 1000);
+                                         });
+            }
+            if (_quickSlideRemaining == 0)
+            {
+                SensorCheck();
+                ButtonCheck();
+                _inactiveTimeSec += MajTimeline.UnscaledDeltaTime;
+                if (_isOnlineEnabled && TimeSpan.FromSeconds(_inactiveTimeSec) > TimeSpan.FromMinutes(MAX_ALLOWED_INACTIVE_TIME_MIN))
+                {
+                    EnterLogin();
+                    return;
+                }
+            }            
         }
         void OnAnyInput(object? sender, InputEventArgs args)
         {
@@ -189,53 +276,37 @@ namespace MajdataPlay.Scenes.List
                 return;
             }
 
-            if (InputManager.IsSensorClickedInThisFrame_OR(SensorArea.A7, SensorArea.E8))
+            if (InputManager.IsSensorClickedInThisFrame(SensorArea.C))
             {
-                _coverListDisplayer.SlideList(1);
+                //TODO: _coverListDisplayer.RandomSelect();
             }
-            else if (InputManager.IsSensorClickedInThisFrame_OR(SensorArea.B8, SensorArea.A8))
+            if (InputManager.IsSensorClickedInThisFrame(SensorArea.B8))
             {
-                _coverListDisplayer.SlideList(2);
+                _collectionListManager.PreviousCollection();
             }
-            else if (InputManager.IsSensorClickedInThisFrame_OR(SensorArea.E1, SensorArea.D1, SensorArea.A1))
+            else if(InputManager.IsSensorClickedInThisFrame(SensorArea.B1))
             {
-                _coverListDisplayer.SlideList(3);
-            }
-            else if (InputManager.IsSensorClickedInThisFrame_OR(SensorArea.A6, SensorArea.E6))
-            {
-                _coverListDisplayer.SlideList(-1);
-            }
-            else if (InputManager.IsSensorClickedInThisFrame_OR(SensorArea.A5, SensorArea.B5))
-            {
-                _coverListDisplayer.SlideList(-2);
-            }
-            else if (InputManager.IsSensorClickedInThisFrame_OR(SensorArea.E5, SensorArea.D5, SensorArea.A4))
-            {
-                _coverListDisplayer.SlideList(-3);
-            }
-            else if (InputManager.IsSensorClickedInThisFrame(SensorArea.C))
-            {
-                _coverListDisplayer.RandomSelect();
+                _collectionListManager.NextCollection();
             }
 
-            if (InputManager.IsSensorClickedInThisFrame_OR(SensorArea.B7, SensorArea.B6, SensorArea.E7))
+            if (InputManager.IsSensorClickedInThisFrame_OR(SensorArea.D5, SensorArea.E5))
             {
                 var list = new string[]
-                            {
-                                "no_touch.wav",
-                                "no_touch_2.wav",
-                                "no_touch_3.wav",
-                                "no_touch_4.wav",
-                                "no_touch_5.wav",
-                                "no_touch_6.wav",
-                                "no_touch_7.wav"
-                            };
+                {
+                    "no_touch.wav",
+                    "no_touch_2.wav",
+                    "no_touch_3.wav",
+                    "no_touch_4.wav",
+                    "no_touch_5.wav",
+                    "no_touch_6.wav",
+                    "no_touch_7.wav"
+                };
                 MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
                 XxlbAnimation.instance.PlayTouchAnimation();
             }
             if (InputManager.IsSensorClickedInThisFrame(SensorArea.B2))
             {
-                _coverListDisplayer.FavoriteAdder.FavoratePressed();
+                _favoriteAdder.FavoratePressed();
             }
         }
         void ButtonStatisticsUpdate()
@@ -305,7 +376,7 @@ namespace MajdataPlay.Scenes.List
                 _delta = 1;
                 if (a3Statistic.IsClicked)
                 {
-                    _coverListDisplayer.SlideList(1);
+                    _coverListManager.SlideList(1);
                 }
                 else
                 {
@@ -313,8 +384,8 @@ namespace MajdataPlay.Scenes.List
                     {
                         if(_autoSlideTimer > AUTO_SLIDE_INTERVAL_SEC)
                         {
-                            _coverListDisplayer.DisableAnimation = true;
-                            _coverListDisplayer.SlideList(_delta);
+                            //_coverListDisplayer.DisableAnimation = true;
+                            _coverListManager.SlideList(_delta);
                             _autoSlideTimer = 0;
                         }
                         else
@@ -330,7 +401,7 @@ namespace MajdataPlay.Scenes.List
                 _delta = -1;
                 if (a6Statistic.IsClicked)
                 {
-                    _coverListDisplayer.SlideList(-1);
+                    _coverListManager.SlideList(-1);
                 }
                 else
                 {
@@ -338,8 +409,8 @@ namespace MajdataPlay.Scenes.List
                     {
                         if (_autoSlideTimer > AUTO_SLIDE_INTERVAL_SEC)
                         {
-                            _coverListDisplayer.DisableAnimation = true;
-                            _coverListDisplayer.SlideList(_delta);
+                            //_coverListDisplayer.DisableAnimation = true;
+                            _coverListManager.SlideList(_delta);
                             _autoSlideTimer = 0;
                         }
                         else
@@ -353,59 +424,39 @@ namespace MajdataPlay.Scenes.List
             else
             {
                 _autoSlideTimer = 0;
-                _coverListDisplayer.DisableAnimation = false;
+                //_coverListDisplayer.DisableAnimation = false;
             }
 
-            if (a4Statistic.IsClicked)
+            if (a4Statistic.IsPressed && _coverListManager.SelectedSong is not null)
             {
-                if(_coverListDisplayer.IsDirList)
+                if (!_isPlayedExplosion)
                 {
-                    if (_coverListDisplayer.SelectedCollection.Type == ChartStorageType.Dan)
+                    if (_enterPracticeTimer > 1f)
                     {
-                        EnterDan();
+                        MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
+                        _isPlayedExplosion = true;
                     }
-                    else
-                    {
-                        CabinetLed.SetButtonLight(Color.red, 4);
-                        _coverListDisplayer.SwitchToSongList();
-                        _coverListDisplayer.SlideListToTop();
-                        if (SongStorage.WorkingCollection.IsOnline)
-                        {
-                            MajInstances.AudioManager.PlaySFX("online_page.wav");
-                        }
-                    }
-                    a4Statistic.IsClickEventUsed = true;
                 }
-            }
-            else if (a4Statistic.IsPressed)
-            {
-                if (_coverListDisplayer.IsChartList)
+                if (_enterPracticeTimer > 1.6f)
                 {
-                    if(!_isPlayedExplosion)
-                    {
-                        if(_enterPracticeTimer > 1f)
-                        {
-                            MajInstances.AudioManager.PlaySFX("bgm_explosion.mp3");
-                            _isPlayedExplosion = true;
-                        }
-                    }
-                    if (_enterPracticeTimer > 1.6f)
-                    {
-                        EnterPractice();
-                    }
-                    _enterPracticeTimer += MajTimeline.DeltaTime;
-                    return;
+                    EnterPractice();
                 }
+                _enterPracticeTimer += MajTimeline.DeltaTime;
+                return;
             }
             else if (a4Statistic.IsReleased)
             {
-                if (_coverListDisplayer.IsChartList && !a4Statistic.IsClickEventUsed)
+                if (!a4Statistic.IsClickEventUsed)
                 {
                     if (_enterPracticeTimer > 1f)
                     {
                         EnterPractice();
                     }
-                    else
+                    else if (_collectionListManager.SelectedCollection.Type == ChartStorageType.Dan)
+                    {
+                        EnterDan();
+                    }
+                    else if(_coverListManager.SelectedSong is not null)
                     {
                         EnterGame();
                     }
@@ -414,13 +465,7 @@ namespace MajdataPlay.Scenes.List
             }
             else if (a5Statistic.IsClicked)
             {
-                if (_coverListDisplayer.IsChartList)
-                {
-                    _coverListDisplayer.SwitchToDirList();
-                    CabinetLed.SetButtonLight(Color.white, 4);
-                    SongStorage.WorkingCollection.Index = 0;
-                }
-                else if (_isOnlineEnabled && _coverListDisplayer.IsDirList)
+                if (_isOnlineEnabled)
                 {
                     EnterLogin();
                 }
@@ -449,14 +494,14 @@ namespace MajdataPlay.Scenes.List
                 //MajInstances.GameManager.LastSettingPage = MOD_PAGE_INDEX;
                 MajEnv.RuntimeConfig.Setting.SelectedMenu = nameof(GameSetting.Mod);
                 MajEnv.RuntimeConfig.Setting.SelectedOption = string.Empty;
-                if (_coverListDisplayer.Mode == CoverListMode.Directory)
-                {
-                    MajEnv.RuntimeConfig.Setting.IgnoreChartSettingPage = true;
-                }
-                else
-                {
-                    MajEnv.RuntimeConfig.Setting.IgnoreChartSettingPage = false;
-                }
+                //if (_coverListDisplayer.Mode == CoverListMode.Directory)
+                //{
+                //    MajEnv.RuntimeConfig.Setting.IgnoreChartSettingPage = true;
+                //}
+                //else
+                //{
+                //    MajEnv.RuntimeConfig.Setting.IgnoreChartSettingPage = false;
+                //}
                 MajInstances.SceneSwitcher.SwitchScene("Setting", false);
                 _isExited = true;
                 return;
@@ -464,14 +509,14 @@ namespace MajdataPlay.Scenes.List
             else if (a7Statistic.IsClicked)
             {
                 //MajInstances.GameManager.LastSettingPage = 0;
-                if (_coverListDisplayer.Mode == CoverListMode.Directory)
-                {
-                    MajEnv.RuntimeConfig.Setting.IgnoreChartSettingPage = true;
-                }
-                else
-                {
-                    MajEnv.RuntimeConfig.Setting.IgnoreChartSettingPage = false;
-                }
+                //if (_coverListDisplayer.Mode == CoverListMode.Directory)
+                //{
+                //    MajEnv.RuntimeConfig.Setting.IgnoreChartSettingPage = true;
+                //}
+                //else
+                //{
+                //    MajEnv.RuntimeConfig.Setting.IgnoreChartSettingPage = false;
+                //}
                 MajInstances.SceneSwitcher.SwitchScene("Setting", false);
                 _isExited = true;
                 return;
@@ -479,13 +524,13 @@ namespace MajdataPlay.Scenes.List
 
             if (a8Statistic.IsClicked)
             {
-                _coverListDisplayer.SlideDifficulty(-1);
+                _collectionListManager.SlideDifficulty(-1);
                 var list = new string[] { "easy.wav", "basic.wav", "advanced.wav", "expert.wav", "master.wav", "remaster.wav", "original.wav" };
                 MajInstances.AudioManager.PlaySFX(list[(int)_listConfig.SelectedDiff]);
             }
             else if (a1Statistic.IsClicked)
             {
-                _coverListDisplayer.SlideDifficulty(1);
+                _collectionListManager.SlideDifficulty(1);
                 var list = new string[] { "easy.wav", "basic.wav", "advanced.wav", "expert.wav", "master.wav", "remaster.wav", "original.wav" };
                 MajInstances.AudioManager.PlaySFX(list[(int)_listConfig.SelectedDiff]);
             }
@@ -502,7 +547,7 @@ namespace MajdataPlay.Scenes.List
             };
             var charts = new ISongDetail[]
             {
-                _coverListDisplayer.SelectedSong
+                _coverListManager.SelectedSong
             };
             var info = new GameInfo(GameMode.Normal, charts, levels);
             Majdata<GameInfo>.Instance = info;
@@ -519,7 +564,7 @@ namespace MajdataPlay.Scenes.List
             };
             var charts = new ISongDetail[]
             {
-                _coverListDisplayer.SelectedSong
+                _coverListManager.SelectedSong
             };
             var oldinfo = Majdata<GameInfo>.Instance;
             var info = new GameInfo(GameMode.Practice, charts, levels, 114514);
@@ -584,8 +629,8 @@ namespace MajdataPlay.Scenes.List
         void EnterDan()
         {
             _cts.Cancel();
-            var danInfo = _coverListDisplayer.SelectedCollection.DanInfo;
-            var collection = _coverListDisplayer.SelectedCollection;
+            var danInfo = _collectionListManager.SelectedCollection.DanInfo;
+            var collection = _collectionListManager.SelectedCollection;
             if (danInfo is null)
             {
                 return;
@@ -603,13 +648,13 @@ namespace MajdataPlay.Scenes.List
             }
             var info = new GameInfo(GameMode.Dan, collection.ToArray(), levels)
             {
-                MaxHP = _coverListDisplayer.SelectedCollection.DanInfo.StartHP,
-                CurrentHP = _coverListDisplayer.SelectedCollection.DanInfo.StartHP,
-                HPRecover = _coverListDisplayer.SelectedCollection.DanInfo.RestoreHP,
+                MaxHP = danInfo.StartHP,
+                CurrentHP = danInfo.StartHP,
+                HPRecover = danInfo.RestoreHP,
                 DanInfo = danInfo
             };
             Majdata<GameInfo>.Instance = info;
-            _coverListDisplayer.SelectedCollection.Index = 0;
+            _collectionListManager.SelectedCollection.Index = 0;
             _isExited = true;
             MajInstances.SceneSwitcher.SwitchScene("Game", false);
         }
@@ -667,6 +712,173 @@ namespace MajdataPlay.Scenes.List
                 return Task.CompletedTask;
             }
             return Task.WhenAll(tasks);
+        }
+
+        class QuickSlideJudge
+        {
+            public bool IsLeftMatch { get; private set; }
+            public bool IsRightMatch { get; private set; }
+
+            readonly Path[] _leftPathList = new Path[]
+            {
+                // Left
+                new Path(SensorArea.C, SensorArea.B7, new SensorArea[] { SensorArea.E7 }),
+                new Path(SensorArea.C, SensorArea.B6, new SensorArea[] { SensorArea.E7 }),
+
+                new Path(SensorArea.B2, SensorArea.C, new SensorArea[] { SensorArea.B7 }),
+                new Path(SensorArea.B2, SensorArea.C, new SensorArea[] { SensorArea.B6 }),
+                
+                new Path(SensorArea.B3, SensorArea.C, new SensorArea[] { SensorArea.B7 }),
+                new Path(SensorArea.B3, SensorArea.C, new SensorArea[] { SensorArea.B6 }),
+
+                new Path(SensorArea.B2, SensorArea.C, new SensorArea[] { SensorArea.B7 }),
+                new Path(SensorArea.B3, SensorArea.C, new SensorArea[] { SensorArea.B6 }),
+
+                new Path(SensorArea.E3, SensorArea.B2, new SensorArea[] { SensorArea.C }),
+                new Path(SensorArea.E3, SensorArea.B3, new SensorArea[] { SensorArea.C }),
+
+
+                new Path(SensorArea.D3, SensorArea.E3, new SensorArea[] { SensorArea.B2, SensorArea.C }),
+                new Path(SensorArea.D3, SensorArea.E3, new SensorArea[] { SensorArea.B3, SensorArea.C }),
+            };
+            readonly Path[] _rightPathList = new Path[]
+            {
+                // Right
+                new Path(SensorArea.C, SensorArea.B2, new SensorArea[] { SensorArea.E3 }),
+                new Path(SensorArea.C, SensorArea.B3, new SensorArea[] { SensorArea.E3 }),
+
+                new Path(SensorArea.B7, SensorArea.C, new SensorArea[] { SensorArea.B2 }),
+                new Path(SensorArea.B7, SensorArea.C, new SensorArea[] { SensorArea.B3 }),
+
+                new Path(SensorArea.B6, SensorArea.C, new SensorArea[] { SensorArea.B3 }),
+                new Path(SensorArea.B6, SensorArea.C, new SensorArea[] { SensorArea.B2 }),
+
+                new Path(SensorArea.D7, SensorArea.E7, new SensorArea[] { SensorArea.B7, SensorArea.C }),
+                new Path(SensorArea.D7, SensorArea.E7, new SensorArea[] { SensorArea.B6, SensorArea.C }),
+            };
+
+            public void OnUpdate()
+            {
+                IsLeftMatch = false;
+                IsRightMatch = false;
+
+                for (var i = 0; i < _leftPathList.Length; i++)
+                {
+                    ref var path = ref _leftPathList[i];
+                    if(IsLeftMatch)
+                    {
+                        path.Reset();
+                    }
+                    else
+                    {
+                        path.OnUpdate();
+                        IsLeftMatch |= path.IsMatch;
+                    }
+                }
+                for (var i = 0; i < _rightPathList.Length; i++)
+                {
+                    ref var path = ref _rightPathList[i];
+                    if(IsRightMatch)
+                    {
+                        path.Reset();
+                    }
+                    else
+                    {
+                        path.OnUpdate();
+                        IsRightMatch |= path.IsMatch;
+                    }                        
+                }
+            }
+
+            struct Path
+            {
+                public bool IsMatch { get; private set; }
+
+                byte _state;
+                TimeSpan _detectStartAt;
+
+                readonly SensorArea _headArea;
+                readonly SensorArea _area2;
+                readonly SensorArea[] _tailAreaList;
+                readonly TimeSpan _timeout;
+                public Path(SensorArea headArea, SensorArea area2, SensorArea[] tailAreaList) 
+                    : this(headArea, area2, tailAreaList, TimeSpan.FromMilliseconds(300))
+                {
+
+                }
+                public Path(SensorArea headArea, SensorArea area2, SensorArea[] tailAreaList, TimeSpan timeout)
+                {
+                    _headArea = headArea;
+                    _area2 = area2;
+                    _tailAreaList = tailAreaList;
+                    _timeout = timeout;
+                }
+
+                public void OnUpdate()
+                {
+                    if (IsMatch)
+                    {
+                        Reset();
+                    }
+                    var currentTimestamp = MajTimeline.UnscaledTime;
+                    if (_state == 0)
+                    {
+                        if (InputManager.CheckSensorStatusInThisFrame(_headArea, SwitchStatus.On))
+                        {
+                            _state = 1;
+                            _detectStartAt = currentTimestamp;
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+                    else if(currentTimestamp - _detectStartAt > _timeout)
+                    {
+                        Reset();
+                        return;
+                    }
+                    if((_state & (1 << 1)) == 0)
+                    {
+                        if (InputManager.CheckSensorStatusInThisFrame(_area2, SwitchStatus.On))
+                        {
+                            _state |= 1 << 1;
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+                    var allFinished = 0b0000_0011;
+                    for (var i = 0; i < _tailAreaList.Length; i++)
+                    {
+                        var area = _tailAreaList[i];
+                        var mask = (byte)(1 << (i + 2));
+                        allFinished |= mask;
+                        if ((_state & mask) == 0)
+                        {
+                            if (InputManager.CheckSensorStatusInThisFrame(area, SwitchStatus.On))
+                            {
+                                _state |= mask;
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }                            
+                    }
+                    if(_state == allFinished)
+                    {
+                        IsMatch = true;
+                    }
+                }
+                public void Reset()
+                {
+                    IsMatch = false;
+                    _state = 0;
+                    _detectStartAt = TimeSpan.Zero;
+                }
+            }
         }
     }
 }

@@ -1,0 +1,26 @@
+using Cysharp.Threading.Tasks;
+using MajdataPlay.Utils;
+using System.Collections;
+using System.Collections.Generic;
+using System.Threading;
+using TMPro;
+using Unity.VisualScripting;
+using UnityEngine;
+using UnityEngine.UI;
+#nullable enable
+namespace MajdataPlay.Scenes.List.Models
+{
+    [RequireComponent(typeof(RectTransform))]
+    public class CoverSmallDisplayer : MonoBehaviour
+    {
+        public bool IsOnline { get; set; } = false;
+        public RectTransform RectTransform => _rectTransform;
+
+        RectTransform _rectTransform;
+
+        protected virtual void Awake()
+        {
+            _rectTransform = GetComponent<RectTransform>();
+        }
+    }
+}

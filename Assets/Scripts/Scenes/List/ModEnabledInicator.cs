@@ -7,8 +7,7 @@ namespace MajdataPlay.Scenes.List
 {
     public class ModEnabledInicator : MonoBehaviour
     {
-        // Start is called before the first frame update
-        void Start()
+        void Awake()
         {
             gameObject.SetActive(MajInstances.GameManager.Settings.Mod.IsAnyModActive());
         }

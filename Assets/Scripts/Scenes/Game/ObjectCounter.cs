@@ -60,7 +60,7 @@ namespace MajdataPlay.Scenes.Game
         const string DXSCORE_RANK_BODY_STRING = "+{0}";
         const string LATE_STRING = "LATE";
         const string FAST_STRING = "FAST";
-        const string JUDGE_RESULT_STRING = "{0}\n{1}\n{2}\n{3}\n{4}\n\n{5}\n{6}";
+        const string JUDGE_RESULT_STRING = "{0}";
 
         const int COLOR_PALETTE_CRITICAL_COMBO_COLOR_INDEX = 0;
         const int COLOR_PALETTE_PERFECT_COMBO_COLOR_INDEX = 1;
@@ -79,7 +79,7 @@ namespace MajdataPlay.Scenes.Game
         readonly static Utf16PreparedFormat<double> DIFF_FORMAT = ZString.PrepareUtf16<double>(DIFF_STRING);
         readonly static Utf16PreparedFormat<double> DXSCORE_RANK_HEADER_FORMAT = ZString.PrepareUtf16<double>(DXSCORE_RANK_HEADER_STRING);
         readonly static Utf16PreparedFormat<double> DXSCORE_RANK_BODY_FORMAT = ZString.PrepareUtf16<double>(DXSCORE_RANK_BODY_STRING);
-        readonly static Utf16PreparedFormat<long, long, long, long, long, long, long> JUDGE_RESULT_FORMAT = ZString.PrepareUtf16<long, long, long, long, long, long, long>(JUDGE_RESULT_STRING);
+        readonly static Utf16PreparedFormat<long> JUDGMENT_COUNT_FORMAT = ZString.PrepareUtf16<long>(JUDGE_RESULT_STRING);
 
         #endregion
 
@@ -180,7 +180,34 @@ namespace MajdataPlay.Scenes.Game
         #endregion
 
         #region UIrefs
-        TextMeshProUGUI _judgeResultCount;
+        [SerializeField]
+        [FormerlySerializedAs("criticalCountDisplayer")]
+        TextMeshProUGUI _criticalCountDisplayer;
+
+        [SerializeField]
+        [FormerlySerializedAs("perfectCountDisplayer")]
+        TextMeshProUGUI _perfectCountDisplayer;
+
+        [SerializeField]
+        [FormerlySerializedAs("greatCountDisplayer")]
+        TextMeshProUGUI _greatCountDisplayer;
+
+        [SerializeField]
+        [FormerlySerializedAs("goodCountDisplayer")]
+        TextMeshProUGUI _goodCountDisplayer;
+
+        [SerializeField]
+        [FormerlySerializedAs("missCountDisplayer")]
+        TextMeshProUGUI _missCountDisplayer;
+
+        [SerializeField]
+        [FormerlySerializedAs("fastCountDisplayer")]
+        TextMeshProUGUI _fastCountDisplayer;
+
+        [SerializeField]
+        [FormerlySerializedAs("lateCountDisplayer")]
+        TextMeshProUGUI _lateCountDisplayer;
+
         TextMeshProUGUI _rate;
 
         [SerializeField]
@@ -266,7 +293,6 @@ namespace MajdataPlay.Scenes.Game
         void Awake()
         {
             Majdata<ObjectCounter>.Instance = this;
-            _judgeResultCount = GameObject.Find("JudgeResultCount").GetComponent<TextMeshProUGUI>();
             _rate = GameObject.Find("ObjectRate").GetComponent<TextMeshProUGUI>();
 
             _centerInfoDisplayerObject = _centerInfoDisplayerText.gameObject;
@@ -1125,15 +1151,34 @@ namespace MajdataPlay.Scenes.Game
             //                                        _lateCount);
             ref var noteJudgeStats = ref _noteJudgeStats;
             _sb.Clear();
-            JUDGE_RESULT_FORMAT.FormatTo(ref _sb, noteJudgeStats.TotalCriticalCount,
-                                                  noteJudgeStats.TotalPerfectCount,
-                                                  noteJudgeStats.TotalGreatCount,
-                                                  noteJudgeStats.TotalGoodCount,
-                                                  noteJudgeStats.TotalMissCount,
-                                                  noteJudgeStats.TotalFastCount,
-                                                  noteJudgeStats.TotalLateCount);
-            var arraySegment = _sb.AsArraySegment();
-            _judgeResultCount.SetCharArray(arraySegment.Array, arraySegment.Offset, arraySegment.Count);
+
+            JUDGMENT_COUNT_FORMAT.FormatTo(ref _sb, noteJudgeStats.TotalCriticalCount);
+            _criticalCountDisplayer.SetText(_sb);
+            _sb.Clear();
+
+            JUDGMENT_COUNT_FORMAT.FormatTo(ref _sb, noteJudgeStats.TotalPerfectCount);
+            _perfectCountDisplayer.SetText(_sb);
+            _sb.Clear();
+
+            JUDGMENT_COUNT_FORMAT.FormatTo(ref _sb, noteJudgeStats.TotalGreatCount);
+            _greatCountDisplayer.SetText(_sb);
+            _sb.Clear();
+
+            JUDGMENT_COUNT_FORMAT.FormatTo(ref _sb, noteJudgeStats.TotalGoodCount);
+            _goodCountDisplayer.SetText(_sb);
+            _sb.Clear();
+
+            JUDGMENT_COUNT_FORMAT.FormatTo(ref _sb, noteJudgeStats.TotalMissCount);
+            _missCountDisplayer.SetText(_sb);
+            _sb.Clear();
+
+            JUDGMENT_COUNT_FORMAT.FormatTo(ref _sb, noteJudgeStats.TotalFastCount);
+            _fastCountDisplayer.SetText(_sb);
+            _sb.Clear();
+
+            JUDGMENT_COUNT_FORMAT.FormatTo(ref _sb, noteJudgeStats.TotalLateCount);
+            _lateCountDisplayer.SetText(_sb);
+            _sb.Clear();
 
             switch (MajEnv.Settings.Game.TopInfo)
             {

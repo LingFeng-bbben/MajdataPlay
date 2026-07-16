@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Profiling;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace MajdataPlay.Scenes.Game
@@ -89,6 +90,26 @@ namespace MajdataPlay.Scenes.Game
         GameObject _fullComboAnimation;
         [SerializeField]
         GameObject _gameOverAnimation;
+
+        [SerializeField]
+        [FormerlySerializedAs("chartVisualDisplayer")]
+        ChartVisualDisplayer _chartVisualDisplayer;
+
+        [SerializeField]
+        [FormerlySerializedAs("timeDisplayer")]
+        TimeDisplayer _timeDisplayer;
+
+        [SerializeField]
+        [FormerlySerializedAs("chartInfoDisplayer")]
+        ChartInfoDisplayer _chartInfoDisplayer;
+
+        [SerializeField]
+        [FormerlySerializedAs("levelCircleDisplayer")]
+        Image _levelCircleDisplayer;
+
+        [SerializeField]
+        [FormerlySerializedAs("levelBGDisplayer")]
+        Image _levelBGDisplayer;
 
         [SerializeField]
         Sprite _maskSpriteA;
@@ -182,7 +203,6 @@ namespace MajdataPlay.Scenes.Game
         NotePoolManager _notePoolManager;
         NoteEffectPool _noteEffectPool;
         ObjectCounter _objectCounter;
-        TimeDisplayer _timeDisplayer;
         RecorderStatusDisplayer _recorderStateDisplayer;
 
         readonly CancellationTokenSource _cts = new();
@@ -224,7 +244,10 @@ namespace MajdataPlay.Scenes.Game
             }
             _timer = MajTimeline.CreateTimer();
             _chartSetting = _gameInfo.ChartSettings;
-            if(_gameSettings.Debug.OffsetUnit == OffsetUnitOption.Second)
+            var diffColor = CenterCoverDisplayer.DifficultyColors[(int)_gameInfo.CurrentLevel];
+            _levelCircleDisplayer.color = diffColor;
+            _levelBGDisplayer.color = diffColor;
+            if (_gameSettings.Debug.OffsetUnit == OffsetUnitOption.Second)
             {
                 _audioTimeOffsetSec = _gameSettings.Judge.AudioOffset;
                 _audioTimeOffsetSec += _chartSetting.AudioOffset;
@@ -258,6 +281,8 @@ namespace MajdataPlay.Scenes.Game
 #endif
             InputManager.TouchButtonRingEdge = 5.4f;
             MajInstances.SceneSwitcher.HideMV();
+
+            _chartInfoDisplayer.SetMetadata(_songDetail, _gameInfo.CurrentLevel);
         }
         void Start()
         {
@@ -576,22 +601,26 @@ namespace MajdataPlay.Scenes.Game
                         lastPercent = percent;
                         _sceneSwitcher.SetLoadingText($"{"MAJTEXT_DOWNLOADING_PICTURE".i18n()}...\n{percent * 100:F2}%");
                     }
-                    lastPercent = 0;
-                    progress.Reset();
-                    token.ThrowIfCancellationRequested();
-                    _sceneSwitcher.SetLoadingText($"{"MAJTEXT_DOWNLOADING_VIDEO".i18n()}...");
-                    var task4 = _songDetail.GetVideoPathAsync(progress, token: _cts.Token);
-                    while (!task4.IsCompleted)
+                    if(!_chartSetting.DisableVideoBG)
                     {
-                        await UniTask.Yield(cancellationToken: token);
-                        var percent = progress.Percent.Clamp(0, 1);
-                        LedRingLoadingUpdate(percent, lastPercent);
-                        lastPercent = percent;
-                        _sceneSwitcher.SetLoadingText($"{"MAJTEXT_DOWNLOADING_VIDEO".i18n()}...\n{percent * 100:F2}%");
-                    }
+                        lastPercent = 0;
+                        progress.Reset();
+                        token.ThrowIfCancellationRequested();
+                        _sceneSwitcher.SetLoadingText($"{"MAJTEXT_DOWNLOADING_VIDEO".i18n()}...");
+                        var task4 = _songDetail.GetVideoPathAsync(progress, token: _cts.Token);
+                        while (!task4.IsCompleted)
+                        {
+                            await UniTask.Yield(cancellationToken: token);
+                            var percent = progress.Percent.Clamp(0, 1);
+                            LedRingLoadingUpdate(percent, lastPercent);
+                            lastPercent = percent;
+                            _sceneSwitcher.SetLoadingText($"{"MAJTEXT_DOWNLOADING_VIDEO".i18n()}...\n{percent * 100:F2}%");
+                        }
+                    }                    
                     _sceneSwitcher.SetLoadingText(string.Empty);
                 }
 
+                _chartInfoDisplayer.SetCover(await _songDetail.GetCoverAsync(false));
                 await LoadAudioTrack();
                 token.ThrowIfCancellationRequested();
                 await InitBackground();
@@ -818,7 +847,7 @@ namespace MajdataPlay.Scenes.Game
             }
             _chart = _chart.AddOffset(-_displayOffsetSec);
             await UniTask.SwitchToMainThread();
-            GameObject.Find("ChartAnalyzer").GetComponent<ChartAnalyzer>().AnalyzeAndDrawGraphAsync(_chart, AudioLength).Forget();
+            _chartVisualDisplayer.SetSimaiChart(_chart, AudioLength);
             await UniTask.SwitchToThreadPool();
             var simaiCmd = _simaiFile.Commands.FirstOrDefault(x => x.Prefix == "clock_count");
             var countnum = 4;
@@ -838,10 +867,11 @@ namespace MajdataPlay.Scenes.Game
             await UniTask.Yield(PlayerLoopTiming.LastPostLateUpdate);
 
             var dim = _gameSettings.Game.BackgroundDim;
+            
             if (dim < 1f)
             {
                 var videoPath = await _songDetail.GetVideoPathAsync();
-                if (!string.IsNullOrEmpty(videoPath))
+                if (!_chartSetting.DisableVideoBG && !string.IsNullOrEmpty(videoPath))
                 {
                     var cover = await _songDetail.GetCoverAsync(false);
                     await UniTask.SwitchToMainThread();
@@ -852,7 +882,7 @@ namespace MajdataPlay.Scenes.Game
                     var cover = await _songDetail.GetCoverAsync(false);
                     await UniTask.SwitchToMainThread();
                     _bgManager.SetBackgroundPic(cover);
-                }        
+                }
             }
 
             _bgManager.SetBackgroundDim(1.0f);

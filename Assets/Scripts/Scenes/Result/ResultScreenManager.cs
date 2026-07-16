@@ -18,12 +18,15 @@ using MajdataPlay.Settings;
 using System.Threading.Tasks;
 using MajdataPlay.Recording;
 using MajdataPlay.Net;
+using MajdataPlay.Scenes.Result.Components;
+using UnityEngine.Serialization;
 
 #nullable enable
 namespace MajdataPlay.Scenes.Result
 {
     public partial class ResultScreenManager : MonoBehaviour
     {
+        public bool IsDebug;
         public TextMeshProUGUI title;
         public TextMeshProUGUI artist;
         public TextMeshProUGUI designer;
@@ -34,6 +37,7 @@ namespace MajdataPlay.Scenes.Result
         public TextMeshProUGUI dxScore;
         public TextMeshProUGUI rank;
 
+        public TextMeshProUGUI criticalCount;
         public TextMeshProUGUI perfectCount;
         public TextMeshProUGUI greatCount;
         public TextMeshProUGUI goodCount;
@@ -44,9 +48,8 @@ namespace MajdataPlay.Scenes.Result
         public TextMeshProUGUI avgJudgeTime;
 
         public TextMeshProUGUI omg;
-
-        public TextMeshProUGUI subMonitor;
-
+        public ResultsSubDisplayManager subMonitorManager;
+        public Color critColor;
         public Color perfectColor;
         public Color greatColor;
         public Color goodColor;
@@ -63,6 +66,22 @@ namespace MajdataPlay.Scenes.Result
 
         public FavoriteAdder favoriteAdder;
 
+        [SerializeField]
+        [FormerlySerializedAs("levelCircleDisplayer")]
+        Image _levelCircleDisplayer;
+
+        [SerializeField]
+        [FormerlySerializedAs("levelBGDisplayer")]
+        Image _levelBGDisplayer;
+
+        [SerializeField]
+        [FormerlySerializedAs("dxScoreDisplayer")]
+        DXScoreDisplayer _dxScoreDisplayer;
+
+        [SerializeField]
+        [FormerlySerializedAs("onlineInteractionSender")]
+        OnlineInteractionSender _onlineInteractionSender;
+
         GameInfo _gameInfo = Majdata<GameInfo>.Instance!;
 
         Task _scoreSaveTask = Task.CompletedTask;
@@ -78,6 +97,30 @@ namespace MajdataPlay.Scenes.Result
         }
         void Start()
         {
+            if (IsDebug)
+            {
+                var rect1 = _noteJudgeDiffGraph.GetComponent<RectTransform>().rect;
+                var width = (int)rect1.width;
+                var height = (int)rect1.height;
+
+
+                // 生成随机样本用于测试
+                const int sampleCount = 1000; // 可调整样本数量
+                var arr = new float[sampleCount];
+                var rng = new System.Random();
+                for (int i = 0; i < sampleCount; i++)
+                {
+                    // 在 -150 .. 150 范围内生成随机浮点数
+                    arr[i] = (float)(rng.NextDouble() * 300.0 - 150.0);
+                }
+                var testSpan = new ReadOnlySpan<float>(arr);
+                
+
+                _noteJudgeDiffGraph.texture = DrawNoteJudgeDiffGraph(testSpan, height, width);
+                return;
+            }
+
+
             rank.text = "";
             var listConfig = MajEnv.RuntimeConfig.List;
             var result = _gameInfo.GetLastResult();
@@ -89,8 +132,10 @@ namespace MajdataPlay.Scenes.Result
             var song = result.SongDetail;
             var historyResult = ScoreManager.GetScore(song, listConfig.SelectedDiff);
             var score = MaiScore.CreateFromResult(result, result.Level);
-            var intractSender = GetComponent<OnlineInteractionSender>();
-            intractSender.Init(song, score);
+            var diffColor = CenterCoverDisplayer.DifficultyColors[(int)_gameInfo.CurrentLevel];
+            _levelCircleDisplayer.color = diffColor;
+            _levelBGDisplayer.color = diffColor;
+            _onlineInteractionSender.Init(song, score);
             favoriteAdder.SetSong(song);
             userInfoDisplayer.DisplayFromSong(song);
 
@@ -109,25 +154,17 @@ namespace MajdataPlay.Scenes.Result
             title.text = song.Title;
             artist.text = song.Artist;
             designer.text = song.Designers[(int)_gameInfo.CurrentLevel] ?? "Undefined";
-            level.text = _gameInfo.CurrentLevel.ToString() + " " + song.Levels[(int)_gameInfo.CurrentLevel];
+            level.text = song.Levels[(int)_gameInfo.CurrentLevel];
 
             accDX.text = isClassic ? $"{Math.Floor(result.Acc.Classic * 100) / 100:F2}%" : $"{Math.Floor(result.Acc.DX * 10000) / 10000:F4}%";
             var nowAcc = isClassic ? result.Acc.Classic : result.Acc.DX;
             var historyAcc = isClassic ? historyResult.Acc.Classic : historyResult.Acc.DX;
             accHistory.text = $"{nowAcc - historyAcc:+0.0000;-0.0000;0}%";
-            var dxScoreRank = new DXScoreRank(result.DXScore, result.TotalDXScore);
-            if (dxScoreRank.Rank > 0)
-            {
-                dxScore.text = $"✧ {dxScoreRank.Rank} {result.DXScore}/{result.TotalDXScore}";
-            }
-            else
-            {
-                dxScore.text = $"{result.DXScore}/{result.TotalDXScore}";
-            }
 
-            perfectCount.text = string.Format(PERFECT_COUNT_TEXT_TEMPLATE, 
-                                              totalJudgeRecord.CriticalPerfect + totalJudgeRecord.Perfect, 
-                                              totalJudgeRecord.Perfect);
+            _dxScoreDisplayer.SetScore(result);
+
+            criticalCount.text = $"{totalJudgeRecord.CriticalPerfect}";
+            perfectCount.text = $"{totalJudgeRecord.Perfect}";
             greatCount.text = $"{totalJudgeRecord.Great}";
             goodCount.text = $"{totalJudgeRecord.Good}";
             missCount.text = $"{totalJudgeRecord.Miss}";
@@ -135,9 +172,10 @@ namespace MajdataPlay.Scenes.Result
             fastCount.text = $"{result.Fast}";
             lateCount.text = $"{result.Late}";
 
-            subMonitor.text = BuildSubDisplayText(result.JudgeRecord);
+            subMonitorManager.SetJudgeDetail(result.JudgeRecord);
 
-            _noteJudgeDiffGraph.texture = DrawNoteJudgeDiffGraph(result.NoteJudgeDiffs);
+            var rect = _noteJudgeDiffGraph.GetComponent<RectTransform>().rect;
+            _noteJudgeDiffGraph.texture = DrawNoteJudgeDiffGraph(result.NoteJudgeDiffs.Span, (int)rect.height, (int)rect.width);
             if(MajEnv.Settings.Debug.OffsetUnit == OffsetUnitOption.Second)
             {
                 if (result.NoteJudgeDiffs.IsEmpty)
@@ -193,7 +231,7 @@ namespace MajdataPlay.Scenes.Result
                 var localScoreSaveTask = ScoreManager.SaveScore(result, result.Level);
                 if (song is OnlineSongDetail onlineSong && onlineSong.ServerInfo.RuntimeConfig.AuthMethod != NetAuthMethodOption.None)
                 {
-                    var task = intractSender.SendScoreAsync();
+                    var task = _onlineInteractionSender.SendScoreAsync();
                     _scoreSaveTask = Task.WhenAll(localScoreSaveTask, task);
                 }
                 else
@@ -303,39 +341,6 @@ namespace MajdataPlay.Scenes.Result
             CabinetLed.SetButtonLight(Color.green, 3);
         }
 
-
-        string BuildSubDisplayText(JudgeDetail judgeRecord)
-        {
-            var tapJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Tap]);
-            var holdJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Hold]);
-            var slideJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Slide]);
-            var touchJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Touch]);
-            var breakJudgeInfo = JudgeDetail.UnpackJudgeRecord(judgeRecord[ScoreNoteType.Break]);
-            var breakJudgeRecord = judgeRecord[ScoreNoteType.Break];
-            var break2550Count = breakJudgeRecord[JudgeGrade.FastPerfect2nd] + breakJudgeRecord[JudgeGrade.LatePerfect2nd];
-            var break2500Count = breakJudgeRecord[JudgeGrade.FastPerfect3rd] + breakJudgeRecord[JudgeGrade.LatePerfect3rd];
-            var breakPerfectCountText = string.Empty;
-            if((break2550Count + break2500Count) == 0)
-            {
-                breakPerfectCountText = "0";
-            }
-            else
-            {
-                breakPerfectCountText = $"{break2550Count}+{break2500Count}";
-            }
-            string[] nmsl = new string[]
-            {
-                $"<color=#FFFFFF><indent=0%>NOTES<indent=16.6%><color=#FFF90E>Critical<indent=33.3%><color=#FFB30D>Perfect<indent=50%><color=#FFA2F1>Great<indent=66.6%><color=#00DF0E>Good<indent=83.3%><color=#C7C7C7>Miss",
-                $"<color=#FFFFFF><indent=0%>Tap<indent=16.6%><color=#FFF90E>{tapJudgeInfo.CriticalPerfect}<indent=33.3%><color=#FFB30D>{tapJudgeInfo.Perfect}<indent=50%><color=#FFA2F1>{tapJudgeInfo.Great}<indent=66.6%><color=#00DF0E>{tapJudgeInfo.Good}<indent=83.3%><color=#C7C7C7>{tapJudgeInfo.Miss}",
-                $"<color=#FFFFFF><indent=0%>Hold<indent=16.6%><color=#FFF90E>{holdJudgeInfo.CriticalPerfect}<indent=33.3%><color=#FFB30D>{holdJudgeInfo.Perfect}<indent=50%><color=#FFA2F1>{holdJudgeInfo.Great}<indent=66.6%><color=#00DF0E>{holdJudgeInfo.Good}<indent=83.3%><color=#C7C7C7>{holdJudgeInfo.Miss}",
-                $"<color=#FFFFFF><indent=0%>Slide<indent=16.6%><color=#FFF90E>{slideJudgeInfo.CriticalPerfect}<indent=33.3%><color=#FFB30D>{slideJudgeInfo.Perfect}<indent=50%><color=#FFA2F1>{slideJudgeInfo.Great}<indent=66.6%><color=#00DF0E>{slideJudgeInfo.Good}<indent=83.3%><color=#C7C7C7>{slideJudgeInfo.Miss}",
-                $"<color=#FFFFFF><indent=0%>Touch<indent=16.6%><color=#FFF90E>{touchJudgeInfo.CriticalPerfect}<indent=33.3%><color=#FFB30D>{touchJudgeInfo.Perfect}<indent=50%><color=#FFA2F1>{touchJudgeInfo.Great}<indent=66.6%><color=#00DF0E>{touchJudgeInfo.Good}<indent=83.3%><color=#C7C7C7>{touchJudgeInfo.Miss}",
-                $"<color=#FFFFFF><indent=0%>Break<indent=16.6%><color=#FFF90E>{breakJudgeInfo.CriticalPerfect}<indent=33.3%><color=#FFB30D>{breakPerfectCountText}<indent=50%><color=#FFA2F1>{breakJudgeInfo.Great}<indent=66.6%><color=#00DF0E>{breakJudgeInfo.Good}<indent=83.3%><color=#C7C7C7>{breakJudgeInfo.Miss}",
-            };
-            return string.Join("\n", nmsl);
-        }
-
-
         void Update()
         {
             if(!_isInited || _isExited)
@@ -383,159 +388,183 @@ namespace MajdataPlay.Scenes.Result
             InputManager.TouchButtonRingEdge = 5.4f;
             DestroyImmediate(_noteJudgeDiffGraph.texture, true);
         }
-        Texture DrawNoteJudgeDiffGraph(ReadOnlyMemory<float> noteJudgeDiffs)
+        Texture DrawNoteJudgeDiffGraph(ReadOnlySpan<float> dataset,
+                               int height,
+                               int width)
         {
-            ReadOnlySpan<float> dataset = noteJudgeDiffs.Span;
-            const float SAMPLE_DIFF_STEP = 1.6667f / 2;
-            const int CHART_PADDING_LEFT = 20;
-            const int CHART_PADDING_RIGHT = 20;
-            const int CHART_PADDING_TOP = 0;
-            const int CHART_PADDING_BOTTOM = 30;
+            const float DIFF_MIN = -150f;
+            const float DIFF_MAX = 150f;
+            const float DIFF_RANGE = DIFF_MAX - DIFF_MIN;
 
-            var width = 690;
-            var height = 139;
+            const int CHART_PADDING_LEFT = 0;
+            const int CHART_PADDING_RIGHT = 0;
+            const int CHART_PADDING_TOP = 0;
+            const int CHART_PADDING_BOTTOM = 0;
+
+            const int BAR_COUNT = 72; 
+
             var chartWidth = width - CHART_PADDING_LEFT - CHART_PADDING_RIGHT;
             var chartHeight = height - CHART_PADDING_TOP - CHART_PADDING_BOTTOM;
-            
+
             var imageInfo = new SKImageInfo(width, height);
-            Span<Point> points = stackalloc Point[180];
+            Span<Point> points = stackalloc Point[BAR_COUNT];
             var maxSampleCount = 0;
-            var textFont = new SKFont(SKTypeface.Default);
             using var surface = SKSurface.Create(imageInfo);
+            using var critPaint = new SKPaint();
             using var perfectPaint = new SKPaint();
             using var greatPaint = new SKPaint();
             using var goodPaint = new SKPaint();
-            using var linePaint = new SKPaint();
-            using var textPaint = new SKPaint();
-            using var perfectPath = new SKPath();
-            using var greatPath = new SKPath();
-            using var goodPath = new SKPath();
+            using var emptyPaint = new SKPaint();
+            //using var linePaint = new SKPaint();
+            //using var midLinePaint = new SKPaint();
             var canvas = surface.Canvas;
-            
+
             canvas.Clear(SKColor.Empty);
+
+            critPaint.Color = critColor.ToSkColor();
+            critPaint.IsAntialias = true;
+            critPaint.Style = SKPaintStyle.Fill;
+
             perfectPaint.Color = perfectColor.ToSkColor();
             perfectPaint.IsAntialias = true;
             perfectPaint.Style = SKPaintStyle.Fill;
+
             greatPaint.Color = greatColor.ToSkColor();
             greatPaint.IsAntialias = true;
             greatPaint.Style = SKPaintStyle.Fill;
+
             goodPaint.Color = goodColor.ToSkColor();
             goodPaint.IsAntialias = true;
             goodPaint.Style = SKPaintStyle.Fill;
-            linePaint.Color = SKColors.White;
-            linePaint.IsAntialias = true;
-            linePaint.Style = SKPaintStyle.Fill;
-            linePaint.StrokeWidth = 1f;
-            textPaint.Color = SKColors.White;
-            textPaint.IsAntialias = true;
-            textPaint.Style = SKPaintStyle.Fill;
-            textPaint.StrokeWidth = 4f;
-            textFont.Size = 20;
 
-            for (float sampleDiff = -150f,i = 0; sampleDiff <= 150f; sampleDiff += SAMPLE_DIFF_STEP * 2,i++)
+            emptyPaint.Color = SKColors.Transparent;
+            emptyPaint.IsAntialias = true;
+            emptyPaint.Style = SKPaintStyle.Fill;
+
+            //linePaint.Color = SKColors.White.WithAlpha(180);
+            //linePaint.IsAntialias = true;
+            //linePaint.Style = SKPaintStyle.Stroke;
+            //linePaint.StrokeWidth = 1f;
+
+            //midLinePaint.Color = SKColors.Red.WithAlpha(180);
+            //midLinePaint.IsAntialias = true;
+            //midLinePaint.Style = SKPaintStyle.Stroke;
+            //midLinePaint.StrokeWidth = 2f;
+
+            // 计算每个 bin 的区间
+            var binWidthDiff = DIFF_RANGE / (float)BAR_COUNT; // 每个 bin 覆盖的 diff 范围
+            for (int i = 0; i < BAR_COUNT; i++)
             {
-                var range = new Range<float>(sampleDiff - SAMPLE_DIFF_STEP, sampleDiff + SAMPLE_DIFF_STEP, ContainsType.Closed);
+                var binCenter = DIFF_MIN + (i + 0.5f) * binWidthDiff;
+                var binStart = DIFF_MIN + i * binWidthDiff;
+                var binEnd = binStart + binWidthDiff;
+                var range = new Range<float>(binStart, binEnd, ContainsType.Closed);
                 var samples = dataset.FindAll(x => range.InRange(x));
                 var sampleCount = samples.Length;
-                var x = (sampleDiff + 150f) / 300f;
-                var y = sampleCount;
 
-                if (y > maxSampleCount)
-                {
-                    maxSampleCount = y;
-                }
+                if (sampleCount > maxSampleCount) maxSampleCount = sampleCount;
 
-                points[(int)i] = new Point()
+                points[i] = new Point()
                 {
-                    X = x,
-                    Y = y,
-                    Diff = sampleDiff,
+                    X = binCenter, // 存储中心 diff 以便后续判断颜色
+                    Y = sampleCount,
+                    Diff = binCenter,
                     IsEmpty = samples.IsEmpty
                 };
             }
-            perfectPath.MoveTo(CHART_PADDING_LEFT, chartHeight);
-            greatPath.MoveTo(CHART_PADDING_LEFT, chartHeight);
-            goodPath.MoveTo(CHART_PADDING_LEFT, chartHeight);
-            for (var i = 0; i < points.Length; i++)
+
+            // 柱状图参数：间距与圆角
+            var barSpacing = 2f; // 每个柱子之间的 padding（像素），可调整
+            var totalSpacing = barSpacing * (BAR_COUNT - 1);
+            var barWidth = Math.Max(1f, (chartWidth - totalSpacing) / BAR_COUNT);
+            var cornerRadius = MathF.Min(barWidth, chartHeight) * 0.5f;
+
+            // 绘制每个柱子
+            for (int i = 0; i < BAR_COUNT; i++)
             {
                 var origin = points[i];
-                var point = new Point()
+                if (maxSampleCount == 0)
                 {
-                    X = origin.X,
-                    Y = origin.Y / maxSampleCount,
-                    Diff = origin.Diff,
-                    IsEmpty = origin.IsEmpty
-                };
-                var x = chartWidth * point.X + CHART_PADDING_LEFT;
-                var y = chartHeight * (1 - point.Y) - CHART_PADDING_TOP;
-                var isPerfect = Math.Abs(point.Diff) <= 50f;
-                var isGreat = Math.Abs(point.Diff) <= 100f;
-                var isGood = Math.Abs(point.Diff) <= 150f;
+                    // 没有样本，直接跳出（或可绘制占位）
+                    continue;
+                }
 
-                if(point.IsEmpty)
-                {
-                    perfectPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
-                    greatPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
-                    goodPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
-                }
-                else if (isPerfect)
-                {
-                    perfectPath.LineTo(x, y);
-                    greatPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
-                    goodPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
-                }
-                else if (isGreat)
-                {
-                    perfectPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
-                    greatPath.LineTo(x, y);
-                    goodPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
-                }
-                else if (isGood)
-                {
-                    perfectPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
-                    greatPath.LineTo(x, chartHeight + CHART_PADDING_TOP);
-                    goodPath.LineTo(x, y);
-                }
-            }
-            perfectPath.LineTo(chartWidth + CHART_PADDING_LEFT, chartHeight + CHART_PADDING_TOP);
-            greatPath.LineTo(chartWidth + CHART_PADDING_LEFT, chartHeight + CHART_PADDING_TOP);
-            goodPath.LineTo(chartWidth + CHART_PADDING_LEFT, chartHeight + CHART_PADDING_TOP);
-            perfectPath.Close();
-            greatPath.Close();
-            goodPath.Close();
+                // 归一化高度
+                var normalizedHeight = origin.Y / (float)maxSampleCount; // 0..1
+                var drawHeight = normalizedHeight * chartHeight;
 
-            canvas.DrawPath(perfectPath, perfectPaint);
-            canvas.DrawPath(greatPath, greatPaint);
-            canvas.DrawPath(goodPath, goodPaint);
-            canvas.DrawLine(CHART_PADDING_LEFT, 
-                            CHART_PADDING_TOP + chartHeight + 0.5f, 
-                            CHART_PADDING_LEFT + chartWidth, 
-                            CHART_PADDING_TOP + chartHeight + 0.5f, linePaint);
-            
-            for (var i = -9; i < 10; i++)
-            {
-                var index = i + 9f;
-                var x =  (chartWidth  * (index / 18)) + CHART_PADDING_LEFT;
-                var start = new SKPoint()
+                // 计算 x 位置：从左 padding 开始，按宽度+间距排列
+                var x = CHART_PADDING_LEFT + i * (barWidth + barSpacing);
+                var yTop = CHART_PADDING_TOP + (chartHeight - drawHeight);
+                var rect = new SKRect(x, yTop, x + barWidth, CHART_PADDING_TOP + chartHeight);
+
+                // 选择颜色（根据柱子中心 diff）
+                var absDiff = Math.Abs(origin.Diff);
+                SKPaint paintToUse;
+                if (absDiff <= MajEnv.FRAME_LENGTH_MSEC)
+                    paintToUse = critPaint;
+                else if (absDiff <= MajEnv.FRAME_LENGTH_MSEC * 3)
+                    paintToUse = perfectPaint;
+                else if (absDiff <= MajEnv.FRAME_LENGTH_MSEC * 6)
+                    paintToUse = greatPaint;
+                else
+                    paintToUse = goodPaint;
+
+                // 如果你想跳过空桶：保持 continue；否则可绘制浅色占位
+                if (origin.IsEmpty)
                 {
-                    X = x,
-                    Y = CHART_PADDING_TOP
-                };
-                var end = new SKPoint()
+                    // 跳过绘制空桶（若想显示占位，改为绘制 emptyPaint）
+                    continue;
+                }
+
+                // 绘制圆角矩形柱子
+                canvas.DrawRoundRect(rect, cornerRadius, cornerRadius, paintToUse);
+
+                // 可选细边框增强分隔感
+                using var borderPaint = new SKPaint
                 {
-                    X = x,
-                    Y = CHART_PADDING_TOP + chartHeight
+                    Color = SKColors.White.WithAlpha(0),
+                    Style = SKPaintStyle.Stroke,
+                    StrokeWidth = 0.5f,
+                    IsAntialias = true
                 };
-                var textPoint = new SKPoint()
-                {
-                    X = x + 6f,
-                    Y = CHART_PADDING_TOP + chartHeight + 18f
-                };
-                canvas.DrawLine(start, end, linePaint);
-                canvas.DrawText($"{i}f", textPoint,SKTextAlign.Right,textFont, textPaint);
+                canvas.DrawRoundRect(rect, cornerRadius, cornerRadius, borderPaint);
             }
-            return GraphHelper.GraphSnapshot(surface);
+
+            // 绘制底线
+            //canvas.DrawLine(CHART_PADDING_LEFT,
+            //                CHART_PADDING_TOP + chartHeight + 0.5f,
+            //                CHART_PADDING_LEFT + chartWidth,
+            //                CHART_PADDING_TOP + chartHeight + 0.5f, linePaint);
+
+            // 绘制竖向网格线（可保留）
+            //for (var i = -9; i < 10; i++)
+            //{
+            //    var index = i + 9f;
+            //    var gridX = (chartWidth * (index / 18f)) + CHART_PADDING_LEFT;
+            //    var start = new SKPoint()
+            //    {
+            //        X = gridX,
+            //        Y = CHART_PADDING_TOP
+            //    };
+            //    var end = new SKPoint()
+            //    {
+            //        X = gridX,
+            //        Y = CHART_PADDING_TOP + chartHeight
+            //    };
+            //    canvas.DrawLine(start, end, linePaint);
+            //}
+
+            // 绘制中线（Diff = 0）
+            // 计算中线 x 坐标：Diff=0 对应的相对位置为 (0 - DIFF_MIN) / DIFF_RANGE
+            //var centerRatio = (0f - DIFF_MIN) / DIFF_RANGE; // 0..1
+            //var centerX = CHART_PADDING_LEFT + centerRatio * chartWidth;
+            //// 中线从顶部到底部
+            //canvas.DrawLine(centerX, CHART_PADDING_TOP, centerX, CHART_PADDING_TOP + chartHeight, midLinePaint);
+
+            return surface.ToTexture2D(imageInfo);
         }
+
         readonly struct Point
         {
             public float X { get; init; }

@@ -9,6 +9,8 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using MajdataPlay.Settings.Runtime;
+using UnityEngine.Serialization;
+using TMPro;
 
 namespace MajdataPlay.Scenes.Setting
 {
@@ -21,6 +23,18 @@ namespace MajdataPlay.Scenes.Setting
         public GameSetting Setting => MajEnv.Settings;
 
         public GameObject menuPrefab;
+
+        [SerializeField]
+        [FormerlySerializedAs("menuListRoot")]
+        GameObject _menuListRoot;
+
+        [SerializeField]
+        [FormerlySerializedAs("currentMenuNameDisplayer")]
+        TextMeshProUGUI _currentMenuNameDisplayer;
+
+        [SerializeField]
+        [FormerlySerializedAs("descriptionText")]
+        TextMeshProUGUI _descriptionTextDisplayer;
 
         Menu[] menus = Array.Empty<Menu>();
         bool _isExited = false;
@@ -38,19 +52,19 @@ namespace MajdataPlay.Scenes.Setting
                                  .Where(x => x.GetCustomAttributes<HideInSettingUIAttribute>().Count() == 0)
                                  .ToArray();
             var offset = 0;
-
-            if(!_settingConfig.IgnoreChartSettingPage)
+            var listRoot = _menuListRoot.transform;
+            if (!_settingConfig.IgnoreChartSettingPage)
             {
                 menus = new Menu[properties.Length + 1];
                 offset = 0;
                 var selectedChart = SongStorage.WorkingCollection.Current;
                 var chartSetting = ChartSettingStorage.GetSetting(selectedChart);
                 var chartSettingType = chartSetting.GetType();
-                var menuObj = Instantiate(menuPrefab, transform);
+                var menuObj = Instantiate(menuPrefab, listRoot);
                 menuObj.name = chartSettingType.Name;
                 var menu = menuObj.GetComponent<Menu>();
                 menus[properties.Length] = menu;
-                menu.SubOptionObject = chartSetting;
+                menu.Instance = chartSetting;
                 menu.Name = chartSettingType.Name;
             }
             else
@@ -68,11 +82,11 @@ namespace MajdataPlay.Scenes.Setting
                     _property = property.PropertyType.GetProperty("Volume");
                 }
 
-                var menuObj = Instantiate(menuPrefab, transform);
+                var menuObj = Instantiate(menuPrefab, listRoot);
                 menuObj.name = _property.Name;
                 var menu = menuObj.GetComponent<Menu>();
                 menus[i + offset] = menu;
-                menu.SubOptionObject = _property.GetValue(root);
+                menu.Instance = _property.GetValue(root);
                 menu.Name = _property.Name;
             }
             foreach (var (i, menu) in menus.WithIndex())
@@ -138,11 +152,11 @@ namespace MajdataPlay.Scenes.Setting
                     IsPressed = true;
                     PressTime = 0;
                 }
-                else if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A1))
+                else if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A2))
                 {
                     NextMenu();
                 }
-                else if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A8))
+                else if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A7))
                 {
                     PreviousMenu();
                 }
@@ -214,6 +228,10 @@ namespace MajdataPlay.Scenes.Setting
             _settingConfig.SelectedMenu = menus[Index].Name;
             UpdateMenu(oldIndex, Index);
         }
+        public void SetDescriptionText(string text)
+        {
+            _descriptionTextDisplayer.text = text.Replace('\n', ',');
+        }
         void UpdateMenu(int oldIndex,int newIndex)
         {
             if (oldIndex == newIndex)
@@ -223,11 +241,11 @@ namespace MajdataPlay.Scenes.Setting
             
             if (newIndex > oldIndex)
             {
-                menus[Index].ToFirst();
+                menus[Index].ToHead();
             }
             else
             {
-                menus[Index].ToLast();
+                menus[Index].ToTail();
             }
             menus[Index].gameObject.SetActive(true);
             foreach (var (i, menu) in menus.WithIndex())

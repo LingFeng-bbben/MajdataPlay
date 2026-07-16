@@ -207,7 +207,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             AudioEffMana.PlayTapSound(judgeResult);
         }
         [OnPreUpdate]
-        void OnPreUpdate()
+        internal void OnPreUpdate()
         {
             using (UnityProfiler.Create("TapDrop.OnPreUpdate"))
             {
@@ -266,7 +266,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
         }
         [OnUpdate]
-        void OnUpdate()
+        internal void OnUpdate()
         {
             using (UnityProfiler.Create("TapDrop.OnUpdate"))
             {

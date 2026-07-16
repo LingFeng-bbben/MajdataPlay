@@ -307,66 +307,66 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
                 {
                     IsOutlineAvailable = true;
                 }
-                Outline = SpriteLoader.Load(this._path + "/outline.png");
-                SubDisplay = SpriteLoader.Load(this._path + "/SubBackgourd.png");
+                Outline = SpriteLoader.LoadFromFile(this._path + "/outline.png");
+                SubDisplay = SpriteLoader.LoadFromFile(this._path + "/SubBackgourd.png");
 
-                Tap = SpriteLoader.Load(this._path + "/TapSkins/tap.png");
-                Tap_Each = SpriteLoader.Load(this._path + "/TapSkins/tap_each.png");
-                Tap_Break = SpriteLoader.Load(this._path + "/TapSkins/tap_break.png");
-                Tap_Break_Mine = SpriteLoader.Load(this._path + "/TapSkins/tap_break_mine.png");
-                Tap_Mine = SpriteLoader.Load(this._path + "/TapSkins/tap_mine.png");
-                Tap_Ex = SpriteLoader.Load(this._path + "/TapSkins/tap_ex.png");
+                Tap = SpriteLoader.LoadFromFile(this._path + "/TapSkins/tap.png");
+                Tap_Each = SpriteLoader.LoadFromFile(this._path + "/TapSkins/tap_each.png");
+                Tap_Break = SpriteLoader.LoadFromFile(this._path + "/TapSkins/tap_break.png");
+                Tap_Break_Mine = SpriteLoader.LoadFromFile(this._path + "/TapSkins/tap_break_mine.png");
+                Tap_Mine = SpriteLoader.LoadFromFile(this._path + "/TapSkins/tap_mine.png");
+                Tap_Ex = SpriteLoader.LoadFromFile(this._path + "/TapSkins/tap_ex.png");
 
-                Slide = SpriteLoader.Load(this._path + "/SlideSkins/slide.png");
-                Slide_Each = SpriteLoader.Load(this._path + "/SlideSkins/slide_each.png");
-                Slide_Break = SpriteLoader.Load(this._path + "/SlideSkins/slide_break.png");
-                Slide_Mine = SpriteLoader.Load(this._path + "/SlideSkins/slide_mine.png");
-                Slide_Break_Mine = SpriteLoader.Load(this._path + "/SlideSkins/slide_break_mine.png");
+                Slide = SpriteLoader.LoadFromFile(this._path + "/SlideSkins/slide.png");
+                Slide_Each = SpriteLoader.LoadFromFile(this._path + "/SlideSkins/slide_each.png");
+                Slide_Break = SpriteLoader.LoadFromFile(this._path + "/SlideSkins/slide_break.png");
+                Slide_Mine = SpriteLoader.LoadFromFile(this._path + "/SlideSkins/slide_mine.png");
+                Slide_Break_Mine = SpriteLoader.LoadFromFile(this._path + "/SlideSkins/slide_break_mine.png");
                 for (var i = 0; i < 11; i++)
                 {
-                    Wifi[i] = SpriteLoader.Load(this._path + "/WifiSkins/wifi_" + i + ".png");
-                    Wifi_Each[i] = SpriteLoader.Load(this._path + "/WifiSkins/wifi_each_" + i + ".png");
-                    Wifi_Break[i] = SpriteLoader.Load(this._path + "/WifiSkins/wifi_break_" + i + ".png");
-                    Wifi_Mine[i] = SpriteLoader.Load(this._path + "/WifiSkins/wifi_mine_" + i + ".png");
-                    Wifi_Break_Mine[i] = SpriteLoader.Load(this._path + "/WifiSkins/wifi_break_mine_" + i + ".png");
+                    Wifi[i] = SpriteLoader.LoadFromFile(this._path + "/WifiSkins/wifi_" + i + ".png");
+                    Wifi_Each[i] = SpriteLoader.LoadFromFile(this._path + "/WifiSkins/wifi_each_" + i + ".png");
+                    Wifi_Break[i] = SpriteLoader.LoadFromFile(this._path + "/WifiSkins/wifi_break_" + i + ".png");
+                    Wifi_Mine[i] = SpriteLoader.LoadFromFile(this._path + "/WifiSkins/wifi_mine_" + i + ".png");
+                    Wifi_Break_Mine[i] = SpriteLoader.LoadFromFile(this._path + "/WifiSkins/wifi_break_mine_" + i + ".png");
                 }
 
-                Star = SpriteLoader.Load(this._path + "/StarSkins/star.png");
-                Star_Double = SpriteLoader.Load(this._path + "/StarSkins/star_double.png");
-                Star_Double_Mine = SpriteLoader.Load(this._path + "/StarSkins/star_double_mine.png");
-                Star_Each = SpriteLoader.Load(this._path + "/StarSkins/star_each.png");
-                Star_Mine = SpriteLoader.Load(this._path + "/StarSkins/star_mine.png");
-                Star_Each_Double = SpriteLoader.Load(this._path + "/StarSkins/star_each_double.png");
-                Star_Break = SpriteLoader.Load(this._path + "/StarSkins/star_break.png");
-                Star_Break_Mine = SpriteLoader.Load(this._path + "/StarSkins/star_break_mine.png");
-                Star_Break_Double = SpriteLoader.Load(this._path + "/StarSkins/star_break_double.png");
-                Star_Break_Double_Mine = SpriteLoader.Load(this._path + "/StarSkins/star_break_double_mine.png");
-                Star_Ex = SpriteLoader.Load(this._path + "/StarSkins/star_ex.png");
-                Star_Ex_Double = SpriteLoader.Load(this._path + "/StarSkins/star_ex_double.png");
+                Star = SpriteLoader.LoadFromFile(this._path + "/StarSkins/star.png");
+                Star_Double = SpriteLoader.LoadFromFile(this._path + "/StarSkins/star_double.png");
+                Star_Double_Mine = SpriteLoader.LoadFromFile(this._path + "/StarSkins/star_double_mine.png");
+                Star_Each = SpriteLoader.LoadFromFile(this._path + "/StarSkins/star_each.png");
+                Star_Mine = SpriteLoader.LoadFromFile(this._path + "/StarSkins/star_mine.png");
+                Star_Each_Double = SpriteLoader.LoadFromFile(this._path + "/StarSkins/star_each_double.png");
+                Star_Break = SpriteLoader.LoadFromFile(this._path + "/StarSkins/star_break.png");
+                Star_Break_Mine = SpriteLoader.LoadFromFile(this._path + "/StarSkins/star_break_mine.png");
+                Star_Break_Double = SpriteLoader.LoadFromFile(this._path + "/StarSkins/star_break_double.png");
+                Star_Break_Double_Mine = SpriteLoader.LoadFromFile(this._path + "/StarSkins/star_break_double_mine.png");
+                Star_Ex = SpriteLoader.LoadFromFile(this._path + "/StarSkins/star_ex.png");
+                Star_Ex_Double = SpriteLoader.LoadFromFile(this._path + "/StarSkins/star_ex_double.png");
 
                 var border = new Vector4(0, 58, 0, 58);
-                Hold = SpriteLoader.Load(this._path + "/HoldSkins/hold.png", border);
-                Hold_Mine = SpriteLoader.Load(this._path + "/HoldSkins/hold_mine.png", border);
-                Hold_Each = SpriteLoader.Load(this._path + "/HoldSkins/hold_each.png", border);
-                Hold_Each_On = SpriteLoader.Load(this._path + "/HoldSkins/hold_each_on.png", border);
-                Hold_Ex = SpriteLoader.Load(this._path + "/HoldSkins/hold_ex.png", border);
-                Hold_Break = SpriteLoader.Load(this._path + "/HoldSkins/hold_break.png", border);
-                Hold_Break_Mine = SpriteLoader.Load(this._path + "/HoldSkins/hold_break_mine.png", border);
-                Hold_Break_On = SpriteLoader.Load(this._path + "/HoldSkins/hold_break_on.png", border);
+                Hold = SpriteLoader.LoadFromFileWithBorder(this._path + "/HoldSkins/hold.png", border);
+                Hold_Mine = SpriteLoader.LoadFromFileWithBorder(this._path + "/HoldSkins/hold_mine.png", border);
+                Hold_Each = SpriteLoader.LoadFromFileWithBorder(this._path + "/HoldSkins/hold_each.png", border);
+                Hold_Each_On = SpriteLoader.LoadFromFileWithBorder(this._path + "/HoldSkins/hold_each_on.png", border);
+                Hold_Ex = SpriteLoader.LoadFromFileWithBorder(this._path + "/HoldSkins/hold_ex.png", border);
+                Hold_Break = SpriteLoader.LoadFromFileWithBorder(this._path + "/HoldSkins/hold_break.png", border);
+                Hold_Break_Mine = SpriteLoader.LoadFromFileWithBorder(this._path + "/HoldSkins/hold_break_mine.png", border);
+                Hold_Break_On = SpriteLoader.LoadFromFileWithBorder(this._path + "/HoldSkins/hold_break_on.png", border);
 
                 if (File.Exists(Path.Combine(this._path, "HoldSkins/hold_on.png")))
                 {
-                    Hold_On = SpriteLoader.Load(this._path + "/HoldSkins/hold_on.png", border);
+                    Hold_On = SpriteLoader.LoadFromFileWithBorder(this._path + "/HoldSkins/hold_on.png", border);
                 }
                 else
                 {
                     Hold_On = Hold;
                 }
-                Hold_Mine_On = SpriteLoader.Load(this._path + "/HoldSkins/hold_mine_on.png", border);
-                Hold_Off = SpriteLoader.Load(this._path + "/HoldSkins/hold_off.png", border);
+                Hold_Mine_On = SpriteLoader.LoadFromFileWithBorder(this._path + "/HoldSkins/hold_mine_on.png", border);
+                Hold_Off = SpriteLoader.LoadFromFileWithBorder(this._path + "/HoldSkins/hold_off.png", border);
                 if (File.Exists(Path.Combine(this._path, "HoldSkins/hold_each_on.png")))
                 {
-                    Hold_Each_On = SpriteLoader.Load(this._path + "/HoldSkins/hold_each_on.png", border);
+                    Hold_Each_On = SpriteLoader.LoadFromFileWithBorder(this._path + "/HoldSkins/hold_each_on.png", border);
                 }
                 else
                 {
@@ -375,150 +375,150 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
 
                 if (File.Exists(Path.Combine(this._path, "HoldSkins/hold_break_on.png")))
                 {
-                    Hold_Break_On = SpriteLoader.Load(this._path + "/HoldSkins/hold_break_on.png", border);
+                    Hold_Break_On = SpriteLoader.LoadFromFileWithBorder(this._path + "/HoldSkins/hold_break_on.png", border);
                 }
                 else
                 {
                     Hold_Break_On = Hold_Break;
                 }
-                Hold_Break_Mine_On = SpriteLoader.Load(this._path + "/HoldSkins/hold_break_mine_on.png", border);
+                Hold_Break_Mine_On = SpriteLoader.LoadFromFileWithBorder(this._path + "/HoldSkins/hold_break_mine_on.png", border);
 
                 // Critical Perfect
 
-                Just[0] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_curv_r.png");
-                Just[1] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_str_r.png");
-                Just[2] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_wifi_u.png");
-                Just[3] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_curv_l.png");
-                Just[4] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_str_l.png");
-                Just[5] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_wifi_d.png");
+                Just[0] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_curv_r.png");
+                Just[1] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_str_r.png");
+                Just[2] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_wifi_u.png");
+                Just[3] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_curv_l.png");
+                Just[4] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_str_l.png");
+                Just[5] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_wifi_d.png");
 
                 // Perfect
 
-                Just[6] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_curv_r_p.png");
-                Just[7] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_str_r_p.png");
-                Just[8] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_wifi_u_p.png");
-                Just[9] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_curv_l_p.png");
-                Just[10] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_str_l_p.png");
-                Just[11] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_wifi_d_p.png");
+                Just[6] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_curv_r_p.png");
+                Just[7] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_str_r_p.png");
+                Just[8] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_wifi_u_p.png");
+                Just[9] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_curv_l_p.png");
+                Just[10] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_str_l_p.png");
+                Just[11] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_wifi_d_p.png");
 
                 // Fast Perfect
 
-                Just[12] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_curv_r_fast_p.png");
-                Just[13] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_str_r_fast_p.png");
-                Just[14] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_wifi_u_fast_p.png");
-                Just[15] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_curv_l_fast_p.png");
-                Just[16] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_str_l_fast_p.png");
-                Just[17] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_wifi_d_fast_p.png");
+                Just[12] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_curv_r_fast_p.png");
+                Just[13] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_str_r_fast_p.png");
+                Just[14] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_wifi_u_fast_p.png");
+                Just[15] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_curv_l_fast_p.png");
+                Just[16] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_str_l_fast_p.png");
+                Just[17] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_wifi_d_fast_p.png");
 
                 // Fast Great
 
-                Just[18] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_curv_r_fast_gr.png");
-                Just[19] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_str_r_fast_gr.png");
-                Just[20] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_wifi_u_fast_gr.png");
-                Just[21] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_curv_l_fast_gr.png");
-                Just[22] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_str_l_fast_gr.png");
-                Just[23] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_wifi_d_fast_gr.png");
+                Just[18] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_curv_r_fast_gr.png");
+                Just[19] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_str_r_fast_gr.png");
+                Just[20] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_wifi_u_fast_gr.png");
+                Just[21] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_curv_l_fast_gr.png");
+                Just[22] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_str_l_fast_gr.png");
+                Just[23] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_wifi_d_fast_gr.png");
 
                 // Fast Good
 
-                Just[24] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_curv_r_fast_gd.png");
-                Just[25] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_str_r_fast_gd.png");
-                Just[26] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_wifi_u_fast_gd.png");
-                Just[27] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_curv_l_fast_gd.png");
-                Just[28] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_str_l_fast_gd.png");
-                Just[29] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_wifi_d_fast_gd.png");
+                Just[24] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_curv_r_fast_gd.png");
+                Just[25] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_str_r_fast_gd.png");
+                Just[26] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_wifi_u_fast_gd.png");
+                Just[27] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_curv_l_fast_gd.png");
+                Just[28] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_str_l_fast_gd.png");
+                Just[29] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_wifi_d_fast_gd.png");
 
                 // Late Perfect
 
-                Just[30] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_curv_r_late_p.png");
-                Just[31] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_str_r_late_p.png");
-                Just[32] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_wifi_u_late_p.png");
-                Just[33] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_curv_l_late_p.png");
-                Just[34] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_str_l_late_p.png");
-                Just[35] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_wifi_d_late_p.png");
+                Just[30] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_curv_r_late_p.png");
+                Just[31] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_str_r_late_p.png");
+                Just[32] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_wifi_u_late_p.png");
+                Just[33] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_curv_l_late_p.png");
+                Just[34] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_str_l_late_p.png");
+                Just[35] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_wifi_d_late_p.png");
 
                 // Late Great
 
-                Just[36] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_curv_r_late_gr.png");
-                Just[37] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_str_r_late_gr.png");
-                Just[38] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_wifi_u_late_gr.png");
-                Just[39] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_curv_l_late_gr.png");
-                Just[40] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_str_l_late_gr.png");
-                Just[41] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_wifi_d_late_gr.png");
+                Just[36] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_curv_r_late_gr.png");
+                Just[37] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_str_r_late_gr.png");
+                Just[38] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_wifi_u_late_gr.png");
+                Just[39] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_curv_l_late_gr.png");
+                Just[40] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_str_l_late_gr.png");
+                Just[41] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_wifi_d_late_gr.png");
 
                 // Late Good
 
-                Just[42] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_curv_r_late_gd.png");
-                Just[43] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_str_r_late_gd.png");
-                Just[44] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_wifi_u_late_gd.png");
-                Just[45] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_curv_l_late_gd.png");
-                Just[46] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_str_l_late_gd.png");
-                Just[47] = SpriteLoader.Load(this._path + "/SlideOKSkins/just_wifi_d_late_gd.png");
+                Just[42] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_curv_r_late_gd.png");
+                Just[43] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_str_r_late_gd.png");
+                Just[44] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_wifi_u_late_gd.png");
+                Just[45] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_curv_l_late_gd.png");
+                Just[46] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_str_l_late_gd.png");
+                Just[47] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/just_wifi_d_late_gd.png");
 
                 // Miss
 
-                Just[48] = SpriteLoader.Load(this._path + "/SlideOKSkins/miss_curv_r.png");
-                Just[49] = SpriteLoader.Load(this._path + "/SlideOKSkins/miss_str_r.png");
-                Just[50] = SpriteLoader.Load(this._path + "/SlideOKSkins/miss_wifi_u.png");
-                Just[51] = SpriteLoader.Load(this._path + "/SlideOKSkins/miss_curv_l.png");
-                Just[52] = SpriteLoader.Load(this._path + "/SlideOKSkins/miss_str_l.png");
-                Just[53] = SpriteLoader.Load(this._path + "/SlideOKSkins/miss_wifi_d.png");
+                Just[48] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/miss_curv_r.png");
+                Just[49] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/miss_str_r.png");
+                Just[50] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/miss_wifi_u.png");
+                Just[51] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/miss_curv_l.png");
+                Just[52] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/miss_str_l.png");
+                Just[53] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/miss_wifi_d.png");
 
                 // TooFast
-                Just[54] = SpriteLoader.Load(this._path + "/SlideOKSkins/toofast_curv_r.png");
-                Just[55] = SpriteLoader.Load(this._path + "/SlideOKSkins/toofast_str_r.png");
-                Just[56] = SpriteLoader.Load(this._path + "/SlideOKSkins/toofast_wifi_u.png");
-                Just[57] = SpriteLoader.Load(this._path + "/SlideOKSkins/toofast_curv_l.png");
-                Just[58] = SpriteLoader.Load(this._path + "/SlideOKSkins/toofast_str_l.png");
-                Just[59] = SpriteLoader.Load(this._path + "/SlideOKSkins/toofast_wifi_d.png");
+                Just[54] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/toofast_curv_r.png");
+                Just[55] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/toofast_str_r.png");
+                Just[56] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/toofast_wifi_u.png");
+                Just[57] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/toofast_curv_l.png");
+                Just[58] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/toofast_str_l.png");
+                Just[59] = SpriteLoader.LoadFromFile(this._path + "/SlideOKSkins/toofast_wifi_d.png");
 
-                Miss = SpriteLoader.Load(this._path + "/JudgeTextSkins/judge_text_miss.png");
-                Good = SpriteLoader.Load(this._path + "/JudgeTextSkins/judge_text_good.png");
-                Great = SpriteLoader.Load(this._path + "/JudgeTextSkins/judge_text_great.png");
-                Perfect = SpriteLoader.Load(this._path + "/JudgeTextSkins/judge_text_perfect.png");
-                CriticalPerfect = SpriteLoader.Load(this._path + "/JudgeTextSkins/judge_text_cPerfect.png");
+                Miss = SpriteLoader.LoadFromFile(this._path + "/JudgeTextSkins/judge_text_miss.png");
+                Good = SpriteLoader.LoadFromFile(this._path + "/JudgeTextSkins/judge_text_good.png");
+                Great = SpriteLoader.LoadFromFile(this._path + "/JudgeTextSkins/judge_text_great.png");
+                Perfect = SpriteLoader.LoadFromFile(this._path + "/JudgeTextSkins/judge_text_perfect.png");
+                CriticalPerfect = SpriteLoader.LoadFromFile(this._path + "/JudgeTextSkins/judge_text_cPerfect.png");
 
                 if (File.Exists(this._path + "/JudgeTextSkins/judge_text_cPerfect_fast.png"))
                 {
-                    CriticalPerfect_Fast = SpriteLoader.Load(this._path + "/JudgeTextSkins/judge_text_cPerfect_fast.png");
+                    CriticalPerfect_Fast = SpriteLoader.LoadFromFile(this._path + "/JudgeTextSkins/judge_text_cPerfect_fast.png");
                 }
                 if (File.Exists(this._path + "/JudgeTextSkins/judge_text_cPerfect_late.png"))
                 {
-                    CriticalPerfect_Late = SpriteLoader.Load(this._path + "/JudgeTextSkins/judge_text_cPerfect_late.png");
+                    CriticalPerfect_Late = SpriteLoader.LoadFromFile(this._path + "/JudgeTextSkins/judge_text_cPerfect_late.png");
                 }
 
                 if (File.Exists(this._path + "/JudgeTextSkins/judge_text_perfect_fast.png"))
                 {
-                    Perfect_Fast = SpriteLoader.Load(this._path + "/JudgeTextSkins/judge_text_perfect_fast.png");
+                    Perfect_Fast = SpriteLoader.LoadFromFile(this._path + "/JudgeTextSkins/judge_text_perfect_fast.png");
                 }
                 if (File.Exists(this._path + "/JudgeTextSkins/judge_text_perfect_late.png"))
                 {
-                    Perfect_Late = SpriteLoader.Load(this._path + "/JudgeTextSkins/judge_text_perfect_late.png");
+                    Perfect_Late = SpriteLoader.LoadFromFile(this._path + "/JudgeTextSkins/judge_text_perfect_late.png");
                 }
 
                 if (File.Exists(this._path + "/JudgeTextSkins/judge_text_great_fast.png"))
                 {
-                    Great_Fast = SpriteLoader.Load(this._path + "/JudgeTextSkins/judge_text_great_fast.png");
+                    Great_Fast = SpriteLoader.LoadFromFile(this._path + "/JudgeTextSkins/judge_text_great_fast.png");
                 }
                 if (File.Exists(this._path + "/JudgeTextSkins/judge_text_great_late.png"))
                 {
-                    Great_Late = SpriteLoader.Load(this._path + "/JudgeTextSkins/judge_text_great_late.png");
+                    Great_Late = SpriteLoader.LoadFromFile(this._path + "/JudgeTextSkins/judge_text_great_late.png");
                 }
 
                 if (File.Exists(this._path + "/JudgeTextSkins/judge_text_good_fast.png"))
                 {
-                    Good_Fast = SpriteLoader.Load(this._path + "/JudgeTextSkins/judge_text_good_fast.png");
+                    Good_Fast = SpriteLoader.LoadFromFile(this._path + "/JudgeTextSkins/judge_text_good_fast.png");
                 }
                 if (File.Exists(this._path + "/JudgeTextSkins/judge_text_good_late.png"))
                 {
-                    Good_Late = SpriteLoader.Load(this._path + "/JudgeTextSkins/judge_text_good_late.png");
+                    Good_Late = SpriteLoader.LoadFromFile(this._path + "/JudgeTextSkins/judge_text_good_late.png");
                 }
 
 
 
-                CriticalPerfect_Shine = SpriteLoader.Load(this._path + "/JudgeTextSkins/judge_text_cPerfect_break.png");
-                Break_2600_Shine = SpriteLoader.Load(this._path + "/JudgeTextSkins/judge_text_break_2600_shine.png");
-                Perfect_Shine = SpriteLoader.Load(this._path + "/JudgeTextSkins/judge_text_perfect_break.png");
+                CriticalPerfect_Shine = SpriteLoader.LoadFromFile(this._path + "/JudgeTextSkins/judge_text_cPerfect_break.png");
+                Break_2600_Shine = SpriteLoader.LoadFromFile(this._path + "/JudgeTextSkins/judge_text_break_2600_shine.png");
+                Perfect_Shine = SpriteLoader.LoadFromFile(this._path + "/JudgeTextSkins/judge_text_perfect_break.png");
 
 
                 //Break_2600 = SpriteLoader.Load(this._path + "/judge_text_break_2600.png");
@@ -537,76 +537,76 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
                     var _path = $"{this._path}/JudgeTextSkins/judge_text_break_{value}_fast.png";
                     var __path = $"{this._path}/JudgeTextSkins/judge_text_break_{value}_late.png";
                     var type = typeof(CustomSkin);
-                    type.GetProperty($"Break_{value}").SetValue(this, SpriteLoader.Load(path));
+                    type.GetProperty($"Break_{value}").SetValue(this, SpriteLoader.LoadFromFile(path));
                     if (value == 0)
                     {
                         continue;
                     }
                     if (File.Exists(_path))
                     {
-                        type.GetProperty($"Break_{value}_Fast").SetValue(this, SpriteLoader.Load(_path));
+                        type.GetProperty($"Break_{value}_Fast").SetValue(this, SpriteLoader.LoadFromFile(_path));
                     }
                     if (File.Exists(__path))
                     {
-                        type.GetProperty($"Break_{value}_Late").SetValue(this, SpriteLoader.Load(__path));
+                        type.GetProperty($"Break_{value}_Late").SetValue(this, SpriteLoader.LoadFromFile(__path));
                     }
                 }
 
-                Fast = SpriteLoader.Load(this._path + "/JudgeTextSkins/fast.png");
-                Late = SpriteLoader.Load(this._path + "/JudgeTextSkins/late.png");
+                Fast = SpriteLoader.LoadFromFile(this._path + "/JudgeTextSkins/fast.png");
+                Late = SpriteLoader.LoadFromFile(this._path + "/JudgeTextSkins/late.png");
 
-                Touch = SpriteLoader.Load(this._path + "/TouchSkins/touch.png");
-                Touch_Mine = SpriteLoader.Load(this._path + "/TouchSkins/touch_mine.png");
-                Touch_Each = SpriteLoader.Load(this._path + "/TouchSkins/touch_each.png");
-                Touch_Break = SpriteLoader.Load(this._path + "/TouchSkins/touch_break.png");
-                Touch_Break_Mine = SpriteLoader.Load(this._path + "/TouchSkins/touch_break_mine.png");
-                TouchPoint = SpriteLoader.Load(this._path + "/TouchSkins/touch_point.png");
-                TouchPoint_Each = SpriteLoader.Load(this._path + "/TouchSkins/touch_point_each.png");
-                TouchPoint_Break = SpriteLoader.Load(this._path + "/TouchSkins/touch_break_point.png");
-                TouchPoint_Mine = SpriteLoader.Load(this._path + "/TouchSkins/touch_point_mine.png");
-                TouchPoint_Break_Mine = SpriteLoader.Load(this._path + "/TouchSkins/touch_break_point_mine.png");
+                Touch = SpriteLoader.LoadFromFile(this._path + "/TouchSkins/touch.png");
+                Touch_Mine = SpriteLoader.LoadFromFile(this._path + "/TouchSkins/touch_mine.png");
+                Touch_Each = SpriteLoader.LoadFromFile(this._path + "/TouchSkins/touch_each.png");
+                Touch_Break = SpriteLoader.LoadFromFile(this._path + "/TouchSkins/touch_break.png");
+                Touch_Break_Mine = SpriteLoader.LoadFromFile(this._path + "/TouchSkins/touch_break_mine.png");
+                TouchPoint = SpriteLoader.LoadFromFile(this._path + "/TouchSkins/touch_point.png");
+                TouchPoint_Each = SpriteLoader.LoadFromFile(this._path + "/TouchSkins/touch_point_each.png");
+                TouchPoint_Break = SpriteLoader.LoadFromFile(this._path + "/TouchSkins/touch_break_point.png");
+                TouchPoint_Mine = SpriteLoader.LoadFromFile(this._path + "/TouchSkins/touch_point_mine.png");
+                TouchPoint_Break_Mine = SpriteLoader.LoadFromFile(this._path + "/TouchSkins/touch_break_point_mine.png");
 
-                TouchJust = SpriteLoader.Load(this._path + "/TouchSkins/touch_just.png");
+                TouchJust = SpriteLoader.LoadFromFile(this._path + "/TouchSkins/touch_just.png");
 
-                TouchBorder[0] = SpriteLoader.Load(this._path + "/TouchSkins/touch_border_2.png");
-                TouchBorder[1] = SpriteLoader.Load(this._path + "/TouchSkins/touch_border_3.png");
-                TouchBorder_Each[0] = SpriteLoader.Load(this._path + "/TouchSkins/touch_border_2_each.png");
-                TouchBorder_Each[1] = SpriteLoader.Load(this._path + "/TouchSkins/touch_border_3_each.png");
-                TouchBorder_Break[0] = SpriteLoader.Load(this._path + "/TouchSkins/touch_break_border_2.png");
-                TouchBorder_Break[1] = SpriteLoader.Load(this._path + "/TouchSkins/touch_break_border_3.png");
-                TouchBorder_Mine[0] = SpriteLoader.Load(this._path + "/TouchSkins/touch_mine_border_2.png");
-                TouchBorder_Mine[1] = SpriteLoader.Load(this._path + "/TouchSkins/touch_mine_border_3_mine.png");
-                TouchBorder_Break_Mine[0] = SpriteLoader.Load(this._path + "/TouchSkins/touch_break_mine_border_2.png");
-                TouchBorder_Break_Mine[1] = SpriteLoader.Load(this._path + "/TouchSkins/touch_break_mine_border_3.png");
+                TouchBorder[0] = SpriteLoader.LoadFromFile(this._path + "/TouchSkins/touch_border_2.png");
+                TouchBorder[1] = SpriteLoader.LoadFromFile(this._path + "/TouchSkins/touch_border_3.png");
+                TouchBorder_Each[0] = SpriteLoader.LoadFromFile(this._path + "/TouchSkins/touch_border_2_each.png");
+                TouchBorder_Each[1] = SpriteLoader.LoadFromFile(this._path + "/TouchSkins/touch_border_3_each.png");
+                TouchBorder_Break[0] = SpriteLoader.LoadFromFile(this._path + "/TouchSkins/touch_break_border_2.png");
+                TouchBorder_Break[1] = SpriteLoader.LoadFromFile(this._path + "/TouchSkins/touch_break_border_3.png");
+                TouchBorder_Mine[0] = SpriteLoader.LoadFromFile(this._path + "/TouchSkins/touch_mine_border_2.png");
+                TouchBorder_Mine[1] = SpriteLoader.LoadFromFile(this._path + "/TouchSkins/touch_mine_border_3_mine.png");
+                TouchBorder_Break_Mine[0] = SpriteLoader.LoadFromFile(this._path + "/TouchSkins/touch_break_mine_border_2.png");
+                TouchBorder_Break_Mine[1] = SpriteLoader.LoadFromFile(this._path + "/TouchSkins/touch_break_mine_border_3.png");
 
                 for (var i = 0; i < 4; i++)
                 {
-                    TouchHold[i] = SpriteLoader.Load(this._path + "/TouchHoldSkins/touchhold_" + i + ".png");
-                    TouchHold_Break[i] = SpriteLoader.Load(this._path + "/TouchHoldSkins/touchhold_break_" + i + ".png");
-                    TouchHold_Mine[i] = SpriteLoader.Load(this._path + "/TouchHoldSkins/touchhold_mine_" + i + ".png");
-                    TouchHold_Break_Mine[i] = SpriteLoader.Load(this._path + "/TouchHoldSkins/touchhold_break_mine_" + i + ".png");
+                    TouchHold[i] = SpriteLoader.LoadFromFile(this._path + "/TouchHoldSkins/touchhold_" + i + ".png");
+                    TouchHold_Break[i] = SpriteLoader.LoadFromFile(this._path + "/TouchHoldSkins/touchhold_break_" + i + ".png");
+                    TouchHold_Mine[i] = SpriteLoader.LoadFromFile(this._path + "/TouchHoldSkins/touchhold_mine_" + i + ".png");
+                    TouchHold_Break_Mine[i] = SpriteLoader.LoadFromFile(this._path + "/TouchHoldSkins/touchhold_break_mine_" + i + ".png");
                 }
-                TouchHold[4] = SpriteLoader.Load(this._path + "/TouchHoldSkins/touchhold_border.png");
-                TouchHold_Break[4] = SpriteLoader.Load(this._path + "/TouchHoldSkins/touchhold_break_border.png");
-                TouchHold_Off = SpriteLoader.Load(this._path + "/TouchHoldSkins/touchhold_off.png");
+                TouchHold[4] = SpriteLoader.LoadFromFile(this._path + "/TouchHoldSkins/touchhold_border.png");
+                TouchHold_Break[4] = SpriteLoader.LoadFromFile(this._path + "/TouchHoldSkins/touchhold_break_border.png");
+                TouchHold_Off = SpriteLoader.LoadFromFile(this._path + "/TouchHoldSkins/touchhold_off.png");
 
-                LoadingSplash = SpriteLoader.Load(this._path + "/now_loading.png");
+                LoadingSplash = SpriteLoader.LoadFromFile(this._path + "/now_loading.png");
 
-                TapLine_Normal = SpriteLoader.Load(this._path + "/NoteGuideSkins/Normal.png");
-                TapLine_Each = SpriteLoader.Load(this._path + "/NoteGuideSkins/Each.png");
-                TapLine_Slide = SpriteLoader.Load(this._path + "/NoteGuideSkins/Slide.png");
-                TapLine_Break = SpriteLoader.Load(this._path + "/NoteGuideSkins/Break.png");
-                TapLine_Mine = SpriteLoader.Load(this._path + "/NoteGuideSkins/Mine.png");
+                TapLine_Normal = SpriteLoader.LoadFromFile(this._path + "/NoteGuideSkins/Normal.png");
+                TapLine_Each = SpriteLoader.LoadFromFile(this._path + "/NoteGuideSkins/Each.png");
+                TapLine_Slide = SpriteLoader.LoadFromFile(this._path + "/NoteGuideSkins/Slide.png");
+                TapLine_Break = SpriteLoader.LoadFromFile(this._path + "/NoteGuideSkins/Break.png");
+                TapLine_Mine = SpriteLoader.LoadFromFile(this._path + "/NoteGuideSkins/Mine.png");
 
-                EachLines[0] = SpriteLoader.Load(this._path + "/NoteGuideSkins/EachLine1.png");
-                EachLines[1] = SpriteLoader.Load(this._path + "/NoteGuideSkins/EachLine2.png");
-                EachLines[2] = SpriteLoader.Load(this._path + "/NoteGuideSkins/EachLine3.png");
-                EachLines[3] = SpriteLoader.Load(this._path + "/NoteGuideSkins/EachLine4.png");
+                EachLines[0] = SpriteLoader.LoadFromFile(this._path + "/NoteGuideSkins/EachLine1.png");
+                EachLines[1] = SpriteLoader.LoadFromFile(this._path + "/NoteGuideSkins/EachLine2.png");
+                EachLines[2] = SpriteLoader.LoadFromFile(this._path + "/NoteGuideSkins/EachLine3.png");
+                EachLines[3] = SpriteLoader.LoadFromFile(this._path + "/NoteGuideSkins/EachLine4.png");
 
-                HoldEndPoint_Normal = SpriteLoader.Load(this._path + "/NoteGuideSkins/Hold_End.png");
-                HoldEndPoint_Each = SpriteLoader.Load(this._path + "/NoteGuideSkins/Hold_Each_End.png");
-                HoldEndPoint_Break = SpriteLoader.Load(this._path + "/NoteGuideSkins/Hold_Break_End.png");
-                HoldEndPoint_Mine = SpriteLoader.Load(this._path + "/NoteGuideSkins/Hold_Mine_End.png");
+                HoldEndPoint_Normal = SpriteLoader.LoadFromFile(this._path + "/NoteGuideSkins/Hold_End.png");
+                HoldEndPoint_Each = SpriteLoader.LoadFromFile(this._path + "/NoteGuideSkins/Hold_Each_End.png");
+                HoldEndPoint_Break = SpriteLoader.LoadFromFile(this._path + "/NoteGuideSkins/Hold_Break_End.png");
+                HoldEndPoint_Mine = SpriteLoader.LoadFromFile(this._path + "/NoteGuideSkins/Hold_Mine_End.png");
 
                 IsLoaded = true;
             }
@@ -892,66 +892,66 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
                 {
                     IsOutlineAvailable = true;
                 }
-                Outline = SpriteLoader.Load(skinCollectionPath + "/outline.png");
-                SubDisplay = SpriteLoader.Load(skinCollectionPath + "/SubBackgourd.png");
+                Outline = SpriteLoader.LoadFromFile(skinCollectionPath + "/outline.png");
+                SubDisplay = SpriteLoader.LoadFromFile(skinCollectionPath + "/SubBackgourd.png");
 
-                Tap = SpriteLoader.Load(skinCollectionPath + "/TapSkins/tap.png");
-                Tap_Each = SpriteLoader.Load(skinCollectionPath + "/TapSkins/tap_each.png");
-                Tap_Break = SpriteLoader.Load(skinCollectionPath + "/TapSkins/tap_break.png");
-                Tap_Break_Mine = SpriteLoader.Load(skinCollectionPath + "/TapSkins/tap_break_mine.png");
-                Tap_Mine = SpriteLoader.Load(skinCollectionPath + "/TapSkins/tap_mine.png");
-                Tap_Ex = SpriteLoader.Load(skinCollectionPath + "/TapSkins/tap_ex.png");
+                Tap = SpriteLoader.LoadFromFile(skinCollectionPath + "/TapSkins/tap.png");
+                Tap_Each = SpriteLoader.LoadFromFile(skinCollectionPath + "/TapSkins/tap_each.png");
+                Tap_Break = SpriteLoader.LoadFromFile(skinCollectionPath + "/TapSkins/tap_break.png");
+                Tap_Break_Mine = SpriteLoader.LoadFromFile(skinCollectionPath + "/TapSkins/tap_break_mine.png");
+                Tap_Mine = SpriteLoader.LoadFromFile(skinCollectionPath + "/TapSkins/tap_mine.png");
+                Tap_Ex = SpriteLoader.LoadFromFile(skinCollectionPath + "/TapSkins/tap_ex.png");
 
-                Slide = SpriteLoader.Load(skinCollectionPath + "/SlideSkins/slide.png");
-                Slide_Each = SpriteLoader.Load(skinCollectionPath + "/SlideSkins/slide_each.png");
-                Slide_Break = SpriteLoader.Load(skinCollectionPath + "/SlideSkins/slide_break.png");
-                Slide_Mine = SpriteLoader.Load(skinCollectionPath + "/SlideSkins/slide_mine.png");
-                Slide_Break_Mine = SpriteLoader.Load(skinCollectionPath + "/SlideSkins/slide_break_mine.png");
+                Slide = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideSkins/slide.png");
+                Slide_Each = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideSkins/slide_each.png");
+                Slide_Break = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideSkins/slide_break.png");
+                Slide_Mine = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideSkins/slide_mine.png");
+                Slide_Break_Mine = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideSkins/slide_break_mine.png");
                 for (var i = 0; i < 11; i++)
                 {
-                    Wifi[i] = SpriteLoader.Load(skinCollectionPath + "/WifiSkins/wifi_" + i + ".png");
-                    Wifi_Each[i] = SpriteLoader.Load(skinCollectionPath + "/WifiSkins/wifi_each_" + i + ".png");
-                    Wifi_Break[i] = SpriteLoader.Load(skinCollectionPath + "/WifiSkins/wifi_break_" + i + ".png");
-                    Wifi_Mine[i] = SpriteLoader.Load(skinCollectionPath + "/WifiSkins/wifi_mine_" + i + ".png");
-                    Wifi_Break_Mine[i] = SpriteLoader.Load(skinCollectionPath + "/WifiSkins/wifi_break_mine_" + i + ".png");
+                    Wifi[i] = SpriteLoader.LoadFromFile(skinCollectionPath + "/WifiSkins/wifi_" + i + ".png");
+                    Wifi_Each[i] = SpriteLoader.LoadFromFile(skinCollectionPath + "/WifiSkins/wifi_each_" + i + ".png");
+                    Wifi_Break[i] = SpriteLoader.LoadFromFile(skinCollectionPath + "/WifiSkins/wifi_break_" + i + ".png");
+                    Wifi_Mine[i] = SpriteLoader.LoadFromFile(skinCollectionPath + "/WifiSkins/wifi_mine_" + i + ".png");
+                    Wifi_Break_Mine[i] = SpriteLoader.LoadFromFile(skinCollectionPath + "/WifiSkins/wifi_break_mine_" + i + ".png");
                 }
 
-                Star = SpriteLoader.Load(skinCollectionPath + "/StarSkins/star.png");
-                Star_Double = SpriteLoader.Load(skinCollectionPath + "/StarSkins/star_double.png");
-                Star_Double_Mine = SpriteLoader.Load(skinCollectionPath + "/StarSkins/star_double_mine.png");
-                Star_Each = SpriteLoader.Load(skinCollectionPath + "/StarSkins/star_each.png");
-                Star_Mine = SpriteLoader.Load(skinCollectionPath + "/StarSkins/star_mine.png");
-                Star_Each_Double = SpriteLoader.Load(skinCollectionPath + "/StarSkins/star_each_double.png");
-                Star_Break = SpriteLoader.Load(skinCollectionPath + "/StarSkins/star_break.png");
-                Star_Break_Mine = SpriteLoader.Load(skinCollectionPath + "/StarSkins/star_break_mine.png");
-                Star_Break_Double = SpriteLoader.Load(skinCollectionPath + "/StarSkins/star_break_double.png");
-                Star_Break_Double_Mine = SpriteLoader.Load(skinCollectionPath + "/StarSkins/star_break_double_mine.png");
-                Star_Ex = SpriteLoader.Load(skinCollectionPath + "/StarSkins/star_ex.png");
-                Star_Ex_Double = SpriteLoader.Load(skinCollectionPath + "/StarSkins/star_ex_double.png");
+                Star = SpriteLoader.LoadFromFile(skinCollectionPath + "/StarSkins/star.png");
+                Star_Double = SpriteLoader.LoadFromFile(skinCollectionPath + "/StarSkins/star_double.png");
+                Star_Double_Mine = SpriteLoader.LoadFromFile(skinCollectionPath + "/StarSkins/star_double_mine.png");
+                Star_Each = SpriteLoader.LoadFromFile(skinCollectionPath + "/StarSkins/star_each.png");
+                Star_Mine = SpriteLoader.LoadFromFile(skinCollectionPath + "/StarSkins/star_mine.png");
+                Star_Each_Double = SpriteLoader.LoadFromFile(skinCollectionPath + "/StarSkins/star_each_double.png");
+                Star_Break = SpriteLoader.LoadFromFile(skinCollectionPath + "/StarSkins/star_break.png");
+                Star_Break_Mine = SpriteLoader.LoadFromFile(skinCollectionPath + "/StarSkins/star_break_mine.png");
+                Star_Break_Double = SpriteLoader.LoadFromFile(skinCollectionPath + "/StarSkins/star_break_double.png");
+                Star_Break_Double_Mine = SpriteLoader.LoadFromFile(skinCollectionPath + "/StarSkins/star_break_double_mine.png");
+                Star_Ex = SpriteLoader.LoadFromFile(skinCollectionPath + "/StarSkins/star_ex.png");
+                Star_Ex_Double = SpriteLoader.LoadFromFile(skinCollectionPath + "/StarSkins/star_ex_double.png");
 
                 var border = new Vector4(0, 58, 0, 58);
-                Hold = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold.png", border);
-                Hold_Mine = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_mine.png", border);
-                Hold_Each = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_each.png", border);
-                Hold_Each_On = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_each_on.png", border);
-                Hold_Ex = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_ex.png", border);
-                Hold_Break = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_break.png", border);
-                Hold_Break_Mine = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_break_mine.png", border);
-                Hold_Break_On = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_break_on.png", border);
+                Hold = SpriteLoader.LoadFromFileWithBorder(skinCollectionPath + "/HoldSkins/hold.png", border);
+                Hold_Mine = SpriteLoader.LoadFromFileWithBorder(skinCollectionPath + "/HoldSkins/hold_mine.png", border);
+                Hold_Each = SpriteLoader.LoadFromFileWithBorder(skinCollectionPath + "/HoldSkins/hold_each.png", border);
+                Hold_Each_On = SpriteLoader.LoadFromFileWithBorder(skinCollectionPath + "/HoldSkins/hold_each_on.png", border);
+                Hold_Ex = SpriteLoader.LoadFromFileWithBorder(skinCollectionPath + "/HoldSkins/hold_ex.png", border);
+                Hold_Break = SpriteLoader.LoadFromFileWithBorder(skinCollectionPath + "/HoldSkins/hold_break.png", border);
+                Hold_Break_Mine = SpriteLoader.LoadFromFileWithBorder(skinCollectionPath + "/HoldSkins/hold_break_mine.png", border);
+                Hold_Break_On = SpriteLoader.LoadFromFileWithBorder(skinCollectionPath + "/HoldSkins/hold_break_on.png", border);
 
                 if (File.Exists(Path.Combine(skinCollectionPath, "HoldSkins/hold_on.png")))
                 {
-                    Hold_On = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_on.png", border);
+                    Hold_On = SpriteLoader.LoadFromFileWithBorder(skinCollectionPath + "/HoldSkins/hold_on.png", border);
                 }
                 else
                 {
                     Hold_On = Hold;
                 }
-                Hold_Mine_On = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_mine_on.png", border);
-                Hold_Off = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_off.png", border);
+                Hold_Mine_On = SpriteLoader.LoadFromFileWithBorder(skinCollectionPath + "/HoldSkins/hold_mine_on.png", border);
+                Hold_Off = SpriteLoader.LoadFromFileWithBorder(skinCollectionPath + "/HoldSkins/hold_off.png", border);
                 if (File.Exists(Path.Combine(skinCollectionPath, "HoldSkins/hold_each_on.png")))
                 {
-                    Hold_Each_On = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_each_on.png", border);
+                    Hold_Each_On = SpriteLoader.LoadFromFileWithBorder(skinCollectionPath + "/HoldSkins/hold_each_on.png", border);
                 }
                 else
                 {
@@ -960,150 +960,150 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
 
                 if (File.Exists(Path.Combine(skinCollectionPath, "HoldSkins/hold_break_on.png")))
                 {
-                    Hold_Break_On = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_break_on.png", border);
+                    Hold_Break_On = SpriteLoader.LoadFromFileWithBorder(skinCollectionPath + "/HoldSkins/hold_break_on.png", border);
                 }
                 else
                 {
                     Hold_Break_On = Hold_Break;
                 }
-                Hold_Break_Mine_On = SpriteLoader.Load(skinCollectionPath + "/HoldSkins/hold_break_mine_on.png", border);
+                Hold_Break_Mine_On = SpriteLoader.LoadFromFileWithBorder(skinCollectionPath + "/HoldSkins/hold_break_mine_on.png", border);
 
                 // Critical Perfect
 
-                Just[0] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_curv_r.png");
-                Just[1] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_str_r.png");
-                Just[2] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_wifi_u.png");
-                Just[3] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_curv_l.png");
-                Just[4] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_str_l.png");
-                Just[5] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_wifi_d.png");
+                Just[0] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_curv_r.png");
+                Just[1] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_str_r.png");
+                Just[2] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_wifi_u.png");
+                Just[3] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_curv_l.png");
+                Just[4] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_str_l.png");
+                Just[5] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_wifi_d.png");
 
                 // Perfect
 
-                Just[6] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_curv_r_p.png");
-                Just[7] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_str_r_p.png");
-                Just[8] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_wifi_u_p.png");
-                Just[9] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_curv_l_p.png");
-                Just[10] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_str_l_p.png");
-                Just[11] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_wifi_d_p.png");
+                Just[6] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_curv_r_p.png");
+                Just[7] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_str_r_p.png");
+                Just[8] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_wifi_u_p.png");
+                Just[9] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_curv_l_p.png");
+                Just[10] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_str_l_p.png");
+                Just[11] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_wifi_d_p.png");
 
                 // Fast Perfect
 
-                Just[12] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_curv_r_fast_p.png");
-                Just[13] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_str_r_fast_p.png");
-                Just[14] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_wifi_u_fast_p.png");
-                Just[15] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_curv_l_fast_p.png");
-                Just[16] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_str_l_fast_p.png");
-                Just[17] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_wifi_d_fast_p.png");
+                Just[12] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_curv_r_fast_p.png");
+                Just[13] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_str_r_fast_p.png");
+                Just[14] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_wifi_u_fast_p.png");
+                Just[15] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_curv_l_fast_p.png");
+                Just[16] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_str_l_fast_p.png");
+                Just[17] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_wifi_d_fast_p.png");
 
                 // Fast Great
 
-                Just[18] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_curv_r_fast_gr.png");
-                Just[19] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_str_r_fast_gr.png");
-                Just[20] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_wifi_u_fast_gr.png");
-                Just[21] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_curv_l_fast_gr.png");
-                Just[22] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_str_l_fast_gr.png");
-                Just[23] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_wifi_d_fast_gr.png");
+                Just[18] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_curv_r_fast_gr.png");
+                Just[19] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_str_r_fast_gr.png");
+                Just[20] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_wifi_u_fast_gr.png");
+                Just[21] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_curv_l_fast_gr.png");
+                Just[22] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_str_l_fast_gr.png");
+                Just[23] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_wifi_d_fast_gr.png");
 
                 // Fast Good
 
-                Just[24] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_curv_r_fast_gd.png");
-                Just[25] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_str_r_fast_gd.png");
-                Just[26] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_wifi_u_fast_gd.png");
-                Just[27] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_curv_l_fast_gd.png");
-                Just[28] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_str_l_fast_gd.png");
-                Just[29] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_wifi_d_fast_gd.png");
+                Just[24] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_curv_r_fast_gd.png");
+                Just[25] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_str_r_fast_gd.png");
+                Just[26] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_wifi_u_fast_gd.png");
+                Just[27] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_curv_l_fast_gd.png");
+                Just[28] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_str_l_fast_gd.png");
+                Just[29] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_wifi_d_fast_gd.png");
 
                 // Late Perfect
 
-                Just[30] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_curv_r_late_p.png");
-                Just[31] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_str_r_late_p.png");
-                Just[32] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_wifi_u_late_p.png");
-                Just[33] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_curv_l_late_p.png");
-                Just[34] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_str_l_late_p.png");
-                Just[35] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_wifi_d_late_p.png");
+                Just[30] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_curv_r_late_p.png");
+                Just[31] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_str_r_late_p.png");
+                Just[32] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_wifi_u_late_p.png");
+                Just[33] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_curv_l_late_p.png");
+                Just[34] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_str_l_late_p.png");
+                Just[35] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_wifi_d_late_p.png");
 
                 // Late Great
 
-                Just[36] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_curv_r_late_gr.png");
-                Just[37] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_str_r_late_gr.png");
-                Just[38] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_wifi_u_late_gr.png");
-                Just[39] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_curv_l_late_gr.png");
-                Just[40] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_str_l_late_gr.png");
-                Just[41] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_wifi_d_late_gr.png");
+                Just[36] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_curv_r_late_gr.png");
+                Just[37] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_str_r_late_gr.png");
+                Just[38] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_wifi_u_late_gr.png");
+                Just[39] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_curv_l_late_gr.png");
+                Just[40] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_str_l_late_gr.png");
+                Just[41] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_wifi_d_late_gr.png");
 
                 // Late Good
 
-                Just[42] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_curv_r_late_gd.png");
-                Just[43] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_str_r_late_gd.png");
-                Just[44] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_wifi_u_late_gd.png");
-                Just[45] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_curv_l_late_gd.png");
-                Just[46] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_str_l_late_gd.png");
-                Just[47] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/just_wifi_d_late_gd.png");
+                Just[42] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_curv_r_late_gd.png");
+                Just[43] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_str_r_late_gd.png");
+                Just[44] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_wifi_u_late_gd.png");
+                Just[45] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_curv_l_late_gd.png");
+                Just[46] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_str_l_late_gd.png");
+                Just[47] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/just_wifi_d_late_gd.png");
 
                 // Miss
 
-                Just[48] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/miss_curv_r.png");
-                Just[49] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/miss_str_r.png");
-                Just[50] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/miss_wifi_u.png");
-                Just[51] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/miss_curv_l.png");
-                Just[52] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/miss_str_l.png");
-                Just[53] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/miss_wifi_d.png");
+                Just[48] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/miss_curv_r.png");
+                Just[49] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/miss_str_r.png");
+                Just[50] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/miss_wifi_u.png");
+                Just[51] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/miss_curv_l.png");
+                Just[52] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/miss_str_l.png");
+                Just[53] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/miss_wifi_d.png");
 
                 // TooFast
-                Just[54] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/toofast_curv_r.png");
-                Just[55] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/toofast_str_r.png");
-                Just[56] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/toofast_wifi_u.png");
-                Just[57] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/toofast_curv_l.png");
-                Just[58] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/toofast_str_l.png");
-                Just[59] = SpriteLoader.Load(skinCollectionPath + "/SlideOKSkins/toofast_wifi_d.png");
+                Just[54] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/toofast_curv_r.png");
+                Just[55] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/toofast_str_r.png");
+                Just[56] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/toofast_wifi_u.png");
+                Just[57] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/toofast_curv_l.png");
+                Just[58] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/toofast_str_l.png");
+                Just[59] = SpriteLoader.LoadFromFile(skinCollectionPath + "/SlideOKSkins/toofast_wifi_d.png");
 
-                Miss = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_miss.png");
-                Good = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_good.png");
-                Great = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_great.png");
-                Perfect = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_perfect.png");
-                CriticalPerfect = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_cPerfect.png");
+                Miss = SpriteLoader.LoadFromFile(skinCollectionPath + "/JudgeTextSkins/judge_text_miss.png");
+                Good = SpriteLoader.LoadFromFile(skinCollectionPath + "/JudgeTextSkins/judge_text_good.png");
+                Great = SpriteLoader.LoadFromFile(skinCollectionPath + "/JudgeTextSkins/judge_text_great.png");
+                Perfect = SpriteLoader.LoadFromFile(skinCollectionPath + "/JudgeTextSkins/judge_text_perfect.png");
+                CriticalPerfect = SpriteLoader.LoadFromFile(skinCollectionPath + "/JudgeTextSkins/judge_text_cPerfect.png");
 
                 if (File.Exists(skinCollectionPath + "/JudgeTextSkins/judge_text_cPerfect_fast.png"))
                 {
-                    CriticalPerfect_Fast = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_cPerfect_fast.png");
+                    CriticalPerfect_Fast = SpriteLoader.LoadFromFile(skinCollectionPath + "/JudgeTextSkins/judge_text_cPerfect_fast.png");
                 }
                 if (File.Exists(skinCollectionPath + "/JudgeTextSkins/judge_text_cPerfect_late.png"))
                 {
-                    CriticalPerfect_Late = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_cPerfect_late.png");
+                    CriticalPerfect_Late = SpriteLoader.LoadFromFile(skinCollectionPath + "/JudgeTextSkins/judge_text_cPerfect_late.png");
                 }
 
                 if (File.Exists(skinCollectionPath + "/JudgeTextSkins/judge_text_perfect_fast.png"))
                 {
-                    Perfect_Fast = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_perfect_fast.png");
+                    Perfect_Fast = SpriteLoader.LoadFromFile(skinCollectionPath + "/JudgeTextSkins/judge_text_perfect_fast.png");
                 }
                 if (File.Exists(skinCollectionPath + "/JudgeTextSkins/judge_text_perfect_late.png"))
                 {
-                    Perfect_Late = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_perfect_late.png");
+                    Perfect_Late = SpriteLoader.LoadFromFile(skinCollectionPath + "/JudgeTextSkins/judge_text_perfect_late.png");
                 }
 
                 if (File.Exists(skinCollectionPath + "/JudgeTextSkins/judge_text_great_fast.png"))
                 {
-                    Great_Fast = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_great_fast.png");
+                    Great_Fast = SpriteLoader.LoadFromFile(skinCollectionPath + "/JudgeTextSkins/judge_text_great_fast.png");
                 }
                 if (File.Exists(skinCollectionPath + "/JudgeTextSkins/judge_text_great_late.png"))
                 {
-                    Great_Late = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_great_late.png");
+                    Great_Late = SpriteLoader.LoadFromFile(skinCollectionPath + "/JudgeTextSkins/judge_text_great_late.png");
                 }
 
                 if (File.Exists(skinCollectionPath + "/JudgeTextSkins/judge_text_good_fast.png"))
                 {
-                    Good_Fast = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_good_fast.png");
+                    Good_Fast = SpriteLoader.LoadFromFile(skinCollectionPath + "/JudgeTextSkins/judge_text_good_fast.png");
                 }
                 if (File.Exists(skinCollectionPath + "/JudgeTextSkins/judge_text_good_late.png"))
                 {
-                    Good_Late = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_good_late.png");
+                    Good_Late = SpriteLoader.LoadFromFile(skinCollectionPath + "/JudgeTextSkins/judge_text_good_late.png");
                 }
 
 
 
-                CriticalPerfect_Shine = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_cPerfect_break.png");
-                Break_2600_Shine = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_break_2600_shine.png");
-                Perfect_Shine = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/judge_text_perfect_break.png");
+                CriticalPerfect_Shine = SpriteLoader.LoadFromFile(skinCollectionPath + "/JudgeTextSkins/judge_text_cPerfect_break.png");
+                Break_2600_Shine = SpriteLoader.LoadFromFile(skinCollectionPath + "/JudgeTextSkins/judge_text_break_2600_shine.png");
+                Perfect_Shine = SpriteLoader.LoadFromFile(skinCollectionPath + "/JudgeTextSkins/judge_text_perfect_break.png");
 
 
                 //Break_2600 = SpriteLoader.Load(skinCollectionPath + "/judge_text_break_2600.png");
@@ -1122,76 +1122,76 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
                     var _path = $"{skinCollectionPath}/JudgeTextSkins/judge_text_break_{value}_fast.png";
                     var __path = $"{skinCollectionPath}/JudgeTextSkins/judge_text_break_{value}_late.png";
                     var type = typeof(CustomSkin);
-                    type.GetProperty($"Break_{value}").SetValue(this, SpriteLoader.Load(path));
+                    type.GetProperty($"Break_{value}").SetValue(this, SpriteLoader.LoadFromFile(path));
                     if (value == 0)
                     {
                         continue;
                     }
                     if (File.Exists(_path))
                     {
-                        type.GetProperty($"Break_{value}_Fast").SetValue(this, SpriteLoader.Load(_path));
+                        type.GetProperty($"Break_{value}_Fast").SetValue(this, SpriteLoader.LoadFromFile(_path));
                     }
                     if (File.Exists(__path))
                     {
-                        type.GetProperty($"Break_{value}_Late").SetValue(this, SpriteLoader.Load(__path));
+                        type.GetProperty($"Break_{value}_Late").SetValue(this, SpriteLoader.LoadFromFile(__path));
                     }
                 }
 
-                Fast = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/fast.png");
-                Late = SpriteLoader.Load(skinCollectionPath + "/JudgeTextSkins/late.png");
+                Fast = SpriteLoader.LoadFromFile(skinCollectionPath + "/JudgeTextSkins/fast.png");
+                Late = SpriteLoader.LoadFromFile(skinCollectionPath + "/JudgeTextSkins/late.png");
 
-                Touch = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch.png");
-                Touch_Mine = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_mine.png");
-                Touch_Each = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_each.png");
-                Touch_Break = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_break.png");
-                Touch_Break_Mine = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_break_mine.png");
-                TouchPoint = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_point.png");
-                TouchPoint_Each = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_point_each.png");
-                TouchPoint_Break = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_break_point.png");
-                TouchPoint_Mine = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_point_mine.png");
-                TouchPoint_Break_Mine = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_break_point_mine.png");
+                Touch = SpriteLoader.LoadFromFile(skinCollectionPath + "/TouchSkins/touch.png");
+                Touch_Mine = SpriteLoader.LoadFromFile(skinCollectionPath + "/TouchSkins/touch_mine.png");
+                Touch_Each = SpriteLoader.LoadFromFile(skinCollectionPath + "/TouchSkins/touch_each.png");
+                Touch_Break = SpriteLoader.LoadFromFile(skinCollectionPath + "/TouchSkins/touch_break.png");
+                Touch_Break_Mine = SpriteLoader.LoadFromFile(skinCollectionPath + "/TouchSkins/touch_break_mine.png");
+                TouchPoint = SpriteLoader.LoadFromFile(skinCollectionPath + "/TouchSkins/touch_point.png");
+                TouchPoint_Each = SpriteLoader.LoadFromFile(skinCollectionPath + "/TouchSkins/touch_point_each.png");
+                TouchPoint_Break = SpriteLoader.LoadFromFile(skinCollectionPath + "/TouchSkins/touch_break_point.png");
+                TouchPoint_Mine = SpriteLoader.LoadFromFile(skinCollectionPath + "/TouchSkins/touch_point_mine.png");
+                TouchPoint_Break_Mine = SpriteLoader.LoadFromFile(skinCollectionPath + "/TouchSkins/touch_break_point_mine.png");
 
-                TouchJust = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_just.png");
+                TouchJust = SpriteLoader.LoadFromFile(skinCollectionPath + "/TouchSkins/touch_just.png");
 
-                TouchBorder[0] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_border_2.png");
-                TouchBorder[1] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_border_3.png");
-                TouchBorder_Each[0] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_border_2_each.png");
-                TouchBorder_Each[1] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_border_3_each.png");
-                TouchBorder_Break[0] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_break_border_2.png");
-                TouchBorder_Break[1] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_break_border_3.png");
-                TouchBorder_Mine[0] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_mine_border_2.png");
-                TouchBorder_Mine[1] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_mine_border_3_mine.png");
-                TouchBorder_Break_Mine[0] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_break_mine_border_2.png");
-                TouchBorder_Break_Mine[1] = SpriteLoader.Load(skinCollectionPath + "/TouchSkins/touch_break_mine_border_3.png");
+                TouchBorder[0] = SpriteLoader.LoadFromFile(skinCollectionPath + "/TouchSkins/touch_border_2.png");
+                TouchBorder[1] = SpriteLoader.LoadFromFile(skinCollectionPath + "/TouchSkins/touch_border_3.png");
+                TouchBorder_Each[0] = SpriteLoader.LoadFromFile(skinCollectionPath + "/TouchSkins/touch_border_2_each.png");
+                TouchBorder_Each[1] = SpriteLoader.LoadFromFile(skinCollectionPath + "/TouchSkins/touch_border_3_each.png");
+                TouchBorder_Break[0] = SpriteLoader.LoadFromFile(skinCollectionPath + "/TouchSkins/touch_break_border_2.png");
+                TouchBorder_Break[1] = SpriteLoader.LoadFromFile(skinCollectionPath + "/TouchSkins/touch_break_border_3.png");
+                TouchBorder_Mine[0] = SpriteLoader.LoadFromFile(skinCollectionPath + "/TouchSkins/touch_mine_border_2.png");
+                TouchBorder_Mine[1] = SpriteLoader.LoadFromFile(skinCollectionPath + "/TouchSkins/touch_mine_border_3_mine.png");
+                TouchBorder_Break_Mine[0] = SpriteLoader.LoadFromFile(skinCollectionPath + "/TouchSkins/touch_break_mine_border_2.png");
+                TouchBorder_Break_Mine[1] = SpriteLoader.LoadFromFile(skinCollectionPath + "/TouchSkins/touch_break_mine_border_3.png");
 
                 for (var i = 0; i < 4; i++)
                 {
-                    TouchHold[i] = SpriteLoader.Load(skinCollectionPath + "/TouchHoldSkins/touchhold_" + i + ".png");
-                    TouchHold_Break[i] = SpriteLoader.Load(skinCollectionPath + "/TouchHoldSkins/touchhold_break_" + i + ".png");
-                    TouchHold_Mine[i] = SpriteLoader.Load(skinCollectionPath + "/TouchHoldSkins/touchhold_mine_" + i + ".png");
-                    TouchHold_Break_Mine[i] = SpriteLoader.Load(skinCollectionPath + "/TouchHoldSkins/touchhold_break_mine_" + i + ".png");
+                    TouchHold[i] = SpriteLoader.LoadFromFile(skinCollectionPath + "/TouchHoldSkins/touchhold_" + i + ".png");
+                    TouchHold_Break[i] = SpriteLoader.LoadFromFile(skinCollectionPath + "/TouchHoldSkins/touchhold_break_" + i + ".png");
+                    TouchHold_Mine[i] = SpriteLoader.LoadFromFile(skinCollectionPath + "/TouchHoldSkins/touchhold_mine_" + i + ".png");
+                    TouchHold_Break_Mine[i] = SpriteLoader.LoadFromFile(skinCollectionPath + "/TouchHoldSkins/touchhold_break_mine_" + i + ".png");
                 }
-                TouchHold[4] = SpriteLoader.Load(skinCollectionPath + "/TouchHoldSkins/touchhold_border.png");
-                TouchHold_Break[4] = SpriteLoader.Load(skinCollectionPath + "/TouchHoldSkins/touchhold_break_border.png");
-                TouchHold_Off = SpriteLoader.Load(skinCollectionPath + "/TouchHoldSkins/touchhold_off.png");
+                TouchHold[4] = SpriteLoader.LoadFromFile(skinCollectionPath + "/TouchHoldSkins/touchhold_border.png");
+                TouchHold_Break[4] = SpriteLoader.LoadFromFile(skinCollectionPath + "/TouchHoldSkins/touchhold_break_border.png");
+                TouchHold_Off = SpriteLoader.LoadFromFile(skinCollectionPath + "/TouchHoldSkins/touchhold_off.png");
 
-                LoadingSplash = SpriteLoader.Load(skinCollectionPath + "/now_loading.png");
+                LoadingSplash = SpriteLoader.LoadFromFile(skinCollectionPath + "/now_loading.png");
 
-                TapLine_Normal = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/Normal.png");
-                TapLine_Each = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/Each.png");
-                TapLine_Slide = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/Slide.png");
-                TapLine_Break = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/Break.png");
-                TapLine_Mine = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/Mine.png");
+                TapLine_Normal = SpriteLoader.LoadFromFile(skinCollectionPath + "/NoteGuideSkins/Normal.png");
+                TapLine_Each = SpriteLoader.LoadFromFile(skinCollectionPath + "/NoteGuideSkins/Each.png");
+                TapLine_Slide = SpriteLoader.LoadFromFile(skinCollectionPath + "/NoteGuideSkins/Slide.png");
+                TapLine_Break = SpriteLoader.LoadFromFile(skinCollectionPath + "/NoteGuideSkins/Break.png");
+                TapLine_Mine = SpriteLoader.LoadFromFile(skinCollectionPath + "/NoteGuideSkins/Mine.png");
 
-                EachLines[0] = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/EachLine1.png");
-                EachLines[1] = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/EachLine2.png");
-                EachLines[2] = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/EachLine3.png");
-                EachLines[3] = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/EachLine4.png");
+                EachLines[0] = SpriteLoader.LoadFromFile(skinCollectionPath + "/NoteGuideSkins/EachLine1.png");
+                EachLines[1] = SpriteLoader.LoadFromFile(skinCollectionPath + "/NoteGuideSkins/EachLine2.png");
+                EachLines[2] = SpriteLoader.LoadFromFile(skinCollectionPath + "/NoteGuideSkins/EachLine3.png");
+                EachLines[3] = SpriteLoader.LoadFromFile(skinCollectionPath + "/NoteGuideSkins/EachLine4.png");
 
-                HoldEndPoint_Normal = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/Hold_End.png");
-                HoldEndPoint_Each = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/Hold_Each_End.png");
-                HoldEndPoint_Break = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/Hold_Break_End.png");
-                HoldEndPoint_Mine = SpriteLoader.Load(skinCollectionPath + "/NoteGuideSkins/Hold_Mine_End.png");
+                HoldEndPoint_Normal = SpriteLoader.LoadFromFile(skinCollectionPath + "/NoteGuideSkins/Hold_End.png");
+                HoldEndPoint_Each = SpriteLoader.LoadFromFile(skinCollectionPath + "/NoteGuideSkins/Hold_Each_End.png");
+                HoldEndPoint_Break = SpriteLoader.LoadFromFile(skinCollectionPath + "/NoteGuideSkins/Hold_Break_End.png");
+                HoldEndPoint_Mine = SpriteLoader.LoadFromFile(skinCollectionPath + "/NoteGuideSkins/Hold_Mine_End.png");
 
                 IsLoaded = true;
             }
