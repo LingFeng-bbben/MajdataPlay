@@ -25,7 +25,6 @@ namespace MajdataPlay.Drawing
             }
         }
 
-        //readonly static Sprite _emptySprite = Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
         public static Sprite LoadFromFile(string path, bool markNonReadable = true)
         {
             if (!File.Exists(path))
@@ -45,7 +44,6 @@ namespace MajdataPlay.Drawing
                 return Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
             }
         }
-
         public static Sprite LoadFromFileWithBorder(string path, Vector4 border, bool markNonReadable = true)
         {
             if (!File.Exists(path))
@@ -57,7 +55,6 @@ namespace MajdataPlay.Drawing
                 var bytes = File.ReadAllBytes(path);
                 var texture = new Texture2D(0, 0);
                 texture.LoadImage(bytes, markNonReadable);
-                texture.filterMode = FilterMode.Trilinear;
                 return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), 100, 1,
                     SpriteMeshType.FullRect, border);
             }
@@ -67,6 +64,8 @@ namespace MajdataPlay.Drawing
                 return Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
             }
         }
+
+
         public static async Task<Sprite> LoadFromFileAsync(string path, CancellationToken ct = default)
         {
             try
@@ -115,7 +114,7 @@ namespace MajdataPlay.Drawing
 
 
 
-        async static Task<Texture2D> DecodeAsync(ReadOnlyMemory<byte> data)
+        async static Task<Texture2D> DecodeAsync(ReadOnlyMemory<byte> data, bool markNonReadable)
         {
             await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
@@ -123,15 +122,15 @@ namespace MajdataPlay.Drawing
                 var bitmap = SKBitmap.Decode(data.Span);
 
                 await UniTask.SwitchToMainThread();
-                var texture = bitmap.ToTexture2D();
+                var texture = bitmap.ToTexture2D(markNonReadable);
                 return texture;
             }
         }
-        static Texture2D Decode(ReadOnlySpan<byte> data)
+        static Texture2D Decode(ReadOnlySpan<byte> data, bool markNonReadable)
         {
             var bitmap = SKBitmap.Decode(data);
             
-            return bitmap.ToTexture2D();
+            return bitmap.ToTexture2D(markNonReadable);
         }
     }
 }
