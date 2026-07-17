@@ -261,7 +261,8 @@ namespace MajdataPlay.Scenes.List
             var shouldUpdateDisplayer = _listDesiredPos != oldDesiredPos || forceUpdate;
             SelectedSong = _songDetails[_listDesiredPos];
             _progressDisplayer.text = $"{_listDesiredPos + 1}/<size=70%>{_songCount}";
-            if(disableAnimation)
+            UpdateListConfiguration();
+            if (disableAnimation)
             {
                 _scrollMotion.TryCancel();
                 if (shouldUpdateDisplayer)
@@ -483,7 +484,6 @@ namespace MajdataPlay.Scenes.List
         {
             _currentCollection.SetCursor(hash);
             SlideListTo(_currentCollection.Index, disableAnimation, forceUpdate, DISPLAYER_ANIM_DURATION_MS);
-            UpdateListConfiguration();
         }
         //async Task AnalyzeAndUpdateBpmLedAsync(ISongDetail songDetail, ChartLevel level)
         //{
