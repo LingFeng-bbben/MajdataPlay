@@ -173,7 +173,7 @@ namespace MajdataPlay.Scenes.List
                     displayer.Object.SetActive(true);
                     displayer.UsernameDisplayer.text = playerInfo.Username;
                     displayer.RankDisplayer.color = _rankerRankColors[rankerIndex];
-                    displayer.AccurateDisplayer.text = $"{(int)scoreInfo.Acc}.<size=70%>{(int)((scoreInfo.Acc - MathF.Truncate(scoreInfo.Acc)) * 10000):F4}%";
+                    displayer.AccurateDisplayer.text = $"{(int)scoreInfo.Acc}.<size=70%>{(int)((scoreInfo.Acc - MathF.Truncate(scoreInfo.Acc)) * 10000):D4}%";
                 }
                 finally
                 {
