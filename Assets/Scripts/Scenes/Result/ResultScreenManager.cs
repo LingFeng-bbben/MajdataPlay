@@ -24,7 +24,7 @@ using UnityEngine.Serialization;
 #nullable enable
 namespace MajdataPlay.Scenes.Result
 {
-    public partial class ResultScreenManager : MonoBehaviour
+    public partial class ResultScreenManager : MajBehaviour
     {
         public bool IsDebug;
         public TextMeshProUGUI title;
@@ -91,8 +91,9 @@ namespace MajdataPlay.Scenes.Result
 
         const string PERFECT_COUNT_TEXT_TEMPLATE = "<line-height=60%>{0}\n<size=24>(-{1})</size>";
 
-        void Awake()
+        protected override void Awake()
         {
+            base.Awake();
             InputManager.TouchButtonRingEdge = 4.8f;
         }
         void Start()
@@ -132,7 +133,7 @@ namespace MajdataPlay.Scenes.Result
             var song = result.SongDetail;
             var historyResult = ScoreManager.GetScore(song, listConfig.SelectedDiff);
             var score = MaiScore.CreateFromResult(result, result.Level);
-            var diffColor = CenterCoverDisplayer.DifficultyColors[(int)_gameInfo.CurrentLevel];
+            var diffColor = RuntimeDatabase.DifficultyColors[(int)_gameInfo.CurrentLevel];
             _levelCircleDisplayer.color = diffColor;
             _levelBGDisplayer.color = diffColor;
             _onlineInteractionSender.Init(song, score);

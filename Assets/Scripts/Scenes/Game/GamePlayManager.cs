@@ -29,7 +29,7 @@ using UnityEngine.UI;
 namespace MajdataPlay.Scenes.Game
 {
 #nullable enable
-    public class GamePlayManager : MonoBehaviour, INoteController
+    public class GamePlayManager : MajBehaviour, INoteController
     {
         public float NoteSpeed { get; private set; } = 7f;
         public float TouchSpeed { get; private set; } = 7f;
@@ -213,8 +213,9 @@ namespace MajdataPlay.Scenes.Game
 
         #region GameLoading
 
-        void Awake()
+        protected override void Awake()
         {
+            base.Awake();
             Majdata<GamePlayManager>.Instance = this;
             Majdata<INoteController>.Instance = this;
             Majdata<INoteTimeProvider>.Instance = this;
@@ -244,7 +245,7 @@ namespace MajdataPlay.Scenes.Game
             }
             _timer = MajTimeline.CreateTimer();
             _chartSetting = _gameInfo.ChartSettings;
-            var diffColor = CenterCoverDisplayer.DifficultyColors[(int)_gameInfo.CurrentLevel];
+            var diffColor = RuntimeDatabase.DifficultyColors[(int)_gameInfo.CurrentLevel];
             _levelCircleDisplayer.color = diffColor;
             _levelBGDisplayer.color = diffColor;
             if (_gameSettings.Debug.OffsetUnit == OffsetUnitOption.Second)

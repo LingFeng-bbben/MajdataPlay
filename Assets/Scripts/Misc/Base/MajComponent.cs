@@ -9,7 +9,7 @@ using UnityEngine;
 #nullable enable
 namespace MajdataPlay
 {
-    public abstract class MajComponent : MonoBehaviour, IMajComponent
+    public abstract class MajComponent : MajBehaviour, IMajComponent
     {
         /// <summary>
         /// This property is used to control the life cycle of components derived from MajComponent
@@ -69,6 +69,7 @@ namespace MajdataPlay
 
         protected virtual void Awake()
         {
+            base.Awake();
             _gameObject = gameObject;
             _transform = transform;
             _tag = _gameObject.tag;

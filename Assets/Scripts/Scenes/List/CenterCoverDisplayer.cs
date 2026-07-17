@@ -20,16 +20,8 @@ using UnityEngine.UI;
 #nullable enable
 namespace MajdataPlay.Scenes.List
 {
-    public class CenterCoverDisplayer : MonoBehaviour
+    public class CenterCoverDisplayer : MajBehaviour
     {
-        public static ReadOnlySpan<Color> DifficultyColors
-        {
-            get
-            {
-                return _difficultyColors;
-            }
-        }
-
         [SerializeField]
         [FormerlySerializedAs("levelRingDisplayer")]
         Image _levelRingDisplayer;
@@ -40,10 +32,6 @@ namespace MajdataPlay.Scenes.List
         [SerializeField]
         [FormerlySerializedAs("loadingObj")]
         GameObject _loadingObj;
-
-        [SerializeField]
-        [FormerlySerializedAs("diffColors")]
-        Color[] _diffColors = new Color[6];
 
         [SerializeField]
         [FormerlySerializedAs("scoreDisplayer")]
@@ -119,9 +107,9 @@ namespace MajdataPlay.Scenes.List
         const float LEVEL_RING_ROTATION_STEP = 10f;
         const float BG_COVER_FADE_IN_DURATION_SEC = 0.3f;
         
-        void Awake()
+        protected override void Awake()
         {
-            _difficultyColors = _diffColors;
+            base.Awake();
 
             var levelDisplayerListRoot = _levelDisplayerListRoot.transform;
             var displayerCount = levelDisplayerListRoot.childCount;
@@ -179,24 +167,24 @@ namespace MajdataPlay.Scenes.List
 
         public void SetDifficulty(int i)
         {
-            _levelRingDisplayer.color = _diffColors[i];
-            _selectedLevelColor.color = _diffColors[i];
+            _levelRingDisplayer.color = RuntimeDatabase.DifficultyColors[i];
+            _selectedLevelColor.color = RuntimeDatabase.DifficultyColors[i];
             _diff = i;
-            if (i + 1 < _diffColors.Length)
+            if (i + 1 < RuntimeDatabase.DifficultyColors.Length)
             {
-                CabinetLed.SetButtonLight(_diffColors[i + 1], 0);
+                CabinetLed.SetButtonLight(RuntimeDatabase.DifficultyColors[i + 1], 0);
             }
             else
             {
-                CabinetLed.SetButtonLight(_diffColors.First(), 0);
+                CabinetLed.SetButtonLight(RuntimeDatabase.DifficultyColors[0], 0);
             }
             if (i - 1 >= 0)
             {
-                CabinetLed.SetButtonLight(_diffColors[i - 1], 7);
+                CabinetLed.SetButtonLight(RuntimeDatabase.DifficultyColors[i - 1], 7);
             }
             else
             {
-                CabinetLed.SetButtonLight(_diffColors.Last(), 7);
+                CabinetLed.SetButtonLight(RuntimeDatabase.DifficultyColors[6], 7);
             }
             UpdateLevelRing();
             UpdateMetadataAndScoreDisplayer();

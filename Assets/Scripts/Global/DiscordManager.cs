@@ -54,7 +54,7 @@ namespace MajdataPlay
             {
                 Details = details,
                 State = state,
-                Assets = new Assets()
+                Assets = new DiscordRPC.Assets()
                 {
                     LargeImageKey = _largeImageKey,
                     LargeImageText = _largeImageText,
