@@ -68,7 +68,8 @@ namespace MajdataPlay.Scenes.Setting
                                  .ToArray();
             var offset = 0;
             var listRoot = _menuListRoot.transform;
-            if (!_settingConfig.IgnoreChartSettingPage)
+            var currentCollection = SongStorage.WorkingCollection;
+            if (!_settingConfig.IgnoreChartSettingPage && currentCollection.Count != 0)
             {
                 menus = new Menu[properties.Length + 1];
                 offset = 0;
