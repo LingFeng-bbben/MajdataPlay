@@ -280,6 +280,13 @@ namespace MajdataPlay.Scenes.Game
             InputManager.UseGameplayTouchEnhancementFeatures = true;
 #endif
             InputManager.TouchButtonRingEdge = 5.4f;
+            InputManager.Override_TouchSimulationRadius = default;
+            InputManager.Override_TouchAAreaExtraRadius = default;
+            InputManager.Override_TouchBAreaExtraRadius = default;
+            InputManager.Override_TouchCAreaExtraRadius = default;
+            InputManager.Override_TouchDAreaExtraRadius = default;
+            InputManager.Override_TouchEAreaExtraRadius = default;
+
             MajInstances.SceneSwitcher.HideMV();
 
             _chartInfoDisplayer.SetMetadata(_songDetail, _gameInfo.CurrentLevel);
@@ -1841,6 +1848,13 @@ namespace MajdataPlay.Scenes.Game
                 Cursor.visible = true;
                 InputManager.UseOuterTouchAsSensor = false;
                 InputManager.UseGameplayTouchEnhancementFeatures = false;
+                InputManager.Override_TouchSimulationRadius = 0.1f;
+                InputManager.Override_TouchAAreaExtraRadius = 0f;
+                InputManager.Override_TouchBAreaExtraRadius = 0f;
+                InputManager.Override_TouchCAreaExtraRadius = 0f;
+                InputManager.Override_TouchDAreaExtraRadius = 0f;
+                InputManager.Override_TouchEAreaExtraRadius = 0f;
+
                 MajInstances.SceneSwitcher.ShowMV();
             }
         }

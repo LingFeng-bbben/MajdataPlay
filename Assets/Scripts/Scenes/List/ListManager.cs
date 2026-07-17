@@ -81,13 +81,6 @@ namespace MajdataPlay.Scenes.List
 
         void Awake()
         {
-            InputManager.Override_TouchSimulationRadius = 0.1f;
-            InputManager.Override_TouchAAreaExtraRadius = 0f;
-            InputManager.Override_TouchBAreaExtraRadius = 0f;
-            InputManager.Override_TouchCAreaExtraRadius = 0f;
-            InputManager.Override_TouchDAreaExtraRadius = 0f;
-            InputManager.Override_TouchEAreaExtraRadius = 0f;
-
             Majdata<ListManager>.Instance = this;
             InputManager.TouchButtonRingEdge = 4.8f;
             if (AllBackgroundTasks.Count > 4096)
@@ -191,13 +184,6 @@ namespace MajdataPlay.Scenes.List
         {
             _isExited = true;
             _cts.Cancel();
-
-            InputManager.Override_TouchSimulationRadius = default;
-            InputManager.Override_TouchAAreaExtraRadius = default;
-            InputManager.Override_TouchBAreaExtraRadius = default;
-            InputManager.Override_TouchCAreaExtraRadius = default;
-            InputManager.Override_TouchDAreaExtraRadius = default;
-            InputManager.Override_TouchEAreaExtraRadius = default;
 
             InputManager.TouchButtonRingEdge = 5.4f;
             InputManager.UnbindAnyArea(OnAnyInput);
