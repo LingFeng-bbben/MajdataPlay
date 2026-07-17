@@ -67,7 +67,7 @@ namespace MajdataPlay.Scenes.List
         const float AUTO_SLIDE_INTERVAL_SEC = 0.15f;
         const float AUTO_SLIDE_TRIGGER_TIME_SEC = 0.4f;
         const int QUICK_SLIDE_POSITION_INCREASE = 9;
-        const float QUICK_SLIDE_DURATION_SEC = 1f;
+        const float QUICK_SLIDE_DURATION_SEC = 0.5f;
 
         int _quickSlideRemaining = 0;
         int _quickSlideDirection = 0;

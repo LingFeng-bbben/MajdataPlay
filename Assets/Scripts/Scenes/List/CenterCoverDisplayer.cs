@@ -246,6 +246,10 @@ namespace MajdataPlay.Scenes.List
             if (!visible)
             {
                 _onlineScoreRankDisplayer.Hide();
+                if(!_cts.IsCancellationRequested)
+                {
+                    _cts.Cancel();
+                }
             }
             _embeddedCoverRoot?.SetActive(visible);
             _favoriteRoot?.SetActive(visible);
