@@ -11,6 +11,7 @@ namespace MajdataPlay
         Init,
         Title,
         Login,
+        Calibrator,
         List,
         Game,
         Result,

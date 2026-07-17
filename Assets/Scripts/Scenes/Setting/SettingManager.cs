@@ -146,6 +146,15 @@ namespace MajdataPlay.Scenes.Setting
                 var displayer = _menuTitleDisplayers[i];
                 displayer.TitleDisplayer.text = displayer.Name.i18n();
             }
+            var isCalibratorRequested = InputManager.IsButtonClickedInThisFrame(ButtonZone.A1) ||
+                                        InputManager.IsSensorClickedInThisFrame(SensorArea.A1);
+            if (isCalibratorRequested)
+            {
+                MajInstances.AudioManager.ReadVolumeFromSettings();
+                _isExited = true;
+                MajInstances.SceneSwitcher.SwitchScene("Calibrator");
+                return;
+            }
             if (IsPressed)
             {
                 if (PressTime < 0.7f)
