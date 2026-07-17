@@ -32,6 +32,10 @@ namespace MajdataPlay.Scenes.List
         [FormerlySerializedAs("emptyIndicator")]
         GameObject _emptyIndicator;
 
+        [SerializeField]
+        [FormerlySerializedAs("rankerRankColors")]
+        Color[] _rankerRankColors = Array.Empty<Color>();
+
         RankerDisplayer[] _rankerDisplayers = Array.Empty<RankerDisplayer>();
 
         float _loadTimer = 0f;
@@ -168,7 +172,8 @@ namespace MajdataPlay.Scenes.List
                     var displayer = _rankerDisplayers[rankerIndex];
                     displayer.Object.SetActive(true);
                     displayer.UsernameDisplayer.text = playerInfo.Username;
-                    displayer.AccurateDisplayer.text = $"{(int)scoreInfo.Acc}.<size=70%>{(int)((scoreInfo.Acc - MathF.Truncate(scoreInfo.Acc)) * 10000)}%";
+                    displayer.RankDisplayer.color = _rankerRankColors[rankerIndex];
+                    displayer.AccurateDisplayer.text = $"{(int)scoreInfo.Acc}.<size=70%>{(int)((scoreInfo.Acc - MathF.Truncate(scoreInfo.Acc)) * 10000):F4}%";
                 }
                 finally
                 {
