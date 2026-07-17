@@ -131,7 +131,7 @@ namespace MajdataPlay.Scenes.List
             _isOnlineEnabled = MajEnv.Settings.Online.Enable;
 
 
-            _favoriteAdder.PressToAddTime = 0;
+            _favoriteAdder.PressToAddTime = 0.5f;
             _favoriteAdder.PressToRemoveTime = 0.5f;
 
             InputManager.BindAnyArea(OnAnyInput);
@@ -851,7 +851,7 @@ namespace MajdataPlay.Scenes.List
                 readonly SensorArea[] _tailAreaList;
                 readonly TimeSpan _timeout;
                 public Path(SensorArea headArea, SensorArea area2, SensorArea[] tailAreaList) 
-                    : this(headArea, area2, tailAreaList, TimeSpan.FromMilliseconds(100))
+                    : this(headArea, area2, tailAreaList, TimeSpan.FromMilliseconds(300))
                 {
 
                 }
