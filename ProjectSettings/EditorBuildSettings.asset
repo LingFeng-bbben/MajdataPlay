@@ -36,7 +36,7 @@ EditorBuildSettings:
     path: Assets/Scenes/Practice.unity
     guid: 339e282cac1fa1348bfda01293b270b4
   - enabled: 1
-    path: Assets/Scenes/View.unity
+    path: Assets/Scenes/unused/View.unity
     guid: aba1bc329bdeec04bbbcc90584e0ad24
   - enabled: 1
     path: Assets/Scenes/Test.unity
@@ -45,3 +45,4 @@ EditorBuildSettings:
     path: Assets/Scenes/Empty.unity
     guid: a5f2dfdb7b8c0c940b990a83bf33cdc3
   m_configObjects: {}
+  m_UseUCBPForAssetBundles: 0

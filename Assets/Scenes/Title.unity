@@ -739,14 +739,14 @@ MonoBehaviour:
       m_Calls: []
   m_text: Scanning Chart...
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: dbc58334dc23ba04fbfee4bf5298b6a0, type: 2}
-  m_sharedMaterial: {fileID: -9050617650548543871, guid: dbc58334dc23ba04fbfee4bf5298b6a0, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: f20307e3b6cac324792167f2ee967f8f, type: 2}
+  m_sharedMaterial: {fileID: 1939904421641905129, guid: f20307e3b6cac324792167f2ee967f8f, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4257320284
+    rgba: 4290874716
   m_fontColor: {r: 0.36078432, g: 0.5529412, b: 0.75686276, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3

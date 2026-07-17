@@ -15,8 +15,6 @@ namespace MajdataPlay.Scenes.SortFind
         [SerializeField]
         GameObject _clearButton;
 
-        [SerializeField]
-        Color _selectedColor;
         [SerializeField, ReadOnlyField]
         SortType _sortType;
 
@@ -99,7 +97,6 @@ namespace MajdataPlay.Scenes.SortFind
 
         void SetActiveSort(SortType sortType)
         {
-            _slotText.color = _selectedColor;
             _slotText.text = _slotTexts[(int)sortType].i18n();
             _sortType = sortType;
         }

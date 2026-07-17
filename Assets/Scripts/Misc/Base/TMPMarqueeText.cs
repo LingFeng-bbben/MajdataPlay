@@ -9,9 +9,9 @@ namespace MajdataPlay.Misc.Base
     [RequireComponent(typeof(TextMeshProUGUI))]
     public class TMPMarqueeText : MonoBehaviour
     {
-        private const float START_DELAY = 2f;
-        private const float SCROLL_SPEED = 48f;
-        private const float END_GAP_VIEWPORT_RATIO = 0.25f;
+        public float StartDelay = 2f;
+        public float ScrollSpeed = 48f;
+        public float EndRatio = 0.25f;
 
         private TextMeshProUGUI? _sourceText;
         private TextMeshProUGUI? _mainText;
@@ -45,7 +45,7 @@ namespace MajdataPlay.Misc.Base
         private void OnEnable()
         {
             _isDirty = true;
-            _delayTimer = START_DELAY;
+            _delayTimer = StartDelay;
             Refresh(true);
         }
 
@@ -100,11 +100,11 @@ namespace MajdataPlay.Misc.Base
                 return;
             }
 
-            _offset += Mathf.Max(1f, SCROLL_SPEED) * deltaTime;
+            _offset += Mathf.Max(1f, ScrollSpeed) * deltaTime;
             if (_offset >= _loopDistance)
             {
                 _offset = 0f;
-                _delayTimer = Mathf.Max(0f, START_DELAY);
+                _delayTimer = Mathf.Max(0f, StartDelay);
             }
 
             ApplyOffset();
@@ -151,7 +151,7 @@ namespace MajdataPlay.Misc.Base
             if (resetPosition)
             {
                 _offset = 0f;
-                _delayTimer = Mathf.Max(0f, START_DELAY);
+                _delayTimer = Mathf.Max(0f, StartDelay);
             }
 
             if (!_isScrolling)
@@ -164,7 +164,7 @@ namespace MajdataPlay.Misc.Base
                 return;
             }
 
-            _loopDistance = preferredWidth + viewportWidth * END_GAP_VIEWPORT_RATIO;
+            _loopDistance = preferredWidth + viewportWidth * EndRatio;
             _mainText!.gameObject.SetActive(true);
             _copyText!.gameObject.SetActive(true);
             _mainText.text = _lastText;
