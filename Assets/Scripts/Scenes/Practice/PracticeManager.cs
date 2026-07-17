@@ -27,8 +27,8 @@ namespace MajdataPlay.Scenes.Practice
         public TextMeshProUGUI endTimeText;
         public ChartVisualDisplayer chartAnalyzer;
         public RectTransform selectionBox;
-        public Text timeText;
-        public Text rTimeText;
+        public TextMeshProUGUI timeText;
+        public TextMeshProUGUI rTimeText;
         public Slider progress;
 
         const string TIME_STRING = "{0}:{1:00}.{2:000}";
@@ -98,7 +98,7 @@ namespace MajdataPlay.Scenes.Practice
                 }
 
                 var chart = await SimaiParser.ParseChartAsync(songinfo.Levels[levelIndex], songinfo.Designers[levelIndex], maidata);
-
+                await UniTask.SwitchToMainThread();
                 chartAnalyzer.SetSimaiChart(chart, _totalTime);
                 if (_gameInfo.TimeRange is not null)
                 {
