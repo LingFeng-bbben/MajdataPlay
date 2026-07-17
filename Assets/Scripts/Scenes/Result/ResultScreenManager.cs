@@ -156,6 +156,7 @@ namespace MajdataPlay.Scenes.Result
             designer.text = song.Designers[(int)_gameInfo.CurrentLevel] ?? "Undefined";
             level.text = song.Levels[(int)_gameInfo.CurrentLevel];
 
+            // TODO: more animation here
             accDX.text = isClassic ? $"{Math.Floor(result.Acc.Classic * 100) / 100:F2}%" : $"{Math.Floor(result.Acc.DX * 10000) / 10000:F4}%";
             var nowAcc = isClassic ? result.Acc.Classic : result.Acc.DX;
             var historyAcc = isClassic ? historyResult.Acc.Classic : historyResult.Acc.DX;

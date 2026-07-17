@@ -28,11 +28,11 @@ namespace MajdataPlay.Scenes.Result.Components
             var score = new DXScoreRank(result.DXScore, result.TotalDXScore);
             if (score.Rank > 0)
             {
-                _dxScoreDisplayer.text = $"{result.DXScore}/{result.TotalDXScore} ✧ {score.Rank}";
+                _dxScoreDisplayer.text = $"<Color=#A2C830>✧{score.Rank}<Color=#4C3A37> {result.DXScore}/{result.TotalDXScore}";
             }
             else
             {
-                _dxScoreDisplayer.text = $"{result.DXScore}/{result.TotalDXScore}";
+                _dxScoreDisplayer.text = $"<Color=#4C3A37> {result.DXScore}/{result.TotalDXScore}";
             }
             var percent = result.DXScore / (float)result.TotalDXScore;
             _slideBarAnim.TryCancel();
