@@ -39,6 +39,9 @@ namespace MajdataPlay
                 var renderer = child.GetComponent<MeshRenderer>();
                 var filter = child.GetComponent<MeshFilter>();
 
+                renderer.sortingLayerName = "Debug";
+                renderer.sortingOrder = short.MaxValue;
+
                 _sensorRenderers[index] = new SensorRenderer(index, filter, renderer, collider, child.gameObject, _sharedInstancedMaterial);
                 _instanceID2SensorIndexMappingTable[collider.GetInstanceID()] = index;
             }
@@ -85,7 +88,8 @@ namespace MajdataPlay
 
             MaterialPropertyBlock _propBlock;
 
-            static readonly int ColorPropId = Shader.PropertyToID("_BaseColor");            
+            static readonly int ColorPropId = Shader.PropertyToID("_Color");            
+            //static readonly int ColorPropId = Shader.PropertyToID("_BaseColor");            
 
             public SensorRenderer(int index, MeshFilter meshFilter, MeshRenderer meshRenderer, MeshCollider meshCollider, GameObject gameObject, Material sharedMaterial)
             {
