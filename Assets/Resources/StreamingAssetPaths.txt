@@ -59,6 +59,7 @@ SFX\bgm_title.mp3
 SFX\break.wav
 SFX\break_slide.wav
 SFX\break_tap.wav
+SFX\calibrate.ogg
 SFX\GameOver.wav
 SFX\slide.wav
 SFX\slide_break_slide.wav
