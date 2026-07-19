@@ -22,6 +22,7 @@ using MajdataPlay.Collections;
 using MajdataPlay.Settings;
 using MajdataPlay.Numerics;
 using Cysharp.Threading.Tasks;
+using UnityEditor;
 
 
 #nullable enable
@@ -318,7 +319,7 @@ namespace MajdataPlay.IO
                     InputManager.BindAnyArea(OnAnyAreaDown);
                 }
                 ReadVolumeFromSettings();
-                GameManager.OnAppFocus += OnAppFocus;
+                GameManager.OnAppPause += OnAppPause;
             }
             catch (Exception e)
             {
@@ -407,7 +408,7 @@ namespace MajdataPlay.IO
 
         private void OnDestroy()
         {
-            GameManager.OnAppFocus -= OnAppFocus;
+            GameManager.OnAppPause -= OnAppPause;
             if (MajEnv.Settings.Audio.Backend == SoundBackendOption.Wasapi
                 || MajEnv.Settings.Audio.Backend == SoundBackendOption.Asio ||
                 MajEnv.Settings.Audio.Backend == SoundBackendOption.BassSimple)
@@ -430,23 +431,19 @@ namespace MajdataPlay.IO
             }
         }
 
-        void OnAppFocus(object? sender, bool isFocus)
+        void OnAppPause(object? sender, bool isPaused)
         {
 #if UNITY_ANDROID || UNITY_IOS
-            if(BassGlobalMixer == -114514)
+            if (isPaused)
             {
-                return;
-            }
-            if (isFocus)
-            {
-                MajDebug.LogDebug("Application regained focus, attempting to restore mixer volume");
-                Bass.ChannelSetAttribute(BassGlobalMixer, ChannelAttribute.Volume, 1f);
+                MajDebug.LogDebug("Application paused, attempting to mute Bass output");
+                Bass.Volume = 0f;
                 MajDebug.LogDebug($"[Bass] {Bass.LastError}");
             }
             else
             {
-                MajDebug.LogDebug("Application lost focus, attempting to mute the mixer");
-                Bass.ChannelSetAttribute(BassGlobalMixer, ChannelAttribute.Volume, 0f);
+                MajDebug.LogDebug("Application resumed, attempting to restore Bass output volume");
+                Bass.Volume = 1f;
                 MajDebug.LogDebug($"[Bass] {Bass.LastError}");
             }
 #endif
