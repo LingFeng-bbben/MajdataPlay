@@ -55,7 +55,7 @@ namespace MajdataPlay.Scenes.Result
         public Color goodColor;
 
 
-        public GameObject clearLogo;
+        public TextMeshProUGUI clearText;
         public GameObject xxlb;
 
         public UserInfoDisplayer userInfoDisplayer;
@@ -206,24 +206,31 @@ namespace MajdataPlay.Scenes.Result
 
             var breakJudgeInfo = JudgeDetail.UnpackJudgeRecord(result.JudgeRecord[ScoreNoteType.Break]);
 
-            if (!totalJudgeRecord.IsFullCombo)
-            {
-                clearLogo.SetActive(false);
-            }
-            else if (totalJudgeRecord.IsAllPerfect)
+
+            if (totalJudgeRecord.IsAllPerfect)
             {
                 if (breakJudgeInfo.IsTheoretical)
                 {
-                    clearLogo.GetComponentInChildren<TextMeshProUGUI>().text = "AP+";
+                    clearText.text = "AP+";
                 }
                 else
                 {
-                    clearLogo.GetComponentInChildren<TextMeshProUGUI>().text = "AP";
+                    clearText.text = "AP";
                 }
             }
-            else if (totalJudgeRecord.IsFullComboPlus)
+            else if (totalJudgeRecord.IsFullCombo)
             {
-                clearLogo.GetComponentInChildren<TextMeshProUGUI>().text = "FC+";
+                if (totalJudgeRecord.IsFullComboPlus) { 
+                    clearText.text = "FC+";
+                }
+                else
+                {
+                    clearText.text = "FC";
+                }
+            }
+            else
+            {
+                clearText.text = "";
             }
 
             MajInstances.AudioManager.PlaySFX("bgm_result.mp3", true);

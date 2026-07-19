@@ -343,7 +343,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 7848876556989961994}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 42b3feec20373194990c339bdf0e29d5, type: 3}
+  m_Script: {fileID: 11500000, guid: bbcb1a226660b7c46a46d00e4b8a78ce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.LoadSubBg
 --- !u!1 &7942307277902318624
