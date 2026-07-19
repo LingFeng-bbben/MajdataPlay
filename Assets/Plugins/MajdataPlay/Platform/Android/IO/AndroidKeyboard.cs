@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using UnityEngine;
-using KeyCode = MajdataPlay.Platform.Android.IO.KeyCode;
 
 namespace MajdataPlay.Platform.Android.IO
 {
@@ -20,15 +19,14 @@ namespace MajdataPlay.Platform.Android.IO
         static OnDispatchKeyEventCallbackProxy _onDispatchKeyEventCallbackProxy;
         readonly static bool[] _keyStates = new bool[1024];
 
-        public static void Init()
+        internal static void Init()
         {
             if(_isInited)
             {
                 return;
             }
             _onDispatchKeyEventCallbackProxy = new OnDispatchKeyEventCallbackProxy();
-            var majdataPlayActivityClass = new AndroidJavaClass("net.majdata.majdataplay.MajdataPlayActivity");
-            majdataPlayActivityClass.CallStatic("registerDispatchKeyEventCallback", _onDispatchKeyEventCallbackProxy);
+            AndroidRuntime.MajdataPlayActivityClass.CallStatic("registerDispatchKeyEventCallback", _onDispatchKeyEventCallbackProxy);
             _isInited = true;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -46,15 +44,11 @@ namespace MajdataPlay.Platform.Android.IO
         }
         unsafe class OnDispatchKeyEventCallbackProxy : AndroidJavaProxy
         {
-            readonly bool[] _keyStates;
-            public OnDispatchKeyEventCallbackProxy() : base("net.majdata.majdataplay.CSharpOnDispatchKeyEventCallback")
-            {
-                _keyStates = AndroidKeyboard._keyStates;
-            }
+            public OnDispatchKeyEventCallbackProxy() : base("net.majdata.majdataplay.CSharpOnDispatchKeyEventCallback") { }
 
             public void OnDispatchKeyEvent(int action, int keyCode)
             {
-                fixed(bool* ptr = _keyStates)
+                fixed(bool* ptr = AndroidKeyboard._keyStates)
                 {
                     ptr[keyCode] = action != 1;
                 }

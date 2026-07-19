@@ -14,6 +14,9 @@ using MajdataPlay.Numerics;
 using MajdataPlay.Settings;
 using MajdataPlay.Settings.Runtime;
 using MajdataPlay.Utils;
+#if UNITY_ANDROID
+using MajdataPlay.Platform.Android;
+#endif
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
@@ -179,7 +182,7 @@ namespace MajdataPlay
             var versionClass = AndroidJNI.FindClass("android/os/Build$VERSION");
             var fieldID = AndroidJNI.GetStaticFieldID(versionClass, "SDK_INT", "I");
             AndroidSdkVersion = AndroidJNI.GetStaticIntField(versionClass, fieldID);
-            var appInfo = GameManager.CurrentActivity.Call<AndroidJavaObject>("getApplicationInfo");
+            var appInfo = AndroidRuntime.CurrentActivity.Call<AndroidJavaObject>("getApplicationInfo");
             TargetSdkVersion = appInfo.Get<int>("targetSdkVersion");
 
             if (AndroidSdkVersion < 30 || TargetSdkVersion < 30) // < Android 11
