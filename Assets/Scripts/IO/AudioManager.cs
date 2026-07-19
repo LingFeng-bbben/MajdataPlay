@@ -437,13 +437,17 @@ namespace MajdataPlay.IO
             if (isPaused)
             {
                 MajDebug.LogDebug("Application paused, attempting to mute Bass output");
-                Bass.Volume = 0f;
+                Bass.GlobalMusicVolume = 0;
+                Bass.GlobalSampleVolume = 0;
+                Bass.GlobalStreamVolume = 0;
                 MajDebug.LogDebug($"[Bass] {Bass.LastError}");
             }
             else
             {
                 MajDebug.LogDebug("Application resumed, attempting to restore Bass output volume");
-                Bass.Volume = 1f;
+                Bass.GlobalMusicVolume = 10000;
+                Bass.GlobalSampleVolume = 10000;
+                Bass.GlobalStreamVolume = 10000;
                 MajDebug.LogDebug($"[Bass] {Bass.LastError}");
             }
 #endif
