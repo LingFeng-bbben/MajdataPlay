@@ -2,6 +2,7 @@
 using MajdataPlay.Platform.iOS.PInvoke;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -44,10 +45,12 @@ namespace MajdataPlay.Platform.iOS
             _onForegroundChangedCallbackHandle = GCHandle.Alloc(_onForegroundChanged, GCHandleType.Pinned);
         }
         
-
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void Init()
         {
+#if !(UNITY_IOS || UNITY_EDITOR_OSX)
+            return;
+#endif
             AppStatusPInvoke.RegisterAppStatusCallbacks(NativeForegroundCallback, NativeFocusCallback);
         }
 
