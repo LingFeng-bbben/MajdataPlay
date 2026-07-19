@@ -2,6 +2,7 @@ using LitMotion;
 using MajdataPlay.Collections;
 using MajdataPlay.Editor;
 using MajdataPlay.Extensions;
+using MajdataPlay.i18n;
 using MajdataPlay.IO;
 using MajdataPlay.Numerics;
 using MajdataPlay.Settings;

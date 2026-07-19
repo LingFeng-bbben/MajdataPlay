@@ -1,4 +1,5 @@
 ﻿using Cysharp.Text;
+using MajdataPlay.i18n;
 using System;
 using System.Collections.Generic;
 using System.Linq;

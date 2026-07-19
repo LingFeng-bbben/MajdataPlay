@@ -1,5 +1,6 @@
 using Cysharp.Text;
 using Cysharp.Threading.Tasks;
+using MajdataPlay.i18n;
 using MajdataPlay.Utils;
 using Newtonsoft.Json;
 using Semver;

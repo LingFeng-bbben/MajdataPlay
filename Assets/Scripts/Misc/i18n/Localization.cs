@@ -13,7 +13,7 @@ using System.Threading;
 using UnityEngine;
 
 #nullable enable
-namespace MajdataPlay
+namespace MajdataPlay.i18n
 {
     public static class Localization
     {
@@ -78,7 +78,7 @@ namespace MajdataPlay
                     }
                     MajDebug.LogDebug("Lang file loaded: " + file);
                     var json = ta.text;
-                    Language? lang = Parse(json);
+                    var lang = Parse(json);
                     if (lang is null)
                     {
                         MajDebug.LogError($"Failed to parse lang file: {file}");
@@ -151,7 +151,7 @@ namespace MajdataPlay
             using var loadedLangs = new RentedList<Language>();
             foreach (var json in jsons)
             {
-                Language? lang = Parse(json);
+                var lang = Parse(json);
                 if(lang is null)
                 {
                     continue;

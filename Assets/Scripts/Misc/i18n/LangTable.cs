@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 #nullable enable
-namespace MajdataPlay
+namespace MajdataPlay.i18n
 {
     public class LangTable
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 #nullable enable
-namespace MajdataPlay
+namespace MajdataPlay.i18n
 {
     public class Language
     {

@@ -1,4 +1,5 @@
 ﻿
+using MajdataPlay.i18n;
 using System;
 
 namespace MajdataPlay

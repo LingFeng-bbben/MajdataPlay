@@ -5,7 +5,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace MajdataPlay
+namespace MajdataPlay.i18n
 {
     public class LocalizeTMP : MonoBehaviour
     {

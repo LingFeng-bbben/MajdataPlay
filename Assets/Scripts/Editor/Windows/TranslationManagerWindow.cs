@@ -1,4 +1,5 @@
 ﻿using MajdataPlay.Buffers;
+using MajdataPlay.i18n;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
