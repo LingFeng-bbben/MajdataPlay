@@ -17,7 +17,6 @@ namespace MajdataPlay.Scenes.Game
                 return;
             a = true;
             Majdata<GamePlayManager>.Instance!.EndGame().Forget();
-            Destroy(gameObject);
         }
         void OnEnable()
         {
