@@ -12,6 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d95ec23aa5bf93047ba9173907ba06d3, type: 3}
   m_Name: RuntimeDatabase
   m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.Assets.Runtime
+  <LocalizedFonts>k__BackingField:
+    <SimplifiedChinese>k__BackingField: {fileID: 11400000, guid: dbc58334dc23ba04fbfee4bf5298b6a0, type: 2}
+    <TraditionalChinese>k__BackingField: {fileID: 11400000, guid: dbc58334dc23ba04fbfee4bf5298b6a0, type: 2}
+    <TraditionalChinese_zh_TW>k__BackingField: {fileID: 11400000, guid: dbc58334dc23ba04fbfee4bf5298b6a0, type: 2}
+    <Default>k__BackingField: {fileID: 11400000, guid: dbc58334dc23ba04fbfee4bf5298b6a0, type: 2}
   _difficultyColors:
   - {r: 0.27058825, g: 0.6901961, b: 1, a: 1}
   - {r: 0.47058827, g: 0.82745105, b: 0.19607845, a: 1}

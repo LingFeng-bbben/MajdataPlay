@@ -1,8 +1,10 @@
-﻿using System;
+﻿using MajdataPlay.i18n;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -20,9 +22,32 @@ namespace MajdataPlay.Databases
         /// <para>The array index represents the difficulty identifier.</para>
         /// </summary>
         public ReadOnlySpan<Color> DifficultyColors { get => _difficultyColors; }
+        [field: SerializeField]
+        public FontAssets LocalizedFonts { get; private set; }
+
 
         [SerializeField]
         [FormerlySerializedAs("difficultyColors")]
         Color[] _difficultyColors;
+
+        [Serializable]
+        public class FontAssets
+        {
+            [FontLCID("zh-CN")]
+            [field: SerializeField]
+            public TMP_FontAsset SimplifiedChinese { get; private set; }
+
+            [FontLCID("zh-HK")]
+            [field: SerializeField]
+            public TMP_FontAsset TraditionalChinese { get; private set; }
+
+            [FontLCID("zh-TW")]
+            [field: SerializeField]
+            public TMP_FontAsset TraditionalChinese_zh_TW { get; private set; }
+
+            [FontLCID("")]
+            [field: SerializeField]
+            public TMP_FontAsset Default { get; private set; }
+        }
     }
 }
