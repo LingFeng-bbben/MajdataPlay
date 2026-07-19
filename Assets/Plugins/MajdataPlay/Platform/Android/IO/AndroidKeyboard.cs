@@ -1,12 +1,11 @@
-﻿using MajdataPlay.Platform.Android.Runtime.IO;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using UnityEngine;
-using KeyCode = MajdataPlay.Platform.Android.Runtime.IO.KeyCode;
+using KeyCode = MajdataPlay.Platform.Android.IO.KeyCode;
 
-namespace MajdataPlay.Platform.Android
+namespace MajdataPlay.Platform.Android.IO
 {
     public static class AndroidKeyboard
     {
