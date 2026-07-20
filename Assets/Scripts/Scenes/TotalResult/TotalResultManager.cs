@@ -7,19 +7,36 @@ using UnityEngine.UI;
 using TMPro;
 using MajdataPlay.IO;
 using Cysharp.Threading.Tasks;
-using UnityEngine.UIElements;
 using MajdataPlay.Scenes.Game;
 using MajdataPlay.Settings;
+using UnityEngine.Serialization;
+using System;
 
 namespace MajdataPlay.Scenes.TotalResult
 {
     public class TotalResultManager : MonoBehaviour
     {
-        public GameObject resultPrefab;
-        public Transform resultPrefabParent;
-        public TextMeshProUGUI life;
-        public TextMeshProUGUI totalAchievement;
-        public TextMeshProUGUI Title;
+        [SerializeField]
+        [FormerlySerializedAs("hpSlider")]
+        Slider _hpSlider;
+
+        [SerializeField]
+        [FormerlySerializedAs("hpTextDisplayer")]
+        TextMeshProUGUI _hpTextDisplayer;
+
+        [SerializeField]
+        [FormerlySerializedAs("totalAchievementDisplayer")]
+        TextMeshProUGUI _totalAchievementDisplayer;
+
+        [SerializeField]
+        [FormerlySerializedAs("titleDisplayer")]
+        TextMeshProUGUI _titleDisplayer;
+
+        [SerializeField]
+        [FormerlySerializedAs("songCoverDisplayerListRoot")]
+        GameObject _songCoverDisplayerListRoot;
+
+        DanSongCoverDisplayer[] _songCoverDisplayers = Array.Empty<DanSongCoverDisplayer>();
 
         GameInfo _gameInfo = Majdata<GameInfo>.Instance!;
         bool _isExited = false;
@@ -27,42 +44,54 @@ namespace MajdataPlay.Scenes.TotalResult
         void Awake()
         {
             InputManager.TouchButtonRingEdge = 4.8f;
+            CabinetLed.SetAllLight(Color.white);
+
+            var songCoverDisplayerListRoot = _songCoverDisplayerListRoot.transform;
+            var displayerCount = songCoverDisplayerListRoot.childCount;
+            _songCoverDisplayers = new DanSongCoverDisplayer[displayerCount];
+
+            for (var i = 0; i < displayerCount; i++)
+            {
+                var gameObject = songCoverDisplayerListRoot.GetChild(i).gameObject;
+                _songCoverDisplayers[i] = gameObject.GetComponent<DanSongCoverDisplayer>();
+                gameObject.SetActive(false);
+            }
         }
         void Start()
         {
-            CabinetLed.SetAllLight(Color.white);
+            var danInfo = _gameInfo.DanInfo;
             var results = _gameInfo.Results;
             var levels = _gameInfo.Levels;
             var songInfos = _gameInfo.Charts;
-            var name = _gameInfo.DanInfo.Name;
+            var name = danInfo.Name;
             var isClassic = MajInstances.GameManager.Settings.Judge.Mode == JudgeModeOption.Classic;
             var totalAchievementValue = results.Sum(result => isClassic ? result.Acc.Classic : result.Acc.DX);
             if (_gameInfo.IsDanLifeEnabled)
             {
-                life.text = "LIFE " + _gameInfo.CurrentHP + " / " + _gameInfo.MaxHP;
+                _hpTextDisplayer.text = $"{_gameInfo.CurrentHP}/<size=75%>{_gameInfo.MaxHP}";
             }
             else
             {
-                life.text = "LIFE Disabled";
+                _hpTextDisplayer.text = "  --";
             }
-            totalAchievement.text = isClassic ? $"Total {totalAchievementValue:F2}%" : $"Total {totalAchievementValue:F4}%";
-            Title.text = name;
-            for (var i = 0; i < songInfos.Length; i++)
+            _totalAchievementDisplayer.text = isClassic ? $"Total {totalAchievementValue:F2}%" : $"Total {totalAchievementValue:F4}%";
+            _titleDisplayer.text = name;
+
+            for (var i = 0; i < results.Length; i++)
             {
-                var songInfo = Instantiate(resultPrefab, resultPrefabParent);
+                if(i >= _songCoverDisplayers.Length)
+                {
+                    break;
+                }
                 var result = results[i];
-                //if (i < results.Length)
-                //{
-                //    result = results[i];
-                //}
-                //else if (i == results.Length)
-                //{
-                //    result = (GameResult)GameManager.LastGameResult;
-                //}
-                songInfo.GetComponent<TotalResultSmallDisplayer>().DisplayResult(songInfos[i], result, (ChartLevel)levels[i]);
+                var songDetail = result.SongDetail;
+                var displayer = _songCoverDisplayers[i];
+                displayer.SetSongDetail(songDetail, 
+                    (ChartLevel)danInfo.SongLevels[i], 
+                    result, 
+                    gameObject.GetCancellationTokenOnDestroy());
             }
-            //SongStorage.WorkingCollection.Reset();
-            //MajInstances.GameManager.isDanMode = false;
+
             DelayBind().Forget();
             MajInstances.AudioManager.StopSFX("bgm_result.mp3");
             MajInstances.AudioManager.PlaySFX("bgm_dan.mp3", true);

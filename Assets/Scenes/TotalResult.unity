@@ -8993,9 +8993,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resultPrefab: {fileID: 4081636613036787854, guid: 528203199c749984fa9df6bd2fdf1920, type: 3}
   resultPrefabParent: {fileID: 0}
-  life: {fileID: 0}
-  totalAchievement: {fileID: 0}
-  Title: {fileID: 1250844065}
+  _hpSlider: {fileID: 99150330}
+  _hpTextDisplayer: {fileID: 1597572236}
+  _totalAchievementDisplayer: {fileID: 1714949964}
+  _titleDisplayer: {fileID: 1250844065}
+  _songCoverDisplayerListRoot: {fileID: 709835277}
 --- !u!43 &1405028763
 Mesh:
   m_ObjectHideFlags: 0
@@ -10557,7 +10559,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 50/<size=74%>100
+  m_text: 50/<size=75%>100
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: dbc58334dc23ba04fbfee4bf5298b6a0, type: 2}
   m_sharedMaterial: {fileID: -9050617650548543871, guid: dbc58334dc23ba04fbfee4bf5298b6a0, type: 2}

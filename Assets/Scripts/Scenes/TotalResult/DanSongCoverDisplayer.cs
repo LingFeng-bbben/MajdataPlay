@@ -1,5 +1,6 @@
 ﻿using Cysharp.Threading.Tasks;
 using MajdataPlay.Scenes.Game;
+using MajdataPlay.Settings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -57,7 +58,14 @@ namespace MajdataPlay.Scenes.TotalResult
 
             if(result is GameResult gameResult)
             {
-                _achievementDisplayer.text = $"{gameResult:F4}%";
+                if(MajInstances.GameManager.Settings.Judge.Mode == JudgeModeOption.Classic)
+                {
+                    _achievementDisplayer.text = $"{gameResult.Acc.Classic:F2}%";
+                }
+                else
+                {
+                    _achievementDisplayer.text = $"{gameResult.Acc.DX:F4}%";
+                }
             }
             else
             {
