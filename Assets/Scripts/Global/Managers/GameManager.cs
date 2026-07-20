@@ -38,22 +38,12 @@ namespace MajdataPlay
 #nullable enable
     public sealed class GameManager : MajSingleton
     {
-#if UNITY_ANDROID
-        public delegate void OnActivityResultCallback(object? sender, int requestCode, int resultCode, AndroidJavaObject? intent);
-#endif
         public static bool IsAppOnFocus { get; private set; } = true;
         public static event EventHandler<EventArgs?>? OnAppQuit;
         public static event EventHandler<EventArgs?>? OnSave;
         public static event EventHandler<bool>? OnAppFocus;
         public static event EventHandler<bool>? OnAppPause;
-#if UNITY_ANDROID
-        public static event EventHandler<AndroidJavaObject?>? OnNewIntent;
-        public static event OnActivityResultCallback? OnActivityResult;
-        public static AndroidJavaClass UnityPlayerClass { get; private set; }
-        public static AndroidJavaClass MajdataPlayActivityClass { get; private set; }
 
-        public static AndroidJavaObject CurrentActivity { get; private set; }
-#endif
         public static Camera MainCamera
         {
             get => MajInstances.SceneSwitcher.MainCamera;
@@ -76,26 +66,9 @@ namespace MajdataPlay
         readonly static List<IntPtr> _windowHandles = new();
         readonly static ReadOnlyMemory<ITimeProvider> _builtInTimeProviders = MajTimeline.BuiltInTimeProviders;
 
-#if UNITY_ANDROID
-        OnNewIntentCallbackProxy _onNewIntentCallbackProxy;
-        OnActivityResultCallbackProxy _onActivityResultCallbackProxy;
-#endif
         protected override void Awake()
         {
             base.Awake();
-#if UNITY_ANDROID && !UNITY_EDITOR
-            UnityPlayerClass = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-            MajdataPlayActivityClass = new AndroidJavaClass("net.majdata.majdataplay.MajdataPlayActivity");
-            UnityEngine.Debug.Log("[Android]Get current activity");
-            CurrentActivity = UnityPlayerClass.GetStatic<AndroidJavaObject>("currentActivity");
-            UnityEngine.Debug.Log("[Android]Creating onNewIntent callback proxy");
-            _onNewIntentCallbackProxy = new(this);
-            UnityEngine.Debug.Log("[Android]Setting onNewIntent callback proxy");
-            MajdataPlayActivityClass.CallStatic("registerOnNewIntentCallback", _onNewIntentCallbackProxy);
-            _onActivityResultCallbackProxy = new(this);
-            UnityEngine.Debug.Log("[Android]Setting onActivityResult callback proxy");
-            MajdataPlayActivityClass.CallStatic("registerOnActivityResultCallback", _onActivityResultCallbackProxy);
-#endif
         }
         void Start()
         {
@@ -124,8 +97,8 @@ namespace MajdataPlay
 #if UNITY_ANDROID && !UNITY_EDITOR // Android Only (Sdk Version Log)
             MajDebug.LogInfo($"AndroidSdkVersion: {MajEnv.AndroidSdkVersion}");
             MajDebug.LogInfo($"TargetSdkVersion: {MajEnv.TargetSdkVersion}");
-            using var packageManager = CurrentActivity.Call<AndroidJavaObject>("getPackageManager");
-            var packageName = CurrentActivity.Call<string>("getPackageName");
+            using var packageManager = AndroidRuntime.CurrentActivity.Call<AndroidJavaObject>("getPackageManager");
+            var packageName = AndroidRuntime.CurrentActivity.Call<string>("getPackageName");
             using var packageInfo = packageManager.Call<AndroidJavaObject>("getPackageInfo", packageName, 0);
             var androidVersionCode = 0L;
             if(MajEnv.AndroidSdkVersion >= 28)
@@ -142,10 +115,9 @@ namespace MajdataPlay
             MajEnv.Init();
 #if !UNITY_EDITOR
 #if UNITY_ANDROID
-            AndroidKeyboard.Init();
-            var intent = CurrentActivity.Call<AndroidJavaObject>("getIntent");
+            var intent = AndroidRuntime.CurrentActivity.Call<AndroidJavaObject>("getIntent");
             ChartImporter.Android_OnNewIntent(this, intent);
-            OnNewIntent += ChartImporter.Android_OnNewIntent;
+            AndroidRuntime.OnNewIntent += ChartImporter.Android_OnNewIntent;
 #elif UNITY_IOS
             await UniTask.DelayFrame(2); // wait UnitySendMessage
 #endif
@@ -512,24 +484,8 @@ namespace MajdataPlay
             }
 #endif
         }
-#if UNITY_ANDROID
-        [Preserve]
-        void Android_OnNewIntent(AndroidJavaObject intent)
-        {
-            if (OnNewIntent is not null)
-            {
-                OnNewIntent(this, intent);
-            }
-        }
-        [Preserve]
-        void Android_OnActivityResult(int requestCode, int resultCode, AndroidJavaObject? intent)
-        {
-            if (OnActivityResult is not null)
-            {
-                OnActivityResult(this, requestCode, resultCode, intent);
-            }
-        }
-#elif UNITY_IOS
+
+#if UNITY_IOS
         [Preserve]
         public void IOS_OnFileOpen(string tempFilePath)
         {
@@ -899,34 +855,7 @@ namespace MajdataPlay
         }
         #endregion
 
-#if UNITY_ANDROID
-        class OnNewIntentCallbackProxy : AndroidJavaProxy
-        {
-            readonly GameManager _gameManager;
-            public OnNewIntentCallbackProxy(GameManager gm) : base("net.majdata.majdataplay.CSharpOnNewIntentCallback")
-            {
-                _gameManager = gm;
-            }
 
-            public void OnNewIntent(AndroidJavaObject intent)
-            {
-                _gameManager.Android_OnNewIntent(intent);
-            }
-        }
-        class OnActivityResultCallbackProxy : AndroidJavaProxy
-        {
-            readonly GameManager _gameManager;
-            public OnActivityResultCallbackProxy(GameManager gm) : base("net.majdata.majdataplay.CSharpOnActivityResultCallback")
-            {
-                _gameManager = gm;
-            }
-
-            public void OnActivityResult(int requestCode, int resultCode, AndroidJavaObject? intent)
-            {
-                _gameManager.Android_OnActivityResult(requestCode, resultCode, intent);
-            }
-        }
-#endif
         static class ChartImporter
         {
             static string _importRoot = string.Empty;

@@ -14,6 +14,7 @@ using System.IO.Pipes;
 
 #if UNITY_ANDROID || UNITY_EDITOR
 using MajdataPlay.Platform.Android;
+using MajdataPlay.Platform.Android.IO;
 #endif
 #if UNITY_IOS || UNITY_EDITOR
 using MajdataPlay.Platform.iOS;
@@ -332,21 +333,21 @@ namespace MajdataPlay.IO
                         var keyCode = button.BindingKey;
                         var androidKeyCode = (keyCode switch
                         {
-                            KeyCode.B1 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.W,
-                            KeyCode.B2 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.E,
-                            KeyCode.B3 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.D,
-                            KeyCode.B4 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.C,
-                            KeyCode.B5 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.X,
-                            KeyCode.B6 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.Z,
-                            KeyCode.B7 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.A,
-                            KeyCode.B8 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.Q,
+                            KeyCode.B1 => MajdataPlay.Platform.Android.IO.KeyCode.W,
+                            KeyCode.B2 => MajdataPlay.Platform.Android.IO.KeyCode.E,
+                            KeyCode.B3 => MajdataPlay.Platform.Android.IO.KeyCode.D,
+                            KeyCode.B4 => MajdataPlay.Platform.Android.IO.KeyCode.C,
+                            KeyCode.B5 => MajdataPlay.Platform.Android.IO.KeyCode.X,
+                            KeyCode.B6 => MajdataPlay.Platform.Android.IO.KeyCode.Z,
+                            KeyCode.B7 => MajdataPlay.Platform.Android.IO.KeyCode.A,
+                            KeyCode.B8 => MajdataPlay.Platform.Android.IO.KeyCode.Q,
 
-                            KeyCode.Test => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.Numpad9,
-                            KeyCode.SelectP1 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.NumpadMultiply,
-                            KeyCode.Service => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.Numpad7,
-                            KeyCode.SelectP2 => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.Numpad3,
+                            KeyCode.Test => MajdataPlay.Platform.Android.IO.KeyCode.Numpad9,
+                            KeyCode.SelectP1 => MajdataPlay.Platform.Android.IO.KeyCode.NumpadMultiply,
+                            KeyCode.Service => MajdataPlay.Platform.Android.IO.KeyCode.Numpad7,
+                            KeyCode.SelectP2 => MajdataPlay.Platform.Android.IO.KeyCode.Numpad3,
 
-                            _ => MajdataPlay.Platform.Android.Runtime.IO.KeyCode.Unknown
+                            _ => MajdataPlay.Platform.Android.IO.KeyCode.Unknown
                         });
                         _buttonRealTimeStates[i] = AndroidKeyboard.IsPreesedUnsafe(androidKeyCode);
                     }

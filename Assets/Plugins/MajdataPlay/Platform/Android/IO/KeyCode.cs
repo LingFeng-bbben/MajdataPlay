@@ -1,8 +1,9 @@
-﻿using System;
+﻿using MajdataPlay.Platform.Android.Runtime;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace MajdataPlay.Platform.Android.Runtime.IO
+namespace MajdataPlay.Platform.Android.IO
 {
     public enum KeyCode
     {

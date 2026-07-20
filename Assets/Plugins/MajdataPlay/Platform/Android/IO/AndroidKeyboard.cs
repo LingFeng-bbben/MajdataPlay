@@ -1,12 +1,10 @@
-﻿using MajdataPlay.Platform.Android.Runtime.IO;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using UnityEngine;
-using KeyCode = MajdataPlay.Platform.Android.Runtime.IO.KeyCode;
 
-namespace MajdataPlay.Platform.Android
+namespace MajdataPlay.Platform.Android.IO
 {
     public static class AndroidKeyboard
     {
@@ -21,15 +19,14 @@ namespace MajdataPlay.Platform.Android
         static OnDispatchKeyEventCallbackProxy _onDispatchKeyEventCallbackProxy;
         readonly static bool[] _keyStates = new bool[1024];
 
-        public static void Init()
+        internal static void Init()
         {
             if(_isInited)
             {
                 return;
             }
             _onDispatchKeyEventCallbackProxy = new OnDispatchKeyEventCallbackProxy();
-            var majdataPlayActivityClass = new AndroidJavaClass("net.majdata.majdataplay.MajdataPlayActivity");
-            majdataPlayActivityClass.CallStatic("registerDispatchKeyEventCallback", _onDispatchKeyEventCallbackProxy);
+            AndroidRuntime.MajdataPlayActivityClass.CallStatic("registerDispatchKeyEventCallback", _onDispatchKeyEventCallbackProxy);
             _isInited = true;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -47,15 +44,11 @@ namespace MajdataPlay.Platform.Android
         }
         unsafe class OnDispatchKeyEventCallbackProxy : AndroidJavaProxy
         {
-            readonly bool[] _keyStates;
-            public OnDispatchKeyEventCallbackProxy() : base("net.majdata.majdataplay.CSharpOnDispatchKeyEventCallback")
-            {
-                _keyStates = AndroidKeyboard._keyStates;
-            }
+            public OnDispatchKeyEventCallbackProxy() : base("net.majdata.majdataplay.CSharpOnDispatchKeyEventCallback") { }
 
             public void OnDispatchKeyEvent(int action, int keyCode)
             {
-                fixed(bool* ptr = _keyStates)
+                fixed(bool* ptr = AndroidKeyboard._keyStates)
                 {
                     ptr[keyCode] = action != 1;
                 }
