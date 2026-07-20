@@ -82,7 +82,7 @@ namespace MajdataPlay.Scenes.TotalResult
             var cover = await songDetail.GetCoverAsync(true, token: token);
             await UniTask.SwitchToMainThread(token);
             _coverDisplayer.sprite = cover;
-            _loadingIndicator.SetActive(true);
+            _loadingIndicator.SetActive(false);
         }
     }
 }

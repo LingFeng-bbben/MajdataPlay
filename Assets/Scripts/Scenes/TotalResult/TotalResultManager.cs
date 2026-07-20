@@ -81,7 +81,7 @@ namespace MajdataPlay.Scenes.TotalResult
                 _hpSlider.value = 0;
                 _hpDisplayer.SetActive(false);
             }
-            _totalAchievementDisplayer.text = isClassic ? $"Total {totalAchievementValue:F2}%" : $"Total {totalAchievementValue:F4}%";
+            _totalAchievementDisplayer.text = isClassic ? $"{totalAchievementValue:F2}%" : $"{totalAchievementValue:F4}%";
             _titleDisplayer.text = name;
 
             for (var i = 0; i < results.Length; i++)
@@ -90,13 +90,22 @@ namespace MajdataPlay.Scenes.TotalResult
                 {
                     break;
                 }
-                var result = results[i];
-                var songDetail = result.SongDetail;
+                var result = default(GameResult?);
+                var songDetail = songInfos[i];
                 var displayer = _songCoverDisplayers[i];
-                displayer.SetSongDetail(songDetail, 
-                    (ChartLevel)danInfo.SongLevels[i], 
-                    result, 
+                if (results[i].SongDetail is null)
+                {
+                    result = null;
+                }
+                else
+                {
+                    result = results[i];
+                }
+                displayer.SetSongDetail(songDetail,
+                    (ChartLevel)danInfo.SongLevels[i],
+                    result,
                     gameObject.GetCancellationTokenOnDestroy());
+                displayer.gameObject.SetActive(true);
             }
 
             DelayBind().Forget();
