@@ -8991,8 +8991,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a50fa8cb768a07458da3d3bb750ec5c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  resultPrefab: {fileID: 4081636613036787854, guid: 528203199c749984fa9df6bd2fdf1920, type: 3}
-  resultPrefabParent: {fileID: 0}
+  _hpDisplayer: {fileID: 1179750128}
   _hpSlider: {fileID: 99150330}
   _hpTextDisplayer: {fileID: 1597572236}
   _totalAchievementDisplayer: {fileID: 1714949964}

@@ -17,6 +17,10 @@ namespace MajdataPlay.Scenes.TotalResult
     public class TotalResultManager : MonoBehaviour
     {
         [SerializeField]
+        [FormerlySerializedAs("hpDisplayer")]
+        GameObject _hpDisplayer;
+
+        [SerializeField]
         [FormerlySerializedAs("hpSlider")]
         Slider _hpSlider;
 
@@ -69,10 +73,13 @@ namespace MajdataPlay.Scenes.TotalResult
             if (_gameInfo.IsDanLifeEnabled)
             {
                 _hpTextDisplayer.text = $"{_gameInfo.CurrentHP}/<size=75%>{_gameInfo.MaxHP}";
+                _hpSlider.value = _gameInfo.CurrentHP / (float)_gameInfo.MaxHP;
             }
             else
             {
                 _hpTextDisplayer.text = "  --";
+                _hpSlider.value = 0;
+                _hpDisplayer.SetActive(false);
             }
             _totalAchievementDisplayer.text = isClassic ? $"Total {totalAchievementValue:F2}%" : $"Total {totalAchievementValue:F4}%";
             _titleDisplayer.text = name;
