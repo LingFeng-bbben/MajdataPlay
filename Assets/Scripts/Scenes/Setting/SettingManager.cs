@@ -72,13 +72,13 @@ namespace MajdataPlay.Scenes.Setting
             if (!_settingConfig.IgnoreChartSettingPage && currentCollection.Count != 0)
             {
                 menus = new Menu[properties.Length + 1];
-                offset = 0;
+                offset = 1;
                 var chartSetting = ChartSettingStorage.GetSetting(MajEnv.RuntimeConfig.List.SelectedSongHash);
                 var chartSettingType = chartSetting.GetType();
                 var menuObj = Instantiate(menuPrefab, listRoot);
                 menuObj.name = chartSettingType.Name;
                 var menu = menuObj.GetComponent<Menu>();
-                menus[properties.Length] = menu;
+                menus[0] = menu;
                 menu.Instance = chartSetting;
                 menu.Name = chartSettingType.Name;
             }

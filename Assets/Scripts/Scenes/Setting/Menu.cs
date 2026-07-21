@@ -155,13 +155,13 @@ namespace MajdataPlay.Scenes.Setting
             _optionAnim.TryCancel();
             UpdateOptionSelectionState();
             _optionAnim = LMotion.Create(_listCursorPos, targetPos, duration)
-                                 .WithScheduler(MotionScheduler.PostLateUpdate)
-                                 .WithEase(Ease.OutQuad)
-                                 .Bind(x =>
-                                 {
-                                     _listCursorPos = x;
-                                     UpdateDisplayerPosition();
-                                 });
+                                     .WithScheduler(MotionScheduler.PostLateUpdate)
+                                     .WithEase(Ease.OutQuad)
+                                     .Bind(x =>
+                                     {
+                                         _listCursorPos = x;
+                                         UpdateDisplayerPosition();
+                                     });
         }
         void UpdateDisplayerPosition()
         {
@@ -210,12 +210,12 @@ namespace MajdataPlay.Scenes.Setting
         public void ToTail()
         {
             SelectedIndex = _options.Length - 1;
-            DisplayerMoveTo(SelectedIndex, 0.3f);
+            DisplayerMoveTo(SelectedIndex, 0f);
         }
         public void ToHead()
         {
             SelectedIndex = 0;
-            DisplayerMoveTo(SelectedIndex, 0.3f);
+            DisplayerMoveTo(SelectedIndex, 0f);
         }
 
         public void ToIndex(int index)
