@@ -167,10 +167,12 @@ namespace MajdataPlay.Scenes.Setting
             _optionEnumerator.OnUpdate();
             if (_isSelected && _isEnabled && !_isReadOnly)
             {
-                var isE4OrB4On = InputManager.CheckSensorStatusInThisFrame(SensorArea.E4, SwitchStatus.On) ||
-                                 InputManager.CheckSensorStatusInThisFrame(SensorArea.B4, SwitchStatus.On);
-                var isE6OrB5On = InputManager.CheckSensorStatusInThisFrame(SensorArea.E6, SwitchStatus.On) ||
-                                 InputManager.CheckSensorStatusInThisFrame(SensorArea.B5, SwitchStatus.On);
+                var isE4OrB4OrB3On = InputManager.CheckSensorStatusInThisFrame(SensorArea.E4, SwitchStatus.On) ||
+                                     InputManager.CheckSensorStatusInThisFrame(SensorArea.B4, SwitchStatus.On) ||
+                                     InputManager.CheckSensorStatusInThisFrame(SensorArea.B3, SwitchStatus.On);
+                var isE6OrB5OrB6On = InputManager.CheckSensorStatusInThisFrame(SensorArea.E6, SwitchStatus.On) ||
+                                     InputManager.CheckSensorStatusInThisFrame(SensorArea.B5, SwitchStatus.On) ||
+                                     InputManager.CheckSensorStatusInThisFrame(SensorArea.B6, SwitchStatus.On);
 
                 if (_pressTime >= 0.4f)
                 {
@@ -199,11 +201,11 @@ namespace MajdataPlay.Scenes.Setting
                     {
                         _pressTime += MajTimeline.DeltaTime;
                     }
-                    if(isE4OrB4On)
+                    if(isE4OrB4OrB3On)
                     {
                         _isUp = true;
                     }
-                    else if(isE6OrB5On)
+                    else if(isE6OrB5OrB6On)
                     {
                         _isUp = false;
                     }
@@ -215,13 +217,13 @@ namespace MajdataPlay.Scenes.Setting
                 }
                 else
                 {
-                    if (isE4OrB4On)
+                    if (isE4OrB4OrB3On)
                     {
                         _optionEnumerator.MoveNext();
                         _isUp = true;
                         _isPressed = true;
                     }
-                    else if (isE6OrB5On)
+                    else if (isE6OrB5OrB6On)
                     {
                         _optionEnumerator.MovePrevious();
                         _isUp = false;
