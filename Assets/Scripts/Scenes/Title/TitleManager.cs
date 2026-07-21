@@ -84,11 +84,11 @@ namespace MajdataPlay.Scenes.Title
                             echoText.text = "MAJTEXT_ERR_SCAN_CHARTS_FAILED".i18n();
                             MajDebug.LogException(task3.Exception);
                         }
-                        else if (SongStorage.IsEmpty)
-                        {
-                            isEmpty = true;
-                            echoText.text = "MAJTEXT_ERR_NO_CHART".i18n();
-                        }
+                        //else if (SongStorage.IsEmpty)
+                        //{
+                        //    isEmpty = true;
+                        //    echoText.text = "MAJTEXT_ERR_NO_CHART".i18n();
+                        //}
                         else
                         {
                             echoText.text = "MAJTEXT_PRESS_ANY_KEY".i18n();
