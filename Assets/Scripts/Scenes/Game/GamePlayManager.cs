@@ -609,7 +609,7 @@ namespace MajdataPlay.Scenes.Game
                         lastPercent = percent;
                         _sceneSwitcher.SetLoadingText($"{"MAJTEXT_DOWNLOADING_PICTURE".i18n()}...\n{percent * 100:F2}%");
                     }
-                    if(!_chartSetting.DisableVideoBG)
+                    if(!(_chartSetting.DisableVideoBG || _gameSettings.Display.SkipVideoDownload))
                     {
                         lastPercent = 0;
                         progress.Reset();
@@ -878,18 +878,27 @@ namespace MajdataPlay.Scenes.Game
             
             if (dim < 1f)
             {
-                var videoPath = await _songDetail.GetVideoPathAsync();
-                if (!_chartSetting.DisableVideoBG && !string.IsNullOrEmpty(videoPath))
+                var videoPath = string.Empty;
+                var isNeed2DownloadVideo = _songDetail.IsOnline && !_songDetail.IsVideoLoaded;
+                var cover = await _songDetail.GetCoverAsync(false);
+                await UniTask.SwitchToMainThread();
+                if (_chartSetting.DisableVideoBG || (_gameSettings.Display.SkipVideoDownload && isNeed2DownloadVideo))
                 {
-                    var cover = await _songDetail.GetCoverAsync(false);
-                    await UniTask.SwitchToMainThread();
-                    await _bgManager.SetMovieAsync(videoPath, cover);
+                    _bgManager.SetBackgroundPic(cover);
                 }
                 else
                 {
-                    var cover = await _songDetail.GetCoverAsync(false);
+                    videoPath = await _songDetail.GetVideoPathAsync();
                     await UniTask.SwitchToMainThread();
-                    _bgManager.SetBackgroundPic(cover);
+                    if (string.IsNullOrEmpty(videoPath))
+                    {
+                        _bgManager.SetBackgroundPic(cover);
+                    }
+                    else
+                    {
+                        await _bgManager.SetMovieAsync(videoPath, cover);
+                        await UniTask.SwitchToMainThread();
+                    }
                 }
             }
 

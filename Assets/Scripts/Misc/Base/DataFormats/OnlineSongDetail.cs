@@ -227,11 +227,6 @@ namespace MajdataPlay
                         _videoPath = string.Empty;
                         return _videoPath;
                     }
-
-                    if (MajEnv.Settings.Display.SkipVideoDownload)
-                    {
-                        return string.Empty;
-                    }
                     for (var i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
                     {
                         try
