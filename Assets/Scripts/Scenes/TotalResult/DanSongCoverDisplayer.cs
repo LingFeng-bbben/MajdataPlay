@@ -55,10 +55,20 @@ namespace MajdataPlay.Scenes.TotalResult
 
             _titleDisplayer.text = songDetail.Title;
             _artistDisplayer.text = songDetail.Artist;
-
-            if(result is GameResult gameResult)
+            var levelText = songDetail.Levels[(int)level];
+            if(string.IsNullOrEmpty(levelText))
             {
-                if(MajInstances.GameManager.Settings.Judge.Mode == JudgeModeOption.Classic)
+                _levelDisplayer.text = "-";
+            }
+            else
+            {
+                _levelDisplayer.text = levelText;
+            }
+
+
+            if (result is GameResult gameResult)
+            {
+                if (MajInstances.GameManager.Settings.Judge.Mode == JudgeModeOption.Classic)
                 {
                     _achievementDisplayer.text = $"{gameResult.Acc.Classic:F2}%";
                 }
