@@ -557,12 +557,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ae676a105b153c449b10f977d8a884e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.ButtonAnimation
-  BindSensor: 
+  BindSensor: 04000000
   BindButton: 04000000
+  HoldTriggerTime: 0
   ReleasedScale: 1
   PressedScale: 0.9
   AnimationDuration: 0.1
   EaseType: 5
+  HoldCircle: {fileID: 0}
+  StartColor: {r: 1, g: 1, b: 1, a: 1}
+  EndColor: {r: 0, g: 1, b: 0, a: 1}
 --- !u!1 &98831986
 GameObject:
   m_ObjectHideFlags: 0
@@ -900,12 +904,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ae676a105b153c449b10f977d8a884e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.ButtonAnimation
-  BindSensor: 
+  BindSensor: 03000000
   BindButton: 03000000
+  HoldTriggerTime: 0
   ReleasedScale: 1
   PressedScale: 0.9
   AnimationDuration: 0.1
   EaseType: 5
+  HoldCircle: {fileID: 0}
+  StartColor: {r: 1, g: 1, b: 1, a: 1}
+  EndColor: {r: 0, g: 1, b: 0, a: 1}
 --- !u!1001 &314479826
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1683,10 +1691,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.ButtonAnimation
   BindSensor: 0a0000000b0000001c000000
   BindButton: 
+  HoldTriggerTime: 0
   ReleasedScale: 1
   PressedScale: 1.03
   AnimationDuration: 0.1
   EaseType: 5
+  HoldCircle: {fileID: 0}
+  StartColor: {r: 1, g: 1, b: 1, a: 1}
+  EndColor: {r: 0, g: 1, b: 0, a: 1}
 --- !u!1 &506705539
 GameObject:
   m_ObjectHideFlags: 0
@@ -2203,10 +2215,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.ButtonAnimation
   BindSensor: 050000000d0000001f000000
   BindButton: 
+  HoldTriggerTime: 0
   ReleasedScale: 1
   PressedScale: 1.03
   AnimationDuration: 0.1
   EaseType: 5
+  HoldCircle: {fileID: 0}
+  StartColor: {r: 1, g: 1, b: 1, a: 1}
+  EndColor: {r: 0, g: 1, b: 0, a: 1}
 --- !u!1 &721730195
 GameObject:
   m_ObjectHideFlags: 0
@@ -3893,10 +3909,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.ButtonAnimation
   BindSensor: 09000000100000001b000000
   BindButton: 
+  HoldTriggerTime: 0
   ReleasedScale: 1
   PressedScale: 1.03
   AnimationDuration: 0.1
   EaseType: 5
+  HoldCircle: {fileID: 0}
+  StartColor: {r: 1, g: 1, b: 1, a: 1}
+  EndColor: {r: 0, g: 1, b: 0, a: 1}
 --- !u!1001 &2027579762
 PrefabInstance:
   m_ObjectHideFlags: 0
