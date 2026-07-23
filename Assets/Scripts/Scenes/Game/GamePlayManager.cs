@@ -1586,7 +1586,7 @@ namespace MajdataPlay.Scenes.Game
                             var diff = _thisFrameSec - _audioTrackStartAt;
                             if (diff <= 2f && diff >= 0f)
                             {
-                                _devicePlaybackOffset += (realTimeDifference - _devicePlaybackOffset)*0.8f;
+                                _devicePlaybackOffset += realTimeDifference*0.8f;
                             }
 #endif
 
