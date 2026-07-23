@@ -209,7 +209,7 @@ namespace MajdataPlay.Scenes.Game
         readonly ListConfig _listConfig = MajEnv.RuntimeConfig?.List ?? new();
         readonly SceneSwitcher _sceneSwitcher = MajInstances.SceneSwitcher;
 
-        readonly static Utf16PreparedFormat<float, float> ERROR_TEXT_FORMAT = ZString.PrepareUtf16<float, float>("Delta\nAudio {0:F4}\nVideo {1:F4}");
+        readonly static Utf16PreparedFormat<float, float, float> ERROR_TEXT_FORMAT = ZString.PrepareUtf16<float, float,float>("Audio {0:F4}\nVideo {1:F4}\n DEV {2:F4}");
 
         #region GameLoading
 
@@ -1593,7 +1593,7 @@ namespace MajdataPlay.Scenes.Game
                             var sb = ZString.CreateStringBuilder(true);
                             try
                             {
-                                ERROR_TEXT_FORMAT.FormatTo(ref sb, realTimeDifference, realTimeDifferenceb);
+                                ERROR_TEXT_FORMAT.FormatTo(ref sb, realTimeDifference, realTimeDifferenceb, _devicePlaybackOffset);
                                 var a = sb.AsArraySegment();
                                 _errText.SetCharArray(a.Array, a.Offset, a.Count);
                             }
