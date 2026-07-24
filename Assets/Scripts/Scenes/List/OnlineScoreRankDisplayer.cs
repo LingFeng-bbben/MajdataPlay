@@ -225,16 +225,23 @@ namespace MajdataPlay.Scenes.List
                                         .Bind(x =>
                                         {
                                             var subDisplayerScale = MajEnv.Settings.Display.SubDisplayScale;
-                                            if(subDisplayerScale == 0)
+                                            if (subDisplayerScale == 0)
                                             {
                                                 return;
                                             }
-                                            const float X_POS_START_AT = 260.92f;
-                                            const float X_POS_END_AT = 745f;
-                                            var startPos = X_POS_START_AT / subDisplayerScale;
+                                            const float START = 290f;
+                                            const float DISTANCE = 800f - START;
+                                            const float MAX_OFFSET = 80f;
 
-                                            var nP = Vector2.Lerp(new Vector2(startPos, 75.053f), new Vector2(X_POS_END_AT, 75.053f), x);
-                                            _rectTransform.anchoredPosition = nP;
+                                            var offset = MAX_OFFSET * ((1f / subDisplayerScale) - 1f);
+                                            var end = START + (DISTANCE / subDisplayerScale) + offset;
+
+                                            var pos = Vector2.Lerp(
+                                                                new Vector2(START, 75.053f),
+                                                                new Vector2(end, 75.053f),
+                                                                x);
+
+                                            _rectTransform.anchoredPosition = pos;
                                         });
             }
         }
@@ -253,12 +260,19 @@ namespace MajdataPlay.Scenes.List
                                             {
                                                 return;
                                             }
-                                            const float X_POS_START_AT = 260.92f;
-                                            const float X_POS_END_AT = 745f;
-                                            var startPos = X_POS_START_AT / subDisplayerScale;
+                                            const float START = 290f;
+                                            const float DISTANCE = 800f - START;
+                                            const float MAX_OFFSET = 80f;
 
-                                            var nP = Vector2.Lerp(new Vector2(startPos, 75.053f), new Vector2(X_POS_END_AT, 75.053f), x);
-                                            _rectTransform.anchoredPosition = nP;
+                                            var offset = MAX_OFFSET * ((1f / subDisplayerScale) - 1f);
+                                            var end = START + (DISTANCE / subDisplayerScale) + offset;
+
+                                            var pos = Vector2.Lerp(
+                                                                new Vector2(START, 75.053f),
+                                                                new Vector2(end, 75.053f),
+                                                                x);
+
+                                            _rectTransform.anchoredPosition = pos;
                                         });
             }
         }
