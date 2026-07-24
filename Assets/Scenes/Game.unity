@@ -3898,10 +3898,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.UI.ButtonAnimawiption
   BindSensor: 0b0000000c0000001d000000
   BindButton: 
+  HoldTriggerTime: 0
   ReleasedScale: 1
   PressedScale: 1.1
   AnimationDuration: 0.1
   EaseType: 5
+  HoldCircle: {fileID: 0}
+  StartColor: {r: 1, g: 1, b: 1, a: 1}
+  EndColor: {r: 0, g: 1, b: 0, a: 1}
 --- !u!1 &436060304
 GameObject:
   m_ObjectHideFlags: 0
@@ -17539,6 +17543,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1809151654}
   - component: {fileID: 1809151656}
+  - component: {fileID: 1809151657}
   - component: {fileID: 1809151655}
   m_Layer: 5
   m_Name: ObjectRate
@@ -17666,6 +17671,29 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1809151653}
   m_CullTransparentMesh: 1
+--- !u!223 &1809151657
+Canvas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1809151653}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_RenderMode: 2
+  m_Camera: {fileID: 0}
+  m_PlaneDistance: 100
+  m_PixelPerfect: 0
+  m_ReceivesEvents: 1
+  m_OverrideSorting: 0
+  m_OverridePixelPerfect: 0
+  m_SortingBucketNormalizedSize: 0
+  m_VertexColorAlwaysGammaSpace: 0
+  m_AdditionalShaderChannelsFlag: 25
+  m_UpdateRectTransformForStandalone: 0
+  m_SortingLayerID: 0
+  m_SortingOrder: 0
+  m_TargetDisplay: 0
 --- !u!1 &1809584124
 GameObject:
   m_ObjectHideFlags: 1
