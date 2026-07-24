@@ -224,10 +224,16 @@ namespace MajdataPlay.Scenes.List
                                         .WithEase(Ease.OutQuad)
                                         .Bind(x =>
                                         {
+                                            var subDisplayerScale = MajEnv.Settings.Display.SubDisplayScale;
+                                            if(subDisplayerScale == 0)
+                                            {
+                                                return;
+                                            }
                                             const float X_POS_START_AT = 260.92f;
                                             const float X_POS_END_AT = 745f;
+                                            var startPos = X_POS_START_AT / subDisplayerScale;
 
-                                            var nP = Vector2.Lerp(new Vector2(X_POS_START_AT, 75.053f), new Vector2(X_POS_END_AT, 75.053f), x);
+                                            var nP = Vector2.Lerp(new Vector2(startPos, 75.053f), new Vector2(X_POS_END_AT, 75.053f), x);
                                             _rectTransform.anchoredPosition = nP;
                                         });
             }
@@ -242,10 +248,16 @@ namespace MajdataPlay.Scenes.List
                                         .WithEase(Ease.OutQuad)
                                         .Bind(x =>
                                         {
+                                            var subDisplayerScale = MajEnv.Settings.Display.SubDisplayScale;
+                                            if (subDisplayerScale == 0)
+                                            {
+                                                return;
+                                            }
                                             const float X_POS_START_AT = 260.92f;
                                             const float X_POS_END_AT = 745f;
+                                            var startPos = X_POS_START_AT / subDisplayerScale;
 
-                                            var nP = Vector2.Lerp(new Vector2(X_POS_START_AT, 75.053f), new Vector2(X_POS_END_AT, 75.053f), x);
+                                            var nP = Vector2.Lerp(new Vector2(startPos, 75.053f), new Vector2(X_POS_END_AT, 75.053f), x);
                                             _rectTransform.anchoredPosition = nP;
                                         });
             }
