@@ -1,27 +1,39 @@
 using System.Collections;
+using Cysharp.Threading.Tasks;
+using MajdataPlay.Scenes.Game.Notes.Skins;
 using MajdataPlay.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace MajdataPlay
 {
-    public class LoadSubBg : MonoBehaviour
+    public class LoadSubBg : MajBehaviour
     {
-        // Start is called before the first frame update
-        void Start()
+        Image _img;
+        protected override void Awake()
         {
-            StartCoroutine(WaitSkinManager());
+            base.Awake();
+            _img = GetComponent<Image>();
+            WaitSkinLoadedAsync().Forget();
         }
-        IEnumerator WaitSkinManager()
+        void OnDestroy()
         {
-            var woe = new WaitForEndOfFrame();
+            MajInstances.SkinManager.OnSkinChanged -= OnSkinChanged;
+        }
+        async UniTask WaitSkinLoadedAsync()
+        {
             while (!MajInstances.SkinManager.IsInited)
             {
-                yield return woe;
+                await UniTask.Yield();
             }
-            var img = GetComponent<Image>();
-            img.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
-            img.color = Color.white;
+            _img.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
+            _img.color = Color.white;
+            MajInstances.SkinManager.OnSkinChanged += OnSkinChanged;
+        }
+        void OnSkinChanged(SkinManager sender, CustomSkin newSkin)
+        {
+            _img.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
+            _img.color = Color.white;
         }
     }
 }

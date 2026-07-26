@@ -14,6 +14,9 @@ namespace MajdataPlay
 {
     internal sealed class SkinManager : MajSingleton
     {
+        public delegate void OnSkinChangedCallback(SkinManager sender, CustomSkin newSkin);
+        public event OnSkinChangedCallback OnSkinChanged;
+
         public bool IsInited { get; private set; } = false;
         public CustomSkin SelectedSkin
         {
@@ -64,6 +67,10 @@ namespace MajdataPlay
                         _touchHoldBreakMineFans[3] = value.TouchHold_Break_Mine[3];
 
                         _selectedSkin = value;
+                        if(OnSkinChanged is not null)
+                        {
+                            OnSkinChanged(this, value);
+                        }
                     }).Forget();
             }
         }
