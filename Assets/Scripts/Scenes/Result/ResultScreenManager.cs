@@ -20,6 +20,7 @@ using MajdataPlay.Recording;
 using MajdataPlay.Net;
 using MajdataPlay.Scenes.Result.Components;
 using UnityEngine.Serialization;
+using System.Threading;
 
 #nullable enable
 namespace MajdataPlay.Scenes.Result
@@ -96,7 +97,7 @@ namespace MajdataPlay.Scenes.Result
             base.Awake();
             InputManager.TouchButtonRingEdge = 4.8f;
         }
-        void Start()
+        async Task Start()
         {
             if (IsDebug)
             {
@@ -234,7 +235,11 @@ namespace MajdataPlay.Scenes.Result
             }
 
             MajInstances.AudioManager.PlaySFX("bgm_result.mp3", true);
-            PlayVoice(result.Acc.DX, song,totalJudgeRecord.IsAllPerfect, totalJudgeRecord.IsFullCombo).Forget();
+            PlayVoice(result.Acc.DX, 
+                song,
+                totalJudgeRecord.IsAllPerfect, 
+                totalJudgeRecord.IsFullCombo, 
+                gameObject.GetCancellationTokenOnDestroy()).Forget();
             if (!MajInstances.GameManager.Settings.Mod.IsAnyModActive())
             {
                 var localScoreSaveTask = ScoreManager.SaveScore(result, result.Level);
@@ -248,7 +253,17 @@ namespace MajdataPlay.Scenes.Result
                     _scoreSaveTask = localScoreSaveTask;
                 }
             }
-
+            await UniTask.Delay(3000);
+            _isInited = true;
+            CabinetLed.SetButtonLight(Color.yellow, 4);
+            var t1 = _scoreSaveTask;
+            var t2 = RecordHelper.StopRecordAsync();
+            while (!t1.IsCompleted || !t2.IsCompleted)
+            {
+                await UniTask.Yield();
+            }
+            _isAllTaskFinished = true;
+            CabinetLed.SetButtonLight(Color.green, 3);
         }
 
         async UniTask LoadCover(ISongDetail song)
@@ -258,7 +273,7 @@ namespace MajdataPlay.Scenes.Result
             coverImg.sprite = cover;
         }
 
-        async UniTask PlayVoice(double dxacc, ISongDetail song, bool isAP, bool isFC)
+        async UniTask PlayVoice(double dxacc, ISongDetail song, bool isAP, bool isFC, CancellationToken token = default)
         {
             try
             {
@@ -266,7 +281,7 @@ namespace MajdataPlay.Scenes.Result
                 if (dxacc >= 97)
                 {
                     lastSample = MajInstances.AudioManager.PlaySFX("clear.wav")!;
-                    while (lastSample.IsPlaying) await UniTask.Yield();
+                    while (lastSample.IsPlaying) await UniTask.Yield(token, true);
                 }
                 if (dxacc >= 100.5f)
                 {
@@ -301,7 +316,7 @@ namespace MajdataPlay.Scenes.Result
 
                 while (lastSample != null && lastSample.IsPlaying)
                 {
-                    await UniTask.Yield();
+                    await UniTask.Yield(token, true);
                 }
 
                 if (isAP)
@@ -326,7 +341,7 @@ namespace MajdataPlay.Scenes.Result
 
                 while (lastSample != null && lastSample.IsPlaying)
                 {
-                    await UniTask.Yield();
+                    await UniTask.Yield(token, true);
                 }
 
                 if (song is OnlineSongDetail)
@@ -338,16 +353,6 @@ namespace MajdataPlay.Scenes.Result
             { 
                 MajDebug.LogException(e); 
             }
-            _isInited = true;
-            CabinetLed.SetButtonLight(Color.yellow, 4);
-            var t1 = _scoreSaveTask;
-            var t2 = RecordHelper.StopRecordAsync();
-            while(!t1.IsCompleted || !t2.IsCompleted)
-            {
-                await UniTask.Yield();
-            }
-            _isAllTaskFinished = true;
-            CabinetLed.SetButtonLight(Color.green, 3);
         }
 
         void Update()
