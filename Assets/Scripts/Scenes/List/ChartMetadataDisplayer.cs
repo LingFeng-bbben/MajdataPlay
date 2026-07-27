@@ -109,7 +109,7 @@ namespace MajdataPlay.Scenes.List
                     _peakDensityDisplayer.text = $"{analyzeResult.PeakDensity}";
                     if (analyzeResult.MaxBPM != analyzeResult.MinBPM)
                     {
-                        _bpmDisplayer.text = $"{analyzeResult.MaxBPM}-{analyzeResult.MinBPM}";
+                        _bpmDisplayer.text = $"{analyzeResult.MinBPM}-{analyzeResult.MaxBPM}";
                     }
                     else
                     {
