@@ -97,7 +97,7 @@ namespace MajdataPlay.Scenes.Result
             base.Awake();
             InputManager.TouchButtonRingEdge = 4.8f;
         }
-        async Task Start()
+        void Start()
         {
             if (IsDebug)
             {
@@ -253,6 +253,10 @@ namespace MajdataPlay.Scenes.Result
                     _scoreSaveTask = localScoreSaveTask;
                 }
             }
+            WaitForTaskAsync().Forget();
+        }
+        async UniTask WaitForTaskAsync()
+        {
             await UniTask.Delay(3000);
             _isInited = true;
             CabinetLed.SetButtonLight(Color.yellow, 4);
@@ -265,7 +269,6 @@ namespace MajdataPlay.Scenes.Result
             _isAllTaskFinished = true;
             CabinetLed.SetButtonLight(Color.green, 3);
         }
-
         async UniTask LoadCover(ISongDetail song)
         {
             var cover = await song.GetCoverAsync(true);
