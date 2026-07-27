@@ -444,7 +444,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 71506958}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f44ef1e05d923c540945f6ab6c06d325, type: 3}
+  m_Script: {fileID: 11500000, guid: 0e92eb0600e32454c9b50af5d83cc768, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   local_key: MAJTEXT_LIST_INPUT_HINT
@@ -8388,6 +8388,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1776269312181929329, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
+      propertyPath: m_overflowMode
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 1798961016601632987, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
       propertyPath: HeartAdd
       value: 
@@ -8523,6 +8527,10 @@ PrefabInstance:
     - target: {fileID: 2386200137386047956, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
       propertyPath: m_fontSize
       value: 28.7
+      objectReference: {fileID: 0}
+    - target: {fileID: 2386200137386047956, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
+      propertyPath: m_overflowMode
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 2389033263037043375, guid: fe621ea3ea6395d478dab3471ca8fcb5, type: 3}
       propertyPath: m_Pivot.y
