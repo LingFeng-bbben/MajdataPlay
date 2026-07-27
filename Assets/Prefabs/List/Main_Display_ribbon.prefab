@@ -2035,6 +2035,7 @@ GameObject:
   - component: {fileID: 5373185407843745898}
   - component: {fileID: 3004600217107729841}
   - component: {fileID: 2386200137386047956}
+  - component: {fileID: 8365895528489387196}
   m_Layer: 5
   m_Name: Title
   m_TagString: Untagged
@@ -2117,9 +2118,9 @@ MonoBehaviour:
     serializedVersion: 2
     rgba: 4294967295
   m_fontSize: 28.7
-  m_fontSizeBase: 26.28
+  m_fontSizeBase: 28.7
   m_fontWeight: 400
-  m_enableAutoSizing: 1
+  m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 28.7
   m_fontStyle: 1
@@ -2135,7 +2136,7 @@ MonoBehaviour:
   m_charWidthMaxAdj: 50
   m_TextWrappingMode: 0
   m_wordWrappingRatios: 0.4
-  m_overflowMode: 3
+  m_overflowMode: 1
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
@@ -2161,6 +2162,21 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &8365895528489387196
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2309632783105109013}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21f710d3416f4ef9a3094773791dd4bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.Misc.Base.TMPMarqueeText
+  StartDelay: 2
+  ScrollSpeed: 48
+  EndRatio: 0.25
 --- !u!1 &2430127690857303173
 GameObject:
   m_ObjectHideFlags: 0
@@ -6055,6 +6071,7 @@ GameObject:
   - component: {fileID: 516292366515919279}
   - component: {fileID: 6711746586758039153}
   - component: {fileID: 1776269312181929329}
+  - component: {fileID: 7573879071819207598}
   m_Layer: 5
   m_Name: Designer
   m_TagString: Untagged
@@ -6078,8 +6095,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 0, y: -148.50497}
-  m_SizeDelta: {x: 147.57999, y: 42.389984}
+  m_AnchoredPosition: {x: 0, y: -147.84253}
+  m_SizeDelta: {x: 334.92, y: 31.5386}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6711746586758039153
 CanvasRenderer:
@@ -6153,9 +6170,9 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_TextWrappingMode: 1
+  m_TextWrappingMode: 0
   m_wordWrappingRatios: 0.4
-  m_overflowMode: 0
+  m_overflowMode: 1
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
@@ -6181,6 +6198,21 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &7573879071819207598
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6882348157338741792}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21f710d3416f4ef9a3094773791dd4bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.Misc.Base.TMPMarqueeText
+  StartDelay: 2
+  ScrollSpeed: 48
+  EndRatio: 0.25
 --- !u!1 &6903224275773807203
 GameObject:
   m_ObjectHideFlags: 0
@@ -7270,10 +7302,10 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 17.2
-  m_fontSizeBase: 26.28
+  m_fontSize: 18
+  m_fontSizeBase: 18
   m_fontWeight: 400
-  m_enableAutoSizing: 1
+  m_enableAutoSizing: 0
   m_fontSizeMin: 14.9
   m_fontSizeMax: 17.2
   m_fontStyle: 0
