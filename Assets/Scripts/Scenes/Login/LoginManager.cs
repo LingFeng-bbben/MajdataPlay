@@ -545,11 +545,8 @@ namespace MajdataPlay.Scenes.Login
             {
                 try
                 {
-                    rsp = await Online.RegisterAsync(endpoint, new()
-                    {
-                        Name = "MajdataPlay Client",
-                        Description = "MajdataPlay Client QR Code Authentication",
-                    }, token);
+                    
+                    rsp = await Online.RegisterAsync(endpoint, MajEnv.MachineInfo, token);
                     if (!rsp.IsSuccessfully)
                     {
                         throw _exception;
