@@ -504,6 +504,10 @@ PrefabInstance:
       propertyPath: m_SortingLayerID
       value: 1199593265
       objectReference: {fileID: 0}
+    - target: {fileID: 307026145555316282, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
+      propertyPath: m_OverrideSorting
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2831381290939742984, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
       propertyPath: m_Enabled
       value: 1
@@ -587,6 +591,14 @@ PrefabInstance:
     - target: {fileID: 4485814405497562604, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5182002033360230505, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
+      propertyPath: m_SortingLayerID
+      value: -711869039
+      objectReference: {fileID: 0}
+    - target: {fileID: 5182002033360230505, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
+      propertyPath: m_OverrideSorting
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7565134130864407949, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
       propertyPath: m_Color.b
@@ -1833,10 +1845,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.UI.ButtonAnimawiption
   BindSensor: 0c0000001e000000
   BindButton: 
+  HoldTriggerTime: 0
   ReleasedScale: 1
   PressedScale: 1.2
   AnimationDuration: 0.1
   EaseType: 5
+  HoldCircle: {fileID: 0}
+  StartColor: {r: 1, g: 1, b: 1, a: 1}
+  EndColor: {r: 0, g: 1, b: 0, a: 1}
 --- !u!1 &1650264894
 GameObject:
   m_ObjectHideFlags: 0
@@ -1999,10 +2015,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.UI.ButtonAnimawiption
   BindSensor: 0b0000001c000000
   BindButton: 
+  HoldTriggerTime: 0
   ReleasedScale: 1
   PressedScale: 1.2
   AnimationDuration: 0.1
   EaseType: 5
+  HoldCircle: {fileID: 0}
+  StartColor: {r: 1, g: 1, b: 1, a: 1}
+  EndColor: {r: 0, g: 1, b: 0, a: 1}
 --- !u!1001 &2106329959
 PrefabInstance:
   m_ObjectHideFlags: 0

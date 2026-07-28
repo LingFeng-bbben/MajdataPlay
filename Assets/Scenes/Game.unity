@@ -17050,6 +17050,10 @@ PrefabInstance:
       propertyPath: m_SortingLayerID
       value: 587624755
       objectReference: {fileID: 0}
+    - target: {fileID: 8393004949030024863, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
+      propertyPath: m_OverrideSorting
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8542388474083502670, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
       propertyPath: m_Color.a
       value: 0
