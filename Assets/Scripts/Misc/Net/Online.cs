@@ -164,15 +164,9 @@ namespace MajdataPlay.Net
         {
             await UniTask.SwitchToThreadPool();
             var uri = apiEndpoint.Url.Combine(API_GET_MACHINE_INFO);
-#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
             var rsp = await GetAsync(uri, token);
 
             return rsp.IsSuccessfully;
-#else
-            var rsp = await GetAsync(uri, token);
-
-            return rsp.IsSuccessfully;
-#endif
         }
         public static async ValueTask<EndpointResponse> RegisterAsync(ApiEndpoint apiEndpoint, MachineInfo machineInfo, CancellationToken token = default)
         {
@@ -199,26 +193,6 @@ namespace MajdataPlay.Net
                 var uri = apiEndpoint.Url.Combine(API_POST_MACHINE_REGISTER);
                 var json = await Serializer.Json.SerializeAsync(machineInfo, _defaultJsonSerializer);
 
-#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
-                var rsp = await PostAsync(uri, json, "application/json", token);
-                if (!rsp.IsSuccessfully && rsp.StatusCode == HttpStatusCode.NotFound)
-                {
-                    statistics.IsMachineRegistrationSupported = false;
-                    statistics.IsMachineRegistered = false;
-                    return new()
-                    {
-                        Endpoint = apiEndpoint.Url,
-                        IsSuccessfully = false,
-                        IsDeserializable = false,
-                        StatusCode = HttpStatusCode.NotFound,
-                        ErrorCode = HttpErrorCode.NotSupported,
-                        Message = "MAJTEXT_ONLINE_MACHINE_REGISTRATION_UNSUPPORTED"
-                    };
-                }
-                statistics.IsMachineRegistrationSupported = true;
-                statistics.IsMachineRegistered = rsp.IsSuccessfully;
-                return rsp;
-#else
                 var rsp = await PostAsync(uri, new StringContent(json, Encoding.UTF8, "application/json"), token);
                 if (!rsp.IsSuccessfully && rsp.StatusCode == HttpStatusCode.NotFound)
                 {
@@ -237,7 +211,6 @@ namespace MajdataPlay.Net
                 statistics.IsMachineRegistrationSupported = true;
                 statistics.IsMachineRegistered = rsp.IsSuccessfully;
                 return rsp;
-#endif
             }
         }
         public static async ValueTask<EndpointResponse> AuthRequestAsync(ApiEndpoint apiEndpoint, CancellationToken token = default)
@@ -261,12 +234,8 @@ namespace MajdataPlay.Net
                 throw new InvalidOperationException();
             }
             var uri = apiEndpoint.Url.Combine(API_POST_AUTH_REQUEST);
-            var rsp = default(EndpointResponse);
-#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
-            rsp = await PostAsync(uri, null, token);
-#else
-            rsp = await PostAsync(uri, token);
-#endif
+            var rsp = await PostAsync(uri, token);
+
             if (rsp.StatusCode == HttpStatusCode.Created)
             {
                 return new(rsp.AsMemory(), _defaultJsonSerializer, _defaultJsonSerializerSettings)
@@ -341,12 +310,8 @@ namespace MajdataPlay.Net
             var uriBuilder = new UriBuilder(apiEndpoint.Url.Combine(API_POST_AUTH_REVOKE));
             uriBuilder.Query = $"auth-id={authId}";
             var uri = uriBuilder.Uri;
-            var rsp = default(EndpointResponse);
-#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
-            rsp = await PostAsync(uri, null, token);
-#else
-            rsp = await PostAsync(uri, token);
-#endif
+            var rsp = await PostAsync(uri, token);
+
             return rsp;
         }
         public static async ValueTask<EndpointResponse> LoginAsync(ApiEndpoint apiEndpoint, string username, string password, CancellationToken token = default)
@@ -384,14 +349,7 @@ namespace MajdataPlay.Net
             }
 
             var pwdHashStr = HashHelper.ToHexString(await HashHelper.ComputeHashAsync(Encoding.UTF8.GetBytes(password)));
-            
-#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
-            await UniTask.SwitchToMainThread();
-            var form = new WWWForm();
-            form.AddField("username", username);
-            form.AddField("password", pwdHashStr.Replace("-", "").ToLower());
-            var rsp = await PostAsync(uri, form, token);
-#else
+
             var formData = new MultipartFormDataContent
             {
                 { new StringContent(username), "username" },
@@ -399,7 +357,6 @@ namespace MajdataPlay.Net
             };
 
             var rsp = await PostAsync(uri, formData, token);
-#endif
             if (rsp.StatusCode is HttpStatusCode.Unauthorized)
             {
                 rsp = new(rsp.AsMemory(), _defaultJsonSerializer, _defaultJsonSerializerSettings)
@@ -436,12 +393,7 @@ namespace MajdataPlay.Net
                     {
                         MajDebug.LogInfo("Logout");
                         var uri = apiEndpoint.Url.Combine(API_POST_USER_LOGOUT);
-                        var rsp = default(EndpointResponse);
-#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
-                        rsp = await PostAsync(uri, null, token);
-#else
-                        rsp = await PostAsync(uri, token);
-#endif
+                        var rsp = await PostAsync(uri, token);
                     }
                     catch (Exception e)
                     {
@@ -585,20 +537,12 @@ namespace MajdataPlay.Net
 
             for (var i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
             {
-#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
-                var form = new WWWForm();
-                form.AddField("type", "like");
-                form.AddField("content", "...");
-
-                rsp = await PostAsync(interactUrl, form, token);
-#else
                 var formData = new MultipartFormDataContent
                 {
                     { new StringContent("like"), "type" },
                     { new StringContent("..."), "content" },
                 };
                 rsp = await PostAsync(interactUrl, formData, token);
-#endif
                 if (rsp.IsSuccessfully)
                 {
                     MajDebug.LogDebug(rsp);
@@ -643,11 +587,7 @@ namespace MajdataPlay.Net
 
             for (var i = 0; i < MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
             {
-#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
-                rsp = await PostAsync(scoreUrl, json, "application/json", token);
-#else
                 rsp = await PostAsync(scoreUrl, new StringContent(json, Encoding.UTF8, "application/json"), token);
-#endif
                 if (rsp.IsSuccessfully)
                 {
                     MajDebug.LogDebug(rsp);
@@ -849,87 +789,6 @@ namespace MajdataPlay.Net
         }
         static async ValueTask<EndpointResponse> GetAsync(Uri uri, CancellationToken token = default)
         {
-#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
-            await UniTask.SwitchToMainThread();
-            var getReq = UnityWebRequestFactory.Get(uri);
-            var headers = default(IReadOnlyDictionary<string, IEnumerable<string>>);
-            try
-            {
-                var asyncOperation = getReq.SendWebRequest();
-                while (!asyncOperation.isDone)
-                {
-                    if (token.IsCancellationRequested)
-                    {
-                        getReq.Abort();
-                        throw new HttpException(uri.OriginalString, HttpErrorCode.Canceled);
-                    }
-                    await UniTask.Yield();
-                }
-                headers = getReq.GetResponseHeaders()?.GroupBy(x => x.Key)
-                                                      .ToDictionary(x => x.Key.ToLower(), x => x.Select(x => x.Value).AsEnumerable());
-                getReq.EnsureSuccessStatusCode();
-                var nativeBuffer = getReq.downloadHandler.nativeData;
-                var buffer = Array.Empty<byte>();
-                if(nativeBuffer.Length != 0)
-                {
-                    buffer = new byte[nativeBuffer.Length];
-                    nativeBuffer.CopyTo(buffer);
-                }
-
-                var epRsp = new EndpointResponse(buffer, _defaultJsonSerializer, _defaultJsonSerializerSettings)
-                {
-                    Endpoint = uri,
-                    IsSuccessfully = true,
-                    IsDeserializable = true && buffer.Length != 0,
-                    ErrorCode = default,
-                    StatusCode = (HttpStatusCode)getReq.responseCode,
-                    Message = "",
-                    Headers = headers ?? EndpointResponse.EMPTY_HEADERS,
-                };
-                MajDebug.LogDebug($"[Online][GET] {uri}\n{epRsp}");
-                return epRsp;
-            }
-            catch (HttpException httpE)
-            {
-                var epRsp = new EndpointResponse(Array.Empty<byte>(), _defaultJsonSerializer, _defaultJsonSerializerSettings)
-                {
-                    Endpoint = uri,
-                    IsSuccessfully = false,
-                    IsDeserializable = false,
-                    ErrorCode = httpE.ErrorCode,
-                    StatusCode = httpE.StatusCode,
-                    Message = httpE.Message,
-                    Headers = headers ?? EndpointResponse.EMPTY_HEADERS,
-                };
-                if(httpE.ErrorCode is HttpErrorCode.Timeout)
-                {
-                    MajDebug.LogError($"[Online][GET] {uri} - Timeout");
-                }
-                else if(httpE.ErrorCode is HttpErrorCode.Canceled)
-                {
-                    MajDebug.LogError($"[Online][GET] {uri} - Canceled");
-                }
-                else
-                {
-                    MajDebug.LogError($"[Online][GET] {uri} - Unsuccessful\n{epRsp}");
-                }
-                return epRsp;
-            }
-            catch(Exception e)
-            {
-                MajDebug.LogError($"[Online][GET] {uri} - Unknown Error\n{e}");
-                return new EndpointResponse(Array.Empty<byte>(), _defaultJsonSerializer, _defaultJsonSerializerSettings)
-                {
-                    Endpoint = uri,
-                    IsSuccessfully = false,
-                    IsDeserializable = false,
-                    ErrorCode = HttpErrorCode.Unreachable,
-                    StatusCode = null,
-                    Message = e.ToString(),
-                    Headers = headers ?? EndpointResponse.EMPTY_HEADERS,
-                };
-            }
-#else
             try
             {
                 var client = MajEnv.SharedHttpClient;
@@ -999,181 +858,7 @@ namespace MajdataPlay.Net
                     Message = e.ToString()
                 };
             }
-#endif
         }
-
-
-#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
-        static async ValueTask<EndpointResponse> PostAsync(Uri uri, WWWForm? form = null, CancellationToken token = default)
-        {
-            await using (UniTask.ReturnToCurrentSynchronizationContext())
-            {
-                await UniTask.SwitchToMainThread();
-                var getReq = UnityWebRequestFactory.Post(uri, form);
-                var headers = default(IReadOnlyDictionary<string, IEnumerable<string>>);
-                try
-                {
-                    var asyncOperation = getReq.SendWebRequest();
-                    while (!asyncOperation.isDone)
-                    {
-                        if (token.IsCancellationRequested)
-                        {
-                            getReq.Abort();
-                            throw new HttpException(uri.OriginalString, HttpErrorCode.Canceled);
-                        }
-                        await UniTask.Yield();
-                    }
-                    headers = getReq.GetResponseHeaders()?.GroupBy(x => x.Key)
-                                                          .ToDictionary(x => x.Key.ToLower(), x => x.Select(x => x.Value).AsEnumerable());
-                    getReq.EnsureSuccessStatusCode();
-                    var nativeBuffer = getReq.downloadHandler.nativeData;
-                    var buffer = Array.Empty<byte>();
-                    if (nativeBuffer.Length != 0)
-                    {
-                        buffer = new byte[nativeBuffer.Length];
-                        nativeBuffer.CopyTo(buffer);
-                    }
-                    var epRsp = new EndpointResponse(buffer, _defaultJsonSerializer, _defaultJsonSerializerSettings)
-                    {
-                        Endpoint = uri,
-                        IsSuccessfully = true,
-                        IsDeserializable = true && buffer.Length != 0,
-                        ErrorCode = default,
-                        StatusCode = (HttpStatusCode)getReq.responseCode,
-                        Message = "",
-                        Headers = headers ?? EndpointResponse.EMPTY_HEADERS
-                    };
-                    MajDebug.LogDebug($"[Online][POST] {uri}\n{epRsp}");
-                    return epRsp;
-                }
-                catch (HttpException httpE)
-                {
-                    var rsp = new EndpointResponse(Array.Empty<byte>(), _defaultJsonSerializer, _defaultJsonSerializerSettings)
-                    {
-                        Endpoint = uri,
-                        IsSuccessfully = false,
-                        IsDeserializable = false,
-                        ErrorCode = httpE.ErrorCode,
-                        StatusCode = httpE.StatusCode,
-                        Message = httpE.Message,
-                        Headers = headers ?? EndpointResponse.EMPTY_HEADERS
-                    };
-                    if (httpE.ErrorCode is HttpErrorCode.Timeout)
-                    {
-                        MajDebug.LogError($"[Online][POST] {uri} - Timeout");
-                    }
-                    else if (httpE.ErrorCode is HttpErrorCode.Canceled)
-                    {
-                        MajDebug.LogError($"[Online][POST] {uri} - Canceled");
-                    }
-                    else
-                    {
-                        MajDebug.LogError($"[Online][POST] {uri} - Unsuccessful\n{rsp}");
-                    }
-                    return rsp;
-                }
-                catch (Exception e)
-                {
-                    MajDebug.LogError($"[Online][POST] {uri} - Unknown Error\n{e}");
-                    return new EndpointResponse(Array.Empty<byte>(), _defaultJsonSerializer, _defaultJsonSerializerSettings)
-                    {
-                        Endpoint = uri,
-                        IsSuccessfully = false,
-                        IsDeserializable = false,
-                        ErrorCode = HttpErrorCode.Unreachable,
-                        StatusCode = null,
-                        Message = e.ToString(),
-                        Headers = headers ?? EndpointResponse.EMPTY_HEADERS
-                    };
-                }
-            }
-        }
-        static async ValueTask<EndpointResponse> PostAsync(Uri uri, string content, string contentType, CancellationToken token = default)
-        {
-            await using (UniTask.ReturnToCurrentSynchronizationContext())
-            {
-                await UniTask.SwitchToMainThread();
-                var getReq = UnityWebRequestFactory.Post(uri, content, contentType);
-                var headers = default(IReadOnlyDictionary<string, IEnumerable<string>>);
-                try
-                {
-                    var asyncOperation = getReq.SendWebRequest();
-                    while (!asyncOperation.isDone)
-                    {
-                        if (token.IsCancellationRequested)
-                        {
-                            getReq.Abort();
-                            throw new HttpException(uri.OriginalString, HttpErrorCode.Canceled);
-                        }
-                        await UniTask.Yield();
-                    }
-                    headers = getReq.GetResponseHeaders()?.GroupBy(x => x.Key)
-                                                          .ToDictionary(x => x.Key.ToLower(), x => x.Select(x => x.Value).AsEnumerable());
-                    getReq.EnsureSuccessStatusCode();
-                    var nativeBuffer = getReq.downloadHandler.nativeData;
-                    var buffer = Array.Empty<byte>();
-                    if (nativeBuffer.Length != 0)
-                    {
-                        buffer = new byte[nativeBuffer.Length];
-                        nativeBuffer.CopyTo(buffer);
-                    }
-
-                    var epRsp = new EndpointResponse(buffer, _defaultJsonSerializer, _defaultJsonSerializerSettings)
-                    {
-                        Endpoint = uri,
-                        IsSuccessfully = true,
-                        IsDeserializable = true && buffer.Length != 0,
-                        ErrorCode = default,
-                        StatusCode = (HttpStatusCode)getReq.responseCode,
-                        Message = "",
-                        Headers = headers ?? EndpointResponse.EMPTY_HEADERS
-                    };
-                    MajDebug.LogDebug($"[Online][POST] {uri}\n{epRsp}");
-                    return epRsp;
-                }
-                catch (HttpException httpE)
-                {
-                    var rsp = new EndpointResponse(Array.Empty<byte>(), _defaultJsonSerializer, _defaultJsonSerializerSettings)
-                    {
-                        Endpoint = uri,
-                        IsSuccessfully = false,
-                        IsDeserializable = false,
-                        ErrorCode = httpE.ErrorCode,
-                        StatusCode = httpE.StatusCode,
-                        Message = httpE.Message,
-                        Headers = headers ?? EndpointResponse.EMPTY_HEADERS
-                    };
-                    if (httpE.ErrorCode is HttpErrorCode.Timeout)
-                    {
-                        MajDebug.LogError($"[Online][POST] {uri} - Timeout");
-                    }
-                    else if (httpE.ErrorCode is HttpErrorCode.Canceled)
-                    {
-                        MajDebug.LogError($"[Online][POST] {uri} - Canceled");
-                    }
-                    else
-                    {
-                        MajDebug.LogError($"[Online][POST] {uri} - Unsuccessful\n{rsp}");
-                    }
-                    return rsp;
-                }
-                catch (Exception e)
-                {
-                    MajDebug.LogError($"[Online][POST] {uri} - Unknown Error\n{e}");
-                    return new EndpointResponse(Array.Empty<byte>(), _defaultJsonSerializer, _defaultJsonSerializerSettings)
-                    {
-                        Endpoint = uri,
-                        IsSuccessfully = false,
-                        IsDeserializable = false,
-                        ErrorCode = HttpErrorCode.Unreachable,
-                        StatusCode = null,
-                        Message = e.ToString(),
-                        Headers = headers ?? EndpointResponse.EMPTY_HEADERS
-                    };
-                }
-            }
-        }
-#else
         static ValueTask<EndpointResponse> PostAsync(Uri uri, CancellationToken token = default)
         {
             return PostAsync(uri, (HttpContent?)null, token);
@@ -1262,7 +947,6 @@ namespace MajdataPlay.Net
                 };
             }
         }
-#endif
 
         static Uri BuildMaiChartUri(ApiEndpoint endpoint, string template, string chartId)
         {
