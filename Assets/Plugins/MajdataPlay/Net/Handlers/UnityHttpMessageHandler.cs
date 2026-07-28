@@ -27,11 +27,10 @@ namespace MajdataPlay.Net.Handlers
             await using (UniTask.ReturnToCurrentSynchronizationContext(true, cancellationToken))
             {
                 await UniTask.SwitchToMainThread(cancellationToken);
-                using var uwr = await CreateWebRequest(request);
+                var uwr = await CreateWebRequest(request);
 
                 var operation = uwr.SendWebRequest();
                 await operation.WithCancellation(cancellationToken, true);
-                await UniTask.SwitchToThreadPool();
 
                 var response = new HttpResponseMessage((HttpStatusCode)uwr.responseCode);
 
@@ -86,8 +85,8 @@ namespace MajdataPlay.Net.Handlers
             }
 
             uwr.redirectLimit = MaxRedirects;
-            uwr.timeout = (int)UnityWebRequestFactory.Timeout.TotalMilliseconds / 1000;
-            uwr.SetRequestHeader("User-Agent", UnityWebRequestFactory.UserAgent);
+            //uwr.timeout = (int)UnityWebRequestFactory.Timeout.TotalMilliseconds / 1000;
+            //uwr.SetRequestHeader("User-Agent", UnityWebRequestFactory.UserAgent);
 
             foreach (var header in request.Headers)
             {

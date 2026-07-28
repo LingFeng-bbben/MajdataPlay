@@ -32,6 +32,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Android;
 using UnityEngine.Scripting;
+using MajdataPlay.Net.Handlers;
 
 #nullable enable
 namespace MajdataPlay
@@ -126,7 +127,9 @@ namespace MajdataPlay
             UseCookies = true,
             CookieContainer = new CookieContainer(),
         };
+        readonly static UnityHttpMessageHandler _unityHttpHandler = new UnityHttpMessageHandler();
 
+#if true
         public static HttpClient SharedHttpClient { get; } = new HttpClient(_httpClientHandler)
         {
             Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS),
@@ -135,6 +138,16 @@ namespace MajdataPlay
                 UserAgent = { new ProductInfoHeaderValue("MajdataPlay", MajInstances.GameVersion.ToString()) },
             }
         };
+#else
+        public static HttpClient SharedHttpClient { get; } = new HttpClient(_unityHttpHandler)
+        {
+            Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS),
+            DefaultRequestHeaders =
+            {
+                UserAgent = { new ProductInfoHeaderValue("MajdataPlay", MajInstances.GameVersion.ToString()) },
+            }
+        };
+#endif
 
         public static GameSetting Settings { get; private set; }
         public static RuntimeConfig RuntimeConfig { get; private set; }
