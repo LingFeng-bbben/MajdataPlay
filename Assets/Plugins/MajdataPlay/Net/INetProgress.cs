@@ -9,6 +9,6 @@ namespace MajdataPlay.Net
     public interface INetProgress: IProgress<float>
     {
         long TotalBytes { get; set; }
-        long ReadBytes { get; set; }
+        long TransferredBytes { get; set; }
     }
 }

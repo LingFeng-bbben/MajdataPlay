@@ -794,10 +794,10 @@ namespace MajdataPlay
                             if (progress is not null)
                             {
                                 var percent = 0f;
-                                progress.ReadBytes = totalRead;
+                                progress.TransferredBytes = totalRead;
                                 if (progress.TotalBytes != 0)
                                 {
-                                    percent = (float)progress.ReadBytes / progress.TotalBytes;
+                                    percent = (float)progress.TransferredBytes / progress.TotalBytes;
                                 }
                                 percent = Mathf.Clamp01(percent);
                                 progress.Report(percent);
