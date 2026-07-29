@@ -359,6 +359,7 @@ GameObject:
   - component: {fileID: 8350591977979412089}
   - component: {fileID: 2831381290939742984}
   - component: {fileID: 1131959240587113175}
+  - component: {fileID: 4875952154813158424}
   m_Layer: 5
   m_Name: CanvasTemplate
   m_TagString: Untagged
@@ -452,6 +453,18 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &4875952154813158424
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7942307277902318624}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f22683a1392b4049ab7a46b5c1da278, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.UI.CanvasConfigurator
 --- !u!1 &8706002990538471679
 GameObject:
   m_ObjectHideFlags: 0
