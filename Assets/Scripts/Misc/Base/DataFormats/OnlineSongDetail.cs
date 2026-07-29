@@ -231,37 +231,6 @@ namespace MajdataPlay
                     {
                         try
                         {
-#if (ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG)
-                            await using(UniTask.ReturnToCurrentSynchronizationContext())
-                            {
-                                await UniTask.SwitchToMainThread();
-                                using var getReq = UnityWebRequestFactory.Head(_videoUri);
-                                var asyncOperation = getReq.SendWebRequest();
-
-                                while (!asyncOperation.isDone)
-                                {
-                                    if (token.IsCancellationRequested)
-                                    {
-                                        getReq.Abort();
-                                        throw new HttpException(_coverUri.OriginalString, HttpErrorCode.Canceled);
-                                    }
-                                    await UniTask.Yield();
-                                }
-                                if(getReq.result is (UnityWebRequest.Result.Success or UnityWebRequest.Result.ProtocolError))
-                                {
-                                    if(getReq.responseCode == (long)HttpStatusCode.NotFound)
-                                    {
-                                        using var _ = File.Create(cacheFlagPath);
-                                        _videoPath = string.Empty;
-                                        return _videoPath;
-                                    }
-                                    else
-                                    {
-                                        break;
-                                    }
-                                }
-                            }
-#else
                             var httpClient = MajEnv.SharedHttpClient;
                             using var rsp = await httpClient.GetAsync(_videoUri, HttpCompletionOption.ResponseHeadersRead, token);
 
@@ -275,7 +244,6 @@ namespace MajdataPlay
                             {
                                 break;
                             }
-#endif
                         }
                         catch (Exception e)
                         {
