@@ -66,6 +66,7 @@ namespace MajdataPlay.Scenes.List
 
         const float AUTO_SLIDE_INTERVAL_SEC = 0.15f;
         const float AUTO_SLIDE_TRIGGER_TIME_SEC = 0.4f;
+        const float LOGOUT_TRIGGER_TIME_SEC = 1f;
         const int QUICK_SLIDE_POSITION_INCREASE = 9;
         const float QUICK_SLIDE_DURATION_SEC = 0.5f;
 
@@ -481,9 +482,9 @@ namespace MajdataPlay.Scenes.List
                 }
                 return;
             }
-            else if (a5Statistic.IsClicked)
+            else if (a5Statistic.IsPressed)
             {
-                if (_isOnlineEnabled)
+                if (_isOnlineEnabled && a5Statistic.PressTime >= LOGOUT_TRIGGER_TIME_SEC)
                 {
                     EnterLogin();
                 }
