@@ -10,16 +10,9 @@ namespace MajdataPlay.Components
 {
     public class DontDestroyOnLoad : MonoBehaviour
     {
-        [SerializeField]
-        [FormerlySerializedAs("dontDestroyOnLoad")]
-        bool _dontDestroyOnLoad;
-
         void Awake()
         {
-            if (_dontDestroyOnLoad)
-            {
-                DontDestroyOnLoad(gameObject);
-            }
+            DontDestroyOnLoad(gameObject);
         }
     }
 }
