@@ -9,8 +9,8 @@ namespace MajdataPlay.Buffers
         const int MAX_ARRAY_LENGTH = 2 * 1024 * 1024; // 2MB
         const int MAX_ARRAY_PER_BUCKET = 2048;
 
-        public readonly static ArrayPool<T> ArrayPool = ArrayPool<T>.Create(MAX_ARRAY_LENGTH, MAX_ARRAY_PER_BUCKET);
-        public readonly static MemoryPool<T> MemoryPool = MemoryPool<T>.Shared;
+        internal readonly static ArrayPool<T> ArrayPool = ArrayPool<T>.Create(MAX_ARRAY_LENGTH, MAX_ARRAY_PER_BUCKET);
+        internal readonly static MemoryPool<T> MemoryPool = MemoryPool<T>.Shared;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T[] RentArray(int length, bool clearArray = false)
