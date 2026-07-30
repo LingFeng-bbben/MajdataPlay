@@ -22937,13 +22937,17 @@ MonoBehaviour:
   level: {fileID: 537021205}
   accDX: {fileID: 1593491266}
   accHistory: {fileID: 1059291917}
-  dxScore: {fileID: 738438929}
   rank: {fileID: 1385714916}
   criticalCount: {fileID: 1563841248}
   perfectCount: {fileID: 82470435}
   greatCount: {fileID: 1493829169}
   goodCount: {fileID: 355472549}
   missCount: {fileID: 1512382466}
+  criticalLabel: {fileID: 1617008577}
+  perfectLabel: {fileID: 1645222551}
+  greatLabel: {fileID: 252393545}
+  goodLabel: {fileID: 676298544}
+  missLabel: {fileID: 1207124905}
   fastCount: {fileID: 1279268574}
   lateCount: {fileID: 1246178293}
   avgJudgeTime: {fileID: 653167866}

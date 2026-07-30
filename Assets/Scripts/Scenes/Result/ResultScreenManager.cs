@@ -21,6 +21,11 @@ using MajdataPlay.Net;
 using MajdataPlay.Scenes.Result.Components;
 using UnityEngine.Serialization;
 using System.Threading;
+using LitMotion;
+using LitMotion.Extensions;
+#if UNITY_EDITOR
+using System.Globalization;
+#endif
 
 #nullable enable
 namespace MajdataPlay.Scenes.Result
@@ -35,7 +40,6 @@ namespace MajdataPlay.Scenes.Result
 
         public TextMeshProUGUI accDX;
         public TextMeshProUGUI accHistory;
-        public TextMeshProUGUI dxScore;
         public TextMeshProUGUI rank;
 
         public TextMeshProUGUI criticalCount;
@@ -43,6 +47,11 @@ namespace MajdataPlay.Scenes.Result
         public TextMeshProUGUI greatCount;
         public TextMeshProUGUI goodCount;
         public TextMeshProUGUI missCount;
+        public TextMeshProUGUI criticalLabel;
+        public TextMeshProUGUI perfectLabel;
+        public TextMeshProUGUI greatLabel;
+        public TextMeshProUGUI goodLabel;
+        public TextMeshProUGUI missLabel;
 
         public TextMeshProUGUI fastCount;
         public TextMeshProUGUI lateCount;
@@ -89,8 +98,26 @@ namespace MajdataPlay.Scenes.Result
         bool _isAllTaskFinished = false;
         bool _isInited = false;
         bool _isExited = false;
+#if UNITY_EDITOR
+        bool _hasAchievementRollTarget = false;
+        bool _achievementRollIsClassic = false;
+        double _achievementRollTarget = 0d;
+#endif
+        MotionHandle _achievementRollAnim;
+        readonly CompositeMotionHandle _judgeTextFadeAnims = new(5);
+        readonly CompositeMotionHandle _clearMarkAnims = new(2);
+        bool _isClearMarkScaleCached;
+        Vector3 _clearMarkOriginalScale;
 
         const string PERFECT_COUNT_TEXT_TEMPLATE = "<line-height=60%>{0}\n<size=24>(-{1})</size>";
+        public const float ACHIEVEMENT_ROLL_DURATION_SEC = 1.5f;
+        public const float CLEAR_MARK_APPEAR_DURATION_SEC = 0.4f;
+#if UNITY_EDITOR
+        public const float RESULT_ANIMATION_DURATION_SEC = ACHIEVEMENT_ROLL_DURATION_SEC + CLEAR_MARK_APPEAR_DURATION_SEC;
+#endif
+        const int JUDGE_TEXT_ROW_COUNT = 5;
+        const float JUDGE_TEXT_FADE_DURATION_SEC = ACHIEVEMENT_ROLL_DURATION_SEC / JUDGE_TEXT_ROW_COUNT;
+        const float CLEAR_MARK_START_SCALE_MULTIPLIER = 5f;
 
         protected override void Awake()
         {
@@ -158,19 +185,18 @@ namespace MajdataPlay.Scenes.Result
             designer.text = song.Designers[(int)_gameInfo.CurrentLevel] ?? "Undefined";
             level.text = song.Levels[(int)_gameInfo.CurrentLevel];
 
-            // TODO: more animation here
-            accDX.text = isClassic ? $"{Math.Floor(result.Acc.Classic * 100) / 100:F2}%" : $"{Math.Floor(result.Acc.DX * 10000) / 10000:F4}%";
             var nowAcc = isClassic ? result.Acc.Classic : result.Acc.DX;
             var historyAcc = isClassic ? historyResult.Acc.Classic : historyResult.Acc.DX;
             accHistory.text = $"{nowAcc - historyAcc:+0.0000;-0.0000;0}%";
 
-            _dxScoreDisplayer.SetScore(result);
+            _dxScoreDisplayer.SetScore(result, ACHIEVEMENT_ROLL_DURATION_SEC);
 
             criticalCount.text = $"{totalJudgeRecord.CriticalPerfect}";
             perfectCount.text = $"{totalJudgeRecord.Perfect}";
             greatCount.text = $"{totalJudgeRecord.Great}";
             goodCount.text = $"{totalJudgeRecord.Good}";
             missCount.text = $"{totalJudgeRecord.Miss}";
+            PlayResultAnimation(nowAcc, isClassic);
 
             fastCount.text = $"{result.Fast}";
             lateCount.text = $"{result.Late}";
@@ -233,6 +259,7 @@ namespace MajdataPlay.Scenes.Result
             {
                 clearText.text = "";
             }
+            PlayClearMarkAnimation();
 
             MajInstances.AudioManager.PlaySFX("bgm_result.mp3", true);
             PlayVoice(result.Acc.DX, 
@@ -254,6 +281,150 @@ namespace MajdataPlay.Scenes.Result
                 }
             }
             WaitForTaskAsync().Forget();
+        }
+        void PlayResultAnimation(double targetAchievement, bool isClassic)
+        {
+            PlayAchievementRollAnimation(targetAchievement, isClassic);
+            PlayJudgeTextFadeInAnimation();
+        }
+        public void PlayAchievementRollAnimation(double targetAchievement, bool isClassic)
+        {
+            _achievementRollAnim.TryCancel();
+#if UNITY_EDITOR
+            _hasAchievementRollTarget = true;
+            _achievementRollTarget = targetAchievement;
+            _achievementRollIsClassic = isClassic;
+#endif
+            accDX.text = FormatAchievement(0d, isClassic);
+            _achievementRollAnim = LMotion.Create(0d, targetAchievement, ACHIEVEMENT_ROLL_DURATION_SEC)
+                                          .WithEase(Ease.OutQuart)
+                                          .Bind(value => accDX.text = FormatAchievement(value, isClassic));
+        }
+#if UNITY_EDITOR
+        public bool PreviewAchievementRollAnimation()
+        {
+            if (_hasAchievementRollTarget)
+            {
+                PlayResultAnimation(_achievementRollTarget, _achievementRollIsClassic);
+                _dxScoreDisplayer.PlayAnimationPreview(ACHIEVEMENT_ROLL_DURATION_SEC);
+                PlayClearMarkAnimation();
+                return true;
+            }
+
+            var scoreText = accDX.text.Trim().TrimEnd('%');
+            if (!double.TryParse(scoreText, NumberStyles.Float, CultureInfo.CurrentCulture, out var previewAchievement))
+            {
+                return false;
+            }
+
+            var decimalSeparator = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
+            var separatorIndex = scoreText.LastIndexOf(decimalSeparator, StringComparison.Ordinal);
+            var decimalPlaces = separatorIndex < 0 ? 0 : scoreText.Length - separatorIndex - decimalSeparator.Length;
+            PlayResultAnimation(previewAchievement, decimalPlaces <= 2);
+            _dxScoreDisplayer.PlayAnimationPreview(ACHIEVEMENT_ROLL_DURATION_SEC);
+            PlayClearMarkAnimation();
+            return true;
+        }
+#endif
+        void PlayJudgeTextFadeInAnimation()
+        {
+            _judgeTextFadeAnims.Cancel();
+            var judgeRows = new[]
+            {
+                (Label: criticalLabel, Count: criticalCount),
+                (Label: perfectLabel, Count: perfectCount),
+                (Label: greatLabel, Count: greatCount),
+                (Label: goodLabel, Count: goodCount),
+                (Label: missLabel, Count: missCount)
+            };
+
+            for (var i = 0; i < judgeRows.Length; i++)
+            {
+                var (label, count) = judgeRows[i];
+                var delay = i * JUDGE_TEXT_FADE_DURATION_SEC;
+                SetTextAlpha(label, 0f);
+                SetTextAlpha(count, 0f);
+                LMotion.Create(0f, 1f, JUDGE_TEXT_FADE_DURATION_SEC)
+                       .WithDelay(delay)
+                       .WithEase(Ease.OutQuad)
+                       .Bind(alpha =>
+                       {
+                           SetTextAlpha(label, alpha);
+                           SetTextAlpha(count, alpha);
+                       })
+                       .AddTo(_judgeTextFadeAnims);
+            }
+        }
+        void PlayClearMarkAnimation()
+        {
+            _clearMarkAnims.Cancel();
+            var clearMarkTransform = clearText.transform;
+            if (!_isClearMarkScaleCached)
+            {
+                _isClearMarkScaleCached = true;
+                _clearMarkOriginalScale = clearMarkTransform.localScale;
+            }
+
+            var startScale = _clearMarkOriginalScale * CLEAR_MARK_START_SCALE_MULTIPLIER;
+            clearMarkTransform.localScale = startScale;
+            SetTextAlpha(clearText, 0f);
+            if (string.IsNullOrEmpty(clearText.text))
+            {
+                return;
+            }
+
+            LMotion.Create(startScale, _clearMarkOriginalScale, CLEAR_MARK_APPEAR_DURATION_SEC)
+                   .WithDelay(ACHIEVEMENT_ROLL_DURATION_SEC)
+                   .WithEase(Ease.OutBack)
+                   .BindToLocalScale(clearMarkTransform)
+                   .AddTo(_clearMarkAnims);
+            LMotion.Create(0f, 1f, CLEAR_MARK_APPEAR_DURATION_SEC)
+                   .WithDelay(ACHIEVEMENT_ROLL_DURATION_SEC)
+                   .WithEase(Ease.OutQuad)
+                   .BindToColorA(clearText)
+                   .AddTo(_clearMarkAnims);
+        }
+#if UNITY_EDITOR
+        public void StopResultAnimationPreview()
+        {
+            _achievementRollAnim.TryCancel();
+            _judgeTextFadeAnims.Cancel();
+            _clearMarkAnims.Cancel();
+            _dxScoreDisplayer.StopAnimationPreview();
+            if (_hasAchievementRollTarget)
+            {
+                accDX.text = FormatAchievement(_achievementRollTarget, _achievementRollIsClassic);
+            }
+
+            SetTextAlpha(criticalCount, 1f);
+            SetTextAlpha(perfectCount, 1f);
+            SetTextAlpha(greatCount, 1f);
+            SetTextAlpha(goodCount, 1f);
+            SetTextAlpha(missCount, 1f);
+            SetTextAlpha(criticalLabel, 1f);
+            SetTextAlpha(perfectLabel, 1f);
+            SetTextAlpha(greatLabel, 1f);
+            SetTextAlpha(goodLabel, 1f);
+            SetTextAlpha(missLabel, 1f);
+            if (_isClearMarkScaleCached)
+            {
+                clearText.transform.localScale = _clearMarkOriginalScale;
+            }
+            SetTextAlpha(clearText, string.IsNullOrEmpty(clearText.text) ? 0f : 1f);
+        }
+#endif
+        static void SetTextAlpha(TextMeshProUGUI text, float alpha)
+        {
+            var color = text.color;
+            color.a = alpha;
+            text.color = color;
+        }
+        static string FormatAchievement(double achievement, bool isClassic)
+        {
+            var precision = isClassic ? 100d : 10000d;
+            var digits = isClassic ? 2 : 4;
+            var truncatedAchievement = Math.Floor(achievement * precision) / precision;
+            return $"{truncatedAchievement.ToString($"F{digits}")}%";
         }
         async UniTask WaitForTaskAsync()
         {
@@ -402,6 +573,9 @@ namespace MajdataPlay.Scenes.Result
         }
         void OnDestroy()
         {
+            _achievementRollAnim.TryCancel();
+            _judgeTextFadeAnims.Cancel();
+            _clearMarkAnims.Cancel();
             InputManager.TouchButtonRingEdge = 5.4f;
             DestroyImmediate(_noteJudgeDiffGraph.texture, true);
         }
