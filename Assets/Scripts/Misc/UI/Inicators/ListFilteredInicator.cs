@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TMPro;
 
 namespace MajdataPlay.UI.Inicators
 {
     public class ListFilteredInicator : UIInicator
     {
+        public TextMeshProUGUI SearchText;
         protected override void Awake()
         {
             base.Awake();
@@ -16,7 +18,16 @@ namespace MajdataPlay.UI.Inicators
             {
                 actionTo = gameObject;
             }
-            actionTo.SetActive(!string.IsNullOrEmpty(MajEnv.RuntimeConfig.List.OrderBy.Keyword));
+            var keyword = MajEnv.RuntimeConfig.List.OrderBy.Keyword;
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                SearchText.text = "<#FF8282>🔍<#4F5763> " + keyword;
+                actionTo.SetActive(true);
+            }
+            else
+            {
+                actionTo.SetActive(false);
+            }
         }
     }
 }
