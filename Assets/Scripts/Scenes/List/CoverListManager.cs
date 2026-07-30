@@ -224,6 +224,16 @@ namespace MajdataPlay.Scenes.List
             var nP = _listDesiredPos + delta;
             SlideListTo(nP, disableAnimation, forceUpdate, loadDelayMS);
         }
+        public void RandomSelect()
+        {
+            if(_isEmptyCollection)
+            {
+                return;
+            }
+            var randomizer = MajEnv.Randomizer;
+            var index = randomizer.Next(0, _songCount);
+            SlideListTo(index, false, false, 500);
+        }
         public void SlideListToHead()
         {
             if (_isEmptyCollection)

@@ -74,6 +74,8 @@ namespace MajdataPlay.Scenes.List
         int _quickSlideDirection = 0;
         MotionHandle _quickSlideAnim;
 
+        float _cAreaPressTime = -1f;
+
         readonly ListConfig _listConfig = MajEnv.RuntimeConfig?.List ?? new();
         readonly SwitchStatistic[] _buttonPressTimes = new SwitchStatistic[12];
         readonly CancellationTokenSource _cts = new();
@@ -323,9 +325,31 @@ namespace MajdataPlay.Scenes.List
             {
                 _favoriteAdder.SetState(false);
             }
-            if (InputManager.IsSensorClickedInThisFrame(SensorArea.C) && !areaIgnoreList[(int)SensorArea.C])
+            if (!areaIgnoreList[(int)SensorArea.C])
             {
-                //TODO: _coverListDisplayer.RandomSelect();
+                if(_cAreaPressTime == -1)
+                {
+                    if(InputManager.IsSensorClickedInThisFrame(SensorArea.C))
+                    {
+                        _cAreaPressTime = 0;
+                    }
+                }
+                else if(InputManager.CheckSensorStatusInThisFrame(SensorArea.C, SwitchStatus.On) && _cAreaPressTime >= 0)
+                {
+                    if(_cAreaPressTime >= 1f)
+                    {
+                        _cAreaPressTime = -1;
+                        _coverListManager.RandomSelect();
+                    }
+                    else
+                    {
+                        _cAreaPressTime += MajTimeline.DeltaTime;
+                    }
+                }
+                else
+                {
+                    _cAreaPressTime = -1;
+                }
             }
         }
         void ButtonStatisticsUpdate()
