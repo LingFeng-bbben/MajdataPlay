@@ -33,6 +33,7 @@ using UnityEngine;
 using UnityEngine.Android;
 using UnityEngine.Scripting;
 using MajdataPlay.Net.Handlers;
+using Random = System.Random;
 
 #nullable enable
 namespace MajdataPlay
@@ -116,6 +117,17 @@ namespace MajdataPlay
             Name = "MajdataPlay Client",
             Description = "MajdataPlay Client QR Code Authentication",
         };
+        public static Random Randomizer
+        {
+            get
+            {
+                if(s_randomizer is null)
+                {
+                    s_randomizer = new();
+                }
+                return s_randomizer;
+            }
+        }
         public static Thread MainThread { get; } = Thread.CurrentThread;
         public static Process GameProcess { get; } = Process.GetCurrentProcess();
 
@@ -168,6 +180,8 @@ namespace MajdataPlay
             }
         };
 
+        [ThreadStatic]
+        static Random? s_randomizer;
         static string _runtimeConfigPath = string.Empty;
         readonly static CancellationTokenSource _globalCTS = new();
         static MajEnv()
