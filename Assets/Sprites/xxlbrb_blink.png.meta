@@ -1,12 +1,15 @@
 fileFormatVersion: 2
-guid: 596a012afb7b6c748a22f77a19e5f91b
+guid: 774ac0c1d0830a84eb80ce500c82482d
 TextureImporter:
-  internalIDToNameTable: []
+  internalIDToNameTable:
+  - first:
+      213: 5862517241288644476
+    second: xxlbrb_blink_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
     mipMapMode: 0
-    enableMipMap: 1
+    enableMipMap: 0
     sRGBTexture: 1
     linearTexture: 0
     fadeOut: 0
@@ -108,7 +111,29 @@ TextureImporter:
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
-    sprites: []
+    sprites:
+    - serializedVersion: 2
+      name: xxlbrb_blink_0
+      rect:
+        serializedVersion: 2
+        x: 39
+        y: 213
+        width: 1873
+        height: 3003
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c77dc98be58db5150800000000000000
+      internalID: 5862517241288644476
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
@@ -122,7 +147,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      xxlbrb_blink_0: 5862517241288644476
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

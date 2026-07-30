@@ -155,8 +155,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -67, y: -156}
-  m_SizeDelta: {x: 779.03, y: 1251.54}
+  m_AnchoredPosition: {x: -56, y: -180}
+  m_SizeDelta: {x: 896.67, y: 1599.63}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &18471698
 MonoBehaviour:
@@ -165,14 +165,16 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 18471696}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9dab82e39bdde394fb0341ba795266ec, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  XxlbDefault: {fileID: 21300000, guid: 596a012afb7b6c748a22f77a19e5f91b, type: 3}
-  XxlbBlinks: {fileID: 21300000, guid: 94ffd367445360c428644b4317423816, type: 3}
-  image: {fileID: 18471699}
+  XxlbDefault: {fileID: 21300000, guid: 69d776b7771cea94b9ceef041d0df987, type: 3}
+  XxlbBlinksHalf: {fileID: 21300000, guid: 0085bee1ca471bd4ba93122cbc48cc67, type: 3}
+  XxlbBlinks: {fileID: 21300000, guid: 774ac0c1d0830a84eb80ce500c82482d, type: 3}
+  XxlbWink: {fileID: 21300000, guid: 495b0375dbf0a2748aa173ccf1c92d00, type: 3}
+  Image: {fileID: 18471699}
 --- !u!114 &18471699
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -193,9 +195,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 4378631474996037019, guid: fe41480e330db7b439b2bc70b6d11948, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 69d776b7771cea94b9ceef041d0df987, type: 3}
   m_Type: 0
-  m_PreserveAspect: 0
+  m_PreserveAspect: 1
   m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
@@ -268,8 +270,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 187, y: -156}
-  m_SizeDelta: {x: 836.61, y: 222.17}
+  m_AnchoredPosition: {x: 187, y: -102.67}
+  m_SizeDelta: {x: 836.61, y: 308.22}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &800093672
 MonoBehaviour:
@@ -291,7 +293,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 4a216edcf1319e3498070a18dc605c22, type: 3}
+  m_Sprite: {fileID: 21300000, guid: fb35a8a54b628a44096da38ae273b449, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -965,8 +967,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   XxlbDefault: {fileID: 21300000, guid: 596a012afb7b6c748a22f77a19e5f91b, type: 3}
+  XxlbBlinksHalf: {fileID: 0}
   XxlbBlinks: {fileID: 21300000, guid: 94ffd367445360c428644b4317423816, type: 3}
-  image: {fileID: 1811113592}
+  XxlbWink: {fileID: 0}
+  Image: {fileID: 0}
 --- !u!223 &1811113595
 Canvas:
   m_ObjectHideFlags: 0
@@ -1049,7 +1053,7 @@ Animator:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2118294492}
-  m_Enabled: 1
+  m_Enabled: 0
   m_Avatar: {fileID: 0}
   m_Controller: {fileID: 9100000, guid: c52f80b0d814ad948af0edf02c4bfaa4, type: 2}
   m_CullingMode: 0
