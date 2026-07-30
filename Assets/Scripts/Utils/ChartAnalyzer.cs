@@ -100,21 +100,11 @@ namespace MajdataPlay.Utils
                                  int width)
         {
             const int BarCount = 64;
-            const float MinBarHeight = 6f;
 
             EnsureSakaComponentIsInited();
             var tapPoints = analyzeResult.TapPoints;
             var slidePoints = analyzeResult.SlidePoints;
             var touchPoints = analyzeResult.TouchPoints;
-            var normalizeJob = new SampleNormalizeJob()
-            {
-                TapPoints = tapPoints,
-                SlidePoints = slidePoints,
-                TouchPoints = touchPoints,
-                Max = analyzeResult.PeakDensity
-            };
-            normalizeJob.Schedule(tapPoints.Length, 64)
-                        .Complete();
 
             var imageInfo = new SKImageInfo(width, height);
             using var surface = SKSurface.Create(imageInfo);
@@ -122,7 +112,6 @@ namespace MajdataPlay.Utils
             canvas.Clear(SKColor.Empty);
 
             var count = tapPoints.Length;
-            
 
             var bars = BuildBars(
                 tapPoints,
@@ -134,82 +123,35 @@ namespace MajdataPlay.Utils
 
             var barWidth = step * 0.72f;
             var radius = barWidth * 0.5f;
-            var barPtr = bars.GetUnsafePtr();
 
             for (var i = 0; i < BarCount; i++)
             {
                 var x = (i + 0.5f) * step;
-                ref readonly var barInfo = ref UnsafeUtility.ArrayElementAsRef<GraphBar>(barPtr, i);
+                var barInfo = bars[i];
                 var tapBarHeight = barInfo.Tap * height;
                 var touchBarHeight = barInfo.Touch * height;
                 var slideBarHeight = barInfo.Slide * height;
 
-                if(barInfo.Tap != 0)
-                {
-                    tapBarHeight = Mathf.Max(tapBarHeight, MinBarHeight);
-                }
-                else
-                {
-                    tapBarHeight = 0;
-                }
-
-                if (barInfo.Touch != 0)
-                {
-                    tapBarHeight = Mathf.Max(touchBarHeight, MinBarHeight);
-                }
-                else
-                {
-                    touchBarHeight = 0;
-                }
-
-                if (barInfo.Slide != 0)
-                {
-                    tapBarHeight = Mathf.Max(slideBarHeight, MinBarHeight);
-                }
-                else
-                {
-                    slideBarHeight = 0;
-                }
+                MajDebug.LogInfo(String.Format("Heights {0} {1} {2} Total:{3}", tapBarHeight, touchBarHeight, slideBarHeight, tapBarHeight + touchBarHeight + slideBarHeight));
 
                 // Draw touch bar
                 DrawRoundRectBar(
                         canvas,
                         x,
-                        height - slideBarHeight - tapBarHeight,
-                        touchBarHeight,
+                        height,
+                        touchBarHeight + slideBarHeight + tapBarHeight,
                         barWidth,
                         radius,
-                        MinBarHeight,
                         s_touchPaint);
-
-                // Draw slide bar
-                if(barInfo.Touch != 0)
-                {
-                    DrawRectBar(
+                DrawRoundRectBar(
                         canvas,
                         x,
-                        height - tapBarHeight,
-                        slideBarHeight,
+                        height ,
+                        slideBarHeight + tapBarHeight,
                         barWidth,
                         radius,
                         s_slidePaint);
-                }
-                else
-                {
-                    DrawRoundRectBar(
-                        canvas,
-                        x,
-                        height - tapBarHeight,
-                        slideBarHeight,
-                        barWidth,
-                        radius,
-                        MinBarHeight,
-                        s_slidePaint);
-                }
-                // Draw tap bar
-                if (barInfo.Slide != 0 || barInfo.Touch != 0)
-                {
-                    DrawRectBar(
+                DrawRoundRectBar(
                         canvas,
                         x,
                         height,
@@ -217,19 +159,6 @@ namespace MajdataPlay.Utils
                         barWidth,
                         radius,
                         s_tapPaint);
-                }
-                else
-                {
-                    DrawRoundRectBar(
-                        canvas,
-                        x,
-                        height,
-                        tapBarHeight,
-                        barWidth,
-                        radius,
-                        MinBarHeight,
-                        s_tapPaint);
-                } 
             }
 
             return surface.ToTexture2D(imageInfo);
@@ -240,7 +169,6 @@ namespace MajdataPlay.Utils
                                      float barHeight,
                                      float width,
                                      float radius,
-                                     float minHeight,
                                      SKPaint paint)
         {
             if (barHeight <= 0f)
@@ -248,48 +176,21 @@ namespace MajdataPlay.Utils
                 return;
             }
 
-            if (barHeight < minHeight)
-            {
-                barHeight = minHeight;
-            }
-
             var rect = new SKRect(
                 centerX - (width * 0.5f),
                 bottom - barHeight,
                 centerX + (width * 0.5f),
                 bottom);
 
-            s_radii![0] = new SKPoint(radius, radius);// 左上
-            s_radii[1] = new SKPoint(radius, radius);// 右上
+            // 四个角全部设置圆角
+            s_radii![0] = new SKPoint(radius, radius); // 左上
+            s_radii[1] = new SKPoint(radius, radius); // 右上
+            s_radii[2] = new SKPoint(radius, radius); // 右下
+            s_radii[3] = new SKPoint(radius, radius); // 左下
+
             s_roundRect!.SetRectRadii(rect, s_radii);
 
             canvas.DrawRoundRect(s_roundRect, paint);
-        }
-        static void DrawRectBar(SKCanvas canvas,
-                            float centerX,
-                            float bottom,
-                            float barHeight,
-                            float width,
-                            float minHeight,
-                            SKPaint paint)
-        {
-            if (barHeight <= 0f)
-            {
-                return;
-            }
-
-            if (barHeight < minHeight)
-            {
-                barHeight = minHeight;
-            }
-
-            var rect = new SKRect(
-                centerX - (width * 0.5f),
-                bottom - barHeight,
-                centerX + (width * 0.5f),
-                bottom);
-
-            canvas.DrawRect(rect, paint);
         }
         static NativeArray<GraphBar> BuildBars(NativeArray<Vector2> tapPoints,
                                                NativeArray<Vector2> slidePoints,
@@ -329,18 +230,13 @@ namespace MajdataPlay.Utils
             for (var i = 0; i < barCount; i++)
             {
                 var bar = bars[i];
-                var sum = bar.Tap + bar.Slide + bar.Touch;
-                var totalHeight = sum / max;
-                var tapHeight = bar.Tap / sum * totalHeight;
-                var slideHeight = bar.Slide / sum * totalHeight;
-                var touchHeight = bar.Touch / sum * totalHeight;
-
-                bars[i] = new()
+                bars[i] = new GraphBar
                 {
-                    Tap = tapHeight,
-                    Slide = slideHeight,
-                    Touch = touchHeight
+                    Tap = bar.Tap / max,
+                    Slide = bar.Slide / max,
+                    Touch = bar.Touch / max
                 };
+                //MajDebug.LogInfo(String.Format("{0} {1} {2} {3}", bars[i].Tap, bars[i].Slide, bars[i].Touch, bars[i].Tap + bars[i].Slide + bars[i].Touch));
             }
 
 
