@@ -9,6 +9,8 @@ namespace MajdataPlay.Scenes.Title
 {
     public class XxlbBlink : MonoBehaviour
     {
+        const float BLINK_CHECK_INTERVAL_SEC = 0.1f;
+
         public Sprite XxlbDefault;
         public Sprite XxlbBlinksHalf;
         public Sprite XxlbBlinks;
@@ -53,7 +55,7 @@ namespace MajdataPlay.Scenes.Title
                     Image.sprite = XxlbDefault;
                     await UniTask.WaitForSeconds(0.2f, cancellationToken: cancellationToken);
                 }
-                await UniTask.Yield(cancellationToken);
+                await UniTask.WaitForSeconds(BLINK_CHECK_INTERVAL_SEC, cancellationToken: cancellationToken);
             }
         }
     }
