@@ -34,8 +34,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 133.06001, y: 0.89993954}
-  m_SizeDelta: {x: 108.26999, y: 25}
+  m_AnchoredPosition: {x: 117.35, y: 0.89993954}
+  m_SizeDelta: {x: 139.69, y: 25}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4222647414643818985
 CanvasRenderer:
@@ -65,7 +65,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 101.<size=70%>0000%
+  m_text: <color=#FFF808>AP<sup>+</sup></color><pos=30%>101.<size=70%>0000%
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: dbc58334dc23ba04fbfee4bf5298b6a0, type: 2}
   m_sharedMaterial: {fileID: -9050617650548543871, guid: dbc58334dc23ba04fbfee4bf5298b6a0, type: 2}
@@ -287,6 +287,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 21f710d3416f4ef9a3094773791dd4bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.Misc.Base.TMPMarqueeText
+  StartDelay: 2
+  ScrollSpeed: 48
+  EndRatio: 0.25
 --- !u!1 &3673713977737525585
 GameObject:
   m_ObjectHideFlags: 0

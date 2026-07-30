@@ -1,5 +1,6 @@
 ﻿using LitMotion;
 using MajdataPlay.Net;
+using MajdataPlay.Scenes.Game;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
@@ -35,6 +36,14 @@ namespace MajdataPlay.Scenes.List
         [SerializeField]
         [FormerlySerializedAs("rankerRankColors")]
         Color[] _rankerRankColors = Array.Empty<Color>();
+
+        [SerializeField]
+        [FormerlySerializedAs("apColor")]
+        Color _apColor = Color.white;
+
+        [SerializeField]
+        [FormerlySerializedAs("fcColor")]
+        Color _fcColor = Color.white;
 
         RankerDisplayer[] _rankerDisplayers = Array.Empty<RankerDisplayer>();
 
@@ -173,7 +182,8 @@ namespace MajdataPlay.Scenes.List
                     displayer.Object.SetActive(true);
                     displayer.UsernameDisplayer.text = playerInfo.Username;
                     displayer.RankDisplayer.color = _rankerRankColors[rankerIndex];
-                    displayer.AccurateDisplayer.text = $"{(int)scoreInfo.Acc}.<size=70%>{(int)((scoreInfo.Acc - MathF.Truncate(scoreInfo.Acc)) * 10000):D4}%";
+                    var combostate = CombostateToStr(scoreInfo.ComboState);
+                    displayer.AccurateDisplayer.text = $"{combostate}<pos=30%>{(int)scoreInfo.Acc}.<size=70%>{(int)((scoreInfo.Acc - MathF.Truncate(scoreInfo.Acc)) * 10000):D4}%";
                 }
                 finally
                 {
@@ -181,6 +191,33 @@ namespace MajdataPlay.Scenes.List
                 }
             }
         }
+
+        private string CombostateToStr(ComboState cs)
+        {
+            var apcolorstr = "#" + ColorUtility.ToHtmlStringRGB(_apColor);
+            var fccolorstr = "#" + ColorUtility.ToHtmlStringRGB(_fcColor);
+            if (cs == ComboState.APPlus)
+            {
+                return $"<color={apcolorstr}>AP<sup>+</sup></color>";
+            }
+            else if (cs == ComboState.FCPlus)
+            {
+                return $"<color={fccolorstr}>FC<sup>+</sup></color>";
+            }
+            else if (cs == ComboState.AP)
+            {
+                return $"<color={apcolorstr}>AP</color>";
+            }
+            else if (cs == ComboState.FC)
+            {
+                return $"<color={fccolorstr}>FC</color>";
+            }
+            else
+            {
+                return string.Empty;
+            }
+        }
+
         void SetLoading()
         {
             _loadingIndicator.SetActive(true);
