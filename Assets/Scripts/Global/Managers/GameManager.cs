@@ -76,9 +76,6 @@ namespace MajdataPlay
         }
         async UniTask StartInternal()
         {
-#if UNITY_IOS && !UNITY_EDITOR
-            IOSNativeSettings.Init();
-#endif
             await UniTask.CompletedTask;
             MajEnv.InitPath();
             MajDebug.Init();

@@ -45,12 +45,13 @@ namespace MajdataPlay.Platform.iOS
             _onForegroundChangedCallbackHandle = GCHandle.Alloc(_onForegroundChanged, GCHandleType.Pinned);
         }
         
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
         static void Init()
         {
 #if !(UNITY_IOS || UNITY_EDITOR_OSX)
             return;
 #endif
+            IOSNativeSettings.Init();
             AppStatusPInvoke.RegisterAppStatusCallbacks(NativeForegroundCallback, NativeFocusCallback);
         }
 

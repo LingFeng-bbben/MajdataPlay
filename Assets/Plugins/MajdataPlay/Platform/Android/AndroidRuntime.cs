@@ -22,7 +22,7 @@ namespace MajdataPlay.Platform.Android
         readonly static OnNewIntentCallbackProxy _onNewIntentCallbackProxy = new();
         readonly static OnActivityResultCallbackProxy _onActivityResultCallbackProxy = new();
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
         static void Init()
         {
 #if UNITY_EDITOR
