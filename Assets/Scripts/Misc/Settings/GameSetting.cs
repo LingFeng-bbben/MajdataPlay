@@ -347,7 +347,7 @@ namespace MajdataPlay.Settings
         [JsonIgnore]
 #endif
         public bool Enable { get; set; } = false;
-#if UNITY_STANDALONE && ENABLE_MONO
+#if UNITY_STANDALONE
         public bool UseProxy { get; init; } = true;
         public string Proxy { get; init; } = string.Empty;
 #endif
