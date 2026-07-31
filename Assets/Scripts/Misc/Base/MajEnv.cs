@@ -16,6 +16,8 @@ using MajdataPlay.Settings.Runtime;
 using MajdataPlay.Utils;
 #if UNITY_ANDROID
 using MajdataPlay.Platform.Android;
+#elif UNITY_IOS
+using MajdataPlay.Platform.iOS;
 #endif
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
