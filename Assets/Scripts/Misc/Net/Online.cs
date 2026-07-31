@@ -652,7 +652,7 @@ namespace MajdataPlay.Net
             return null;
         }
 
-        public static async ValueTask<DanInfo[]?> GetUserOnlineFavCollection(ApiEndpoint apiEndpoint, CancellationToken token = default)
+        public static async ValueTask<MajNetOnlineDanInfo[]?> GetUserOnlineFavCollection(ApiEndpoint apiEndpoint, CancellationToken token = default)
         {
             await UniTask.SwitchToThreadPool();
             var statistic = GetApiEndpointStatistic(apiEndpoint);
@@ -667,7 +667,7 @@ namespace MajdataPlay.Net
             {
                 rsp = await GetAsync(url, token);
                 var e = default(Exception?);
-                if (rsp.IsSuccessfully && rsp.TryDeserialize<DanInfo[]>(out var danList, out e) && danList is not null)
+                if (rsp.IsSuccessfully && rsp.TryDeserialize<MajNetOnlineDanInfo[]>(out var danList, out e) && danList is not null)
                 {
                     MajDebug.LogDebug(rsp);
                     return danList;

@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.VisualScripting.Antlr3.Runtime;
@@ -453,10 +454,13 @@ namespace MajdataPlay
                     continue;
                 }
                 var jsonStream = File.OpenRead(file.FullName);
+                var id = GetGuidFromStream(jsonStream);
+                jsonStream.Position = 0;
                 var (result, dan, e) = await Serializer.Json.TryDeserializeAsync<DanInfo>(jsonStream);
+
                 if (result && dan is not null)
                 {
-                    loadDanTasks[i] = GetLocalDanCollectionAsync(_allCharts, dan);
+                    loadDanTasks[i] = GetLocalDanCollectionAsync(_allCharts, id, dan);
                 }
                 if (e is not null)
                 {
@@ -633,15 +637,24 @@ namespace MajdataPlay
         }
         //import one dan file
         #region Dan or Playlist importor
-        private static async Task<SongCollection?> GetLocalDanCollectionAsync(IEnumerable<ISongDetail> allCharts, DanInfo danInfo)
+        private static Task<SongCollection?> GetLocalDanCollectionAsync(IEnumerable<ISongDetail> allCharts, Guid id, DanInfo danInfo)
         {
-            return await GetDanCollectionAsync(allCharts, danInfo, null);
+            return GetDanCollectionAsync(allCharts, id, danInfo, null);
         }
-        private static async Task<SongCollection?> GetOnlineDanCollectionAsync(IEnumerable<ISongDetail> allCharts, DanInfo danInfo, ApiEndpoint source)
+        private static Task<SongCollection?> GetOnlineDanCollectionAsync(IEnumerable<ISongDetail> allCharts, MajNetOnlineDanInfo onlineDanInfo, ApiEndpoint source)
         {
-            return await GetDanCollectionAsync(allCharts, danInfo, source);
+            var danInfo = new DanInfo()
+            {
+                Name = onlineDanInfo.Name,
+                Description = onlineDanInfo.Description,
+                SongHashs = onlineDanInfo.SongHashs,
+                IsPlayList = onlineDanInfo.IsPlayList,
+                IsForceGameover = onlineDanInfo.IsForceGameover
+            };
+            var id = ObjectIdHelper.ToGuid(onlineDanInfo.Id);
+            return GetDanCollectionAsync(allCharts, id, danInfo, source);
         }
-        private static async Task<SongCollection?> GetDanCollectionAsync(IEnumerable<ISongDetail> allCharts, DanInfo danInfo, ApiEndpoint? source)
+        private static async Task<SongCollection?> GetDanCollectionAsync(IEnumerable<ISongDetail> allCharts, Guid id, DanInfo danInfo, ApiEndpoint? source)
         {
             return await Task.Run(() =>
             {
@@ -662,6 +675,7 @@ namespace MajdataPlay
                 {
                     return new OnlineSongCollection(source, danInfo.Name, targetCharts)
                     {
+                        Id = id,
                         Type = danInfo.IsPlayList ? ChartStorageType.PlayList : ChartStorageType.Dan,
                         DanInfo = danInfo.IsPlayList ? null : danInfo
                     };
@@ -670,6 +684,7 @@ namespace MajdataPlay
                 {
                     return new SongCollection(danInfo.Name, targetCharts)
                     {
+                        Id = id,
                         Type = danInfo.IsPlayList ? ChartStorageType.PlayList : ChartStorageType.Dan,
                         DanInfo = danInfo.IsPlayList ? null : danInfo
                     };
@@ -690,7 +705,7 @@ namespace MajdataPlay
                                   Serializer.Json.Serialize(new DanInfo()
                                   {
                                       Name = "My Favorites",
-                                      SongHashs = hashSet.ToArray(),
+                                      SongHashs = hashSet,
                                       IsPlayList = true
                                   }
                     ));
@@ -699,6 +714,16 @@ namespace MajdataPlay
             {
                 MajDebug.LogException(e);
             }
+        }
+        static Guid GetGuidFromStream(Stream stream)
+        {
+            using var md5 = MD5.Create();
+            var hash = md5.ComputeHash(stream);
+            var idBytes = (stackalloc byte[16]);
+            hash.AsSpan(0, 16).CopyTo(idBytes);
+            var id = new Guid(idBytes);
+
+            return id;
         }
         public static void AddToMyFavorites(ISongDetail songDetail)
         {
