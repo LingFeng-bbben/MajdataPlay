@@ -15,35 +15,20 @@ namespace MajdataPlay
 {
     public static class MajDebug
     {
-        readonly static object _lockObject = new();
-        readonly static ConcurrentQueue<GameLog> _logQueue = new();
-        readonly static ILogger _unityLogger;
+        const long LOG_FILE_MAX_SIZE = 500L * 1024 * 1024; // 500 MB
+
+        static ILogger _unityLogger;
         static StreamWriter? _fileStream;
 
         readonly static Utf16PreparedFormat<DateTime, LogLevel> LOG_OUTPUT_FORMAT = ZString.PrepareUtf16<DateTime, LogLevel>("[{0:yyyy-MM-dd HH:mm:ss.ffff}][{1}]");
-        readonly static long LOG_FILE_MAX_SIZE = 500L * 1024 * 1024; // 500 MB
+        
+        readonly static object _lockObject = new();
+        readonly static ConcurrentQueue<GameLog> _logQueue = new();
 
-        static bool _isInited = false;
-        readonly static object _initLock = new();
-
-        static MajDebug()
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        static void Init()
         {
             _unityLogger = Debug.unityLogger;
-        }
-        internal static void Init()
-        {
-            if (_isInited)
-            {
-                return;
-            }
-            lock(_initLock)
-            {
-                if (_isInited)
-                {
-                    return;
-                }
-                _isInited = true;
-            }
             TaskScheduler.UnobservedTaskException += (sender, args) =>
             {
                 LogException(args.Exception);
@@ -61,7 +46,8 @@ namespace MajdataPlay
                     Date = DateTime.Now,
                     Condition = sb,
                     StackTrace = stackTrace,
-                    Level = ToMajdataLogLevel(type)
+                    Level = ToMajdataLogLevel(type),
+                    IsFromUnityLogger = true
                 };
                 _logQueue.Enqueue(log);
             };
@@ -82,18 +68,13 @@ namespace MajdataPlay
             {
                 Date = DateTime.Now,
                 Condition = sb,
+#if UNITY_EDITOR || DEBUG
+                StackTrace = obj is not Exception ? GetStackTrack() : string.Empty,
+#else
                 StackTrace = string.Empty,
+#endif
                 Level = level
             };
-#if UNITY_EDITOR || (UNITY_ANDROID && DEBUG)
-            _unityLogger.Log(ToUnityLogLevel(level), sb.ToString());
-#endif
-#if UNITY_EDITOR || DEBUG
-            if (obj is not Exception)
-            {
-                log.StackTrace = GetStackTrack();
-            }
-#endif
             _logQueue.Enqueue(log);
         }
         [HideInCallstack]
@@ -236,6 +217,12 @@ namespace MajdataPlay
                         sb.AppendLine();
                     }
                     _fileStream.WriteLine(sb.AsSpan());
+#if UNITY_EDITOR || DEBUG
+                    if (!log.IsFromUnityLogger)
+                    {
+                        _unityLogger.Log(ToUnityLogLevel(log.Level), sb.ToString());
+                    }
+#endif
                     sb.Clear();
                 }
             }
@@ -263,12 +250,13 @@ namespace MajdataPlay
                 _ => LogLevel.Debug
             };
         }
-        struct GameLog
+        readonly struct GameLog
         {
             public DateTime Date { get; init; }
             public Utf16ValueStringBuilder Condition { get; init; }
-            public string? StackTrace { get; set; }
+            public string? StackTrace { get; init; }
             public LogLevel Level { get; init; }
+            public bool IsFromUnityLogger { get; init; }
         }
     }
 }

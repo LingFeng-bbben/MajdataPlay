@@ -76,21 +76,7 @@ namespace MajdataPlay
         }
         async UniTask StartInternal()
         {
-            await UniTask.CompletedTask;
-            MajEnv.InitPath();
-            MajDebug.Init();
-            var s = "\n";
-            s += $"################ MajdataPlay Startup Check ################\n";
-            s += $"     OS       : {SystemInfo.operatingSystem}\n";
-            s += $"     Model    : {SystemInfo.deviceModel} - {SystemInfo.deviceType}\n";
-            s += $"     Processor: {SystemInfo.processorType}\n";
-            s += $"     Memory   : {SystemInfo.systemMemorySize} MB\n";
-            s +=
-                $"     Graphices: {SystemInfo.graphicsDeviceName} ({SystemInfo.graphicsMemorySize} MB) - {SystemInfo.graphicsDeviceType}\n";
-            s += $"################     Startup Check  End    ################";
-            MajDebug.LogInfo(s);
-            MajDebug.LogInfo($"PID: {MajEnv.GameProcess.Id}");
-            MajDebug.LogInfo($"Version: {MajInstances.GameVersion}");
+            await UniTask.CompletedTask;            
 #if UNITY_ANDROID && !UNITY_EDITOR // Android Only (Sdk Version Log)
             MajDebug.LogInfo($"AndroidSdkVersion: {MajEnv.AndroidSdkVersion}");
             MajDebug.LogInfo($"TargetSdkVersion: {MajEnv.TargetSdkVersion}");
@@ -108,8 +94,6 @@ namespace MajdataPlay
             }
             MajDebug.LogInfo($"AndroidVerCode: {androidVersionCode}");
 #endif
-            UnityWebRequest.ClearCookieCache();
-            MajEnv.Init();
 #if !UNITY_EDITOR
 #if UNITY_ANDROID
             var intent = AndroidRuntime.CurrentActivity.Call<AndroidJavaObject>("getIntent");

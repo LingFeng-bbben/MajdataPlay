@@ -34,6 +34,7 @@ using UnityEngine.Android;
 using UnityEngine.Scripting;
 using MajdataPlay.Net.Handlers;
 using Random = System.Random;
+using UnityEngine.Networking;
 
 #nullable enable
 namespace MajdataPlay
@@ -184,12 +185,7 @@ namespace MajdataPlay
         static Random? s_randomizer;
         static string _runtimeConfigPath = string.Empty;
         readonly static CancellationTokenSource _globalCTS = new();
-        static MajEnv()
-        {
-            UnityWebRequestFactory.Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS);
-            UnityWebRequestFactory.UserAgent = HTTP_USER_AGENT;
-            GameManager.OnAppQuit += OnApplicationQuit;
-        }
+
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ChangedSynchronizationContext()
@@ -198,8 +194,22 @@ namespace MajdataPlay
             SynchronizationContext.SetSynchronizationContext(new UniTaskSynchronizationContext());
 #endif
         }
+        #region Init core
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+        static void Init()
+        {
+            InitPath();
+            CheckDirectories();
+            InitSystemSettings();
+            InitUserSettings();
+            InitNetwork();
+            InitRuntimeConfig();
+            InitOnlineEndpoints();
+            InitOnlineMachineInfo();
+            InitOthers();
+        }
 
-        internal static void InitPath()
+        static void InitPath()
         {
 #if UNITY_STANDALONE || UNITY_EDITOR
             RootPath = Path.Combine(Application.dataPath, "../");
@@ -301,81 +311,184 @@ namespace MajdataPlay
             FavoriteDBPath = Path.Combine(CachePath, "Runtime", "MajFavorites.db");
             LogPath = Path.Combine(LogsPath, $"MajPlayRuntime.log");
             RecordOutputsPath = Path.Combine(RootPath, "RecordOutputs");
+            TempPath = Path.Combine(CachePath, "Temp");
         }
-
-        internal static void Init()
+        static void CheckDirectories()
         {
-            ChangedSynchronizationContext();
-            CheckNoteSkinFolder();
-
             var netCachePath = Path.Combine(CachePath, "Net");
             var runtimeCachePath = Path.Combine(CachePath, "Runtime");
-            var machineDescriptionPath = Path.Combine(RootPath, "machine_description.json");
             TempPath = Path.Combine(CachePath, "Temp");
 
+            CreateDirectoryIfNotExists(SkinPath);
             CreateDirectoryIfNotExists(CachePath);
             CreateDirectoryIfNotExists(runtimeCachePath);
             CreateDirectoryIfNotExists(netCachePath);
             CreateDirectoryIfNotExists(TempPath);
             CreateDirectoryIfNotExists(ChartPath);
             CreateDirectoryIfNotExists(RecordOutputsPath);
+        }
+        static void InitSystemSettings()
+        {
             SharedHttpClient.Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS);
             MainThread.Priority = THREAD_PRIORITY_MAIN;
 
             IsLowMemoryDevice = SystemInfo.systemMemorySize < 4096;
+
+            UnityWebRequestFactory.Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS);
+            UnityWebRequestFactory.UserAgent = HTTP_USER_AGENT;
+
+            GameManager.OnAppQuit += OnApplicationQuit;
+            GameManager.OnSave += OnSave;
+
+            var s = "\n";
+            s += $"################ MajdataPlay Startup Check ################\n";
+            s += $"     OS       : {SystemInfo.operatingSystem}\n";
+            s += $"     Model    : {SystemInfo.deviceModel} - {SystemInfo.deviceType}\n";
+            s += $"     Processor: {SystemInfo.processorType}\n";
+            s += $"     Memory   : {SystemInfo.systemMemorySize} MB\n";
+            s +=
+                $"     Graphices: {SystemInfo.graphicsDeviceName} ({SystemInfo.graphicsMemorySize} MB) - {SystemInfo.graphicsDeviceType}\n";
+            s += $"################     Startup Check  End    ################";
+            MajDebug.LogInfo(s);
+            MajDebug.LogInfo($"PID: {MajEnv.GameProcess.Id}");
+            MajDebug.LogInfo($"Version: {MajInstances.GameVersion}");
+
+#if !UNITY_EDITOR
+            if(MainThread.Name is not null)
+            {
+                MainThread.Name = "MajdataPlay MainThread";
+            }
+#endif
 
 #if UNITY_IOS //&& !UNITY_EDITOR // iOS Native Setting (No Cache)
             if (IOSNativeSettings.DebugNoCache)
             {
                 TryDeleteDirectory(Path.Combine(CachePath, "Net"));
                 TryDeleteDirectory(Path.Combine(CachePath, "View"));
-                MajDebug.LogInfo("iOS setting 'no_cache' is enabled. Cleared cache folders: Net, View.");
+                MajDebug.LogInfo("[MajEnv][Init]iOS setting 'no_cache' is enabled. Cleared cache folders: Net, View.");
             }
             else
             {
-                MajDebug.LogInfo("iOS setting 'no_cache' is disabled.");
+                MajDebug.LogInfo("[MajEnv][Init]iOS setting 'no_cache' is disabled.");
             }
 #endif
-            using (var buffer = new RentedList<ApiEndpoint>())
+        }
+        static void InitUserSettings()
+        {
+            if (File.Exists(SettingsPath))
             {
-                using var apiEndpoints = new RentedList<ApiEndpoint>();
-                if (File.Exists(SettingsPath))
+                var js = File.ReadAllText(SettingsPath);
+                GameSetting? setting;
+
+
+                if (!Serializer.Json.TryDeserialize(js, out setting, out var e, UserJsonReaderOption) || setting is null)
                 {
-                    var js = File.ReadAllText(SettingsPath);
-                    GameSetting? setting;
-
-
-                    if (!Serializer.Json.TryDeserialize(js, out setting, out var e, UserJsonReaderOption) || setting is null)
+                    Settings = new();
+                    MajDebug.LogError($"Failed to read setting from file\nException: {e}");
+                    var bakFileName = $"{SettingsPath}.bak";
+                    while (File.Exists(bakFileName))
                     {
-                        Settings = new();
-                        MajDebug.LogError($"Failed to read setting from file\nException: {e}");
-                        var bakFileName = $"{SettingsPath}.bak";
-                        while (File.Exists(bakFileName))
-                        {
-                            bakFileName = $"{bakFileName}.bak";
-                        }
+                        bakFileName = $"{bakFileName}.bak";
+                    }
 
-                        try
-                        {
-                            File.Copy(SettingsPath, bakFileName, true);
-                        }
-                        catch
-                        {
-                        }
-                    }
-                    else
+                    try
                     {
-                        Settings = setting;
+                        File.Copy(SettingsPath, bakFileName, true);
                     }
-                    apiEndpoints.AddRange(Settings.Online.ApiEndpoints.AsSpan());
+                    catch
+                    {
+                    }
                 }
                 else
                 {
-                    Settings = new GameSetting();
-
-                    var json = Serializer.Json.Serialize(Settings, UserJsonReaderOption);
-                    File.WriteAllText(SettingsPath, json);
+                    Settings = setting;
                 }
+            }
+            else
+            {
+                Settings = new GameSetting();
+
+                var json = Serializer.Json.Serialize(Settings, UserJsonReaderOption);
+                File.WriteAllText(SettingsPath, json);
+            }
+
+#if UNITY_STANDALONE
+            Settings.IO.InputDevice.ButtonRing.PollingRateMs =
+                Math.Max(0, Settings.IO.InputDevice.ButtonRing.PollingRateMs);
+            Settings.IO.InputDevice.TouchPanel.PollingRateMs =
+                Math.Max(0, Settings.IO.InputDevice.TouchPanel.PollingRateMs);
+            Settings.IO.InputDevice.ButtonRing.DebounceThresholdMs =
+                Math.Max(0, Settings.IO.InputDevice.ButtonRing.DebounceThresholdMs);
+            Settings.IO.InputDevice.TouchPanel.DebounceThresholdMs =
+                Math.Max(0, Settings.IO.InputDevice.TouchPanel.DebounceThresholdMs);
+#endif
+            Settings.Display.InnerJudgeDistance = Settings.Display.InnerJudgeDistance.Clamp(0, 1);
+            Settings.Display.OuterJudgeDistance = Settings.Display.OuterJudgeDistance.Clamp(0, 1);
+
+#if UNITY_IOS
+            if (Enum.TryParse<LogLevel>(IOSNativeSettings.DebugLogLevel, false, out var logLevel))
+            {
+                Settings.Debug.DebugLevel = logLevel;
+            }
+            Settings.Debug.NoteFolding = IOSNativeSettings.DebugNoteFolding;
+            Settings.Online.Enable = IOSNativeSettings.Online;
+#endif
+        }
+        static void InitNetwork()
+        {
+#if UNITY_STANDALONE
+            if(Settings.Online.UseProxy)
+            {
+                if(!string.IsNullOrEmpty(Settings.Online.Proxy))
+                {
+                    if(!Uri.TryCreate(Settings.Online.Proxy, UriKind.Absolute, out var proxyUri))
+                    {
+                        MajDebug.LogError($"Invalid proxy URL: {Settings.Online.Proxy}");
+                        return;
+                    }
+                    switch (proxyUri.Scheme)
+                    {
+                        case "http":
+                        case "https":
+                            break;
+                        default:
+                            MajDebug.LogError($"Unsupported proxy scheme: {proxyUri.Scheme}");
+                            return;
+                    }
+                    var proxy = new WebProxy(proxyUri);
+                    if(!string.IsNullOrEmpty(proxyUri.UserInfo))
+                    {
+                        var parts = proxyUri.UserInfo.Split(":", 2);
+                        var username = parts[0];
+                        var password = parts.Length > 1 ? parts[1] : string.Empty;
+
+                        if(!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
+                        {
+                            proxy.Credentials = new NetworkCredential(username, password);
+                        }
+                        else
+                        {
+                            MajDebug.LogWarning($"Invalid proxy credentials: {proxyUri.UserInfo}");
+                        }
+                    }
+                    _httpClientHandler.Proxy = proxy;
+                }
+            }
+            else
+            {
+                _httpClientHandler.UseProxy = false;
+                //_httpClientHandler.Proxy = null;
+            }
+#endif
+        }
+        static void InitOnlineEndpoints()
+        {
+            UnityWebRequest.ClearCookieCache();
+            using (var buffer = new RentedList<ApiEndpoint>())
+            {
+                using var apiEndpoints = new RentedList<ApiEndpoint>();
+                apiEndpoints.AddRange(Settings.Online.ApiEndpoints.AsSpan());
+
 #if UNITY_IOS && !UNITY_EDITOR
                 if (IOSNativeSettings.MajnetEnabled)
                 {
@@ -424,13 +537,6 @@ namespace MajdataPlay
                         MajDebug.LogWarning($"[iOSNativeSettings]Invalid uri: {IOSNativeSettings.MajnetApi}, ignored.");
                     }
                 }
-                if (Enum.TryParse<LogLevel>(IOSNativeSettings.DebugLogLevel,false, out var logLevel))
-                {
-                    Settings.Debug.DebugLevel = logLevel;
-                }
-                Settings.Debug.NoteFolding = IOSNativeSettings.DebugNoteFolding;
-                Settings.Online.Enable = IOSNativeSettings.Online;
-
 #endif
                 for (var i = 0; i < apiEndpoints.Count; i++)
                 {
@@ -462,7 +568,33 @@ namespace MajdataPlay
                                      .Where(x => x is not null)
                                      .ToArray();
             }
-                
+        }
+        static void InitOnlineMachineInfo()
+        {
+            var machineDescriptionPath = Path.Combine(RootPath, "machine_description.json");
+
+            if (File.Exists(machineDescriptionPath))
+            {
+                var js = File.ReadAllText(machineDescriptionPath);
+                MachineInfo? machineInfo;
+
+                if (!Serializer.Json.TryDeserialize(js, out machineInfo, out var e, UserJsonReaderOption) || machineInfo is null)
+                {
+                    MajDebug.LogError($"Failed to read machine description from file\nException: {e}");
+                }
+                else
+                {
+                    MachineInfo = machineInfo;
+                }
+            }
+            else
+            {
+                var json = Serializer.Json.Serialize(MachineInfo, UserJsonReaderOption);
+                File.WriteAllText(machineDescriptionPath, json);
+            }
+        }
+        static void InitRuntimeConfig()
+        {
             if (File.Exists(_runtimeConfigPath))
             {
                 var js = File.ReadAllText(_runtimeConfigPath);
@@ -485,92 +617,9 @@ namespace MajdataPlay
                 var json = Serializer.Json.Serialize(RuntimeConfig, UserJsonReaderOption);
                 File.WriteAllText(_runtimeConfigPath, json);
             }
-
-            if(File.Exists(machineDescriptionPath))
-            {
-                var js = File.ReadAllText(machineDescriptionPath);
-                MachineInfo? machineInfo;
-
-                if (!Serializer.Json.TryDeserialize(js, out machineInfo, out var e, UserJsonReaderOption) || machineInfo is null)
-                {
-                    MajDebug.LogError($"Failed to read machine description from file\nException: {e}");
-                }
-                else
-                {
-                    MachineInfo = machineInfo;
-                }
-            }
-            else 
-            {
-                var json = Serializer.Json.Serialize(MachineInfo, UserJsonReaderOption);
-                File.WriteAllText(machineDescriptionPath, json);
-            }
-
-#if UNITY_STANDALONE
-            Settings.IO.InputDevice.ButtonRing.PollingRateMs =
-                Math.Max(0, Settings.IO.InputDevice.ButtonRing.PollingRateMs);
-            Settings.IO.InputDevice.TouchPanel.PollingRateMs =
-                Math.Max(0, Settings.IO.InputDevice.TouchPanel.PollingRateMs);
-            Settings.IO.InputDevice.ButtonRing.DebounceThresholdMs =
-                Math.Max(0, Settings.IO.InputDevice.ButtonRing.DebounceThresholdMs);
-            Settings.IO.InputDevice.TouchPanel.DebounceThresholdMs =
-                Math.Max(0, Settings.IO.InputDevice.TouchPanel.DebounceThresholdMs);
-#endif
-            Settings.Display.InnerJudgeDistance = Settings.Display.InnerJudgeDistance.Clamp(0, 1);
-            Settings.Display.OuterJudgeDistance = Settings.Display.OuterJudgeDistance.Clamp(0, 1);
-
-#if UNITY_STANDALONE && ENABLE_MONO
-            if(Settings.Online.UseProxy)
-            {
-                if(!string.IsNullOrEmpty(Settings.Online.Proxy))
-                {
-                    if(!Uri.TryCreate(Settings.Online.Proxy, UriKind.Absolute, out var proxyUri))
-                    {
-                        MajDebug.LogError($"Invalid proxy URL: {Settings.Online.Proxy}");
-                        goto PROXY_CONFIG_EXIT;
-                    }
-                    switch (proxyUri.Scheme)
-                    {
-                        case "http":
-                        case "https":
-                            break;
-                        default:
-                            MajDebug.LogError($"Unsupported proxy scheme: {proxyUri.Scheme}");
-                            goto PROXY_CONFIG_EXIT;
-                    }
-                    var proxy = new WebProxy(proxyUri);
-                    if(!string.IsNullOrEmpty(proxyUri.UserInfo))
-                    {
-                        var parts = proxyUri.UserInfo.Split(":", 2);
-                        var username = parts[0];
-                        var password = parts.Length > 1 ? parts[1] : string.Empty;
-
-                        if(!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
-                        {
-                            proxy.Credentials = new NetworkCredential(username, password);
-                        }
-                        else
-                        {
-                            MajDebug.LogWarning($"Invalid proxy credentials: {proxyUri.UserInfo}");
-                        }
-                    }
-                    _httpClientHandler.Proxy = proxy;
-                }
-            }
-            else
-            {
-                _httpClientHandler.UseProxy = false;
-                //_httpClientHandler.Proxy = null;
-            }
-        PROXY_CONFIG_EXIT:
-#endif
-#if !UNITY_EDITOR
-            if(MainThread.Name is not null)
-            {
-                MainThread.Name = "MajdataPlay MainThread";
-            }
-#endif
-            GameManager.OnSave += OnSave;
+        }
+        static void InitOthers()
+        {            
 #if UNITY_STANDALONE_WIN
             MajDebug.LogInfo("[VLC] init");
             if (VLCLibrary != null)
@@ -581,6 +630,7 @@ namespace MajdataPlay
             VLCLibrary = new LibVLC(enableDebugLogs: true, "--no-audio"); // we dont need it to produce sound here
 #endif
         }
+#endregion
 
         static void TryDeleteDirectory(string path)
         {
@@ -632,13 +682,6 @@ namespace MajdataPlay
             File.WriteAllText(_runtimeConfigPath, json2);
         }
 
-        static void CheckNoteSkinFolder()
-        {
-            if (!Directory.Exists(SkinPath))
-            {
-                Directory.CreateDirectory(SkinPath);
-            }
-        }
 
         static void CreateDirectoryIfNotExists(string path)
         {

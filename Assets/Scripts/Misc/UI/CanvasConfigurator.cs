@@ -8,6 +8,7 @@ using UnityEngine;
 namespace MajdataPlay.UI
 {
     [RequireComponent(typeof(Canvas))]
+    [DefaultExecutionOrder(200)]
     public class CanvasConfigurator : MonoBehaviour
     {
         Canvas _canvas;
