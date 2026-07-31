@@ -44,8 +44,8 @@ namespace MajdataPlay.Platform.iOS
             _onFocusChangedCallbackHandle = GCHandle.Alloc(_onFocusChanged, GCHandleType.Pinned);
             _onForegroundChangedCallbackHandle = GCHandle.Alloc(_onForegroundChanged, GCHandleType.Pinned);
         }
-        
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void Init()
         {
 #if !(UNITY_IOS || UNITY_EDITOR_OSX)
