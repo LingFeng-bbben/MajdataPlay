@@ -1,7 +1,3 @@
-//https://stackoverflow.com/questions/43657461/how-to-find-list-of-files-in-streamingassets-folder-in-android
-using MajdataPlay.Editor.Android;
-using System.Collections.Generic;
-using System.IO;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
@@ -24,7 +20,9 @@ namespace MajdataPlay.Editor
                 PlayerSettings.Android.targetSdkVersion = AndroidSdkVersions.AndroidApiLevel36;
             }
 
-            AndroidProcessor.OnPreprocessBuild(report);
+            var generateMobileDiff = report.summary.platform == BuildTarget.Android ||
+                                     report.summary.platform == BuildTarget.iOS;
+            ResourceManifestBuildProcessor.Generate(report.summary.platform, generateMobileDiff);
         }
 
         public void OnPostprocessBuild(BuildReport report)

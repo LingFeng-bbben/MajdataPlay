@@ -1,0 +1,9 @@
+{
+  "baseVersion": 1,
+  "targetVersion": 2,
+  "files": [
+    "MovieBG/title.webm",
+    "SFX/calibrate.ogg",
+    "Skins/default/SubBackgourd.png"
+  ]
+}
