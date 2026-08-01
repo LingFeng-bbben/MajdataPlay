@@ -15,19 +15,22 @@ namespace MajdataPlay.Platform.Android.IO
                 return _keyStates;
             }
         }
-        static bool _isInited = false;
         static OnDispatchKeyEventCallbackProxy _onDispatchKeyEventCallbackProxy;
         readonly static bool[] _keyStates = new bool[1024];
 
         internal static void Init()
         {
-            if(_isInited)
+            Debug.Log($"[{nameof(AndroidKeyboard)}] Init");
+            try
             {
-                return;
+                _onDispatchKeyEventCallbackProxy = new OnDispatchKeyEventCallbackProxy();
+                AndroidRuntime.MajdataPlayActivityClass.CallStatic("registerDispatchKeyEventCallback", _onDispatchKeyEventCallbackProxy);
+                Debug.Log($"[{nameof(AndroidKeyboard)}] Init finished");
             }
-            _onDispatchKeyEventCallbackProxy = new OnDispatchKeyEventCallbackProxy();
-            AndroidRuntime.MajdataPlayActivityClass.CallStatic("registerDispatchKeyEventCallback", _onDispatchKeyEventCallbackProxy);
-            _isInited = true;
+            catch (Exception ex)
+            {
+                Debug.LogError($"[{nameof(AndroidKeyboard)}] Init failed: {ex}");
+            }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsPressed(KeyCode keyCode)

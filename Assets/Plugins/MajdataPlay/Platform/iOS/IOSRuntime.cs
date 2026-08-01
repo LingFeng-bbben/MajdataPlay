@@ -2,7 +2,6 @@
 using MajdataPlay.Platform.iOS.PInvoke;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -48,11 +47,20 @@ namespace MajdataPlay.Platform.iOS
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void Init()
         {
-#if !(UNITY_IOS || UNITY_EDITOR_OSX)
-            return;
+#if UNITY_IOS || UNITY_EDITOR_OSX
+            Debug.Log($"[{nameof(IOSRuntime)}] Init");
+            try
+            {
+                IOSNativeSettings.Init();
+                Debug.Log($"[{nameof(IOSRuntime)}] Register app status callbacks");
+                AppStatusPInvoke.RegisterAppStatusCallbacks(NativeForegroundCallback, NativeFocusCallback);
+                Debug.Log($"[{nameof(IOSRuntime)}] Init finished");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[{nameof(IOSRuntime)}] Init failed: {ex}");
+            }
 #endif
-            IOSNativeSettings.Init();
-            AppStatusPInvoke.RegisterAppStatusCallbacks(NativeForegroundCallback, NativeFocusCallback);
         }
 
         #region Callback

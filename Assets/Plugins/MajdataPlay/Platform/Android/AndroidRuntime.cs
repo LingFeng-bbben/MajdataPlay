@@ -25,18 +25,28 @@ namespace MajdataPlay.Platform.Android
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void Init()
         {
-#if UNITY_EDITOR
-            return;
-#endif
-            MajdataPlayActivityClass = new AndroidJavaClass("net.majdata.majdataplay.MajdataPlayActivity");
-            UnityEngine.Debug.Log("[Android]Get current activity");
-            CurrentActivity = MajdataPlayActivityClass.GetStatic<AndroidJavaObject>("currentActivity");
-            UnityEngine.Debug.Log("[Android]Setting onNewIntent callback proxy");
-            MajdataPlayActivityClass.CallStatic("registerOnNewIntentCallback", _onNewIntentCallbackProxy);
-            UnityEngine.Debug.Log("[Android]Setting onActivityResult callback proxy");
-            MajdataPlayActivityClass.CallStatic("registerOnActivityResultCallback", _onActivityResultCallbackProxy);
 
-            AndroidKeyboard.Init();
+#if UNITY_ANDROID && !UNITY_EDITOR
+            Debug.Log($"[{nameof(AndroidRuntime)}] Init");
+            try
+            {
+                MajdataPlayActivityClass = new AndroidJavaClass("net.majdata.majdataplay.MajdataPlayActivity");
+                Debug.Log($"[{nameof(AndroidRuntime)}] Get current activity");
+                CurrentActivity = MajdataPlayActivityClass.GetStatic<AndroidJavaObject>("currentActivity");
+                Debug.Log($"[{nameof(AndroidRuntime)}] Setting onNewIntent callback proxy");
+                MajdataPlayActivityClass.CallStatic("registerOnNewIntentCallback", _onNewIntentCallbackProxy);
+                Debug.Log($"[{nameof(AndroidRuntime)}] Setting onActivityResult callback proxy");
+                MajdataPlayActivityClass.CallStatic("registerOnActivityResultCallback", _onActivityResultCallbackProxy);
+
+            
+                AndroidKeyboard.Init();
+                Debug.Log($"[{nameof(AndroidRuntime)}] Init finished");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[{nameof(AndroidRuntime)}] Init failed: {ex}");
+            }
+#endif
         }
         static void Android_OnNewIntent(AndroidJavaObject intent)
         {

@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace MajdataPlay.Platform.iOS
 {
-    public static class NativeSettingsPInvoke
+    internal static class NativeSettingsPInvoke
     {
         [DllImport("__Internal", EntryPoint = "_GetBoolSetting")]
         public static extern bool GetBoolSetting(string key, bool defaultValue);

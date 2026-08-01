@@ -358,6 +358,7 @@ namespace MajdataPlay
             // Check iOS Native Settings
 #if UNITY_IOS 
             MajDebug.LogInfo($"""
+
                              ===== Majdata iOS Settings Debug =====
     
                              Inited:           {IOSNativeSettings.Inited}
