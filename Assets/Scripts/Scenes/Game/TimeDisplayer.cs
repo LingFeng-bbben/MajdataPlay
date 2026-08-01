@@ -70,7 +70,7 @@ namespace MajdataPlay.Scenes.Game
             {
                 _sb.Clear();
 
-                timeFormat.FormatTo(ref _sb, current.Minutes, current.Seconds,current.Milliseconds);
+                timeFormat.FormatTo(ref _sb, Mathf.Abs(current.Minutes), Mathf.Abs(current.Seconds), Mathf.Abs(current.Milliseconds));
                 var a = _sb.AsArraySegment();
                 timeText.SetCharArray(a.Array, a.Offset, a.Count);
 
