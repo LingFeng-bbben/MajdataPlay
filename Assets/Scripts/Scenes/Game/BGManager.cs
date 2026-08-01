@@ -16,6 +16,7 @@ using UnityEngine.UI;
 using System.Runtime.CompilerServices;
 using System.Diagnostics;
 using MajdataPlay.Settings;
+using MajdataPlay.Diagnostics;
 #nullable enable
 namespace MajdataPlay.Scenes.Game
 {

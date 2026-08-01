@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine.Profiling;
 
-namespace MajdataPlay
+namespace MajdataPlay.Diagnostics
 {
     public readonly ref struct UnityProfiler
     {

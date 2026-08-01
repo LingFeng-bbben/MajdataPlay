@@ -1,4 +1,5 @@
 using MajdataPlay.Buffers;
+using MajdataPlay.Diagnostics;
 using MajdataPlay.Extensions;
 using MajdataPlay.IO;
 using MajdataPlay.Numerics;

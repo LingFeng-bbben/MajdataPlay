@@ -5,6 +5,7 @@ using UnityEngine.Scripting;
 using Newtonsoft.Json;
 using MajdataPlay.Net;
 using MajdataPlay.Settings.OptionEnumerators;
+using MajdataPlay.Diagnostics;
 #nullable enable
 namespace MajdataPlay.Settings
 {

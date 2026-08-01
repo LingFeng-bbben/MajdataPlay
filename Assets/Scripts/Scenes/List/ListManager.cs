@@ -17,6 +17,7 @@ using MajdataPlay.Net;
 using UnityEngine;
 using UnityEngine.Serialization;
 using LitMotion;
+using MajdataPlay.Diagnostics;
 #nullable enable
 namespace MajdataPlay.Scenes.List
 {

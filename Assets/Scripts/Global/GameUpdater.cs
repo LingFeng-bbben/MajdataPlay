@@ -12,6 +12,7 @@ using UnityEngine;
 using UnityEngine.Profiling;
 using System.Threading;
 using MajdataPlay.Net;
+using MajdataPlay.Diagnostics;
 
 #nullable enable
 namespace MajdataPlay

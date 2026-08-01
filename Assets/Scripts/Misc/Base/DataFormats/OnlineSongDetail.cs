@@ -23,6 +23,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using MajdataPlay.Settings;
 using Nito.AsyncEx;
+using MajdataPlay.Diagnostics;
 
 #nullable enable
 namespace MajdataPlay

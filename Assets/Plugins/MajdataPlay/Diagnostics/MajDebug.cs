@@ -1,42 +1,84 @@
-﻿using Cysharp.Text;
-using MajdataPlay.Settings;
+using Cysharp.Text;
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
+
 #nullable enable
-namespace MajdataPlay
+namespace MajdataPlay.Diagnostics
 {
     public static class MajDebug
     {
-        const long LOG_FILE_MAX_SIZE = 500L * 1024 * 1024; // 500 MB
+        public static long MaxLogSize { get; set; } = 500L * 1024 * 1024; // 500 MB
+        public static LogLevel MinLogLevel { get; set; } = LogLevel.Debug;
 
-        static ILogger _unityLogger;
-        static StreamWriter? _fileStream;
+        static ILogger _unityLogger = null!;
+        static TextWriter? _logWriter;
+        static readonly CancellationTokenSource _cancellationTokenSource = new();
 
         readonly static Utf16PreparedFormat<DateTime, LogLevel> LOG_OUTPUT_FORMAT = ZString.PrepareUtf16<DateTime, LogLevel>("[{0:yyyy-MM-dd HH:mm:ss.ffff}][{1}]");
-        
+
         readonly static object _lockObject = new();
         readonly static ConcurrentQueue<GameLog> _logQueue = new();
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+
+        public static void SetLogWriter(TextWriter? writer, bool disposeOld = true)
+        {
+            lock (_lockObject)
+            {
+                if (disposeOld && _logWriter != null)
+                {
+                    _logWriter.Flush();
+                    _logWriter.Dispose();
+                }
+                _logWriter = writer;
+            }
+        }
+
+        public static void FlushLog()
+        {
+            lock (_lockObject)
+            {
+                if (_logWriter == null)
+                {
+                    return;
+                }
+                var sb = ZString.CreateStringBuilder();
+                try
+                {
+                    WriteLogIntoStream(ref sb);
+                    _logWriter.Flush();
+                }
+                finally
+                {
+                    sb.Dispose();
+                }
+            }
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void Init()
         {
-            _unityLogger = Debug.unityLogger;
+            _unityLogger = UnityEngine.Debug.unityLogger;
+
             TaskScheduler.UnobservedTaskException += (sender, args) =>
             {
                 LogException(args.Exception);
                 args.SetObserved();
             };
+
+            Application.quitting += () =>
+            {
+                _cancellationTokenSource.Cancel();
+                FlushLog();
+            };
+
             StartLogWritebackTask();
-            GameManager.OnAppQuit += OnApplicationQuit;
-            GameManager.OnSave += OnSave;
+
             Application.logMessageReceivedThreaded += (string condition, string stackTrace, LogType type) =>
             {
                 var sb = ZString.CreateStringBuilder();
@@ -53,14 +95,13 @@ namespace MajdataPlay
             };
         }
 
-
         [HideInCallstack]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void Log<T>(T obj, LogLevel level)
         {
             var sb = ZString.CreateStringBuilder();
             sb.Append(obj);
-            if(obj is Exception)
+            if (obj is Exception)
             {
                 sb.AppendLine();
             }
@@ -77,104 +118,49 @@ namespace MajdataPlay
             };
             _logQueue.Enqueue(log);
         }
+
         [HideInCallstack]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void LogDebug<T>(T obj)
-        {
-            Log(obj, LogLevel.Debug);
-        }
+        public static void LogDebug<T>(T obj) => Log(obj, LogLevel.Debug);
+
         [HideInCallstack]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void LogInfo<T>(T obj)
-        {
-            Log(obj, LogLevel.Info);
-        }
+        public static void LogInfo<T>(T obj) => Log(obj, LogLevel.Info);
+
         [HideInCallstack]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void LogWarning<T>(T obj)
-        {
-            Log(obj, LogLevel.Warning);
-        }
+        public static void LogWarning<T>(T obj) => Log(obj, LogLevel.Warning);
+
         [HideInCallstack]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void LogError<T>(T obj)
-        {
-            Log(obj, LogLevel.Error);
-        }
+        public static void LogError<T>(T obj) => Log(obj, LogLevel.Error);
+
         [HideInCallstack]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void LogException<T>(T obj) where T: Exception
-        {
-            Log(obj, LogLevel.Error);
-        }
-        
-        static void OnApplicationQuit(object? sender, EventArgs? e)
-        {
-            try
-            {
-                if (_fileStream is null)
-                {
-                    return;
-                }
-                var sb = ZString.CreateStringBuilder();
-                try
-                {
-                    WriteLog(ref sb);
-                }
-                finally
-                {
-                    _fileStream.Dispose();
-                    sb.Dispose();
-                }
-            }
-            finally
-            {
-                GameManager.OnAppQuit -= OnApplicationQuit;
-            }
-        }
-        static void OnSave(object? sender, EventArgs? args)
-        {
-            if (_fileStream is null)
-            {
-                return;
-            }
-            var sb = ZString.CreateStringBuilder();
-            WriteLog(ref sb);
-        }
+        public static void LogException<T>(T obj) where T : Exception => Log(obj, LogLevel.Error);
+
         static string GetStackTrack()
         {
             return new StackTrace(3, true).ToString();
         }
+
         static void StartLogWritebackTask()
         {
             Task.Factory.StartNew(() =>
             {
                 var currentThread = Thread.CurrentThread;
-                var token = MajEnv.GlobalCT;
-                var oldLogPath = MajEnv.LogPath+ ".old";
-                if (!Directory.Exists(MajEnv.LogsPath))
-                    Directory.CreateDirectory(MajEnv.LogsPath);
-                if (File.Exists(oldLogPath))
-                    File.Delete(oldLogPath);
-                if (File.Exists(MajEnv.LogPath))
-                    File.Move(MajEnv.LogPath, oldLogPath);
-
                 currentThread.Priority = System.Threading.ThreadPriority.Lowest;
                 currentThread.IsBackground = true;
-                _fileStream = new StreamWriter(MajEnv.LogPath, append: true, encoding: Encoding.UTF8);
-                _fileStream.AutoFlush = true;
+
+                var token = _cancellationTokenSource.Token;
                 var sb = ZString.CreateStringBuilder();
                 try
                 {
-                    while (true)
+                    while (!token.IsCancellationRequested)
                     {
                         try
                         {
-                            if (token.IsCancellationRequested)
-                            {
-                                return;
-                            }
-                            WriteLog(ref sb);
+                            WriteLogIntoStream(ref sb);
                         }
                         finally
                         {
@@ -184,39 +170,60 @@ namespace MajdataPlay
                 }
                 finally
                 {
-                    _fileStream.Dispose();
                     sb.Dispose();
+                    lock (_lockObject)
+                    {
+                        _logWriter?.Dispose();
+                        _logWriter = null;
+                    }
                 }
             }, TaskCreationOptions.LongRunning);
         }
-        static void WriteLog(ref Utf16ValueStringBuilder sb)
+
+        static void WriteLogIntoStream(ref Utf16ValueStringBuilder sb)
         {
-            if(_fileStream is null)
-            {
-                throw new InvalidOperationException("Log file stream is not initialized. Ensure that StartLogWritebackTask has been called.");
-            }
             lock (_lockObject)
             {
+                if (_logWriter is null)
+                {
+                    while (_logQueue.Count > 10000 && _logQueue.TryDequeue(out var staleLog))
+                    {
+                        staleLog.Condition.Dispose();
+                    }
+                    return;
+                }
+
+                var hasWritten = false;
                 while (_logQueue.TryDequeue(out var log))
                 {
                     using var condition = log.Condition;
-                    if(log.Level < (MajEnv.Settings?.Debug.DebugLevel ?? LogLevel.Debug))
+
+                    if (log.Level < MinLogLevel)
                     {
                         continue;
                     }
-                    if(_fileStream.BaseStream.Position > LOG_FILE_MAX_SIZE)
+
+                    if (MaxLogSize > 0 && _logWriter is StreamWriter sw && sw.BaseStream.CanSeek)
                     {
-                        continue;
+                        if (sw.BaseStream.Position > MaxLogSize)
+                        {
+                            continue;
+                        }
                     }
+
                     LOG_OUTPUT_FORMAT.FormatTo(ref sb, log.Date, log.Level);
                     sb.Append(condition.AsSpan());
+
                     if (!string.IsNullOrEmpty(log.StackTrace))
                     {
                         sb.AppendLine();
                         sb.Append(log.StackTrace);
                         sb.AppendLine();
                     }
-                    _fileStream.WriteLine(sb.AsSpan());
+
+                    _logWriter.WriteLine(sb.AsSpan());
+                    hasWritten = true;
+
 #if UNITY_EDITOR || DEBUG
                     if (!log.IsFromUnityLogger)
                     {
@@ -225,8 +232,14 @@ namespace MajdataPlay
 #endif
                     sb.Clear();
                 }
+
+                if (hasWritten)
+                {
+                    _logWriter.Flush();
+                }
             }
         }
+
         static LogType ToUnityLogLevel(LogLevel level)
         {
             return level switch
@@ -239,6 +252,7 @@ namespace MajdataPlay
                 _ => throw new ArgumentOutOfRangeException(nameof(level), level, null)
             };
         }
+
         static LogLevel ToMajdataLogLevel(LogType level)
         {
             return level switch
@@ -250,6 +264,7 @@ namespace MajdataPlay
                 _ => LogLevel.Debug
             };
         }
+
         readonly struct GameLog
         {
             public DateTime Date { get; init; }

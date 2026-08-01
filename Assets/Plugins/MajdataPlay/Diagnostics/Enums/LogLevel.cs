@@ -1,8 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-namespace MajdataPlay.Settings
+namespace MajdataPlay.Diagnostics
 {
     public enum LogLevel
     {

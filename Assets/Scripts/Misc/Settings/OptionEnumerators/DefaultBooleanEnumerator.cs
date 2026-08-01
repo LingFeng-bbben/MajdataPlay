@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MajdataPlay.Diagnostics;
+using System;
 
 namespace MajdataPlay.Settings.OptionEnumerators;
 public class DefaultBooleanEnumerator : OptionEnumeratorBase, IOptionEnumerator

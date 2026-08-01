@@ -1,4 +1,5 @@
 using DiscordRPC;
+using MajdataPlay.Diagnostics;
 using MajdataPlay.Scenes.Game;
 using System;
 using UnityEngine;

@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Editor;
+﻿using MajdataPlay.Diagnostics;
+using MajdataPlay.Editor;
 using MajdataPlay.IO;
 using MajdataPlay.Settings;
 using System;

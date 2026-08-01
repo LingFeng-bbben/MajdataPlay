@@ -23,6 +23,8 @@ using UnityEngine.Serialization;
 using System.Threading;
 using LitMotion;
 using LitMotion.Extensions;
+using MajdataPlay.Diagnostics;
+
 #if UNITY_EDITOR
 using System.Globalization;
 #endif

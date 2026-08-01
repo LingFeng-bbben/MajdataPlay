@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using MajdataPlay.Diagnostics;
 #nullable enable
 namespace MajdataPlay.Scenes.Title
 {

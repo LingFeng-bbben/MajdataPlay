@@ -1,3 +1,4 @@
+using MajdataPlay.Diagnostics;
 using MajdataPlay.IO;
 using ManagedBass;
 using ManagedBass.Aac;

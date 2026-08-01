@@ -1,3 +1,4 @@
+using MajdataPlay.Diagnostics;
 using MajdataPlay.Editor;
 using MajdataPlay.IO;
 using MajdataPlay.Numerics;

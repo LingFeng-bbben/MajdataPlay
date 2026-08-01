@@ -15,6 +15,8 @@ using System.IO.Pipes;
 #if UNITY_ANDROID || UNITY_EDITOR
 using MajdataPlay.Platform.Android;
 using MajdataPlay.Platform.Android.IO;
+using MajdataPlay.Diagnostics;
+
 #endif
 #if UNITY_IOS || UNITY_EDITOR
 using MajdataPlay.Platform.iOS;

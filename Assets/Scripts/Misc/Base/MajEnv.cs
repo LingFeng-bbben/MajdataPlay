@@ -37,6 +37,9 @@ using UnityEngine.Scripting;
 using MajdataPlay.Net.Handlers;
 using Random = System.Random;
 using UnityEngine.Networking;
+using MajdataPlay.Diagnostics;
+using SkiaSharp;
+using System.Text;
 
 #nullable enable
 namespace MajdataPlay
@@ -202,6 +205,7 @@ namespace MajdataPlay
         {
             InitPath();
             CheckDirectories();
+            InitLogger();
             InitSystemSettings();
             InitUserSettings();
             InitNetwork();
@@ -328,6 +332,24 @@ namespace MajdataPlay
             CreateDirectoryIfNotExists(TempPath);
             CreateDirectoryIfNotExists(ChartPath);
             CreateDirectoryIfNotExists(RecordOutputsPath);
+            CreateDirectoryIfNotExists(LogsPath);
+        }
+        static void InitLogger()
+        {
+            var oldLogPath = LogPath + ".old";
+
+            if (File.Exists(oldLogPath))
+            {
+                File.Delete(oldLogPath);
+            }
+            if (File.Exists(LogPath))
+            {
+                File.Move(LogPath, oldLogPath);
+            }
+            var fileWriter = new StreamWriter(LogPath, append: true, encoding: Encoding.UTF8);
+            fileWriter.AutoFlush = true;
+
+            MajDebug.SetLogWriter(fileWriter);
         }
         static void InitSystemSettings()
         {
@@ -408,6 +430,7 @@ namespace MajdataPlay
                 MainThread.Name = "MajdataPlay MainThread";
             }
 #endif
+            MajDebug.MinLogLevel = Settings.Debug.DebugLevel;
         }
         static void InitUserSettings()
         {
@@ -712,6 +735,8 @@ namespace MajdataPlay
 
             File.WriteAllText(SettingsPath, json);
             File.WriteAllText(_runtimeConfigPath, json2);
+
+            MajDebug.FlushLog();
         }
 
 

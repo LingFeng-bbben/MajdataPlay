@@ -31,7 +31,8 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
-using UnityEngine.Scripting; // DO NOT REMOVE IT !!!
+using UnityEngine.Scripting;
+using MajdataPlay.Diagnostics; // DO NOT REMOVE IT !!!
 
 namespace MajdataPlay
 {

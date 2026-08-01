@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Utils;
+﻿using MajdataPlay.Diagnostics;
+using MajdataPlay.Utils;
 using System;
 using System.IO;
 using System.Threading.Tasks;

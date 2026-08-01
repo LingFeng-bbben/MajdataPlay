@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Collections;
+using MajdataPlay.Diagnostics;
 using MajdataPlay.Json;
 using MajdataPlay.Scenes.Game;
 using MajdataPlay.Scenes.Game.Notes;

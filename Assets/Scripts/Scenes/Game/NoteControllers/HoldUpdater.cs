@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Scenes.Game.Notes.Behaviours;
+﻿using MajdataPlay.Diagnostics;
+using MajdataPlay.Scenes.Game.Notes.Behaviours;
 using MajdataPlay.Utils;
 using System;
 using System.Runtime.CompilerServices;

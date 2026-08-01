@@ -5,6 +5,7 @@ using LibUsbDotNet;
 using LibUsbDotNet.Main;
 #endif
 using MajdataPlay.Collections;
+using MajdataPlay.Diagnostics;
 using MajdataPlay.Numerics;
 using MajdataPlay.Settings;
 using MajdataPlay.UnsafeKit;

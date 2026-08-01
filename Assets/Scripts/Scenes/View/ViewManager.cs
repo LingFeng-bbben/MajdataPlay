@@ -21,6 +21,7 @@ using MajdataPlay.Settings;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using WebSocketSharp;
+using MajdataPlay.Diagnostics;
 #nullable enable
 namespace MajdataPlay.Scenes.View
 {

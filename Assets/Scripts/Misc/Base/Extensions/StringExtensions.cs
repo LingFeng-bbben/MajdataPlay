@@ -1,4 +1,5 @@
 ﻿
+using MajdataPlay.Diagnostics;
 using MajdataPlay.i18n;
 using System;
 
