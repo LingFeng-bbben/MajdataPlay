@@ -144,7 +144,7 @@ namespace MajdataPlay
             UseProxy = true,
             UseCookies = true,
             CookieContainer = new CookieContainer(),
-            MaxConnectionsPerServer = 64,
+            //MaxConnectionsPerServer = 64,
         };
         readonly static UnityHttpMessageHandler _unityHttpHandler = new UnityHttpMessageHandler();
 
