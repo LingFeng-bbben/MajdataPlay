@@ -32,8 +32,6 @@ namespace MajdataPlay.Platform.iOS
         public static event EventHandler<bool>? OnAppFocusChanged;
         public static event EventHandler<bool>? OnAppForegroundChanged;
 
-        readonly static GCHandle _onFocusChangedCallbackHandle;
-        readonly static GCHandle _onForegroundChangedCallbackHandle;
         readonly static AppStatusChangeDelegate _onFocusChanged;
         readonly static AppStatusChangeDelegate _onForegroundChanged;
 
@@ -41,8 +39,6 @@ namespace MajdataPlay.Platform.iOS
         {
             _onFocusChanged = NativeFocusCallback;
             _onForegroundChanged = NativeForegroundCallback;
-            _onFocusChangedCallbackHandle = GCHandle.Alloc(_onFocusChanged, GCHandleType.Pinned);
-            _onForegroundChangedCallbackHandle = GCHandle.Alloc(_onForegroundChanged, GCHandleType.Pinned);
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -54,7 +50,7 @@ namespace MajdataPlay.Platform.iOS
             {
                 IOSNativeSettings.Init();
                 MajDebug.LogInfo($"[{nameof(IOSRuntime)}] Register app status callbacks");
-                AppStatusPInvoke.RegisterAppStatusCallbacks(NativeForegroundCallback, NativeFocusCallback);
+                AppStatusPInvoke.RegisterAppStatusCallbacks(_onForegroundChanged, _onFocusChanged);
                 MajDebug.LogInfo($"[{nameof(IOSRuntime)}] Init finished");
             }
             catch (Exception ex)
