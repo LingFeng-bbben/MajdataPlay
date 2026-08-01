@@ -133,7 +133,7 @@ namespace MajdataPlay.Utils
                 var touchBarHeight = barInfo.Touch * height;
                 var slideBarHeight = barInfo.Slide * height;
 
-                MajDebug.LogInfo(String.Format("Heights {0} {1} {2} Total:{3}", tapBarHeight, touchBarHeight, slideBarHeight, tapBarHeight + touchBarHeight + slideBarHeight));
+                //MajDebug.LogInfo(String.Format("Heights {0} {1} {2} Total:{3}", tapBarHeight, touchBarHeight, slideBarHeight, tapBarHeight + touchBarHeight + slideBarHeight));
 
                 // Draw touch bar
                 DrawRoundRectBar(
