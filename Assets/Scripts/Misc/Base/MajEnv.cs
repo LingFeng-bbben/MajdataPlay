@@ -355,14 +355,36 @@ namespace MajdataPlay
             MajDebug.LogInfo($"PID: {MajEnv.GameProcess.Id}");
             MajDebug.LogInfo($"Version: {MajInstances.GameVersion}");
 
-#if !UNITY_EDITOR
-            if(MainThread.Name is not null)
-            {
-                MainThread.Name = "MajdataPlay MainThread";
-            }
-#endif
+            // Check iOS Native Settings
+#if UNITY_IOS 
+            MajDebug.LogInfo($"""
+                             ===== Majdata iOS Settings Debug =====
+    
+                             Inited:           {IOSNativeSettings.Inited}
+                             AppVersion:       {IOSNativeSettings.AppVersion}
 
-#if UNITY_IOS //&& !UNITY_EDITOR // iOS Native Setting (No Cache)
+                             Online:           {IOSNativeSettings.Online}
+
+                             DebugLogLevel:    {IOSNativeSettings.DebugLogLevel}
+                             DebugNoCache:     {IOSNativeSettings.DebugNoCache}
+                             DebugNoteFolding: {IOSNativeSettings.DebugNoteFolding}
+
+                             MajnetEnabled:    {IOSNativeSettings.MajnetEnabled}
+                             MajnetApi:        {IOSNativeSettings.MajnetApi}
+                             MajnetUsername:   {(string.IsNullOrEmpty(IOSNativeSettings.MajnetUsername) ? "<empty>" : "***")}
+                             MajnetPassword:   {(string.IsNullOrEmpty(IOSNativeSettings.MajnetPassword) ? "<empty>" : "***")}
+                             MajnetAutoLogin:  {IOSNativeSettings.MajnetAutoLogin}
+
+                             CustomEnabled:    {IOSNativeSettings.CustomEnabled}
+                             CustomName:       {IOSNativeSettings.CustomName}
+                             CustomApi:        {IOSNativeSettings.CustomApi}
+                             CustomUsername:   {(string.IsNullOrEmpty(IOSNativeSettings.CustomUsername) ? "<empty>" : "***")}
+                             CustomPassword:   {(string.IsNullOrEmpty(IOSNativeSettings.CustomPassword) ? "<empty>" : "***")}
+                             CustomAutoLogin:  {IOSNativeSettings.CustomAutoLogin}
+
+                             ===============================
+                             """
+                             );
             if (IOSNativeSettings.DebugNoCache)
             {
                 TryDeleteDirectory(Path.Combine(CachePath, "Net"));
@@ -372,6 +394,17 @@ namespace MajdataPlay
             else
             {
                 MajDebug.LogInfo("[MajEnv][Init]iOS setting 'no_cache' is disabled.");
+            }
+            if (Enum.TryParse<LogLevel>(IOSNativeSettings.DebugLogLevel, false, out var logLevel))
+            {
+                Settings.Debug.DebugLevel = logLevel;
+            }
+#endif
+
+#if !UNITY_EDITOR
+            if(MainThread.Name is not null)
+            {
+                MainThread.Name = "MajdataPlay MainThread";
             }
 #endif
         }
@@ -428,10 +461,6 @@ namespace MajdataPlay
             Settings.Display.OuterJudgeDistance = Settings.Display.OuterJudgeDistance.Clamp(0, 1);
 
 #if UNITY_IOS
-            if (Enum.TryParse<LogLevel>(IOSNativeSettings.DebugLogLevel, false, out var logLevel))
-            {
-                Settings.Debug.DebugLevel = logLevel;
-            }
             Settings.Debug.NoteFolding = IOSNativeSettings.DebugNoteFolding;
             Settings.Online.Enable = IOSNativeSettings.Online;
 #endif
