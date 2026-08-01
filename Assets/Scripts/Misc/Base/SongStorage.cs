@@ -648,7 +648,7 @@ namespace MajdataPlay
             {
                 Name = onlineDanInfo.Name,
                 Description = onlineDanInfo.Description,
-                SongHashs = onlineDanInfo.SongHashs,
+                SongHashs = onlineDanInfo.SongHashs.ToArray(),
                 IsPlayList = onlineDanInfo.IsPlayList,
                 IsForceGameover = onlineDanInfo.IsForceGameover
             };
@@ -706,7 +706,7 @@ namespace MajdataPlay
                                   Serializer.Json.Serialize(new DanInfo()
                                   {
                                       Name = "My Favorites",
-                                      SongHashs = hashSet,
+                                      SongHashs = hashSet.ToArray(),
                                       IsPlayList = true
                                   }
                     ));

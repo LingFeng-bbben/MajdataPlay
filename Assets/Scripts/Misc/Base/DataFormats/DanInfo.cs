@@ -8,7 +8,7 @@ namespace MajdataPlay
     {
         public string Name { get; init; }
         public string Description { get; init; }
-        public HashSet<string> SongHashs { get; init; }
+        public string[] SongHashs { get; init; }
         public Dictionary<string, JToken> Mods { get; init; } = new();
         public int[] SongLevels { get; init; }
         public int StartHP { get; init; } = 50;
