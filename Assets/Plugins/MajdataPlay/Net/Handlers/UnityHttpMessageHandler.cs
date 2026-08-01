@@ -36,7 +36,7 @@ namespace MajdataPlay.Net.Handlers
 
                 if (uwr.downloadHandler != null)
                 {
-                    response.Content = new DownloadHandlerHttpContent(uwr.downloadHandler);
+                    response.Content = new DownloadHandlerHttpContent(uwr, uwr.downloadHandler);
                 }
 
                 foreach (var kv in uwr.GetResponseHeaders())
@@ -98,17 +98,25 @@ namespace MajdataPlay.Net.Handlers
 
             return uwr;
         }
-        class DownloadHandlerHttpContent : HttpContent
+        class DownloadHandlerHttpContent : HttpContent, IDisposable
         {
-            readonly DownloadHandler _handler;
-            readonly NativeArray<byte>.ReadOnly _data;
+            NativeArray<byte>.ReadOnly _data;
 
-            public DownloadHandlerHttpContent(DownloadHandler handler)
+            readonly UnityWebRequest _uwr;
+            readonly DownloadHandler _handler;            
+
+            public DownloadHandlerHttpContent(UnityWebRequest uwr, DownloadHandler handler)
             {
+                _uwr = uwr;
                 _handler = handler;
                 _data = handler.nativeData;
 
                 Headers.ContentLength = _data.Length;
+            }
+
+            ~DownloadHandlerHttpContent()
+            {
+                Dispose();
             }
 
 
@@ -133,6 +141,14 @@ namespace MajdataPlay.Net.Handlers
             {
                 length = _data.Length;
                 return true;
+            }
+
+            public new void Dispose()
+            {
+                base.Dispose();
+                _handler.Dispose();
+                _uwr.Dispose();
+                _data = default;
             }
         }
     }
