@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using MajdataPlay.Diagnostics;
 using MajdataPlay.Platform.iOS.PInvoke;
 using UnityEngine;
 
@@ -42,7 +43,7 @@ namespace MajdataPlay.Platform.iOS
 
         internal static void Init()
         {
-            Debug.Log($"[{nameof(IOSNativeSettings)}] Init");
+            MajDebug.LogInfo($"[{nameof(IOSNativeSettings)}] Init");
             // Root
             AppVersion = GetString("app_version", "0.1.50");
 
@@ -70,7 +71,7 @@ namespace MajdataPlay.Platform.iOS
             CustomAutoLogin = GetBool("custom_auto_login", false);
 
             Inited = true;
-            Debug.Log($"[{nameof(IOSNativeSettings)}] Init finished");
+            MajDebug.LogInfo($"[{nameof(IOSNativeSettings)}] Init finished");
         }
 
         public static void Reload()

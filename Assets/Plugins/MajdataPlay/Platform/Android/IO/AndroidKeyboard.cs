@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MajdataPlay.Diagnostics;
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -20,16 +21,16 @@ namespace MajdataPlay.Platform.Android.IO
 
         internal static void Init()
         {
-            Debug.Log($"[{nameof(AndroidKeyboard)}] Init");
+            MajDebug.LogInfo($"[{nameof(AndroidKeyboard)}] Init");
             try
             {
                 _onDispatchKeyEventCallbackProxy = new OnDispatchKeyEventCallbackProxy();
                 AndroidRuntime.MajdataPlayActivityClass.CallStatic("registerDispatchKeyEventCallback", _onDispatchKeyEventCallbackProxy);
-                Debug.Log($"[{nameof(AndroidKeyboard)}] Init finished");
+                MajDebug.LogInfo($"[{nameof(AndroidKeyboard)}] Init finished");
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[{nameof(AndroidKeyboard)}] Init failed: {ex}");
+                MajDebug.LogError($"[{nameof(AndroidKeyboard)}] Init failed: {ex}");
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

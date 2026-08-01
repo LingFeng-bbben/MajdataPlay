@@ -1,7 +1,9 @@
 {
     "name": "MajdataPlay.Platform.iOS",
     "rootNamespace": "MajdataPlay.Platform.iOS",
-    "references": [],
+    "references": [
+        "GUID:8545470905e4bf241a27188012585d36"
+    ],
     "includePlatforms": [
         "Editor",
         "iOS"

@@ -1,7 +1,9 @@
 {
     "name": "MajdataPlay.Platform.MacOS",
     "rootNamespace": "MajdataPlay.Platform.MacOS",
-    "references": [],
+    "references": [
+        "GUID:8545470905e4bf241a27188012585d36"
+    ],
     "includePlatforms": [
         "Editor",
         "macOSStandalone"

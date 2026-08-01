@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Platform.Android.IO;
+﻿using MajdataPlay.Diagnostics;
+using MajdataPlay.Platform.Android.IO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,26 +26,25 @@ namespace MajdataPlay.Platform.Android
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void Init()
         {
-
 #if UNITY_ANDROID && !UNITY_EDITOR
-            Debug.Log($"[{nameof(AndroidRuntime)}] Init");
+            MajDebug.LogInfo($"[{nameof(AndroidRuntime)}] Init");
             try
             {
                 MajdataPlayActivityClass = new AndroidJavaClass("net.majdata.majdataplay.MajdataPlayActivity");
-                Debug.Log($"[{nameof(AndroidRuntime)}] Get current activity");
+                MajDebug.LogInfo($"[{nameof(AndroidRuntime)}] Get current activity");
                 CurrentActivity = MajdataPlayActivityClass.GetStatic<AndroidJavaObject>("currentActivity");
-                Debug.Log($"[{nameof(AndroidRuntime)}] Setting onNewIntent callback proxy");
+                MajDebug.LogInfo($"[{nameof(AndroidRuntime)}] Setting onNewIntent callback proxy");
                 MajdataPlayActivityClass.CallStatic("registerOnNewIntentCallback", _onNewIntentCallbackProxy);
-                Debug.Log($"[{nameof(AndroidRuntime)}] Setting onActivityResult callback proxy");
+                MajDebug.LogInfo($"[{nameof(AndroidRuntime)}] Setting onActivityResult callback proxy");
                 MajdataPlayActivityClass.CallStatic("registerOnActivityResultCallback", _onActivityResultCallbackProxy);
 
             
                 AndroidKeyboard.Init();
-                Debug.Log($"[{nameof(AndroidRuntime)}] Init finished");
+                MajDebug.LogInfo($"[{nameof(AndroidRuntime)}] Init finished");
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[{nameof(AndroidRuntime)}] Init failed: {ex}");
+                MajDebug.LogError($"[{nameof(AndroidRuntime)}] Init failed: {ex}");
             }
 #endif
         }

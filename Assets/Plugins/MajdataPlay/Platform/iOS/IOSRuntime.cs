@@ -1,4 +1,5 @@
 ﻿using AOT;
+using MajdataPlay.Diagnostics;
 using MajdataPlay.Platform.iOS.PInvoke;
 using System;
 using System.Collections.Generic;
@@ -48,17 +49,17 @@ namespace MajdataPlay.Platform.iOS
         static void Init()
         {
 #if UNITY_IOS || UNITY_EDITOR_OSX
-            Debug.Log($"[{nameof(IOSRuntime)}] Init");
+            MajDebug.LogInfo($"[{nameof(IOSRuntime)}] Init");
             try
             {
                 IOSNativeSettings.Init();
-                Debug.Log($"[{nameof(IOSRuntime)}] Register app status callbacks");
+                MajDebug.LogInfo($"[{nameof(IOSRuntime)}] Register app status callbacks");
                 AppStatusPInvoke.RegisterAppStatusCallbacks(NativeForegroundCallback, NativeFocusCallback);
-                Debug.Log($"[{nameof(IOSRuntime)}] Init finished");
+                MajDebug.LogInfo($"[{nameof(IOSRuntime)}] Init finished");
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[{nameof(IOSRuntime)}] Init failed: {ex}");
+                MajDebug.LogError($"[{nameof(IOSRuntime)}] Init failed: {ex}");
             }
 #endif
         }
