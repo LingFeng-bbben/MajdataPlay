@@ -20,7 +20,7 @@ namespace MajdataPlay
         public Camera MainCamera 
         { 
             get; 
-            private set; 
+            set; 
         }
         public static event EventHandler<(MajScenes NewScene, MajScenes OldScene)>? OnSceneChanged;
         public static MajScenes CurrentScene { get; private set; } = MajScenes.Init;
@@ -64,7 +64,6 @@ namespace MajdataPlay
         {
             //MajDebug.LogDebug(ZString.Format("Scene unloaded: {0}", current.name));
             MajDebug.LogDebug(ZString.Format("Scene loaded: {0}", next.name));
-            MainCamera = Camera.main;
             //var currentScene = SceneManager.GetActiveScene();
             var index = Array.FindIndex(SCENE_NAMES, x => x == next.name);
             var lastScene = CurrentScene;

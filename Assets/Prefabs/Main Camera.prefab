@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 1350311737120837062}
   - component: {fileID: 1315656468134888341}
   - component: {fileID: 6890573871243399459}
+  - component: {fileID: 6343859121553415357}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -105,3 +106,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0af34f6ff4d1d8a40951734511c54c54, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _baseY: 0
+  _originalCameraY: 0
+  _baseOrthographicSize: 0
+  _lastOffset: NaN
+  _lastScale: NaN
+  _lastMainScreenOffset: 0
+  _lastMainScreenScale: 0
+  _lastTransformDisplay: 0
+--- !u!114 &6343859121553415357
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3243441165040463401}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1dad661ce3b36644584481cf77e034c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.UI.MainCameraConfigurator
+  <RuntimeDatabase>k__BackingField: {fileID: 0}
