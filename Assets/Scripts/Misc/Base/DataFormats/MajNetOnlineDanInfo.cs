@@ -18,7 +18,7 @@ namespace MajdataPlay
         public required string Name { get; init; }
         public required string CreatedBy { get; init; }
         public required string Description { get; init; }
-        public required HashSet<string> SongHashs { get; init; }
+        public required string[] SongHashs { get; init; }
         public bool IsPlayList { get; init; }
         public bool IsForceGameover { get; init; }
     }
