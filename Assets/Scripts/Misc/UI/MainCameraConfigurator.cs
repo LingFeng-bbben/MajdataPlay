@@ -12,14 +12,12 @@ namespace MajdataPlay.UI
     public class MainCameraConfigurator : MajBehaviour
     {
         Camera _camera;
-        SceneSwitcher _sceneSwitcher;
 
         protected override void Awake()
         {
             base.Awake();
             _camera = GetComponent<Camera>();
-            _sceneSwitcher = MajInstances.SceneSwitcher;
-            _sceneSwitcher.MainCamera = _camera;
+            SceneSwitcher.MainCamera = _camera;
         }
     }
 }

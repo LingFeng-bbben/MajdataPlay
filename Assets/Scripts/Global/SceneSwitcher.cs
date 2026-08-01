@@ -15,13 +15,14 @@ using UnityEngine.Video;
 #nullable enable
 namespace MajdataPlay
 {
-    internal sealed partial class SceneSwitcher : MajSingleton, IMainCameraProvider
+    internal sealed partial class SceneSwitcher : MajSingleton
     {
-        public Camera MainCamera 
-        { 
-            get; 
-            set; 
+        public static Camera MainCamera
+        {
+            get => _mainCamera;
+            set => _mainCamera = value;
         }
+
         public static event EventHandler<(MajScenes NewScene, MajScenes OldScene)>? OnSceneChanged;
         public static MajScenes CurrentScene { get; private set; } = MajScenes.Init;
         public static MajScenes LastScene { get; private set; } = MajScenes.Init;
@@ -39,6 +40,8 @@ namespace MajdataPlay
         SpriteRenderer _mvRenderer;
         GameObject _bgObject;
 
+        static Camera _mainCamera;
+
         readonly string[] SCENE_NAMES = Enum.GetNames(typeof(MajScenes));
 
         const int SWITCH_ELAPSED_MS = 400;
@@ -46,7 +49,7 @@ namespace MajdataPlay
         protected override void Awake()
         {
             base.Awake();
-            Majdata<IMainCameraProvider>.Instance = this;
+            //Majdata<IMainCameraProvider>.Instance = this;
             SceneManager.activeSceneChanged += OnUnitySceneChanged;
             MainCamera = Camera.main;
             var currentScene = SceneManager.GetActiveScene();

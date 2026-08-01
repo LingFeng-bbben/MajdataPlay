@@ -43,11 +43,6 @@ namespace MajdataPlay
         public static event EventHandler<bool>? OnAppFocus;
         public static event EventHandler<bool>? OnAppPause;
 
-        public static Camera MainCamera
-        {
-            get => MajInstances.SceneSwitcher.MainCamera;
-        }
-
         public GameSetting Settings
         {
             get => MajEnv.Settings;

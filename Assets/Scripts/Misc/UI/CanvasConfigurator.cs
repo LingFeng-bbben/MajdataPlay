@@ -12,13 +12,11 @@ namespace MajdataPlay.UI
     public class CanvasConfigurator : MonoBehaviour
     {
         Canvas _canvas;
-        SceneSwitcher _sceneSwitcher;
 
         void Awake()
         {
             _canvas = GetComponent<Canvas>();
-            _sceneSwitcher = MajInstances.SceneSwitcher;
-            _canvas.worldCamera = _sceneSwitcher.MainCamera;
+            _canvas.worldCamera = SceneSwitcher.MainCamera;
             SceneSwitcher.OnSceneChanged += OnSceneChanged;
         }
 
@@ -29,7 +27,7 @@ namespace MajdataPlay.UI
 
         void OnSceneChanged(object? sender, (MajScenes NewScene, MajScenes OldScene) args)
         {
-            _canvas.worldCamera = _sceneSwitcher.MainCamera;
+            _canvas.worldCamera = SceneSwitcher.MainCamera;
         }
     }
 }
