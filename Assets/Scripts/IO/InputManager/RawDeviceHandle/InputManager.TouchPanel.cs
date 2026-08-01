@@ -4,6 +4,7 @@ using HidSharp.Reports;
 #endif
 using LibUsbDotNet;
 using LibUsbDotNet.Main;
+using MajdataPlay.Diagnostics;
 using MajdataPlay.Numerics;
 using MajdataPlay.Settings;
 using MajdataPlay.Utils;

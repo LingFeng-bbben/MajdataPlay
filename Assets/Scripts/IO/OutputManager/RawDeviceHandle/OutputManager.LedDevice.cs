@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 using MajdataPlay.Settings;
 using MajdataPlay.Numerics;
 using UnityEngine;
+using MajdataPlay.Diagnostics;
+
 #if UNITY_STANDALONE
 using HidSharp;
 

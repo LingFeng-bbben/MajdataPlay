@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MajdataPlay.Settings;
+using MajdataPlay.Diagnostics;
 
 #nullable enable
 namespace MajdataPlay.IO
