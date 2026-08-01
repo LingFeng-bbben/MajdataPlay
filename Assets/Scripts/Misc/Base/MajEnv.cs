@@ -208,6 +208,7 @@ namespace MajdataPlay
             InitLogger();
             InitSystemSettings();
             InitUserSettings();
+            ReadiOSNativeSettings();
             InitNetwork();
             InitRuntimeConfig();
             InitOnlineEndpoints();
@@ -408,20 +409,6 @@ namespace MajdataPlay
                              ===============================
                              """
                              );
-            if (IOSNativeSettings.DebugNoCache)
-            {
-                TryDeleteDirectory(Path.Combine(CachePath, "Net"));
-                TryDeleteDirectory(Path.Combine(CachePath, "View"));
-                MajDebug.LogInfo("[MajEnv][Init]iOS setting 'no_cache' is enabled. Cleared cache folders: Net, View.");
-            }
-            else
-            {
-                MajDebug.LogInfo("[MajEnv][Init]iOS setting 'no_cache' is disabled.");
-            }
-            if (Enum.TryParse<LogLevel>(IOSNativeSettings.DebugLogLevel, false, out var logLevel))
-            {
-                Settings.Debug.DebugLevel = logLevel;
-            }
 #endif
 
 #if !UNITY_EDITOR
@@ -430,7 +417,6 @@ namespace MajdataPlay
                 MainThread.Name = "MajdataPlay MainThread";
             }
 #endif
-            MajDebug.MinLogLevel = Settings.Debug.DebugLevel;
         }
         static void InitUserSettings()
         {
@@ -484,9 +470,30 @@ namespace MajdataPlay
             Settings.Display.InnerJudgeDistance = Settings.Display.InnerJudgeDistance.Clamp(0, 1);
             Settings.Display.OuterJudgeDistance = Settings.Display.OuterJudgeDistance.Clamp(0, 1);
 
+            MajDebug.MinLogLevel = Settings.Debug.DebugLevel;
+        }
+        static void ReadiOSNativeSettings()
+        {
 #if UNITY_IOS
+            if (IOSNativeSettings.DebugNoCache)
+            {
+                TryDeleteDirectory(Path.Combine(CachePath, "Net"));
+                TryDeleteDirectory(Path.Combine(CachePath, "View"));
+                MajDebug.LogInfo("[MajEnv][Init]iOS setting 'no_cache' is enabled. Cleared cache folders: Net, View.");
+            }
+            else
+            {
+                MajDebug.LogInfo("[MajEnv][Init]iOS setting 'no_cache' is disabled.");
+            }
+            if (Enum.TryParse<LogLevel>(IOSNativeSettings.DebugLogLevel, false, out var logLevel))
+            {
+                Settings.Debug.DebugLevel = logLevel;
+            }
+
             Settings.Debug.NoteFolding = IOSNativeSettings.DebugNoteFolding;
             Settings.Online.Enable = IOSNativeSettings.Online;
+
+            MajDebug.MinLogLevel = Settings.Debug.DebugLevel;
 #endif
         }
         static void InitNetwork()
