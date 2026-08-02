@@ -49,7 +49,6 @@ namespace MajdataPlay
         protected override void Awake()
         {
             base.Awake();
-            //Majdata<IMainCameraProvider>.Instance = this;
             SceneManager.activeSceneChanged += OnUnitySceneChanged;
             MainCamera = Camera.main;
             var currentScene = SceneManager.GetActiveScene();

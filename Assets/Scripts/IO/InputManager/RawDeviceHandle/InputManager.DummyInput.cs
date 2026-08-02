@@ -74,7 +74,7 @@ namespace MajdataPlay.IO
         {
             Profiler.BeginSample("ButtonRing.OnPreUpdate.UpdateMousePosition");
             var sensors = _sensors.Span;
-            var mainCamera = Majdata<IMainCameraProvider>.Instance!.MainCamera;
+            var mainCamera = SceneSwitcher.MainCamera;
 
             Span<int> buttonClickedCount = stackalloc int[8];
             Span<int> sensorClickedCount = stackalloc int[34];
