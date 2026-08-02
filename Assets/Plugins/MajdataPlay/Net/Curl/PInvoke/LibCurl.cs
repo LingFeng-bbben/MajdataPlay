@@ -11,6 +11,12 @@ namespace MajdataPlay.Net.Curl.PInvoke
 #else
         const string DLL_NAME = "libcurl";
 #endif
+        // libcurl Init flags
+        public const long CURL_GLOBAL_SSL = 1 << 0;
+        public const long CURL_GLOBAL_WIN32 = 1 << 1;
+        public const long CURL_GLOBAL_ALL = CURL_GLOBAL_SSL | CURL_GLOBAL_WIN32;
+        public const long CURL_GLOBAL_DEFAULT = CURL_GLOBAL_ALL;
+
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate UIntPtr CurlWriteCallback(IntPtr ptr, UIntPtr size, UIntPtr nmemb, IntPtr userdata);
