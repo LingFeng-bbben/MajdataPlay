@@ -30,8 +30,16 @@ namespace MajdataPlay.Net.Handlers
                 var uwr = await CreateWebRequest(request);
 
                 var operation = uwr.SendWebRequest();
-                await operation.WithCancellation(cancellationToken, true);
-
+                try
+                {
+                    await operation.WithCancellation(cancellationToken, true);
+                }catch(UnityWebRequestException ex)
+                {
+                    var response_err = new HttpResponseMessage((HttpStatusCode)ex.UnityWebRequest.responseCode);
+                    response_err.RequestMessage = request;
+                    response_err.ReasonPhrase = ex.UnityWebRequest.error;
+                    return response_err;
+                }
                 var response = new HttpResponseMessage((HttpStatusCode)uwr.responseCode);
 
                 if (uwr.downloadHandler != null)
