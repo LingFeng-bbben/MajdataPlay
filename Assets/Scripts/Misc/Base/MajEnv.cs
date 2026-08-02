@@ -148,7 +148,7 @@ namespace MajdataPlay
         };
         readonly static UnityHttpMessageHandler _unityHttpHandler = new UnityHttpMessageHandler();
 
-#if false
+#if true
         public static HttpClient SharedHttpClient { get; } = new HttpClient(_httpClientHandler)
         {
             Timeout = TimeSpan.FromMilliseconds(HTTP_TIMEOUT_MS),
