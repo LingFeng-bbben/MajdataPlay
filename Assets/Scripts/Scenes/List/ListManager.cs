@@ -108,6 +108,10 @@ namespace MajdataPlay.Scenes.List
                         AllBackgroundTasks.RemoveAt(indexs[i]);
                     }
                 }
+                catch (Exception ex)
+                {
+                    MajDebug.LogError("[ListManager] [Awake] " + ex.Message);
+                }
                 finally
                 {
                     Pool<int>.ReturnArray(indexs);
@@ -115,14 +119,21 @@ namespace MajdataPlay.Scenes.List
             }
             else
             {
-                for (var i = 0; i < AllBackgroundTasks.Count; i++)
+                try
                 {
-                    var task = AllBackgroundTasks[i];
-                    if (task is null || task.IsCompleted)
+                    for (var i = 0; i < AllBackgroundTasks.Count; i++)
                     {
-                        AllBackgroundTasks.RemoveAt(i);
-                        i--;
+                        var task = AllBackgroundTasks[i];
+                        if (task is null || task.IsCompleted)
+                        {
+                            AllBackgroundTasks.RemoveAt(i);
+                            i--;
+                        }
                     }
+                }
+                catch (Exception ex)
+                {
+                    MajDebug.LogError("[ListManager] [Awake] " + ex.Message);
                 }
             }
             _isOnlineEnabled = MajEnv.Settings.Online.Enable;
