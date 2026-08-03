@@ -16,6 +16,8 @@ namespace MajdataPlay.Scenes.Setting
 {
     public class Menu : MonoBehaviour
     {
+        const float OPTION_MOVE_DURATION = 0.18f;
+
         [field: SerializeField, ReadOnlyField]
         public string Name { get; set; } = string.Empty;
 
@@ -92,7 +94,7 @@ namespace MajdataPlay.Scenes.Setting
                 _manager.PreviousMenu();
             }
             SelectedIndex = SelectedIndex.Clamp(0, _options.Length - 1);
-            DisplayerMoveTo(SelectedIndex, 0.3f);
+            DisplayerMoveTo(SelectedIndex, OPTION_MOVE_DURATION);
             _settingConfig.SelectedOption = _options[SelectedIndex].PropertyInfo.Name;
         }
         void NextOption()
@@ -103,7 +105,7 @@ namespace MajdataPlay.Scenes.Setting
                 _manager.NextMenu();
             }
             SelectedIndex = SelectedIndex.Clamp(0, _options.Length - 1);
-            DisplayerMoveTo(SelectedIndex, 0.3f);
+            DisplayerMoveTo(SelectedIndex, OPTION_MOVE_DURATION);
             _settingConfig.SelectedOption = _options[SelectedIndex].PropertyInfo.Name;
         }
 
@@ -179,7 +181,7 @@ namespace MajdataPlay.Scenes.Setting
         {
             SelectedIndex = index;
             SelectedIndex = SelectedIndex.Clamp(0, _options.Length - 1);
-            DisplayerMoveTo(SelectedIndex, 0.3f);
+            DisplayerMoveTo(SelectedIndex, OPTION_MOVE_DURATION);
         }
         public void ToOption(string optionName)
         {
@@ -192,7 +194,7 @@ namespace MajdataPlay.Scenes.Setting
                 SelectedIndex = Array.FindIndex(_options, x => x.PropertyInfo.Name == optionName);
             }
             SelectedIndex = SelectedIndex.Clamp(0, _options.Length - 1);
-            DisplayerMoveTo(SelectedIndex, 0.3f);
+            DisplayerMoveTo(SelectedIndex, OPTION_MOVE_DURATION);
         }
 
         Vector3 GetOptionTransformScale(float diff)

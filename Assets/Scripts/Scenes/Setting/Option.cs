@@ -73,11 +73,10 @@ namespace MajdataPlay.Scenes.Setting
         }
         public void Init()
         {
-            Localization.OnLanguageChanged += OnLangChanged;
             InitOptions();
+            Localization.OnLanguageChanged += OnLangChanged;
             _nameTextDisplayer.text = _optionName.i18n();
-            SetDescriptionText();
-            UpdateOption();
+            RefreshValueText();
         }
 
         internal void SetAsSelected()
@@ -98,8 +97,11 @@ namespace MajdataPlay.Scenes.Setting
         void OnLangChanged(object? sender,Language newLanguage)
         {
             _nameTextDisplayer.text = _optionName.i18n();
-            _manager.SetDescriptionText(_optionDescription.i18n());
-            UpdateOption();
+            RefreshValueText();
+            if (_isSelected && _isEnabled)
+            {
+                SetDescriptionText();
+            }
         }
         void InitOptions()
         {
@@ -184,14 +186,7 @@ namespace MajdataPlay.Scenes.Setting
                     }
                     else
                     {
-                        if (_isUp)
-                        {
-                            _optionEnumerator.MoveNext();
-                        }
-                        else
-                        {
-                            _optionEnumerator.MovePrevious();
-                        }
+                        MoveOption(_isUp);
                         _iterationThrottle = 0;
                     }
                 }
@@ -220,19 +215,27 @@ namespace MajdataPlay.Scenes.Setting
                 {
                     if (isE4OrB4OrB3On)
                     {
-                        _optionEnumerator.MoveNext();
+                        MoveOption(true);
                         _isUp = true;
                         _isPressed = true;
                     }
                     else if (isE6OrB5OrB6On)
                     {
-                        _optionEnumerator.MovePrevious();
+                        MoveOption(false);
                         _isUp = false;
                         _isPressed = true;
                     }
                 }
             }
-            UpdateOption();
+        }
+
+        void MoveOption(bool moveNext)
+        {
+            var hasChanged = moveNext ? _optionEnumerator.MoveNext() : _optionEnumerator.MovePrevious();
+            if (hasChanged)
+            {
+                RefreshValueText();
+            }
         }
         void SetDescriptionText()
         {
@@ -256,13 +259,9 @@ namespace MajdataPlay.Scenes.Setting
                 }
             }
         }
-        void UpdateOption()
+        void RefreshValueText()
         {
             _valueTextDisplayer.text = _optionEnumerator.LocalizedValueText;
-            if(_isSelected)
-            {
-                SetDescriptionText();
-            }
         }
         void OnDestroy()
         {
