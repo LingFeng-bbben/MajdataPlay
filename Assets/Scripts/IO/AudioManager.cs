@@ -284,6 +284,7 @@ namespace MajdataPlay.IO
                             @return = Bass.Configure(Configuration.DeviceBufferLength, mobileOptions.DeviceBufferLengthMs);
                             MajDebug.LogInfo($"[Bass] Set DeviceBufferLength: {@return}");
 #endif
+                            Bass.Configure(Configuration.DevNonStop, true);
                             MajDebug.LogInfo("Bass Init: " + Bass.Init());
                             MajDebug.LogInfo($"[Bass] LastError = {Bass.LastError}");
                             var info = Bass.Info;
