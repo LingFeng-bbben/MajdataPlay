@@ -5,10 +5,10 @@ using UnityEngine;
 namespace MajdataPlay.Net.Curl.PInvoke
 {
     [StructLayout(LayoutKind.Sequential)]
-    internal struct CURLMsg
+    internal struct CurlMsg
     {
-        public CURLMSG msg;
-        public IntPtr easy_handle;
-        public IntPtr data;
+        public CurlMsgCode Code;
+        public IntPtr EasyHandle;
+        public IntPtr Data;
     }
 }

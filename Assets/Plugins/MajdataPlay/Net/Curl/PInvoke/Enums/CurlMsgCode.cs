@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace MajdataPlay.Net.Curl.PInvoke
 {
-    internal enum CURLMSG
+    internal enum CurlMsgCode
     {
-        CURLMSG_NONE = 0,
-        CURLMSG_DONE = 1,
-        CURLMSG_LAST = 2
+        None = 0,
+        Done = 1,
+        Last = 2
     }
 }
