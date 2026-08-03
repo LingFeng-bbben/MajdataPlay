@@ -1,21 +1,13 @@
-﻿using Cysharp.Text;
-using LitMotion;
-using MajdataPlay.Collections;
-using MajdataPlay.Diagnostics;
-using MajdataPlay.Editor;
+﻿using MajdataPlay.Diagnostics;
 using MajdataPlay.Extensions;
 using MajdataPlay.i18n;
 using MajdataPlay.IO;
-using MajdataPlay.Numerics;
 using MajdataPlay.Settings;
 using MajdataPlay.Settings.OptionEnumerators;
 using MajdataPlay.Utils;
 using System;
-using System.Linq;
 using System.Reflection;
 using TMPro;
-using Topten.RichTextKit.Editor;
-using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Serialization;
 #nullable enable
@@ -23,26 +15,18 @@ namespace MajdataPlay.Scenes.Setting
 {
     public class Option : MonoBehaviour
     {
-        [field: SerializeField, ReadOnlyField]
-        public int Index { get; set; } 
-        public Menu Parent { get; set; }
-        public PropertyInfo PropertyInfo { get; set; }
-        public object MenuInstance { get; set; }
+        internal PropertyInfo PropertyInfo { get; private set; } = null!;
 
         [SerializeField]
         [FormerlySerializedAs("nameText")]
-        TextMeshProUGUI _nameTextDisplayer;
+        TextMeshProUGUI _nameTextDisplayer = null!;
 
         [SerializeField]
         [FormerlySerializedAs("valueText")]
-        TextMeshProUGUI _valueTextDisplayer;
+        TextMeshProUGUI _valueTextDisplayer = null!;
 
 
-        bool _isEnabled = false;
         bool _isSelected = false;
-        bool _isNum = false;
-        bool _isFloat = false;
-        bool _isReadOnly = false;
         bool _isPressed = false;
         bool _isUp = false;
         bool _isNoDescription = false;
@@ -53,40 +37,28 @@ namespace MajdataPlay.Scenes.Setting
 
         float _iterationThrottle = 0;
 
-        [SerializeField]
-        [ReadOnlyField]
-        int _currentIndex = 0;
+        IOptionEnumerator _optionEnumerator = null!;
+        SettingManager _manager = null!;
+        object _menuInstance = null!;
 
-        [SerializeField]
-        [ReadOnlyField]
-        float _indexProgress = 0f;
-
-        IOptionEnumerator _optionEnumerator;
-
-        SettingManager _manager;
-
-        MotionHandle _optionAnim;
-
-        void Awake()
+        internal void Init(SettingManager manager, PropertyInfo propertyInfo, object menuInstance)
         {
-            _manager = FindAnyObjectByType<SettingManager>();
-        }
-        public void Init()
-        {
+            _manager = manager;
+            PropertyInfo = propertyInfo;
+            _menuInstance = menuInstance;
             InitOptions();
             Localization.OnLanguageChanged += OnLangChanged;
             _nameTextDisplayer.text = _optionName.i18n();
             RefreshValueText();
         }
 
-        internal void SetAsSelected()
+        internal void SetSelected(bool isSelected)
         {
-            _isSelected = true;
-            SetDescriptionText();
-        }
-        internal void SetAsUnselected()
-        {
-            _isSelected = false;
+            _isSelected = isSelected;
+            if (isSelected)
+            {
+                SetDescriptionText();
+            }
         }
         internal void SetTextColor(Color newColor)
         {
@@ -98,7 +70,7 @@ namespace MajdataPlay.Scenes.Setting
         {
             _nameTextDisplayer.text = _optionName.i18n();
             RefreshValueText();
-            if (_isSelected && _isEnabled)
+            if (_isSelected && isActiveAndEnabled)
             {
                 SetDescriptionText();
             }
@@ -106,8 +78,7 @@ namespace MajdataPlay.Scenes.Setting
         void InitOptions()
         {
             var type = PropertyInfo.PropertyType;
-            _isFloat = type.IsFloatType();
-            _isNum = type.IsIntType() || _isFloat;
+            var isNum = type.IsIntType() || type.IsFloatType();
             _isNoDescription = PropertyInfo.GetCustomAttribute<NoDescriptionAttribute>() is not null;
             var optionNameAttr = PropertyInfo.GetCustomAttribute<OptionNameAttribute>();
             var optionDescriptionAttr = PropertyInfo.GetCustomAttribute<DescriptionAttribute>();
@@ -154,7 +125,7 @@ namespace MajdataPlay.Scenes.Setting
                 {
                     _optionEnumerator = new DefaultBooleanEnumerator();
                 }
-                else if (_isNum)
+                else if (isNum)
                 {
                     _optionEnumerator = new DefaultNumberEnumerator();
                 }
@@ -163,12 +134,12 @@ namespace MajdataPlay.Scenes.Setting
                     _optionEnumerator = new DefaultReadOnlyEnumerator();
                 }
             }
-            _optionEnumerator.Init(PropertyInfo, MenuInstance);
+            _optionEnumerator.Init(PropertyInfo, _menuInstance);
         }
         void Update()
         {
             _optionEnumerator.OnUpdate();
-            if (_isSelected && _isEnabled && !_isReadOnly)
+            if (_isSelected)
             {
                 var isE4OrB4OrB3On = InputManager.CheckSensorStatusInThisFrame(SensorArea.E4, SwitchStatus.On) ||
                                      InputManager.CheckSensorStatusInThisFrame(SensorArea.B4, SwitchStatus.On) ||
@@ -265,18 +236,8 @@ namespace MajdataPlay.Scenes.Setting
         }
         void OnDestroy()
         {
-            _isEnabled = false;
             Localization.OnLanguageChanged -= OnLangChanged;
             _optionEnumerator.Dispose();
-        }
-        void OnDisable()
-        {
-            _isEnabled = false;
-            _optionAnim.TryCancel();
-        }
-        void OnEnable()
-        {
-            _isEnabled = true;
         }
     }
 }
