@@ -1,3 +1,5 @@
+using AOT;
+using MajdataPlay.Net.Curl.PInvoke;
 using System;
 using System.IO;
 using System.Net.Http;
@@ -6,7 +8,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using MajdataPlay.Net.Curl.PInvoke;
 #nullable enable
 namespace MajdataPlay.Net.Curl.Native
 {
@@ -28,7 +29,6 @@ namespace MajdataPlay.Net.Curl.Native
 
         Stream? _contentStream;
 
-        CurlReadOrWriteCallback _onWriteCallback; // Download
         CurlReadOrWriteCallback _onReadCallback;  // Upload
 
         public CurlRequest(string requestUri, HttpContent content, HttpMethod method)
@@ -42,11 +42,10 @@ namespace MajdataPlay.Net.Curl.Native
             Content = content ?? throw new ArgumentNullException(nameof(content));
             Method = method ?? throw new ArgumentNullException(nameof(method));
 
-            SetOption(CurlOption.CURLOPT_URL, RequestUri);
-            SetOption(CurlOption.CURLOPT_CUSTOMREQUEST, Method.Method);
+            SetOption(CurlOption.Url, RequestUri);
+            SetOption(CurlOption.CustomRequest, Method.Method);
 
             _onReadCallback = OnReadCallback;
-            _onWriteCallback = OnWriteCallback;
         }
         ~CurlRequest()
         {
@@ -83,22 +82,19 @@ namespace MajdataPlay.Net.Curl.Native
 
             return oldState == state;
         }
-        public async Task ReadyToSubmitAsync()
+        public async ValueTask ReadyToSubmitAsync()
         {
             var isUpload = Method == HttpMethod.Post || Method == HttpMethod.Put || Method == HttpMethod.Patch;
-            _contentStream = await Content.ReadAsStreamAsync();
+            
             if (isUpload)
             {
-                SetOption(CurlOption.CURLOPT_UPLOAD, 1);
+                SetOption(CurlOption.Upload, 1);
+                _contentStream = await Content.ReadAsStreamAsync();
                 if (_contentStream.CanSeek)
                 {
-                    SetOption(CurlOption.CURLOPT_INFILESIZE_LARGE, _contentStream.Length);
+                    SetOption(CurlOption.InFileSizeLarge, _contentStream.Length);
                 }
-                SetOption(CurlOption.CURLOPT_READFUNCTION, _onReadCallback);
-            }
-            else
-            {
-                SetOption(CurlOption.CURLOPT_WRITEFUNCTION, _onWriteCallback);
+                SetOption(CurlOption.ReadFunction, _onReadCallback);
             }
         }
         public void ReadyToComplete()
@@ -154,22 +150,10 @@ namespace MajdataPlay.Net.Curl.Native
                 var headerString = $"{header.Key}: {string.Join(", ", header.Value)}";
                 _headersList = LibCurl.curl_slist_append(_headersList, headerString);
             }
-            SetOption(CurlOption.CURLOPT_HTTPHEADER, _headersList);
+            SetOption(CurlOption.HttpHeader, _headersList);
         }
 
-        unsafe UIntPtr OnWriteCallback(IntPtr ptr, UIntPtr size, UIntPtr nmemb, IntPtr userdata)
-        {
-            if(_contentStream is null)
-            {
-                return UIntPtr.Zero;
-            }
-            var length = (int)(size.ToUInt32() * nmemb.ToUInt32());
-            var buffer = new ReadOnlySpan<byte>((void*)ptr, length);
-
-            _contentStream.Write(buffer);
-
-            return (UIntPtr)length;
-        }
+        [MonoPInvokeCallback(typeof(CurlReadOrWriteCallback))]
         unsafe UIntPtr OnReadCallback(IntPtr ptr, UIntPtr size, UIntPtr nmemb, IntPtr userdata)
         {
             if (_contentStream is null)

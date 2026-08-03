@@ -1,6 +1,7 @@
 using Codice.CM.Common.Zlib;
 using MajdataPlay.Net.Curl.PInvoke.Enums;
 using System;
+using System.Dynamic;
 using System.Runtime.InteropServices;
 using System.Threading;
 using UnityEngine;
@@ -46,10 +47,10 @@ namespace MajdataPlay.Net.Curl.PInvoke
 
         // curl_easy_setopt 的各个重载 (应对 C 语言的可变参数)
 
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public static extern CurlCode curl_easy_setopt(IntPtr handle, CurlOption option, string value);
+        [DllImport(DLL_NAME, EntryPoint = "curl_unity_setopt_string", CallingConvention = CallingConvention.Cdecl)]
+        public static extern CurlCode curl_easy_setopt(IntPtr handle, CurlOption option, [MarshalAs(UnmanagedType.LPUTF8Str)] string value);
 
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(DLL_NAME, EntryPoint = "curl_unity_setopt_long", CallingConvention = CallingConvention.Cdecl)]
         public static extern CurlCode curl_easy_setopt(IntPtr handle, CurlOption option, long value);
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
@@ -60,6 +61,30 @@ namespace MajdataPlay.Net.Curl.PInvoke
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern CurlCode curl_easy_setopt(IntPtr handle, CurlOption option, __arglist);
+
+        public static CurlCode curl_easy_getinfo(IntPtr curl, CurlInfo info, out string value)
+        {
+            var strPtr = IntPtr.Zero;
+            var result = curl_easy_getinfo_string(curl, info, out strPtr);
+            if(strPtr != IntPtr.Zero)
+            {
+                value = Marshal.PtrToStringUTF8(strPtr);
+            }
+            else
+            {
+                value = default;
+            }
+            return result;
+        }
+
+        [DllImport(DLL_NAME, EntryPoint = "curl_unity_getinfo_double", CallingConvention = CallingConvention.Cdecl)]
+        public static extern CurlCode curl_easy_getinfo(IntPtr curl, CurlInfo info, out double value);
+
+        [DllImport(DLL_NAME, EntryPoint = "curl_unity_getinfo_long", CallingConvention = CallingConvention.Cdecl)]
+        public static extern CurlCode curl_easy_getinfo(IntPtr curl, CurlInfo info, out long value);
+
+        [DllImport(DLL_NAME, EntryPoint = "curl_unity_getinfo_string", CallingConvention = CallingConvention.Cdecl)]
+        static extern CurlCode curl_easy_getinfo_string(IntPtr curl, CurlInfo info, out IntPtr value);
         #endregion
 
         #region Multi API
@@ -104,8 +129,8 @@ namespace MajdataPlay.Net.Curl.PInvoke
 
 
         // 处理自定义 HTTP 头 (curl_slist)
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public static extern IntPtr curl_slist_append(IntPtr list, string str);
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr curl_slist_append(IntPtr list, [MarshalAs(UnmanagedType.LPUTF8Str)] string str);
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern void curl_slist_free_all(IntPtr list);
