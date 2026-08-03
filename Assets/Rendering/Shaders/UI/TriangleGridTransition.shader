@@ -64,7 +64,6 @@ Shader "UI/Majdata Triangle Grid Transition"
                 float4 vertex : SV_POSITION;
                 fixed4 color : COLOR;
                 float2 texcoord : TEXCOORD0;
-                float4 screenPosition : TEXCOORD1;
             };
 
             sampler2D _MainTex;
@@ -79,7 +78,6 @@ Shader "UI/Majdata Triangle Grid Transition"
             float _MajSceneTriangleSpinDegrees;
             float _MajSceneTriangleClosing;
             float _MajSceneTransitionProgress;
-            float4 _MajSceneMainDisplayRect;
 
             static const float SQRT_THREE = 1.73205080757;
 
@@ -89,7 +87,6 @@ Shader "UI/Majdata Triangle Grid Transition"
                 output.vertex = UnityObjectToClipPos(input.vertex);
                 output.color = input.color * _Color;
                 output.texcoord = input.texcoord;
-                output.screenPosition = ComputeScreenPos(output.vertex);
                 return output;
             }
 
@@ -128,22 +125,10 @@ Shader "UI/Majdata Triangle Grid Transition"
                     return fullColor;
                 }
 
-                float hasDisplayRect = step(
-                    0.0001,
-                    _MajSceneMainDisplayRect.z * _MajSceneMainDisplayRect.w);
-                float fallbackHalfSize = min(_ScreenParams.x, _ScreenParams.y) * 0.5;
-                float2 displayCenter = lerp(
-                    _ScreenParams.xy * 0.5,
-                    _MajSceneMainDisplayRect.xy,
-                    hasDisplayRect);
-                float2 displayHalfSize = lerp(
-                    float2(fallbackHalfSize, fallbackHalfSize),
-                    _MajSceneMainDisplayRect.zw,
-                    hasDisplayRect);
-                float2 pixelPosition = input.screenPosition.xy
-                    / max(input.screenPosition.w, 0.0001) * _ScreenParams.xy;
-                float2 position = (pixelPosition - displayCenter)
-                    / max(displayHalfSize, 0.0001);
+                // MainImage is the square 1080 x 1080 Main Display quad. Building
+                // the grid in its local UV space keeps the origin at its true center
+                // on every aspect ratio, independent of a phone camera viewport.
+                float2 position = input.texcoord * 2.0 - 1.0;
                 float gridRotation = radians(_MajSceneTriangleGridRotation);
                 float2 gridPosition = Rotate(position, gridRotation);
 

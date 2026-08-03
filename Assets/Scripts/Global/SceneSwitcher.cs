@@ -39,8 +39,6 @@ namespace MajdataPlay
         [Header("Transition Animation")]
         [SerializeField]
         RectTransform _mainMaskRect;
-        [SerializeField, Tooltip("The red Main Display area used as the triangle wave's origin and bounds.")]
-        RectTransform _mainDisplayRect;
         [SerializeField, Min(1f)]
         float _coveredMaskSize = 1080f;
         [SerializeField, Min(0.01f)]
@@ -87,7 +85,6 @@ namespace MajdataPlay
         static readonly int TRIANGLE_SPIN_DEGREES_ID = Shader.PropertyToID("_MajSceneTriangleSpinDegrees");
         static readonly int TRIANGLE_CLOSING_ID = Shader.PropertyToID("_MajSceneTriangleClosing");
         static readonly int TRANSITION_PROGRESS_ID = Shader.PropertyToID("_MajSceneTransitionProgress");
-        static readonly int MAIN_DISPLAY_RECT_ID = Shader.PropertyToID("_MajSceneMainDisplayRect");
         protected override void Awake()
         {
             base.Awake();
@@ -122,13 +119,6 @@ namespace MajdataPlay
             SceneManager.activeSceneChanged -= OnUnitySceneChanged;
             CancelTransitionMotions();
             base.OnDestroy();
-        }
-        void OnRectTransformDimensionsChange()
-        {
-            if (Application.isPlaying && _mainDisplayRect != null && MainImage != null)
-            {
-                SetMainDisplayShaderRect();
-            }
         }
         void OnUnitySceneChanged(Scene current, Scene next)
         {
@@ -256,13 +246,6 @@ namespace MajdataPlay
             {
                 _mainMaskRect = MainImage.rectTransform.parent as RectTransform;
             }
-            if (_mainDisplayRect == null)
-            {
-                // In the current fader hierarchy the circular mask is also the red
-                // 1080 x 1080 Main Display rect. Keep this separate from the mask
-                // reference so it can be explicitly assigned if the hierarchy changes.
-                _mainDisplayRect = _mainMaskRect;
-            }
             if (_mainMaskRect != null && _mainMaskImage == null)
             {
                 _mainMaskImage = _mainMaskRect.GetComponent<Image>();
@@ -277,7 +260,6 @@ namespace MajdataPlay
                     .ToArray();
             }
             return _mainMaskRect != null
-                && _mainDisplayRect != null
                 && _mainMaskImage != null
                 && _mainMask != null
                 && MainImage != null
@@ -413,7 +395,6 @@ namespace MajdataPlay
             Shader.SetGlobalFloat(TRIANGLE_GRID_ROTATION_ID, _triangleGridRotation);
             Shader.SetGlobalFloat(TRIANGLE_SPIN_DEGREES_ID, _triangleSpinDegrees);
             Shader.SetGlobalFloat(TRIANGLE_CLOSING_ID, _isClosingTransition ? 1f : 0f);
-            SetMainDisplayShaderRect();
             if (_mainMaskImage != null)
             {
                 SetGraphicAlpha(_mainMaskImage, 1f);
@@ -430,36 +411,6 @@ namespace MajdataPlay
             {
                 SetGraphicAlpha(decoration, decorationAlpha);
             }
-        }
-
-        void SetMainDisplayShaderRect()
-        {
-            var displayRect = _mainDisplayRect.rect;
-            var displayCenter = displayRect.center;
-            var canvas = MainImage.canvas;
-            var canvasCamera = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
-                ? canvas.worldCamera
-                : null;
-
-            // UI vertices consumed by a shader may already be transformed into the
-            // root Canvas batching space. Screen pixels give the CPU and shader one
-            // unambiguous coordinate system and make the red Main Display center
-            // independent of the Canvas origin or the blue upper display rect.
-            var center = RectTransformUtility.WorldToScreenPoint(
-                canvasCamera,
-                _mainDisplayRect.TransformPoint(displayCenter));
-            var right = RectTransformUtility.WorldToScreenPoint(
-                canvasCamera,
-                _mainDisplayRect.TransformPoint(displayCenter + Vector2.right * (displayRect.width * 0.5f)));
-            var top = RectTransformUtility.WorldToScreenPoint(
-                canvasCamera,
-                _mainDisplayRect.TransformPoint(displayCenter + Vector2.up * (displayRect.height * 0.5f)));
-            var halfWidth = Mathf.Max(0.0001f, Vector2.Distance(center, right));
-            var halfHeight = Mathf.Max(0.0001f, Vector2.Distance(center, top));
-
-            Shader.SetGlobalVector(
-                MAIN_DISPLAY_RECT_ID,
-                new Vector4(center.x, center.y, halfWidth, halfHeight));
         }
 
         static void SetGraphicAlpha(Graphic graphic, float alpha)

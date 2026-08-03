@@ -3770,7 +3770,6 @@ MonoBehaviour:
   loadingText: {fileID: 1342664136}
   LoadingLightColor: {r: 0.3647059, g: 0.3137255, b: 0.2901961, a: 1}
   _mainMaskRect: {fileID: 1309303937}
-  _mainDisplayRect: {fileID: 1309303937}
   _coveredMaskSize: 1080
   _closeDuration: 0.9
   _openDuration: 0.8
