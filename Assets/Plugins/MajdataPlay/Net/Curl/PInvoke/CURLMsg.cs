@@ -9,6 +9,6 @@ namespace MajdataPlay.Net.Curl.PInvoke
     {
         public CurlMsgCode Code;
         public IntPtr EasyHandle;
-        public IntPtr Data;
+        public CurlMsgData Data;
     }
 }

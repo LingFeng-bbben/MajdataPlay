@@ -5,43 +5,45 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 #nullable enable
-namespace MajdataPlay.Net.Curl.Native
+namespace MajdataPlay.Net.Curl.Core
 {
     internal class CurlResponse
     {
-        public CurlCode ResultCode { get; init; }
-        public HttpStatusCode StatusCode
-        {
-            get
-            {
-                var @return = LibCurl.curl_easy_getinfo(Request.Handle, CurlInfo.ResponseCode, out long statusCode);
-                if (@return != CurlCode.Ok)
-                {
-                    return default;
-                }
-
-                return (HttpStatusCode)statusCode;
-            }
-        }
+        public CurlCode? ResultCode { get; set; }
         public CurlRequest Request { get; }
-        
-        public HttpContent Content { get; }
+        public HttpResponseMessage Message { get; }
+
 
         readonly CurlResponseStream _responseStream;
         readonly CurlReadOrWriteCallback _onWriteCallback; // Download
 
-
         public CurlResponse(CurlRequest request)
         {
-             Request = request;
+            Request = request;
              _responseStream = new CurlResponseStream();
             _onWriteCallback = OnWriteCallback;
 
-            Content = new StreamContent(_responseStream);
+            Message = new();
+            Message.Content = new StreamContent(_responseStream);
+            
             Request.SetOption(CurlOption.WriteFunction, _onWriteCallback);
+        }
+
+        public void Complete()
+        {
+            _responseStream.CompleteWriting();
+        }
+        public void Abort()
+        {
+            Abort(new OperationCanceledException("Request was aborted."));
+        }
+        public void Abort(Exception abortException)
+        {
+            _responseStream.Abort(abortException);
         }
 
         [MonoPInvokeCallback(typeof(CurlReadOrWriteCallback))]

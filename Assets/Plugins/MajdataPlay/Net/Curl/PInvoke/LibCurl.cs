@@ -62,6 +62,8 @@ namespace MajdataPlay.Net.Curl.PInvoke
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern CurlCode curl_easy_setopt(IntPtr handle, CurlOption option, __arglist);
 
+        [DllImport(DLL_NAME, EntryPoint = "curl_unity_getinfo_string", CallingConvention = CallingConvention.Cdecl)]
+        public static extern CurlCode curl_easy_getinfo(IntPtr curl, CurlInfo info, out IntPtr value);
         public static CurlCode curl_easy_getinfo(IntPtr curl, CurlInfo info, out string value)
         {
             var strPtr = IntPtr.Zero;
@@ -107,14 +109,14 @@ namespace MajdataPlay.Net.Curl.PInvoke
         public static extern IntPtr curl_multi_info_read(IntPtr multi_handle, out int msgs_in_queue);
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int curl_multi_poll(IntPtr multiHandle, 
+        public static extern CURLMcode curl_multi_poll(IntPtr multiHandle, 
             IntPtr extraFds, 
             uint extraNfds,
             int timeoutMs, 
             out int numFds);
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int curl_multi_wakeup(IntPtr multiHandle);
+        public static extern CURLMcode curl_multi_wakeup(IntPtr multiHandle);
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern CURLMcode curl_multi_setopt(IntPtr multi_handle, CURLMoption option, long value);

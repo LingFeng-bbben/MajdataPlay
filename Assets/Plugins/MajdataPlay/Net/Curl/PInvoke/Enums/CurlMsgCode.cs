@@ -10,6 +10,5 @@ namespace MajdataPlay.Net.Curl.PInvoke
     {
         None = 0,
         Done = 1,
-        Last = 2
     }
 }

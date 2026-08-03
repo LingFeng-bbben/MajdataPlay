@@ -113,6 +113,11 @@ namespace MajdataPlay.Net.Curl.PInvoke
         /// <summary>Client private key.</summary>
         Key = 10087,
 
+        /// <summary>
+        /// Represents a private handle within libcurl.
+        /// </summary>
+        Private = 10103,
+
 
         // FUNCTIONPOINT options (20000+)
 

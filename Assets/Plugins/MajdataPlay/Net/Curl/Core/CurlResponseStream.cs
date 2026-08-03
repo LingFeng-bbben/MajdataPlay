@@ -4,14 +4,17 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading.Tasks;
 #nullable enable
-namespace MajdataPlay.Net.Curl.Native
+namespace MajdataPlay.Net.Curl.Core
 {
     internal class CurlResponseStream : Stream
     {
         MemoryChunk _currentChunk;
+        Exception? _abortException;
+
         readonly BlockingCollection<MemoryChunk> _bufferQueue = new();        
 
         public void WriteChunk(ReadOnlySpan<byte> chunk)
@@ -27,6 +30,7 @@ namespace MajdataPlay.Net.Curl.Native
                 Length = chunk.Length,
                 Offset = 0
             };
+            chunk.CopyTo(buffer);
             _bufferQueue.Add(chunkInfo);
         }
 
@@ -34,9 +38,18 @@ namespace MajdataPlay.Net.Curl.Native
         {
             _bufferQueue.CompleteAdding();
         }
+        public void Abort(Exception ex)
+        {
+            _abortException = ex;
+            _bufferQueue.CompleteAdding();
+        }
 
         public override int Read(byte[] buffer, int offset, int count)
         {
+            if (_abortException != null)
+            {
+                ExceptionDispatchInfo.Capture(_abortException).Throw();
+            }
             var totalBytesRead = 0;
 
             while (count > 0)
@@ -56,6 +69,10 @@ namespace MajdataPlay.Net.Curl.Native
                     }
                     catch (InvalidOperationException)
                     {
+                        if (_abortException != null)
+                        {
+                            ExceptionDispatchInfo.Capture(_abortException).Throw();
+                        }
                         break;
                     }
                 }
@@ -91,10 +108,19 @@ namespace MajdataPlay.Net.Curl.Native
         {
             if (disposing)
             {
-                foreach (var chunk in _bufferQueue.GetConsumingEnumerable())
+                if (!_bufferQueue.IsAddingCompleted)
                 {
-                    ArrayPool<byte>.Shared.Return(chunk.Buffer ?? Array.Empty<byte>());
+                    _bufferQueue.CompleteAdding();
                 }
+                while (_bufferQueue.TryTake(out var chunk))
+                {
+                    if (chunk.Buffer != null)
+                    {
+                        ArrayPool<byte>.Shared.Return(chunk.Buffer);
+                    }
+                }
+                ArrayPool<byte>.Shared.Return(_currentChunk.Buffer ?? Array.Empty<byte>());
+                _currentChunk = default;
                 _bufferQueue.Dispose();
             }
             base.Dispose(disposing);

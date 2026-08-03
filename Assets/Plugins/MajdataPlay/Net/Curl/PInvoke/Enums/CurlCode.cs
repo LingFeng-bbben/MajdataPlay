@@ -13,7 +13,7 @@ namespace MajdataPlay.Net.Curl.PInvoke
     /// Almost all libcurl functions return a code from this enum to indicate success or the reason for failure.
     /// <c>CURLE_OK</c> (0) indicates successful completion.
     /// </remarks>
-    internal enum CurlCode
+    public enum CurlCode
     {
         /// <summary>All fine. Proceed as usual.</summary>
         Ok = 0,

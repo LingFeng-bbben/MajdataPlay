@@ -4,14 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MajdataPlay.Net.Curl.Native
+namespace MajdataPlay.Net.Curl.Core
 {
     internal enum CurlRequestState
     {
         Created,
         Submitted,
+        HeaderRead,
         Completed,
         Cancelled,
-        Disposed,
+        Faulted,
     }
 }

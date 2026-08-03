@@ -31,7 +31,7 @@ namespace MajdataPlay.Net.Curl.PInvoke
         ContentType = 0x100012,
 
         /// <summary>
-        /// Private data pointer set by CURLOPT_PRIVATE.
+        /// Private data pointer set by <see cref="CurlOption.Private"/>.
         /// char**
         /// </summary>
         Private = 0x100015,

@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MajdataPlay.Net.Curl.Native
+namespace MajdataPlay.Net.Curl.Core
 {
     internal abstract class CurlHandle : IDisposable
     {
@@ -28,7 +28,7 @@ namespace MajdataPlay.Net.Curl.Native
         [MethodImpl(MethodImplOptions.NoInlining)]
         protected void CheckCurlCode(CurlCode result)
         {
-            if (result != CurlCode.CURLE_OK)
+            if (result != CurlCode.Ok)
             {
                 IntPtr errorPtr = LibCurl.curl_easy_strerror(result);
                 string errorMessage = Marshal.PtrToStringAnsi(errorPtr) ?? "Unknown error";

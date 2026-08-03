@@ -9,22 +9,15 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 #nullable enable
-namespace MajdataPlay.Net.Curl.Native
+namespace MajdataPlay.Net.Curl.Core
 {
     internal class CurlRequest : CurlHandle
     {
-        public CurlRequestState State
-        {
-            get
-            {
-                return (CurlRequestState)Volatile.Read(ref _state);
-            }
-        }
+        
         public string RequestUri { get; }
         public HttpContent Content { get; }
         public HttpMethod Method { get; }
 
-        int _state = (int)CurlRequestState.Created;
         IntPtr _headersList = IntPtr.Zero;
 
         Stream? _contentStream;
@@ -52,36 +45,6 @@ namespace MajdataPlay.Net.Curl.Native
             Dispose();
         }
 
-        public bool TryEnterSubmittedState()
-        {
-            var lastState = Interlocked.CompareExchange(ref _state, (int)CurlRequestState.Submitted, (int)CurlRequestState.Created);
-
-            return lastState == (int)CurlRequestState.Created;
-        }
-        public bool TryEnterCompletedState()
-        {
-            var lastState = Interlocked.CompareExchange(ref _state, (int)CurlRequestState.Completed, (int)CurlRequestState.Submitted);
-
-            return lastState == (int)CurlRequestState.Submitted;
-        }
-        public bool TryEnterCancelledState()
-        {
-            var state = Volatile.Read(ref _state);
-
-            switch ((CurlRequestState)state)
-            {
-                case CurlRequestState.Created:
-                case CurlRequestState.Submitted:
-                    break;
-
-                default:
-                    return false;
-            }
-
-            var oldState = Interlocked.CompareExchange(ref _state, (int)CurlRequestState.Cancelled, state);
-
-            return oldState == state;
-        }
         public async ValueTask ReadyToSubmitAsync()
         {
             var isUpload = Method == HttpMethod.Post || Method == HttpMethod.Put || Method == HttpMethod.Patch;
