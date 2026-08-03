@@ -27,6 +27,8 @@ namespace MajdataPlay.Collections
 
         public void Add(ISongDetail item)
         {
+            NormalizeIndex();
+            var currentHash = IsEmpty ? null : Current.Hash;
             if (!_hashSet.Add(item.Hash))
             {
                 return;
@@ -43,11 +45,19 @@ namespace MajdataPlay.Collections
                 sorted.Add(item);
                 Sorted = sorted.ToArray();
             }
+            NormalizeIndex();
+            if (currentHash is not null)
+            {
+                SetCursor(currentHash);
+            }
         }
         public void Clear()
         {
             _dataSet.Clear();
             _hashSet.Clear();
+            Origin = Array.Empty<ISongDetail>();
+            Sorted = Origin;
+            NormalizeIndex();
         }
         public bool Contains(ISongDetail item)
         {
@@ -63,26 +73,12 @@ namespace MajdataPlay.Collections
         }
         public bool Remove(ISongDetail item)
         {
-            if(!_hashSet.Remove(item.Hash))
-            {
-                return false;
-            }
-            _dataSet.Remove(item);
-            Origin = _dataSet.ToArray();
-            if (!IsSorted)
-            {
-                Sorted = Origin;
-            }
-            else if (Sorted.Any(x => x.Hash == item.Hash))
-            {
-                var sorted = new List<ISongDetail>(Sorted);
-                sorted.Remove(item);
-                Sorted = sorted.ToArray();
-            }
-            return true;
+            return Remove(item.Hash);
         }
         public bool Remove(string hashBase64Str)
         {
+            NormalizeIndex();
+            var currentHash = IsEmpty ? null : Current.Hash;
             if (!_hashSet.Remove(hashBase64Str))
             {
                 return false;
@@ -97,6 +93,15 @@ namespace MajdataPlay.Collections
             if (!IsSorted)
             {
                 Sorted = Origin;
+            }
+            else
+            {
+                Sorted = Sorted.Where(x => x.Hash != hashBase64Str).ToArray();
+            }
+            NormalizeIndex();
+            if (currentHash is not null && currentHash != hashBase64Str)
+            {
+                SetCursor(currentHash);
             }
             return true;
         }

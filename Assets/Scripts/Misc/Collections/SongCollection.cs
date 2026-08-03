@@ -32,7 +32,7 @@ namespace MajdataPlay.Collections
                 {
                     throw new ArgumentOutOfRangeException("this collection is empty");
                 }
-                _index = value.Clamp(0, Origin.Length - 1);
+                _index = value.Clamp(0, Sorted.Length - 1);
             }
         }
         public ISongDetail this[int index]
@@ -167,6 +167,7 @@ namespace MajdataPlay.Collections
         }
         public void SortAndFilter(SongOrder orderBy)
         {
+            NormalizeIndex();
             if(Type == ChartStorageType.Dan || IsEmpty)
             {
                 return;
@@ -184,6 +185,7 @@ namespace MajdataPlay.Collections
         }
         public void Reset()
         {
+            NormalizeIndex();
             if (!IsSorted)
             {
                 return;
@@ -200,6 +202,15 @@ namespace MajdataPlay.Collections
                 _index = 0;
             }
             Sorted = Origin;
+        }
+        protected void NormalizeIndex()
+        {
+            if (IsEmpty)
+            {
+                _index = 0;
+                return;
+            }
+            _index = _index.Clamp(0, Sorted.Length - 1);
         }
         public void SetCursor(ISongDetail target)
         {
