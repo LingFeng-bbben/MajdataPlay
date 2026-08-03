@@ -17,6 +17,9 @@ namespace MajdataPlay.Scenes.Setting
 {
     public class SettingManager : MonoBehaviour
     {
+        const float CATEGORY_HOLD_DELAY = 0.7f;
+        const float CATEGORY_REPEAT_INTERVAL = 0.2f;
+
         public int Index { get; private set; } = 0;
         public bool IsPressed { get; private set; } = false;
         public float PressTime { get; private set; } = 0f;
@@ -47,6 +50,10 @@ namespace MajdataPlay.Scenes.Setting
         float _listCursorPos = 0;
         int _listCursorTarget = 0;
         MotionHandle _menuTitleDisplayerAnim;
+
+        float _categoryHoldTime = 0;
+        float _categoryRepeatWaitTime = 0;
+        int _categoryHoldDirection = 0;
 
         bool _isExited = false;
         bool _isInited = false;
@@ -137,6 +144,10 @@ namespace MajdataPlay.Scenes.Setting
                 MajInstances.SceneSwitcher.SwitchScene("Calibrator");
                 return;
             }
+            if (UpdateCategoryHold())
+            {
+                return;
+            }
             if (IsPressed)
             {
                 if (PressTime < 0.7f)
@@ -186,14 +197,71 @@ namespace MajdataPlay.Scenes.Setting
                 }
                 else if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A2))
                 {
-                    NextMenu();
+                    BeginCategoryHold(1);
                 }
                 else if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A7))
                 {
-                    PreviousMenu();
+                    BeginCategoryHold(-1);
                 }
             }
         }
+
+        bool UpdateCategoryHold()
+        {
+            if (_categoryHoldDirection == 0)
+            {
+                return false;
+            }
+
+            var button = _categoryHoldDirection > 0 ? ButtonZone.A2 : ButtonZone.A7;
+            if (InputManager.CheckButtonStatus(button, SwitchStatus.Off))
+            {
+                ResetCategoryHold();
+                return false;
+            }
+
+            if (_categoryHoldTime < CATEGORY_HOLD_DELAY)
+            {
+                _categoryHoldTime += Time.deltaTime;
+                return true;
+            }
+
+            _categoryRepeatWaitTime += Time.deltaTime;
+            if (_categoryRepeatWaitTime >= CATEGORY_REPEAT_INTERVAL)
+            {
+                _categoryRepeatWaitTime = 0;
+                SwitchCategory(_categoryHoldDirection);
+            }
+            return true;
+        }
+
+        void BeginCategoryHold(int direction)
+        {
+            _categoryHoldDirection = direction;
+            _categoryHoldTime = 0;
+            _categoryRepeatWaitTime = 0;
+            SwitchCategory(direction);
+        }
+
+        void ResetCategoryHold()
+        {
+            _categoryHoldDirection = 0;
+            _categoryHoldTime = 0;
+            _categoryRepeatWaitTime = 0;
+        }
+
+        void SwitchCategory(int direction)
+        {
+            if (direction > 0)
+            {
+                NextMenu();
+            }
+            else
+            {
+                PreviousMenu();
+            }
+        }
+
         async UniTaskVoid InitializeAllMenu()
         {
             foreach (var (i, menu) in menus.WithIndex())
