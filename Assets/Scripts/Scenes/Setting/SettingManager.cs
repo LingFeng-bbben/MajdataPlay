@@ -17,13 +17,7 @@ namespace MajdataPlay.Scenes.Setting
 {
     public class SettingManager : MonoBehaviour
     {
-        const float CATEGORY_HOLD_DELAY = 0.7f;
-        const float CATEGORY_REPEAT_INTERVAL = 0.2f;
-
         public int Index { get; private set; } = 0;
-        public bool IsPressed { get; private set; } = false;
-        public float PressTime { get; private set; } = 0f;
-        public int Direction { get; private set; } = 1;
         public GameSetting Setting => MajEnv.Settings;
 
         public GameObject menuPrefab;
@@ -51,9 +45,8 @@ namespace MajdataPlay.Scenes.Setting
         int _listCursorTarget = 0;
         MotionHandle _menuTitleDisplayerAnim;
 
-        float _categoryHoldTime = 0;
-        float _categoryRepeatWaitTime = 0;
-        int _categoryHoldDirection = 0;
+        HoldRepeatState _optionHold;
+        HoldRepeatState _categoryHold;
 
         bool _isExited = false;
         bool _isInited = false;
@@ -144,110 +137,90 @@ namespace MajdataPlay.Scenes.Setting
                 MajInstances.SceneSwitcher.SwitchScene("Calibrator");
                 return;
             }
-            if (UpdateCategoryHold())
+            if (UpdateHold(ref _categoryHold, ButtonZone.A2, ButtonZone.A7, out var categoryDirection))
             {
+                if (categoryDirection != 0)
+                {
+                    SwitchCategory(categoryDirection);
+                }
                 return;
             }
-            if (IsPressed)
+            if (UpdateHold(ref _optionHold, ButtonZone.A3, ButtonZone.A6, out var optionDirection))
             {
-                if (PressTime < 0.7f)
+                if (optionDirection != 0)
                 {
-                    PressTime += Time.deltaTime;
+                    SwitchOption(optionDirection);
                 }
-                if (InputManager.CheckButtonStatus(ButtonZone.A6, SwitchStatus.Off) && Direction == -1)
-                {
-                    IsPressed = false;
-                    PressTime = 0;
-                }
-                else if (InputManager.CheckButtonStatus(ButtonZone.A3, SwitchStatus.Off) && Direction == 1)
-                {
-                    IsPressed = false;
-                    PressTime = 0;
-                }
+                return;
             }
-            else
+
+            var isExitRequested = InputManager.IsButtonClickedInThisFrame(ButtonZone.A4) ||
+                                  InputManager.IsButtonClickedInThisFrame(ButtonZone.A5);
+            if (isExitRequested)
             {
-                var isExitRequested = InputManager.IsButtonClickedInThisFrame(ButtonZone.A4) ||
-                                      InputManager.IsButtonClickedInThisFrame(ButtonZone.A5);
-                if (isExitRequested)
+                MajInstances.AudioManager.ReadVolumeFromSettings();
+                _isExited = true;
+                if (MajEnv.Mode == RunningMode.View)
                 {
-                    MajInstances.AudioManager.ReadVolumeFromSettings();
-                    _isExited = true;
-                    if (MajEnv.Mode == RunningMode.View)
-                    {
-                        MajInstances.SceneSwitcher.SwitchScene("View");
-                    }
-                    else
-                    {
-                        MajInstances.SceneSwitcher.SwitchScene("List", false);
-                    }
-                    return;
+                    MajInstances.SceneSwitcher.SwitchScene("View");
                 }
-                if(InputManager.IsButtonClickedInThisFrame(ButtonZone.A3))
+                else
                 {
-                    Direction = 1;
-                    IsPressed = true;
-                    PressTime = 0;
+                    MajInstances.SceneSwitcher.SwitchScene("List", false);
                 }
-                else if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A6))
-                {
-                    Direction = -1;
-                    IsPressed = true;
-                    PressTime = 0;
-                }
-                else if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A2))
-                {
-                    BeginCategoryHold(1);
-                }
-                else if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A7))
-                {
-                    BeginCategoryHold(-1);
-                }
+                return;
+            }
+            if(InputManager.IsButtonClickedInThisFrame(ButtonZone.A3))
+            {
+                _optionHold.Begin(1);
+                SwitchOption(1);
+            }
+            else if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A6))
+            {
+                _optionHold.Begin(-1);
+                SwitchOption(-1);
+            }
+            else if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A2))
+            {
+                _categoryHold.Begin(1);
+                SwitchCategory(1);
+            }
+            else if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A7))
+            {
+                _categoryHold.Begin(-1);
+                SwitchCategory(-1);
             }
         }
 
-        bool UpdateCategoryHold()
+        bool UpdateHold(
+            ref HoldRepeatState hold,
+            ButtonZone positiveButton,
+            ButtonZone negativeButton,
+            out int repeatDirection)
         {
-            if (_categoryHoldDirection == 0)
+            repeatDirection = 0;
+            if (!hold.IsActive)
             {
                 return false;
             }
 
-            var button = _categoryHoldDirection > 0 ? ButtonZone.A2 : ButtonZone.A7;
+            var button = hold.Direction > 0 ? positiveButton : negativeButton;
             if (InputManager.CheckButtonStatus(button, SwitchStatus.Off))
             {
-                ResetCategoryHold();
+                hold.Reset();
                 return false;
             }
 
-            if (_categoryHoldTime < CATEGORY_HOLD_DELAY)
+            if (hold.Tick(Time.deltaTime))
             {
-                _categoryHoldTime += Time.deltaTime;
-                return true;
-            }
-
-            _categoryRepeatWaitTime += Time.deltaTime;
-            if (_categoryRepeatWaitTime >= CATEGORY_REPEAT_INTERVAL)
-            {
-                _categoryRepeatWaitTime = 0;
-                SwitchCategory(_categoryHoldDirection);
+                repeatDirection = hold.Direction;
             }
             return true;
         }
 
-        void BeginCategoryHold(int direction)
+        void SwitchOption(int direction)
         {
-            _categoryHoldDirection = direction;
-            _categoryHoldTime = 0;
-            _categoryRepeatWaitTime = 0;
-            SwitchCategory(direction);
-        }
-
-        void ResetCategoryHold()
-        {
-            _categoryHoldDirection = 0;
-            _categoryHoldTime = 0;
-            _categoryRepeatWaitTime = 0;
+            menus[Index].SwitchOption(direction);
         }
 
         void SwitchCategory(int direction)
@@ -403,6 +376,48 @@ namespace MajdataPlay.Scenes.Setting
             _menuTitleDisplayerAnim.TryCancel();
             InputManager.TouchButtonRingEdge = 5.4f;
             GameManager.RequestSave(this);
+        }
+
+        struct HoldRepeatState
+        {
+            const float HOLD_DELAY = 0.7f;
+            const float REPEAT_INTERVAL = 0.2f;
+
+            public bool IsActive => Direction != 0;
+            public int Direction { get; private set; }
+
+            float _holdTime;
+            float _repeatWaitTime;
+
+            public void Begin(int direction)
+            {
+                Direction = direction;
+                _holdTime = 0;
+                _repeatWaitTime = 0;
+            }
+
+            public bool Tick(float deltaTime)
+            {
+                if (_holdTime < HOLD_DELAY)
+                {
+                    _holdTime += deltaTime;
+                    return false;
+                }
+
+                _repeatWaitTime += deltaTime;
+                if (_repeatWaitTime < REPEAT_INTERVAL)
+                {
+                    return false;
+                }
+
+                _repeatWaitTime -= REPEAT_INTERVAL;
+                return true;
+            }
+
+            public void Reset()
+            {
+                this = default;
+            }
         }
     }
 }

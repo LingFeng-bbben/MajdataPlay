@@ -2,7 +2,6 @@ using LitMotion;
 using MajdataPlay.Collections;
 using MajdataPlay.Editor;
 using MajdataPlay.Extensions;
-using MajdataPlay.IO;
 using MajdataPlay.Numerics;
 using MajdataPlay.Settings;
 using MajdataPlay.Settings.Runtime;
@@ -36,7 +35,6 @@ namespace MajdataPlay.Scenes.Setting
         [SerializeField, ReadOnlyField]
         float _listCursorPos = 0;
 
-        float _lastWaitTime = 0;
         Option[] _options = Array.Empty<Option>();
 
         MotionHandle _optionAnim;
@@ -75,42 +73,15 @@ namespace MajdataPlay.Scenes.Setting
         {
             _optionAnim.TryCancel();
         }
-        void Update()
+        internal void SwitchOption(int direction)
         {
-            if(_manager.IsPressed && _manager.PressTime != 0)
+            if (direction > 0)
             {
-                if (_manager.PressTime < 0.7f)
-                {
-                    return;
-                }
-                else if (_lastWaitTime < 0.2f)
-                {
-                    _lastWaitTime += Time.deltaTime;
-                    return;
-                }
-                switch(_manager.Direction)
-                {
-                    case 1:
-                        NextOption();
-                        _lastWaitTime = 0;
-                        break;
-                    case -1:
-                        PreviousOption();
-                        _lastWaitTime = 0;
-                        break;
-                }
+                NextOption();
             }
             else
             {
-                _lastWaitTime = 0;
-                if(InputManager.IsButtonClickedInThisFrame(ButtonZone.A6))
-                {
-                    PreviousOption();
-                }
-                else if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A3))
-                {
-                    NextOption();
-                }
+                PreviousOption();
             }
         }
         void PreviousOption()
