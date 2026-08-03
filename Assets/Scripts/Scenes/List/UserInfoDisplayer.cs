@@ -40,20 +40,22 @@ namespace MajdataPlay
             Refresh();
         }
 
-        public void DisplayUserInfo(ApiEndpoint apiEndpoint)
+        public void DisplayUserInfo(ApiEndpoint? apiEndpoint)
         {
             _currentApiEndpoint = apiEndpoint;
+            gameObject.SetActive(apiEndpoint is not null);
+
+            if (apiEndpoint is not null)
+            {
+                Refresh();
+            }
         }
 
         public void DisplayFromSong(ISongDetail song)
         {
-            if (song is not OnlineSongDetail)
-            {
-                gameObject.SetActive(false);
-                return;
-            }
-            var serverInfo = ((OnlineSongDetail)song).ServerInfo;
-            DisplayUserInfo(serverInfo);     
+            DisplayUserInfo(song is OnlineSongDetail onlineSong
+                ? onlineSong.ServerInfo
+                : null);
         }
 
         void Refresh()

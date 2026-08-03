@@ -162,15 +162,10 @@ namespace MajdataPlay.Scenes.List
         void DisplayUserInfo()
         {
             //TODO: display multiple endpoints
-            var apiendpoint = MajEnv.Settings.Online.ApiEndpoints.FirstOrDefault();
-            if (apiendpoint is not null)
-            {
-                _userProfileDisplayer.DisplayUserInfo(apiendpoint);
-            }
-            else
-            {
-                _userProfileDisplayer.gameObject.SetActive(false);
-            }
+            var apiEndpoint = MajEnv.ApiEndpoints.FirstOrDefault(x => x.RuntimeConfig.IsLoggedIn)
+                           ?? MajEnv.ApiEndpoints.FirstOrDefault();
+
+            _userProfileDisplayer.DisplayUserInfo(apiEndpoint);
         }
 
         async UniTaskVoid InitializeCoverListAsync()
