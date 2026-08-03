@@ -11,7 +11,6 @@ using UnityEngine;
 using MajdataPlay.Settings.Runtime;
 using UnityEngine.Serialization;
 using TMPro;
-using MajdataPlay.Numerics;
 using LitMotion;
 
 namespace MajdataPlay.Scenes.Setting
@@ -28,7 +27,7 @@ namespace MajdataPlay.Scenes.Setting
 
         [SerializeField]
         [FormerlySerializedAs("menuTitleDisplayerPrefab")]
-        GameObject _menuTitleDisplayerPrefab;
+        MenuTitleDisplayer _menuTitleDisplayerPrefab;
 
         [SerializeField]
         [FormerlySerializedAs("menuListRoot")]
@@ -39,17 +38,14 @@ namespace MajdataPlay.Scenes.Setting
         GameObject _menuTitleDisplayerListRoot;
 
         [SerializeField]
-        [FormerlySerializedAs("currentMenuNameDisplayer")]
-        TextMeshProUGUI _currentMenuNameDisplayer;
-
-        [SerializeField]
         [FormerlySerializedAs("descriptionText")]
         TextMeshProUGUI _descriptionTextDisplayer;
 
         Menu[] menus = Array.Empty<Menu>();
-        TextDisplayer[] _menuTitleDisplayers = Array.Empty<TextDisplayer>();
+        MenuTitleDisplayer[] _menuTitleDisplayers = Array.Empty<MenuTitleDisplayer>();
 
         float _listCursorPos = 0;
+        int _listCursorTarget = 0;
         MotionHandle _menuTitleDisplayerAnim;
 
         bool _isExited = false;
@@ -64,7 +60,7 @@ namespace MajdataPlay.Scenes.Setting
         {
             var type = Setting.GetType();
             var properties = type.GetProperties()
-                                 .Where(x => x.GetCustomAttributes<HideInSettingUIAttribute>().Count() == 0)
+                                 .Where(x => !x.GetCustomAttributes<HideInSettingUIAttribute>().Any())
                                  .ToArray();
             var offset = 0;
             var listRoot = _menuListRoot.transform;
@@ -104,7 +100,7 @@ namespace MajdataPlay.Scenes.Setting
                 menu.Instance = _property.GetValue(root);
                 menu.Name = _property.Name;
             }
-            foreach (var (i, menu) in menus.WithIndex())
+            foreach (var menu in menus)
             {
                 menu.Init();
                 menu.gameObject.SetActive(true);
@@ -112,24 +108,14 @@ namespace MajdataPlay.Scenes.Setting
 
             MajInstances.AudioManager.PlaySFX("settings.wav");
 
-            _menuTitleDisplayers = new TextDisplayer[menus.Length];
+            _menuTitleDisplayers = new MenuTitleDisplayer[menus.Length];
             var menuTitleDisplayerListRoot = _menuTitleDisplayerListRoot.transform;
             for (var i = 0; i < menus.Length; i++)
             {
                 var menu = menus[i];
-                var displayerObject = Instantiate(_menuTitleDisplayerPrefab, menuTitleDisplayerListRoot);
-                var displayerTransform = displayerObject.transform;
-                var displayerRectTransform = displayerObject.GetComponent<RectTransform>();
-                var titleDisplayer = displayerObject.GetComponentInChildren<TextMeshProUGUI>();
-
-                _menuTitleDisplayers[i] = new()
-                {
-                    Name = $"MAJSETTING_CATEGORY_{menu.Name}",
-                    GameObject = displayerObject,
-                    RectTransform = displayerRectTransform,
-                    Transform = displayerTransform,
-                    TitleDisplayer = titleDisplayer
-                };
+                var displayer = Instantiate(_menuTitleDisplayerPrefab, menuTitleDisplayerListRoot);
+                displayer.Initialize($"MAJSETTING_CATEGORY_{menu.Name}");
+                _menuTitleDisplayers[i] = displayer;
             }
             UpdateMenuTitleDisplayerPosition();
             InitializeAllMenu().Forget();
@@ -139,11 +125,6 @@ namespace MajdataPlay.Scenes.Setting
             if(_isExited || !_isInited)
             {
                 return;
-            }
-            for (var i = 0; i < _menuTitleDisplayers.Length; i++)
-            {
-                var displayer = _menuTitleDisplayers[i];
-                displayer.TitleDisplayer.text = displayer.Name.i18n();
             }
             var isCalibratorRequested = InputManager.IsButtonClickedInThisFrame(ButtonZone.A1) ||
                                         InputManager.IsSensorClickedInThisFrame(SensorArea.A1);
@@ -249,46 +230,45 @@ namespace MajdataPlay.Scenes.Setting
                 _settingConfig.SelectedOption = string.Empty;
             }
             Index = index;
-            UpdateMenu(0, Index);
+            _listCursorTarget = index;
+            if (Index != 0)
+            {
+                UpdateMenu(1);
+            }
             menus[Index].ToOption(_settingConfig.SelectedOption);
         }
 
         public void PreviousMenu()
         {
-            var oldIndex = Index;
-            Index--;
-            if (Index < 0)
+            if (menus.Length <= 1)
             {
-                oldIndex = menus.Length;
-                Index = menus.Length - 1;
+                return;
             }
+
+            Index = (Index - 1 + menus.Length) % menus.Length;
+            _listCursorTarget--;
             _settingConfig.SelectedMenu = menus[Index].Name;
-            UpdateMenu(oldIndex,Index);
+            UpdateMenu(-1);
         }
         public void NextMenu()
         {
-            var oldIndex = Index;
-            Index++;
-            if (Index >= menus.Length)
+            if (menus.Length <= 1)
             {
-                oldIndex = -1;
-                Index = 0;
+                return;
             }
+
+            Index = (Index + 1) % menus.Length;
+            _listCursorTarget++;
             _settingConfig.SelectedMenu = menus[Index].Name;
-            UpdateMenu(oldIndex, Index);
+            UpdateMenu(1);
         }
         public void SetDescriptionText(string text)
         {
             _descriptionTextDisplayer.text = text.Replace('\n', ',');
         }
-        void UpdateMenu(int oldIndex,int newIndex)
+        void UpdateMenu(int direction)
         {
-            if (oldIndex == newIndex)
-            {
-                return;
-            }
-            
-            if (newIndex > oldIndex)
+            if (direction > 0)
             {
                 menus[Index].ToHead();
             }
@@ -305,8 +285,9 @@ namespace MajdataPlay.Scenes.Setting
                 }
             }
             _menuTitleDisplayerAnim.TryCancel();
-            _menuTitleDisplayerAnim = LMotion.Create(_listCursorPos, newIndex, 0.25f)
+            _menuTitleDisplayerAnim = LMotion.Create(_listCursorPos, _listCursorTarget, 0.25f)
                                              .WithEase(Ease.OutQuad)
+                                             .WithOnComplete(NormalizeMenuTitleCursor)
                                              .Bind(x =>
                                              {
                                                  _listCursorPos = x;
@@ -318,49 +299,45 @@ namespace MajdataPlay.Scenes.Setting
             for (var i = 0; i < _menuTitleDisplayers.Length; i++)
             {
                 var displayer = _menuTitleDisplayers[i];
-                var distance = i - _listCursorPos;
-                displayer.RectTransform.anchoredPosition = GetMenuTitleDisplayerPositionFromDelta(distance);
+                var distance = GetCircularMenuTitleDistance(i);
+                displayer.SetDistance(distance, _menuTitleDisplayers.Length);
             }
+        }
+        void NormalizeMenuTitleCursor()
+        {
+            _listCursorPos = Index;
+            _listCursorTarget = Index;
+            UpdateMenuTitleDisplayerPosition();
+        }
+        float GetCircularMenuTitleDistance(int displayerIndex)
+        {
+            var itemCount = _menuTitleDisplayers.Length;
+            if (itemCount <= 1)
+            {
+                return 0;
+            }
+
+            var wrappedCursorPos = Mathf.Repeat(_listCursorPos, itemCount);
+            var distance = displayerIndex - wrappedCursorPos;
+            var halfItemCount = itemCount / 2f;
+
+            if (distance > halfItemCount)
+            {
+                distance -= itemCount;
+            }
+            else if (distance < -halfItemCount)
+            {
+                distance += itemCount;
+            }
+
+            return distance;
         }
         private void OnDestroy()
         {
             _isExited = true;
+            _menuTitleDisplayerAnim.TryCancel();
             InputManager.TouchButtonRingEdge = 5.4f;
             GameManager.RequestSave(this);
-            GC.Collect();
-        }
-
-        Vector2 GetMenuTitleDisplayerPositionFromDelta(float delta)
-        {
-            const int X_POS_STEP = 164;
-            const int X_POS_WITH_DELTA_1 = 218;
-
-            var absDelta = Mathf.Abs(delta);
-            if (delta == 0)
-            {
-                return Vector2.zero;
-            }
-            else if (absDelta.InRange(0, 1))
-            {
-                return new Vector2(X_POS_WITH_DELTA_1 * absDelta * Mathf.Sign(delta), 0);
-            }
-            else
-            {
-                var index = (int)absDelta;
-                var posStartAt = X_POS_WITH_DELTA_1 + (X_POS_STEP * (index - 1));
-                var middle = X_POS_STEP * (absDelta - Mathf.Floor(absDelta));
-
-                return new Vector2((posStartAt + middle) * Mathf.Sign(delta), 0);
-            }
-        }
-
-        struct TextDisplayer
-        {
-            public required string Name { get; init; }
-            public required GameObject GameObject { get; init; }
-            public required Transform Transform { get; init; }
-            public required RectTransform RectTransform { get; init; }
-            public required TextMeshProUGUI TitleDisplayer { get; init; }
         }
     }
 }

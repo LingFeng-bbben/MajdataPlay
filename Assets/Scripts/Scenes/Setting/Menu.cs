@@ -2,7 +2,6 @@ using LitMotion;
 using MajdataPlay.Collections;
 using MajdataPlay.Editor;
 using MajdataPlay.Extensions;
-using MajdataPlay.i18n;
 using MajdataPlay.IO;
 using MajdataPlay.Numerics;
 using MajdataPlay.Settings;
@@ -11,7 +10,6 @@ using MajdataPlay.Utils;
 using System;
 using System.Linq;
 using System.Reflection;
-using TMPro;
 using UnityEngine;
 using UnityEngine.Serialization;
 #nullable enable
@@ -35,10 +33,6 @@ namespace MajdataPlay.Scenes.Setting
 
         SettingManager _manager;
 
-        [SerializeField]
-        [FormerlySerializedAs("titleText")]
-        TextMeshProUGUI _titleTextDisplayer;
-
         [SerializeField, ReadOnlyField]
         float _listCursorPos = 0;
 
@@ -56,7 +50,7 @@ namespace MajdataPlay.Scenes.Setting
         {
             var type = Instance.GetType();
             var properties = type.GetProperties()
-                                 .Where(x => x.GetCustomAttributes<HideInSettingUIAttribute>().Count() == 0)
+                                 .Where(x => !x.GetCustomAttributes<HideInSettingUIAttribute>().Any())
                                  .ToArray();
             _options = new Option[properties.Length];
             foreach(var (i,property) in properties.WithIndex())
@@ -71,9 +65,6 @@ namespace MajdataPlay.Scenes.Setting
                 option.Init();
             }
 
-            var localizedText = $"MAJSETTING_CATEGORY_{Name}".i18n();
-            _titleTextDisplayer.text = localizedText;
-            Localization.OnLanguageChanged += OnLangChanged;
             UpdateDisplayerPosition();
         }
         void OnDisable()
@@ -82,7 +73,7 @@ namespace MajdataPlay.Scenes.Setting
         }
         void OnDestroy()
         {
-            Localization.OnLanguageChanged -= OnLangChanged;
+            _optionAnim.TryCancel();
         }
         void Update()
         {
@@ -121,11 +112,6 @@ namespace MajdataPlay.Scenes.Setting
                     NextOption();
                 }
             }
-        }
-        void OnLangChanged(object? sender, Language newLanguage)
-        {
-            var localizedText = $"MAJSETTING_CATEGORY_{Name}".i18n();
-            _titleTextDisplayer.text = localizedText;
         }
         void PreviousOption()
         {
