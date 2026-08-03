@@ -203,7 +203,14 @@ namespace MajdataPlay.IO
             {
                 var decode = BassHelper.CreateStream(addr, 0, data.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
                 var stream = 0;
-                stream = BassFx.TempoCreate(decode, BassFlags.Default);
+                if (speedChange)
+                {
+                    stream = BassFx.TempoCreate(decode, BassFlags.Default);
+                }
+                else
+                {
+                    stream = BassHelper.CreateStream(addr, 0, data.LongLength, BassFlags.Prescan | BassFlags.AsyncFile);
+                }
                 Bass.LastError.EnsureSuccessStatusCode();
                 Bass.ChannelSetAttribute(stream, ChannelAttribute.Buffer, 0);
                 //scan the peak here
