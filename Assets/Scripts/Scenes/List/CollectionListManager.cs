@@ -97,6 +97,8 @@ namespace MajdataPlay.Scenes.List
         int _listDesiredPos = 0;
         [SerializeField, ReadOnlyField]
         float _listCursorPos = 0;
+        [SerializeField, ReadOnlyField]
+        int _listCursorTarget = 0;
 
         SongCollection _currentCollection = SongCollection.Empty("Empty");
         SongCollection[] _collections = Array.Empty<SongCollection>();
@@ -136,6 +138,10 @@ namespace MajdataPlay.Scenes.List
                 _idleCollectionDisplayers.Enqueue(displayer);
             }
         }
+        void OnDestroy()
+        {
+            _scrollMotion.TryCancel();
+        }
         internal void Init()
         {
             InitCollectionStorage();
@@ -155,6 +161,7 @@ namespace MajdataPlay.Scenes.List
         void SlideListTo(int pos, bool disableAnimation, bool forceUpdate)
         {
             var oldDesiredPos = _listDesiredPos;
+            var cursorDelta = pos - oldDesiredPos;
             _listDesiredPos = pos;
             if (_listDesiredPos < 0)
             {
@@ -175,7 +182,9 @@ namespace MajdataPlay.Scenes.List
             {
                 if (_listDesiredPos != oldDesiredPos || forceUpdate)
                 {
+                    _scrollMotion.TryCancel();
                     _listCursorPos = _listDesiredPos;
+                    _listCursorTarget = _listDesiredPos;
                     UpdateSongCollectionBinding();
                     UpdateDisplayerPosition();
                 }
@@ -184,7 +193,8 @@ namespace MajdataPlay.Scenes.List
             {
                 if (_listDesiredPos != oldDesiredPos || forceUpdate)
                 {
-                    DisplayerMoveTo(_listDesiredPos, DISPLAYER_ANIM_DURATION_MS / 1000f);
+                    _listCursorTarget += cursorDelta;
+                    DisplayerMoveTo(_listCursorTarget, DISPLAYER_ANIM_DURATION_MS / 1000f);
                 }
             }
         }
@@ -235,6 +245,7 @@ namespace MajdataPlay.Scenes.List
             _scrollMotion = LMotion.Create(_listCursorPos, targetPos, duration)
                                    .WithScheduler(MotionScheduler.PostLateUpdate)
                                    .WithEase(Ease.OutQuad)
+                                   .WithOnComplete(NormalizeListCursor)
                                    .Bind(x =>
                                    {
                                        _listCursorPos = x;
@@ -274,38 +285,38 @@ namespace MajdataPlay.Scenes.List
         }
         void UpdateSongCollectionBinding()
         {
-            var currentListCursorPos = (int)_listCursorPos;
             for (var i = 0; i < _collectionBindings.Length; i++)
             {
                 ref var binding = ref _collectionBindings[i];
-                var absDistance = Math.Abs(i - currentListCursorPos);
+                var absDistance = Mathf.Abs(GetCircularCollectionDistance(i));
                 var displayer = binding.Displayer;
 
-                if (absDistance > 3)
-                {                    
-                    if (displayer is null)
-                    {
-                        continue;
-                    }
-                    binding.Displayer = null;
-                    displayer.SetActive(false);
-                    _idleCollectionDisplayers.Enqueue(displayer);
-                }
-                else
+                if (absDistance <= 3 || displayer is null)
                 {
-                    if(displayer is not null)
-                    {
-                        continue;
-                    }
-                    if (!_idleCollectionDisplayers.TryDequeue(out displayer))
-                    {
-                        MajDebug.LogWarning("No idle collection displayer available.");
-                        continue;
-                    }
-                    binding.Displayer = displayer;
-                    displayer.SetCollection(binding.Collection);
-                    displayer.SetActive(true);
+                    continue;
                 }
+
+                binding.Displayer = null;
+                displayer.SetActive(false);
+                _idleCollectionDisplayers.Enqueue(displayer);
+            }
+
+            for (var i = 0; i < _collectionBindings.Length; i++)
+            {
+                ref var binding = ref _collectionBindings[i];
+                var absDistance = Mathf.Abs(GetCircularCollectionDistance(i));
+                if (absDistance > 3 || binding.Displayer is not null)
+                {
+                    continue;
+                }
+                if (!_idleCollectionDisplayers.TryDequeue(out var displayer))
+                {
+                    MajDebug.LogWarning("No idle collection displayer available.");
+                    continue;
+                }
+                binding.Displayer = displayer;
+                displayer.SetCollection(binding.Collection);
+                displayer.SetActive(true);
             }
         }
         void UpdateDisplayerPosition()
@@ -318,9 +329,39 @@ namespace MajdataPlay.Scenes.List
                 {
                     continue;
                 }
-                var delta = i - _listCursorPos;
+                var delta = GetCircularCollectionDistance(i);
                 displayer.RectTransform.anchoredPosition = GetDisplayerPositionFromDelta(delta);
             }
+        }
+        void NormalizeListCursor()
+        {
+            _listCursorPos = _listDesiredPos;
+            _listCursorTarget = _listDesiredPos;
+            UpdateSongCollectionBinding();
+            UpdateDisplayerPosition();
+        }
+        float GetCircularCollectionDistance(int collectionIndex)
+        {
+            var collectionCount = _collectionBindings.Length;
+            if (collectionCount <= 1)
+            {
+                return 0;
+            }
+
+            var wrappedCursorPos = Mathf.Repeat(_listCursorPos, collectionCount);
+            var distance = collectionIndex - wrappedCursorPos;
+            var halfCollectionCount = collectionCount / 2f;
+
+            if (distance > halfCollectionCount)
+            {
+                distance -= collectionCount;
+            }
+            else if (distance < -halfCollectionCount)
+            {
+                distance += collectionCount;
+            }
+
+            return distance;
         }
         void UpdateListConfiguration()
         {
