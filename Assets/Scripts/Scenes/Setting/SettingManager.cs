@@ -106,6 +106,8 @@ namespace MajdataPlay.Scenes.Setting
                 menu.gameObject.SetActive(true);
             }
 
+            RestoreSelectedMenu();
+
             MajInstances.AudioManager.PlaySFX("settings.wav");
 
             _menuTitleDisplayers = new MenuTitleDisplayer[menus.Length];
@@ -202,7 +204,7 @@ namespace MajdataPlay.Scenes.Setting
                 }
             }
             await UniTask.DelayFrame(3);
-            await SwitchToDesiredIndex();
+            menus[Index].ToOption(_settingConfig.SelectedOption);
             MajInstances.SceneSwitcher.FadeOut();
             SetSettingLights();
             _isInited = true;
@@ -219,23 +221,18 @@ namespace MajdataPlay.Scenes.Setting
             CabinetLed.SetButtonLight(Color.blue, 7);
         }
 
-        async UniTask SwitchToDesiredIndex()
+        void RestoreSelectedMenu()
         {
-            await UniTask.Yield();
-            var index = 0;
-            index = Array.FindIndex(menus, x => x.Name == _settingConfig.SelectedMenu);
+            var index = Array.FindIndex(menus, x => x.Name == _settingConfig.SelectedMenu);
             if(index == -1)
             {
                 index = Array.FindIndex(menus, x => x.Name == nameof(GameSetting.Game));
                 _settingConfig.SelectedOption = string.Empty;
             }
+
             Index = index;
+            _listCursorPos = index;
             _listCursorTarget = index;
-            if (Index != 0)
-            {
-                UpdateMenu(1);
-            }
-            menus[Index].ToOption(_settingConfig.SelectedOption);
         }
 
         public void PreviousMenu()
