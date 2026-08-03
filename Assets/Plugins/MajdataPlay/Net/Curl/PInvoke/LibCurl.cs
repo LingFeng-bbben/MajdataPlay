@@ -1,9 +1,16 @@
+using Codice.CM.Common.Zlib;
+using MajdataPlay.Net.Curl.PInvoke.Enums;
 using System;
 using System.Runtime.InteropServices;
+using System.Threading;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace MajdataPlay.Net.Curl.PInvoke
 {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate UIntPtr CurlReadOrWriteCallback(IntPtr ptr, UIntPtr size, UIntPtr nmemb, IntPtr userdata);
+
     internal class LibCurl
     {
 #if UNITY_IOS
@@ -16,10 +23,7 @@ namespace MajdataPlay.Net.Curl.PInvoke
         public const long CURL_GLOBAL_WIN32 = 1 << 1;
         public const long CURL_GLOBAL_ALL = CURL_GLOBAL_SSL | CURL_GLOBAL_WIN32;
         public const long CURL_GLOBAL_DEFAULT = CURL_GLOBAL_ALL;
-
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate UIntPtr CurlWriteCallback(IntPtr ptr, UIntPtr size, UIntPtr nmemb, IntPtr userdata);
+        
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern CurlCode curl_global_init(long flags);
@@ -27,6 +31,7 @@ namespace MajdataPlay.Net.Curl.PInvoke
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern void curl_global_cleanup();
 
+        #region Easy API
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr curl_easy_init();
 
@@ -48,10 +53,55 @@ namespace MajdataPlay.Net.Curl.PInvoke
         public static extern CurlCode curl_easy_setopt(IntPtr handle, CurlOption option, long value);
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CurlCode curl_easy_setopt(IntPtr handle, CurlOption option, CurlWriteCallback value);
+        public static extern CurlCode curl_easy_setopt(IntPtr handle, CurlOption option, CurlReadOrWriteCallback value);
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern CurlCode curl_easy_setopt(IntPtr handle, CurlOption option, IntPtr value);
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern CurlCode curl_easy_setopt(IntPtr handle, CurlOption option, __arglist);
+        #endregion
+
+        #region Multi API
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr curl_multi_init();
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern CURLMcode curl_multi_cleanup(IntPtr multi_handle);
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern CURLMcode curl_multi_add_handle(IntPtr multi_handle, IntPtr easy_handle);
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern CURLMcode curl_multi_remove_handle(IntPtr multi_handle, IntPtr easy_handle);
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern CURLMcode curl_multi_perform(IntPtr multi_handle, out int running_handles);
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr curl_multi_info_read(IntPtr multi_handle, out int msgs_in_queue);
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int curl_multi_poll(IntPtr multiHandle, 
+            IntPtr extraFds, 
+            uint extraNfds,
+            int timeoutMs, 
+            out int numFds);
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int curl_multi_wakeup(IntPtr multiHandle);
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern CURLMcode curl_multi_setopt(IntPtr multi_handle, CURLMoption option, long value);
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern CURLMcode curl_multi_setopt(IntPtr multi_handle, CURLMoption option, IntPtr pointer);
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern CURLMcode curl_multi_setopt(IntPtr multi_handle, CURLMoption option, __arglist);
+
+        #endregion
+
 
         // 处理自定义 HTTP 头 (curl_slist)
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]

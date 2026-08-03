@@ -1,0 +1,114 @@
+﻿using System;
+using System.Buffers;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+#nullable enable
+namespace MajdataPlay.Net.Curl.Native
+{
+    internal class CurlResponseStream : Stream
+    {
+        MemoryChunk _currentChunk;
+        readonly BlockingCollection<MemoryChunk> _bufferQueue = new();        
+
+        public void WriteChunk(ReadOnlySpan<byte> chunk)
+        {
+            if (chunk.IsEmpty)
+            {
+                return;
+            }
+            var buffer = ArrayPool<byte>.Shared.Rent(chunk.Length);
+            var chunkInfo = new MemoryChunk()
+            {
+                Buffer = buffer,
+                Length = chunk.Length,
+                Offset = 0
+            };
+            _bufferQueue.Add(chunkInfo);
+        }
+
+        public void CompleteWriting()
+        {
+            _bufferQueue.CompleteAdding();
+        }
+
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            var totalBytesRead = 0;
+
+            while (count > 0)
+            {
+                if (_currentChunk.IsCompleted)
+                {
+                    ArrayPool<byte>.Shared.Return(_currentChunk.Buffer ?? Array.Empty<byte>());
+                    _currentChunk = default;
+                    if (_bufferQueue.IsCompleted)
+                    {
+                        break;
+                    }
+
+                    try
+                    {
+                        _currentChunk = _bufferQueue.Take();
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        break;
+                    }
+                }
+                ref var chunk = ref _currentChunk;
+                var bytesToCopy = Math.Min(count, chunk.Length - chunk.Offset);
+                Buffer.BlockCopy(chunk.Buffer, chunk.Offset, buffer, offset, bytesToCopy);
+
+                offset += bytesToCopy;
+                count -= bytesToCopy;
+                totalBytesRead += bytesToCopy;
+                chunk.Offset += bytesToCopy;
+
+                if (totalBytesRead > 0)
+                {
+                    break;
+                }
+            }
+
+            return totalBytesRead;
+        }
+
+        public override bool CanRead => true;
+        public override bool CanSeek => false;
+        public override bool CanWrite => false;
+        public override long Length => throw new NotSupportedException();
+        public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
+        public override void Flush() { }
+        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+        public override void SetLength(long value) => throw new NotSupportedException();
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                foreach (var chunk in _bufferQueue.GetConsumingEnumerable())
+                {
+                    ArrayPool<byte>.Shared.Return(chunk.Buffer ?? Array.Empty<byte>());
+                }
+                _bufferQueue.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        struct MemoryChunk
+        {
+            public byte[] Buffer { get; init; }
+            public int Length { get; init; }
+            public int Offset { get; set; }
+            public bool IsCompleted
+            {
+                get => Offset >= Length;
+            }
+        }
+    }
+}
