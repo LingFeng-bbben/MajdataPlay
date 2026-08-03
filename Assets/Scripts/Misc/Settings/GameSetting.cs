@@ -88,6 +88,10 @@ namespace MajdataPlay.Settings
         
         public RecordModeOption RecordMode { get; set; } = RecordModeOption.Disable;
 #endif
+        [Step("1")]
+        [Range("1", "5", HasMax = true, HasMin = true)]
+        public int LeadInTime { get; set; } = 1;
+
         public bool ManualStartGame { get; set; } = false;
     }
     

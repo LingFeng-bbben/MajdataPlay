@@ -984,14 +984,15 @@ namespace MajdataPlay.Scenes.Game
             const float BG_FADE_IN_LENGTH_SEC = 0.25f;
             Time.timeScale = 1f;
             var firstClockTiming = _noteAudioManager.FirstClockTiming;
-            float extraTime = 3f;
+            var leadInTime = _gameSettings.Game.LeadInTime.Clamp(1, 5);
+            float extraTime = leadInTime;
             if (firstClockTiming < 0f)
             {
-                extraTime = (-(float)firstClockTiming) + 3f;
+                extraTime = (-(float)firstClockTiming) + leadInTime;
             }
             if (FirstNoteAppearTiming < 0f)
             {
-                extraTime = MathF.Min(extraTime, (-FirstNoteAppearTiming + 3f));
+                extraTime = MathF.Min(extraTime, (-FirstNoteAppearTiming + leadInTime));
             }            
 
             await _noteManager.InitAsync();
