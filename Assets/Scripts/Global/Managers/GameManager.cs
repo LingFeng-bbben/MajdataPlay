@@ -654,7 +654,7 @@ namespace MajdataPlay
                 }
                 if (!task.IsCompletedSuccessfully)
                 {
-                    MajInstances.SceneSwitcher.SetLoadingText("MAJTEXT_SCAN_CHARTS_FAILED".i18n(), Color.red);
+                    MajInstances.SceneSwitcher.SetLoadingText("MAJTEXT_ERR_SCAN_CHARTS_FAILED".i18n(), Color.red);
                 }
                 else
                 {

@@ -47,7 +47,7 @@ namespace MajdataPlay.Editor
             "MAJTEXT_SCORE_SENDING",
             "MAJTEXT_LOADING_CHART",
             "MAJTEXT_WAITING_FOR_BACKGROUND_TASKS_SUSPEND",
-            "MAJTEXT_LOGING_OUT",
+            "MAJTEXT_LOGGING_OUT",
             "MAJTEXT_LOADING_SCORE_STORAGE",
             "MAJTEXT_LOADING_SKIN",
             "MAJTEXT_DESERIALIZATION",
@@ -64,7 +64,10 @@ namespace MajdataPlay.Editor
             "MAJTEXT_PRESS_ANY_KEY",
             "MAJTEXT_SAY",
             "MAJTEXT_SCANNING_CHARTS",
-            "MAJTEXT_SCANNING_CHARTS_FROM_{0}"
+            "MAJTEXT_SCANNING_CHARTS_FROM_{0}",
+            "MAJTEXT_CLEANING_UP",
+            "MAJTEXT_ONLINE_MACHINE_AUTH_REQUEST_FAILED",
+            "MAJTEXT_ONLINE_MACHINE_REGISTRATION_UNSUPPORTED"
         };
         static string[] _err_translations = new string[]
         {

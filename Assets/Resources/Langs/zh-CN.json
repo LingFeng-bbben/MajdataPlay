@@ -97,7 +97,7 @@
     "MAJSETTING_PROPERTY_Ex": "Ex判定音",
     "MAJSETTING_PROPERTY_Ex_DESC": "调整Ex音符的判定音量",
     "MAJSETTING_PROPERTY_EnableJudgeTimingGauge": "显示判定偏移指示器",
-    "MAJSETTING_PROPERTY_EnableJudgeTimingGauge_DESC": "",
+    "MAJSETTING_PROPERTY_EnableJudgeTimingGauge_DESC": "显示实时判定偏移与平均判定位置",
     "MAJSETTING_PROPERTY_FPSLimit": "帧率限制",
     "MAJSETTING_PROPERTY_FPSLimit_DESC": "限制最高帧率",
     "MAJSETTING_PROPERTY_FastLateType": "Fast/Late显示等级",
@@ -342,6 +342,9 @@
     "MAJTEXT_ERR_EMPTY_CHART": "此难度为空",
     "MAJTEXT_ERR_SCAN_CHARTS_FAILED": "扫描谱面失败",
     "MAJTEXT_ERR_SCAN_ONLINE_FAV_COLLECTION_FAILED": "获取在线收藏失败",
-    "MAJTEXT_ERR_NO_CHART": "没有可用的谱面"
+    "MAJTEXT_ERR_NO_CHART": "没有可用的谱面",
+    "MAJTEXT_CLEANING_UP": "正在清理…",
+    "MAJTEXT_ONLINE_MACHINE_AUTH_REQUEST_FAILED": "设备授权请求失败",
+    "MAJTEXT_ONLINE_MACHINE_REGISTRATION_UNSUPPORTED": "服务器不支持设备注册"
   }
 }
