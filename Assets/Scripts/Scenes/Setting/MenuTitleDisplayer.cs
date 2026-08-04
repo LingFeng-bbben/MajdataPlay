@@ -11,7 +11,6 @@ namespace MajdataPlay.Scenes.Setting
     {
         const float X_POS_STEP = 164f;
         const float X_POS_WITH_DELTA_1 = 218f;
-        const float LOOP_SEAM_FADE_DISTANCE = 0.5f;
 
         [SerializeField]
         Image _unselectedBackground = null!;
@@ -73,11 +72,10 @@ namespace MajdataPlay.Scenes.Setting
             UpdateLocalizedText();
         }
 
-        internal void SetDistance(float distance, int itemCount)
+        internal void SetDistance(float distance)
         {
             var absDistance = Mathf.Abs(distance);
             var selectedAmount = 1f - Mathf.Clamp01(absDistance);
-            var visibility = GetLoopSeamVisibility(absDistance, itemCount);
 
             _rectTransform.anchoredPosition = new Vector2(GetHorizontalPosition(distance, absDistance), 0);
             _rectTransform.sizeDelta = Vector2.Lerp(_unselectedSize, _selectedSize, selectedAmount);
@@ -85,13 +83,13 @@ namespace MajdataPlay.Scenes.Setting
 
             _unselectedBackground.color = WithAlpha(
                 _unselectedBackgroundColor,
-                _unselectedBackgroundColor.a * (1f - selectedAmount) * visibility);
+                _unselectedBackgroundColor.a * (1f - selectedAmount));
             _selectedBackground.color = WithAlpha(
                 _selectedBackgroundColor,
-                _selectedBackgroundColor.a * selectedAmount * visibility);
+                _selectedBackgroundColor.a * selectedAmount);
 
             var textColor = Color.Lerp(_unselectedTextColor, _selectedTextColor, selectedAmount);
-            _titleDisplayer.color = WithAlpha(textColor, textColor.a * visibility);
+            _titleDisplayer.color = textColor;
             _titleDisplayer.fontSizeMin = Mathf.Lerp(_unselectedFontSizeMin, _selectedFontSizeMin, selectedAmount);
             _titleDisplayer.fontSizeMax = Mathf.Lerp(_unselectedFontSizeMax, _selectedFontSizeMax, selectedAmount);
         }
@@ -117,18 +115,6 @@ namespace MajdataPlay.Scenes.Setting
             }
 
             return Mathf.Sign(distance) * (X_POS_WITH_DELTA_1 + X_POS_STEP * (absDistance - 1f));
-        }
-
-        static float GetLoopSeamVisibility(float absDistance, int itemCount)
-        {
-            if (itemCount <= 1)
-            {
-                return 1f;
-            }
-
-            var seamDistance = itemCount / 2f;
-            var fadeStart = seamDistance - LOOP_SEAM_FADE_DISTANCE;
-            return 1f - Mathf.InverseLerp(fadeStart, seamDistance, absDistance);
         }
 
         static Color WithAlpha(Color color, float alpha)

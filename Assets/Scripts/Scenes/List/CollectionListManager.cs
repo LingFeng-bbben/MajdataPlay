@@ -89,14 +89,12 @@ namespace MajdataPlay.Scenes.List
         int _listDesiredPos = 0;
         [SerializeField, ReadOnlyField]
         float _listCursorPos = 0;
-        [SerializeField, ReadOnlyField]
-        int _listCursorTarget = 0;
 
         SongCollection _currentCollection = SongCollection.Empty("Empty");
         SongCollection[] _collections = Array.Empty<SongCollection>();
 
         CollectionDisplayer[] _collectionDisplayers = Array.Empty<CollectionDisplayer>();
-        int[] _collectionDisplayerVirtualIndices = Array.Empty<int>();
+        int[] _collectionDisplayerIndices = Array.Empty<int>();
 
         SongCollection[] _easySortedCollections = Array.Empty<SongCollection>();
         SongCollection[] _basicSortedCollections = Array.Empty<SongCollection>();
@@ -116,7 +114,8 @@ namespace MajdataPlay.Scenes.List
             var collectionListRoot = _collectionListRoot.transform;
             var displayerCount = collectionListRoot.childCount;
             _collectionDisplayers = new CollectionDisplayer[displayerCount];
-            _collectionDisplayerVirtualIndices = new int[displayerCount];
+            _collectionDisplayerIndices = new int[displayerCount];
+            Array.Fill(_collectionDisplayerIndices, -1);
             for (int i = 0; i < displayerCount; i++)
             {
                 var child = collectionListRoot.GetChild(i);
@@ -138,11 +137,6 @@ namespace MajdataPlay.Scenes.List
             InitCollectionStorage();
             RestoreContextFromConfiguration();
         }
-        internal void SlideList(int delta, bool disableAnimation = false, bool forceUpdate = false)
-        {
-            var pos = _listDesiredPos + delta;
-            SlideListTo(pos, disableAnimation, forceUpdate);
-        }
         public void SlideDifficulty(int delta)
         {
             var pos = _selectedDifficulty + delta;
@@ -151,7 +145,7 @@ namespace MajdataPlay.Scenes.List
         void SlideListTo(int pos, bool disableAnimation, bool forceUpdate)
         {
             var oldDesiredPos = _listDesiredPos;
-            var cursorDelta = pos - oldDesiredPos;
+            var crossesBoundary = pos < 0 || pos >= _collections.Length;
             _listDesiredPos = WrapIndex(pos, _collections.Length);
             UpdateSelectedSongCollection();
             UpdateListConfiguration();
@@ -163,18 +157,15 @@ namespace MajdataPlay.Scenes.List
             }
 
             _coverListManager.SetCollection(_currentCollection, false);
-            if (disableAnimation)
+            if (disableAnimation || crossesBoundary)
             {
                 _scrollMotion.TryCancel();
                 _listCursorPos = _listDesiredPos;
-                _listCursorTarget = _listDesiredPos;
-                InitializeCollectionDisplayers();
                 UpdateDisplayerPosition();
             }
             else
             {
-                _listCursorTarget += cursorDelta;
-                DisplayerMoveTo(_listCursorTarget, DISPLAYER_ANIM_DURATION_MS / 1000f);
+                DisplayerMoveTo(_listDesiredPos, DISPLAYER_ANIM_DURATION_MS / 1000f);
             }
         }
         void SlideToDifficulty(int pos)
@@ -199,13 +190,8 @@ namespace MajdataPlay.Scenes.List
         }
         void ChangeCollection(int delta)
         {
-            var oldPosition = _listDesiredPos;
-            SlideList(delta);
-            if (oldPosition == _listDesiredPos)
-            {
-                return;
-            }
-
+            var targetPosition = _listDesiredPos + delta;
+            SlideListTo(targetPosition, false, false);
             if (delta > 0)
             {
                 _coverListManager.SlideListToHead();
@@ -262,65 +248,67 @@ namespace MajdataPlay.Scenes.List
         void UpdateDisplayerPosition()
         {
             var displayerCount = _collectionDisplayers.Length;
-            if (displayerCount == 0)
+            if (displayerCount == 0 || _collections.Length == 0)
             {
                 return;
             }
 
-            var recycleDistance = displayerCount / 2f;
+            var firstVisibleIndex = Mathf.Max(0, Mathf.CeilToInt(_listCursorPos - VISIBLE_COLLECTION_DISTANCE));
+            var lastVisibleIndex = Mathf.Min(
+                _collections.Length - 1,
+                Mathf.FloorToInt(_listCursorPos + VISIBLE_COLLECTION_DISTANCE));
+
             for (var i = 0; i < displayerCount; i++)
             {
-                var virtualIndex = _collectionDisplayerVirtualIndices[i];
-                var distance = virtualIndex - _listCursorPos;
-
-                while (distance < -recycleDistance)
+                var collectionIndex = _collectionDisplayerIndices[i];
+                if (collectionIndex >= firstVisibleIndex && collectionIndex <= lastVisibleIndex)
                 {
-                    virtualIndex += displayerCount;
-                    distance += displayerCount;
-                }
-                while (distance > recycleDistance)
-                {
-                    virtualIndex -= displayerCount;
-                    distance -= displayerCount;
+                    continue;
                 }
 
-                if (virtualIndex != _collectionDisplayerVirtualIndices[i])
+                _collectionDisplayerIndices[i] = -1;
+                _collectionDisplayers[i].SetActive(false);
+            }
+
+            for (var collectionIndex = firstVisibleIndex; collectionIndex <= lastVisibleIndex; collectionIndex++)
+            {
+                if (Array.IndexOf(_collectionDisplayerIndices, collectionIndex) >= 0)
                 {
-                    BindCollectionDisplayer(i, virtualIndex);
+                    continue;
+                }
+
+                var displayerIndex = Array.IndexOf(_collectionDisplayerIndices, -1);
+                if (displayerIndex < 0)
+                {
+                    break;
+                }
+                BindCollectionDisplayer(displayerIndex, collectionIndex);
+            }
+
+            for (var i = 0; i < displayerCount; i++)
+            {
+                var collectionIndex = _collectionDisplayerIndices[i];
+                if (collectionIndex < 0)
+                {
+                    continue;
                 }
 
                 var displayer = _collectionDisplayers[i];
-                displayer.SetActive(Mathf.Abs(distance) <= VISIBLE_COLLECTION_DISTANCE);
+                var distance = collectionIndex - _listCursorPos;
                 displayer.RectTransform.anchoredPosition = GetDisplayerPositionFromDelta(distance);
             }
         }
         void NormalizeListCursor()
         {
-            var virtualOffset = Mathf.RoundToInt(_listCursorPos - _listDesiredPos);
             _listCursorPos = _listDesiredPos;
-            _listCursorTarget = _listDesiredPos;
-            if (virtualOffset != 0)
-            {
-                for (var i = 0; i < _collectionDisplayerVirtualIndices.Length; i++)
-                {
-                    _collectionDisplayerVirtualIndices[i] -= virtualOffset;
-                }
-            }
             UpdateDisplayerPosition();
         }
-        void InitializeCollectionDisplayers()
+        void BindCollectionDisplayer(int displayerIndex, int collectionIndex)
         {
-            var firstVirtualIndex = _listDesiredPos - (_collectionDisplayers.Length / 2);
-            for (var i = 0; i < _collectionDisplayers.Length; i++)
-            {
-                BindCollectionDisplayer(i, firstVirtualIndex + i);
-            }
-        }
-        void BindCollectionDisplayer(int displayerIndex, int virtualIndex)
-        {
-            _collectionDisplayerVirtualIndices[displayerIndex] = virtualIndex;
-            var collectionIndex = WrapIndex(virtualIndex, _collections.Length);
-            _collectionDisplayers[displayerIndex].SetCollection(_collections[collectionIndex]);
+            _collectionDisplayerIndices[displayerIndex] = collectionIndex;
+            var displayer = _collectionDisplayers[displayerIndex];
+            displayer.SetCollection(_collections[collectionIndex]);
+            displayer.SetActive(true);
         }
         static int WrapIndex(int index, int count)
         {

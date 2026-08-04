@@ -276,35 +276,40 @@ namespace MajdataPlay.Scenes.Setting
             _listCursorTarget = index;
         }
 
-        public void PreviousMenu()
+        internal void PreviousMenu()
         {
-            if (menus.Length <= 1)
-            {
-                return;
-            }
-
-            Index = (Index - 1 + menus.Length) % menus.Length;
-            _listCursorTarget--;
-            _settingConfig.SelectedMenu = menus[Index].Name;
-            UpdateMenu(-1);
+            MoveMenu(-1);
         }
-        public void NextMenu()
+        internal void NextMenu()
         {
-            if (menus.Length <= 1)
+            MoveMenu(1);
+        }
+        void MoveMenu(int direction)
+        {
+            if (menus.Length == 0)
             {
                 return;
             }
 
-            Index = (Index + 1) % menus.Length;
-            _listCursorTarget++;
+            var targetIndex = Index + direction;
+            var crossesBoundary = targetIndex < 0 || targetIndex >= menus.Length;
+            targetIndex = targetIndex switch
+            {
+                < 0 => menus.Length - 1,
+                _ when targetIndex >= menus.Length => 0,
+                _ => targetIndex
+            };
+
+            Index = targetIndex;
+            _listCursorTarget = targetIndex;
             _settingConfig.SelectedMenu = menus[Index].Name;
-            UpdateMenu(1);
+            UpdateMenu(direction, !crossesBoundary);
         }
         public void SetDescriptionText(string text)
         {
             _descriptionTextDisplayer.text = text.Replace('\n', ',');
         }
-        void UpdateMenu(int direction)
+        void UpdateMenu(int direction, bool animateTitle = true)
         {
             if (direction > 0)
             {
@@ -323,6 +328,12 @@ namespace MajdataPlay.Scenes.Setting
                 }
             }
             _menuTitleDisplayerAnim.TryCancel();
+            if (!animateTitle)
+            {
+                _listCursorPos = Index;
+                UpdateMenuTitleDisplayerPosition();
+                return;
+            }
             _menuTitleDisplayerAnim = LMotion.Create(_listCursorPos, _listCursorTarget, 0.25f)
                                              .WithEase(Ease.OutQuad)
                                              .WithOnComplete(NormalizeMenuTitleCursor)
@@ -337,8 +348,8 @@ namespace MajdataPlay.Scenes.Setting
             for (var i = 0; i < _menuTitleDisplayers.Length; i++)
             {
                 var displayer = _menuTitleDisplayers[i];
-                var distance = GetCircularMenuTitleDistance(i);
-                displayer.SetDistance(distance, _menuTitleDisplayers.Length);
+                var distance = i - _listCursorPos;
+                displayer.SetDistance(distance);
             }
         }
         void NormalizeMenuTitleCursor()
@@ -346,29 +357,6 @@ namespace MajdataPlay.Scenes.Setting
             _listCursorPos = Index;
             _listCursorTarget = Index;
             UpdateMenuTitleDisplayerPosition();
-        }
-        float GetCircularMenuTitleDistance(int displayerIndex)
-        {
-            var itemCount = _menuTitleDisplayers.Length;
-            if (itemCount <= 1)
-            {
-                return 0;
-            }
-
-            var wrappedCursorPos = Mathf.Repeat(_listCursorPos, itemCount);
-            var distance = displayerIndex - wrappedCursorPos;
-            var halfItemCount = itemCount / 2f;
-
-            if (distance > halfItemCount)
-            {
-                distance -= itemCount;
-            }
-            else if (distance < -halfItemCount)
-            {
-                distance += itemCount;
-            }
-
-            return distance;
         }
         private void OnDestroy()
         {
