@@ -40,6 +40,7 @@
     "MAJSETTING_GENERAL_OPTION_Inner": "Inner",
     "MAJSETTING_GENERAL_OPTION_Inner_Only": "Inner only",
     "MAJTEXT_LIST_INPUT_HINT": "Press Select P1 (or touch secondary screen) to search and sort songs, long press to refresh the song list. Touch the song cover for random selection.\nLong press Button 4 to start practice mode. Long press Button 5 to logout. Press Alt+Enter to toggle full-screen mode. Press Alt+F4 to exit the game.",
+    "MAJTEXT_LIST_EMPTY_COLLECTION": "Oops... This collection is empty or contains no matching charts",
     "MAJTEXT_LOADING_CHART": "Loading chart",
     "MAJTEXT_VERSION_FORMAT": "Version: {0}",
     "MAJSETTING_CATEGORY_Audio": "Audio Settings",

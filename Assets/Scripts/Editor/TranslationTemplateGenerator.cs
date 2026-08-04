@@ -33,7 +33,8 @@ namespace MajdataPlay.Editor
             },
             { "List", new string[]
                 {
-                    "INPUT_HINT"
+                    "INPUT_HINT",
+                    "EMPTY_COLLECTION"
                 }
             }
         };

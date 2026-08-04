@@ -3,6 +3,7 @@ using MajdataPlay.Buffers;
 using MajdataPlay.Collections;
 using MajdataPlay.Diagnostics;
 using MajdataPlay.Editor;
+using MajdataPlay.i18n;
 using MajdataPlay.Numerics;
 using MajdataPlay.Scenes.List.Models;
 using MajdataPlay.Settings.Runtime;
@@ -74,6 +75,7 @@ namespace MajdataPlay.Scenes.List
 
         ListManager _listManager;
         PreviewSoundPlayer _previewSoundPlayer;
+        TextMeshProUGUI _emptyCollectionMessageDisplayer = null!;
 
         SongCollection _currentCollection = SongCollection.Empty("Empty");
 
@@ -100,6 +102,9 @@ namespace MajdataPlay.Scenes.List
         {
             Majdata<CoverListManager>.Instance = this;
             _previewSoundPlayer = GetComponent<PreviewSoundPlayer>();
+            _emptyCollectionMessageDisplayer = _emptyCollectionNotice.GetComponentInChildren<TextMeshProUGUI>(true);
+            Localization.OnLanguageChanged += OnLanguageChanged;
+            UpdateEmptyCollectionMessage();
         }
         void Start()
         {
@@ -139,9 +144,18 @@ namespace MajdataPlay.Scenes.List
         }
         void OnDestroy()
         {
+            Localization.OnLanguageChanged -= OnLanguageChanged;
             Majdata<CoverListManager>.Free();
             
             _idleSongCoverDisplayer.Clear();
+        }
+        void OnLanguageChanged(object? sender, Language language)
+        {
+            UpdateEmptyCollectionMessage();
+        }
+        void UpdateEmptyCollectionMessage()
+        {
+            _emptyCollectionMessageDisplayer.text = "MAJTEXT_LIST_EMPTY_COLLECTION".i18n();
         }
         #endregion
         internal void SetCollection(SongCollection collection, bool keepCursor)
