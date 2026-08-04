@@ -801,7 +801,7 @@ namespace MajdataPlay.IO
                         //see also https://github.com/Sucareto/Mai2Touch/tree/main/Mai2Touch
 
                         serialSession.Write(encoding.GetBytes("{RSET}"));
-                        Task.Delay(3000);
+                        Thread.Sleep(3000);
                         //wait for board to reboot
                         serialSession.Write(encoding.GetBytes("{HALT}"));
 
