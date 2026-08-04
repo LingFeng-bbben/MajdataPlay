@@ -801,8 +801,17 @@ namespace MajdataPlay.IO
                         //see also https://github.com/Sucareto/Mai2Touch/tree/main/Mai2Touch
 
                         serialSession.Write(encoding.GetBytes("{RSET}"));
-                        Thread.Sleep(3000);
-                        //wait for board to reboot
+                        serialSession.BaseStream.Flush();
+                        try
+                        {
+                            int firstByte = serialSession.ReadByte(); // 如果timeout内没数据，会抛 TimeoutException
+                            MajDebug.LogInfo($"[TouchPanel] RSET read first byte: {firstByte}");
+                        }
+                        catch (TimeoutException)
+                        {
+                            MajDebug.LogInfo("[TouchPanel] RSET read response timeout");
+                        }
+
                         serialSession.Write(encoding.GetBytes("{HALT}"));
 
                         //send ratio
