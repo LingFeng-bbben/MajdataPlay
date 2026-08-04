@@ -800,12 +800,20 @@ namespace MajdataPlay.IO
                         var index = IODetector.PlayerIndex == 1 ? 'L' : 'R';
                         //see also https://github.com/Sucareto/Mai2Touch/tree/main/Mai2Touch
 
+                        serialSession.DiscardInBuffer();
                         serialSession.Write(encoding.GetBytes("{RSET}"));
                         serialSession.BaseStream.Flush();
                         try
                         {
-                            int firstByte = serialSession.ReadByte(); // 如果timeout内没数据，会抛 TimeoutException
-                            MajDebug.LogInfo($"[TouchPanel] RSET read first byte: {firstByte}");
+                            byte[] buffer = new byte[10];
+                            int offset = 0;
+                            while (offset < 10)
+                            {
+                                // 每次尝试读取剩余的字节数
+                                int read = serialSession.Read(buffer, offset, 10 - offset);
+                                offset += read;
+                            }
+                            MajDebug.LogInfo($"[TouchPanel] RSET read first 10 byte: {BitConverter.ToString(buffer)}");
                         }
                         catch (TimeoutException)
                         {
