@@ -10,6 +10,8 @@ namespace MajdataPlay
     {
         Init,
         Title,
+        Login,
+        Calibrator,
         List,
         Game,
         Result,
@@ -19,6 +21,6 @@ namespace MajdataPlay
         Parctice,
         View,
         Test,
-        Empty
+        Empty,
     }
 }

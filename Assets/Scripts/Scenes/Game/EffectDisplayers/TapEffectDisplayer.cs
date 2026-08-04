@@ -6,12 +6,13 @@ using MajdataPlay.Utils;
 using System.Runtime.CompilerServices;
 using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
+using UnityEngine.Serialization;
 #nullable enable
 namespace MajdataPlay.Scenes.Game
 {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
-    public sealed class TapEffectDisplayer : MonoBehaviour
+    internal class TapEffectDisplayer : MonoBehaviour
     {
         public Vector3 Position => effectParent.transform.position;
         public Vector3 LocalPosition
@@ -40,7 +41,7 @@ namespace MajdataPlay.Scenes.Game
                     fastLatePosition = effectPosition.GetPoint(-fastLateDistance);
                 }
 
-                _judgeTextDisplayer.LocalPosition = textPosition;
+                JudgeTextDisplayer.LocalPosition = textPosition;
                 _fastLateDisplayerA.LocalPosition = fastLatePosition;
             }
         }
@@ -59,7 +60,8 @@ namespace MajdataPlay.Scenes.Game
         TapGoodEffectDisplayer _goodDisplayer;
 
         [SerializeField]
-        JudgeTextDisplayer _judgeTextDisplayer;
+        [FormerlySerializedAs("_judgeTextDisplayer")]
+        protected JudgeTextDisplayer JudgeTextDisplayer;
         [SerializeField]
         FastLateDisplayer _fastLateDisplayerA;
         [SerializeField]
@@ -86,10 +88,10 @@ namespace MajdataPlay.Scenes.Game
                 textPosition = effectPosition.GetPoint(-textDistance);
                 fastLatePosition = effectPosition.GetPoint(-fastLateDistance);
             }
-            _judgeTextDisplayer.LocalPosition = textPosition;
+            JudgeTextDisplayer.LocalPosition = textPosition;
             _fastLateDisplayerA.LocalPosition = fastLatePosition;
             _fastLateDisplayerB.LocalPosition = textPosition;
-            _isEnabled = MajInstances.Settings.Display.OuterJudgeDistance != 0 && DistanceRatio != 0;
+            _isEnabled = MajEnv.Settings.Display.OuterJudgeDistance != 0 && DistanceRatio != 0;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void OnLateUpdate()
@@ -97,7 +99,7 @@ namespace MajdataPlay.Scenes.Game
             _perfectDisplayer.OnLateUpdate();
             _greatDisplayer.OnLateUpdate();
             _goodDisplayer.OnLateUpdate();
-            _judgeTextDisplayer.OnLateUpdate();
+            JudgeTextDisplayer.OnLateUpdate();
             _fastLateDisplayerA.OnLateUpdate();
             _fastLateDisplayerB.OnLateUpdate();
         }
@@ -115,22 +117,24 @@ namespace MajdataPlay.Scenes.Game
         public void ResetAll()
         {
             Reset();
-            _judgeTextDisplayer.Reset();
+            JudgeTextDisplayer.Reset();
             _fastLateDisplayerA.Reset();
             _fastLateDisplayerB.Reset();
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Play(in NoteJudgeResult judgeResult)
         {
-            _judgeTextDisplayer.Reset();
+            JudgeTextDisplayer.Reset();
             _fastLateDisplayerA.Reset();
             _fastLateDisplayerB.Reset();
             PlayEffect(judgeResult);
             if (!_isEnabled)
+            {
                 return;
+            }
             if (IsClassCAvailable(judgeResult))
             {
-                _judgeTextDisplayer.Play(judgeResult,true);
+                JudgeTextDisplayer.Play(judgeResult,true);
             }
             else
             {
@@ -147,16 +151,13 @@ namespace MajdataPlay.Scenes.Game
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void PlayEffect(in NoteJudgeResult judgeResult)
         {
-            var isBreak = judgeResult.IsBreak;
-            var result = judgeResult.Grade;
-            if (!judgeResult.IsMissOrTooFast)
-            {
-                Reset();
-            }
-            else
+            if (judgeResult.IsMine || judgeResult.IsMissOrTooFast)
             {
                 return;
             }
+            var isBreak = judgeResult.IsBreak;
+            var result = judgeResult.Grade;
+            Reset();
 
             if (isBreak)
             {
@@ -191,29 +192,44 @@ namespace MajdataPlay.Scenes.Game
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        bool PlayResult(in NoteJudgeResult judgeResult)
+        protected virtual bool PlayResult(in NoteJudgeResult judgeResult)
         {
             bool canPlay;
-            if (judgeResult.IsBreak)
-                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Settings.Display.BreakJudgeType, judgeResult);
+            if (judgeResult.IsMine && judgeResult.Grade is not (JudgeGrade.Miss or JudgeGrade.TooFast))
+            {
+                return false;
+            }
+            else if (judgeResult.IsBreak)
+            {
+                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajEnv.Settings.Display.BreakJudgeType, judgeResult);
+            }
             else
-                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Settings.Display.NoteJudgeType, judgeResult);
-
+            {
+                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajEnv.Settings.Display.NoteJudgeType, judgeResult);
+            }
             if (!canPlay)
             {
                 return false;
             }
-            _judgeTextDisplayer.Play(judgeResult);
+            JudgeTextDisplayer.Play(judgeResult);
             return true;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         bool PlayFastLate(in NoteJudgeResult judgeResult, FastLateDisplayer displayer)
         {
             bool canPlay;
-            if (judgeResult.IsBreak)
-                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Settings.Display.BreakFastLateType, judgeResult);
+            if (judgeResult.IsMine)
+            {
+                return judgeResult.Grade == JudgeGrade.Miss || judgeResult.Grade == JudgeGrade.TooFast;
+            }
+            else if (judgeResult.IsBreak)
+            {
+                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajEnv.Settings.Display.BreakFastLateType, judgeResult);
+            }
             else
-                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Settings.Display.FastLateType, judgeResult);
+            {
+                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajEnv.Settings.Display.FastLateType, judgeResult);
+            }
             if (!canPlay)
             {
                 return false;
@@ -227,22 +243,26 @@ namespace MajdataPlay.Scenes.Game
             var isBreak = judgeResult.IsBreak;
 
             if (judgeResult.IsMissOrTooFast)
+            {
                 return false;
+            }
             if (isBreak)
             {
-                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Settings.Display.BreakJudgeType, judgeResult);
-                canPlay = canPlay && NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Settings.Display.BreakFastLateType, judgeResult);
+                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajEnv.Settings.Display.BreakJudgeType, judgeResult);
+                canPlay = canPlay && NoteEffectManager.CheckJudgeDisplaySetting(MajEnv.Settings.Display.BreakFastLateType, judgeResult);
             }
             else
             {
-                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Settings.Display.NoteJudgeType, judgeResult);
-                canPlay = canPlay && NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Settings.Display.FastLateType, judgeResult);
+                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajEnv.Settings.Display.NoteJudgeType, judgeResult);
+                canPlay = canPlay && NoteEffectManager.CheckJudgeDisplaySetting(MajEnv.Settings.Display.FastLateType, judgeResult);
             }
             if (!canPlay)
+            {
                 return canPlay;
+            }
             var skin = MajInstances.SkinManager.GetJudgeTextSkin();
-            var isCritical = MajInstances.Settings.Display.DisplayCriticalPerfect;
-            var displayBreakScore = MajInstances.Settings.Display.DisplayBreakScore;
+            var isCritical = MajEnv.Settings.Display.DisplayCriticalPerfect;
+            var displayBreakScore = MajEnv.Settings.Display.DisplayBreakScore;
             if (isBreak)
             {
                 if(displayBreakScore)

@@ -1,4 +1,5 @@
-﻿using HidSharp;
+﻿#if UNITY_STANDALONE
+using HidSharp;
 using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
 using MajdataPlay.Utils;
@@ -9,10 +10,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MajdataPlay.Settings;
+using MajdataPlay.Diagnostics;
 
 #nullable enable
 namespace MajdataPlay.IO
 {
+
     internal static class HidManager
     {
         public static IEnumerable<HidDevice> Devices
@@ -92,3 +95,4 @@ namespace MajdataPlay.IO
         }
     }
 }
+#endif

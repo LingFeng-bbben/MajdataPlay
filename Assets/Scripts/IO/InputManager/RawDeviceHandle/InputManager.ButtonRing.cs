@@ -1,13 +1,29 @@
-﻿using System;
-using System.Threading.Tasks;
-using MajdataPlay.Utils;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Diagnostics;
-using HidSharp;
-using System.IO;
+﻿using Cysharp.Threading.Tasks;
 using MajdataPlay.Numerics;
 using MajdataPlay.Settings;
+using MajdataPlay.Utils;
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+using UnityEngine.InputSystem;
+using UnityEngine.Profiling;
+using System.IO.Pipes;
+using MajdataPlay.Diagnostics;
+#if UNITY_ANDROID || UNITY_EDITOR
+using MajdataPlay.Platform.Android;
+using MajdataPlay.Platform.Android.IO;
+#endif
+
+#if UNITY_IOS || UNITY_EDITOR
+using MajdataPlay.Platform.iOS;
+#endif
+
+#if UNITY_STANDALONE
+using HidSharp;
+#endif
 
 //using Microsoft.Win32;
 //using System.Windows.Forms;
@@ -16,15 +32,17 @@ using MajdataPlay.Settings;
 #nullable enable
 namespace MajdataPlay.IO
 {
-    using Unsafe = System.Runtime.CompilerServices.Unsafe;
-    internal static unsafe partial class InputManager
+    internal static partial class InputManager
     {
         static class ButtonRing
         {
             public static bool IsConnected { get; private set; } = false;
 
+            static int _isInited = 0;
+            static bool _isEnabled = false;
             static SpinLock _syncLock = new();
             static Task _buttonRingUpdateLoop = Task.CompletedTask;
+            static MobileExternalButtonRingOption _mobileExternalbuttonRingOption;
             
             readonly static bool[] _buttonStates = new bool[12];
             readonly static bool[] _buttonRealTimeStates = new bool[12];
@@ -37,14 +55,27 @@ namespace MajdataPlay.IO
             #region Public Methods
             public static void Init()
             {
-                if (!_buttonRingUpdateLoop.IsCompleted)
+                if (Interlocked.CompareExchange(ref _isInited, 0, 1) == 1)
                 {
                     return;
                 }
-                var manufacturer = _deviceManufacturer;
+                MajDebug.LogInfo("[ButtonRing]Start initialization");
+#if UNITY_STANDALONE
+                _isEnabled = MajEnv.Settings.IO.InputDevice.ButtonRing.Enable;
+                if (!_isEnabled)
+                {
+                    MajDebug.LogInfo("[ButtonRing]Disabled");
+                    return;
+                }
+                else if (!_buttonRingUpdateLoop.IsCompleted)
+                {
+                    return;
+                }
+                var manufacturer = IODetector.DeviceManufacturer;
+                var buttonRingDevice = IODetector.ButtonRingDevice;
                 if (manufacturer == DeviceManufacturerOption.General)
                 {
-                    switch (_buttonRingDevice)
+                    switch (buttonRingDevice)
                     {
                         case ButtonRingDeviceOption.Keyboard:
                             _buttonRingUpdateLoop = Task.Factory.StartNew(KeyboardUpdateLoop, TaskCreationOptions.LongRunning);
@@ -53,7 +84,7 @@ namespace MajdataPlay.IO
                             _buttonRingUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
                             break;
                         default:
-                            MajDebug.LogWarning($"ButtonRing: Not supported button ring device: {_buttonRingDevice}");
+                            MajDebug.LogWarning($"[ButtonRing]Not supported button ring device: {buttonRingDevice}");
                             break;
                     }
                 }
@@ -61,41 +92,57 @@ namespace MajdataPlay.IO
                 {
                     _buttonRingUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
                 }
+                else if (manufacturer is DeviceManufacturerOption.Nov)
+                {
+                    _buttonRingUpdateLoop = Task.Factory.StartNew(KeyboardUpdateLoop, TaskCreationOptions.LongRunning);
+                }
+                else if (manufacturer is DeviceManufacturerOption.Pipe)
+                {
+                    _buttonRingUpdateLoop = Task.Factory.StartNew(PipeUpdateLoop, TaskCreationOptions.LongRunning);
+                }
                 else
                 {
-                    MajDebug.LogWarning($"ButtonRing: Not supported button ring manufacturer: {manufacturer}");
+                    MajDebug.LogWarning($"[ButtonRing]Not supported button ring manufacturer: {manufacturer}");
                 }
+#elif UNITY_ANDROID || UNITY_IOS
+                _mobileExternalbuttonRingOption = MajEnv.Settings.IO.InputDevice.ExternalButtonRing;
+#endif
+                MajDebug.LogInfo("[ButtonRing]Initialization completed");
             }
             /// <summary>
             /// Update the button ring state of the this frame
             /// </summary>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public unsafe static void OnPreUpdate()
+            public static void OnPreUpdate()
             {
-                ref var @lock = ref _syncLock;
-                var isLocked = false;
-                try
+                using (UnityProfiler.Create("ButtonRing.OnPreUpdate"))
                 {
-                    @lock.Enter(ref isLocked);
-                    var isBtnHadOn = _isBtnHadOn.AsSpan();
-                    var isBtnHadOff = _isBtnHadOff.AsSpan();
-                    var buttonStates = _buttonStates.AsSpan();
-                    var isBtnHadOnInternal = _isBtnHadOnInternal.AsSpan();
-                    var isBtnHadOffInternal = _isBtnHadOffInternal.AsSpan();
-                    var buttonRealTimeStates = _buttonRealTimeStates.AsSpan();
-
-                    isBtnHadOnInternal.CopyTo(isBtnHadOn);
-                    isBtnHadOffInternal.CopyTo(isBtnHadOff);
-                    buttonRealTimeStates.CopyTo(buttonStates);
-
-                    isBtnHadOnInternal.Clear();
-                    isBtnHadOffInternal.Clear();
-                }
-                finally
-                {
-                    if(isLocked)
+                    using (new LockDisposable())
                     {
-                        @lock.Exit();
+#if UNITY_ANDROID || UNITY_IOS
+                        switch (_mobileExternalbuttonRingOption)
+                        {
+                            case MobileExternalButtonRingOption.Keyboard:
+                                KeyboardPreUpdate();
+                                break;
+                            case MobileExternalButtonRingOption.Gamepad:
+                                GamepadPreUpdate();
+                                break;
+                        }
+#endif
+                        var isBtnHadOn = _isBtnHadOn.AsSpan();
+                        var isBtnHadOff = _isBtnHadOff.AsSpan();
+                        var buttonStates = _buttonStates.AsSpan();
+                        var isBtnHadOnInternal = _isBtnHadOnInternal.AsSpan();
+                        var isBtnHadOffInternal = _isBtnHadOffInternal.AsSpan();
+                        var buttonRealTimeStates = _buttonRealTimeStates.AsSpan();
+
+                        isBtnHadOnInternal.CopyTo(isBtnHadOn);
+                        isBtnHadOffInternal.CopyTo(isBtnHadOff);
+                        buttonRealTimeStates.CopyTo(buttonStates);
+
+                        isBtnHadOnInternal.Clear();
+                        isBtnHadOffInternal.Clear();
                     }
                 }
             }
@@ -261,7 +308,7 @@ namespace MajdataPlay.IO
             {
                 return IsCurrentlyOff(GetIndexFromArea(area));
             }
-            #endregion
+#endregion
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static int GetIndexFromArea(ButtonZone area)
@@ -272,6 +319,141 @@ namespace MajdataPlay.IO
                 }
                 return (int)area;
             }
+#if UNITY_ANDROID || UNITY_IOS
+            static void KeyboardPreUpdate()
+            {
+                var gameButtons = _buttons.Slice(0, 8);
+                try
+                {
+#if UNITY_ANDROID
+                    IsConnected = true;
+                    for (var i = 0; i < gameButtons.Length; i++)
+                    {
+                        var button = gameButtons.Span[i];
+                        var keyCode = button.BindingKey;
+                        var androidKeyCode = (keyCode switch
+                        {
+                            KeyCode.B1 => MajdataPlay.Platform.Android.IO.KeyCode.W,
+                            KeyCode.B2 => MajdataPlay.Platform.Android.IO.KeyCode.E,
+                            KeyCode.B3 => MajdataPlay.Platform.Android.IO.KeyCode.D,
+                            KeyCode.B4 => MajdataPlay.Platform.Android.IO.KeyCode.C,
+                            KeyCode.B5 => MajdataPlay.Platform.Android.IO.KeyCode.X,
+                            KeyCode.B6 => MajdataPlay.Platform.Android.IO.KeyCode.Z,
+                            KeyCode.B7 => MajdataPlay.Platform.Android.IO.KeyCode.A,
+                            KeyCode.B8 => MajdataPlay.Platform.Android.IO.KeyCode.Q,
+
+                            KeyCode.Test => MajdataPlay.Platform.Android.IO.KeyCode.Numpad9,
+                            KeyCode.SelectP1 => MajdataPlay.Platform.Android.IO.KeyCode.NumpadMultiply,
+                            KeyCode.Service => MajdataPlay.Platform.Android.IO.KeyCode.Numpad7,
+                            KeyCode.SelectP2 => MajdataPlay.Platform.Android.IO.KeyCode.Numpad3,
+
+                            _ => MajdataPlay.Platform.Android.IO.KeyCode.Unknown
+                        });
+                        _buttonRealTimeStates[i] = AndroidKeyboard.IsPreesedUnsafe(androidKeyCode);
+                    }
+#elif UNITY_IOS
+                    for (var i = 0; i < gameButtons.Length; i++)
+                    {
+                        var button = gameButtons.Span[i];
+                        var keyCode = KeyboardHelper.ToiOSGCKeyCode(button.BindingKey);
+                        var @return = NativeKeyboard.IsPressed(keyCode, ref _buttonRealTimeStates[i]);
+                        switch(@return)
+                        {
+                            case ErrorCode.NoError:
+                                IsConnected = true;
+                                break;
+                            case ErrorCode.NoDevice:
+                            case ErrorCode.NotSupported:
+                                IsConnected = false;
+                                break;
+                            case ErrorCode.InvalidOperation: // Not init
+                                @return = NativeKeyboard.Init();
+                                if(@return == ErrorCode.NoError)
+                                {
+                                    i--;
+                                    IsConnected = true;
+                                    continue;
+                                }
+                                IsConnected = false;
+                                MajDebug.LogError($"[ButtonRing]Failed to initialize NativeKeyboard: {@return}");
+                                return;
+                            default:
+                                IsConnected = false;
+                                MajDebug.LogError($"[ButtonRing]Error occurred while reading key states from NativeKeyboard: {@return}");
+                                break;
+                        }
+                    }
+#endif
+                    var states = _buttonRealTimeStates;
+                    var hadOn = _isBtnHadOnInternal;
+                    var hadOff = _isBtnHadOffInternal;
+
+                    for (int i = 0; i < 12; i++)
+                    {
+                        var state = states[i];
+                        hadOn[i] |= state;
+                        hadOff[i] |= !state;
+                    }
+                }
+                catch (Exception e)
+                {
+                    IsConnected = false;
+                    MajDebug.LogError($"From Keyboard listener: \n{e}");
+                }
+            }
+            static void GamepadPreUpdate()
+            {
+                var gameButtons = _buttons.Slice(0, 8);
+                try
+                {
+                    var gamepad = Gamepad.current;
+                    var now = MajTimeline.UnscaledTime;
+
+                    for (var i = 0; i < gameButtons.Length; i++)
+                    {
+                        var button = gameButtons.Span[i];
+                        var keyCode = button.BindingKey;
+                        var state = (keyCode switch
+                        {
+                            KeyCode.B1 => gamepad?.buttonNorth,
+                            KeyCode.B2 => gamepad?.buttonEast,
+                            KeyCode.B3 => gamepad?.buttonSouth,
+                            KeyCode.B4 => gamepad?.buttonWest,
+
+                            KeyCode.B5 => gamepad?.dpad.up,
+                            KeyCode.B6 => gamepad?.dpad.right,
+                            KeyCode.B7 => gamepad?.dpad.down,
+                            KeyCode.B8 => gamepad?.dpad.left,
+
+                            KeyCode.Test => gamepad?.leftShoulder,
+                            KeyCode.SelectP1 => gamepad?.rightShoulder,
+                            KeyCode.Service => gamepad?.leftStickButton,
+                            KeyCode.SelectP2 => gamepad?.rightStickButton,
+
+                            _ => null
+                        })?.isPressed ?? false;
+                        _buttonRealTimeStates[i] = state;
+                    }
+                    IsConnected = true;
+
+                    var states = _buttonRealTimeStates;
+                    var hadOn = _isBtnHadOnInternal;
+                    var hadOff = _isBtnHadOffInternal;
+
+                    for (int i = 0; i < 12; i++)
+                    {
+                        var state = states[i];
+                        hadOn[i] |= state;
+                        hadOff[i] |= !state;
+                    }
+                }
+                catch (Exception e)
+                {
+                    IsConnected = false;
+                    MajDebug.LogError($"From Gamepad listener: \n{e}");
+                }
+            }
+#elif UNITY_STANDALONE
             static void KeyboardUpdateLoop()
             {
                 var currentThread = Thread.CurrentThread;
@@ -334,7 +516,7 @@ namespace MajdataPlay.IO
                         catch (Exception e)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"From Keyboard listener: \n{e}");
+                            MajDebug.LogError($"[ButtonRing]From Keyboard listener: \n{e}");
                         }
                         finally
                         {
@@ -359,7 +541,7 @@ namespace MajdataPlay.IO
             static void HIDUpdateLoop()
             {
                 ref var @lock = ref _syncLock;
-                var hidOptions = _buttonRingHidConnInfo;
+                var hidOptions = IODetector.ButtonRingHidConnInfo;
                 var currentThread = Thread.CurrentThread;
                 var token = MajEnv.GlobalCT;
                 var pollingRate = _btnPollingRateMs;
@@ -369,8 +551,8 @@ namespace MajdataPlay.IO
                 var t1 = stopwatch.Elapsed;
                 var pid = hidOptions.ProductId;
                 var vid = hidOptions.VendorId;
-                var manufacturer = _deviceManufacturer;
-                var deviceType = _buttonRingDevice;
+                var manufacturer = IODetector.DeviceManufacturer;
+                var deviceType = IODetector.ButtonRingDevice;
                 var deviceName = string.IsNullOrEmpty(hidOptions.DeviceName) ? GetHIDDeviceName(deviceType, manufacturer) : hidOptions.DeviceName;
                 var hidConfig = new OpenConfiguration();
                 var filter = new DeviceFilter()
@@ -381,7 +563,7 @@ namespace MajdataPlay.IO
                 };
 
                 hidConfig.SetOption(OpenOption.Exclusive, hidOptions.Exclusice);
-                hidConfig.SetOption(OpenOption.Priority, hidOptions.OpenPriority);
+                hidConfig.SetOption(OpenOption.Priority, (OpenPriority)hidOptions.OpenPriority);
                 currentThread.Name = "IO/B Thread";
                 currentThread.IsBackground = true;
                 currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
@@ -391,7 +573,7 @@ namespace MajdataPlay.IO
 
                 if (!HidManager.TryGetDevices(filter, out var devices))
                 {
-                    MajDebug.LogWarning("ButtonRing: hid device not found");
+                    MajDebug.LogWarning("[ButtonRing]hid device not found");
                     return;
                 }
                 foreach(var d in devices)
@@ -404,7 +586,7 @@ namespace MajdataPlay.IO
                 }
                 if(hidStream is null || device is null)
                 {
-                    MajDebug.LogError($"ButtonRing: cannot open hid devices:\n{string.Join('\n', devices)}");
+                    MajDebug.LogError($"[ButtonRing]cannot open hid devices:\n{string.Join('\n', devices)}");
                     return;
                 }
 
@@ -412,10 +594,10 @@ namespace MajdataPlay.IO
                 {
                     Memory<byte> memory = new byte[device.GetMaxInputReportLength()];
                     _ioThreadSync.ReadBufferMemory = memory;
-                    _ioThreadSync.Notify();
+                    _ioThreadSync.SignalReadReady();
                     Span<byte> buffer = memory.Span;
                     IsConnected = true;
-                    MajDebug.LogInfo($"ButtonRing: Connected\nDevice: {device}");
+                    MajDebug.LogInfo($"[ButtonRing]Connected\nDevice: {device}");
                     stopwatch.Start();
                     while (true)
                     {
@@ -433,9 +615,9 @@ namespace MajdataPlay.IO
                                     AdxHIDDevice.Parse(buffer, _buttonRealTimeStates);
                                     break;
                                 case DeviceManufacturerOption.Dao:
-                                    _ioThreadSync.Notify();
+                                    _ioThreadSync.SignalReadReady();
                                     DaoHIDDevice.Parse(buffer, _buttonRealTimeStates);
-                                    _ioThreadSync.WaitNotify();
+                                    _ioThreadSync.WaitReadConsumed();
                                     break;
                             }
                             UpdateKeyboardFn(fnButtons, fnBuffer);
@@ -470,11 +652,11 @@ namespace MajdataPlay.IO
                         catch(IOException ioE)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"ButtonRing: \n{ioE}");
+                            MajDebug.LogError($"[ButtonRing]{ioE}");
                         }
                         catch (Exception e)
                         {
-                            MajDebug.LogError($"ButtonRing: \n{e}");
+                            MajDebug.LogError($"[ButtonRing]{e}");
                         }
                         finally
                         {
@@ -496,6 +678,106 @@ namespace MajdataPlay.IO
                 {
                     hidStream.Dispose();
                     IsConnected = false;
+                }
+            }
+            static void PipeUpdateLoop()
+            {
+                ref var @lock = ref _syncLock;
+                var pipeName = $"majdataplay_{IODetector.PlayerIndex}p";
+                var token = MajEnv.GlobalCT;
+                var pollingRate = _btnPollingRateMs;
+                var stopwatch = new Stopwatch();
+                var t1 = stopwatch.Elapsed;
+
+                using (var pipeClientStream = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut))
+                {
+                RE_CONNECT:
+                    while (!token.IsCancellationRequested)
+                    {
+                        try
+                        {
+                            MajDebug.LogInfo($"[ButtonRing]Attempting connect to pipe \"{pipeName}\"...");
+                            pipeClientStream.Connect(2000);
+                            MajDebug.LogInfo("[ButtonRing]Connected");
+                            break;
+                        }
+                        catch (Exception e)
+                        {
+                            MajDebug.LogError($"[ButtonRing]Failed to connect to pipe\n{e}");
+                        }
+                    }
+                    Memory<byte> memory = new byte[64];
+                    _ioThreadSync.ReadBufferMemory = memory;
+                    _ioThreadSync.PipeClientStream = pipeClientStream;
+                    _ioThreadSync.SignalReadReady();
+                    var buffer = memory.Span;
+                    stopwatch.Start();
+                    while (true)
+                    {
+                        token.ThrowIfCancellationRequested();
+                        try
+                        {
+                            var now = MajTimeline.UnscaledTime;
+                            var read = pipeClientStream.Read(buffer);
+                            IsConnected = true;
+                            var isLocked = false;
+                            if(read < 8)
+                            {
+                                continue;
+                            }
+                            _ioThreadSync.SignalReadReady();
+                            var data = BitConverter.ToUInt64(buffer);
+                            try
+                            {
+                                @lock.Enter(ref isLocked);
+                                var states = _buttonRealTimeStates.AsSpan();
+                                var hadOn = _isBtnHadOnInternal.AsSpan();
+                                var hadOff = _isBtnHadOffInternal.AsSpan();
+
+                                for (int i = 0; i < 12; i++)
+                                {
+                                    ref var state = ref states[i];
+                                    state = (data & (1UL << i)) != 0;
+                                    hadOn[i] |= state;
+                                    hadOff[i] |= !state;
+                                }
+                            }
+                            finally
+                            {
+                                if (isLocked)
+                                {
+                                    @lock.Exit();
+                                }
+                            }
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            break;
+                        }
+                        catch (IOException ioE)
+                        {
+                            IsConnected = false;
+                            MajDebug.LogError($"[ButtonRing]{ioE}");
+                        }
+                        catch (Exception e)
+                        {
+                            MajDebug.LogError($"[ButtonRing]{e}");
+                        }
+                        finally
+                        {
+                            buffer.Clear();
+                            if (pollingRate.TotalMilliseconds > 0)
+                            {
+                                var t2 = stopwatch.Elapsed;
+                                var elapsed = t2 - t1;
+                                t1 = t2;
+                                if (elapsed < pollingRate)
+                                {
+                                    Thread.Sleep(pollingRate - elapsed);
+                                }
+                            }
+                        }
+                    }
                 }
             }
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -637,7 +919,7 @@ namespace MajdataPlay.IO
                 public static void Parse(ReadOnlySpan<byte> reportData,Span<bool> buffer)
                 {
                     reportData = reportData.Slice(1); // skip report id
-                    switch (_playerIndex)
+                    switch (IODetector.PlayerIndex)
                     {
                         case 1:
                             buffer[0] = (~reportData[IO4_BA1_1P_INDEX] & IO4_BA1_OFFSET) != 0;
@@ -687,6 +969,27 @@ namespace MajdataPlay.IO
                     buffer[8] = (sideBtnData & (1 << 2)) != 0;  // TEST
                     buffer[11] = (sideBtnData & (1 << 1)) != 0; // SELECT P2
                     buffer[10] = (sideBtnData & (1 << 0)) != 0; // SERVICE
+                }
+            }
+#endif
+            protected ref struct LockDisposable
+            {
+                bool _isLocked;
+                public LockDisposable()
+                {
+#if !(UNITY_ANDROID || UNITY_IOS)
+                    _syncLock.Enter(ref _isLocked);
+#endif
+                }
+                public void Dispose()
+                {
+#if !(UNITY_ANDROID || UNITY_IOS)
+                    if (_isLocked)
+                    {
+                        _syncLock.Exit();
+                        _isLocked = false;
+                    }
+#endif
                 }
             }
         }

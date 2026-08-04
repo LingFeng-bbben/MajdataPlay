@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MajdataPlay.IO
 {
     public abstract class AudioSampleWrap : IDisposable, IPausableSoundProvider
     {
-        public readonly static AudioSampleWrap Empty = new EmptyAudioSample();
+        public readonly static AudioSampleWrap Empty = new EmptyAudioSample()
+        {
+            CanSeek = true,
+        };
 
         public string Name { get; set; }
         public abstract bool IsEmpty { get; }
@@ -17,6 +21,7 @@ namespace MajdataPlay.IO
         public abstract double CurrentSec { get; set; }
         public abstract TimeSpan Length { get; }
         public abstract bool IsLoop { get; set; }
+        public bool CanSeek { get; protected init; }
 
         protected bool _isDisposed = false;
 
@@ -36,7 +41,13 @@ namespace MajdataPlay.IO
                 throw new ObjectDisposedException(GetType().Name);
             }
         }
-
+        protected void ThrowIfCanSeekNotSupported()
+        {
+            if(!CanSeek)
+            {
+                throw new NotSupportedException("\"Seek\" is not supported for this sample");
+            }
+        }
         sealed class EmptyAudioSample : AudioSampleWrap
         {
             public override bool IsEmpty => true;

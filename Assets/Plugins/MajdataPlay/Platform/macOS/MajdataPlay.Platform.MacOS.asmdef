@@ -1,0 +1,19 @@
+{
+    "name": "MajdataPlay.Platform.MacOS",
+    "rootNamespace": "MajdataPlay.Platform.MacOS",
+    "references": [
+        "GUID:8545470905e4bf241a27188012585d36"
+    ],
+    "includePlatforms": [
+        "Editor",
+        "macOSStandalone"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}

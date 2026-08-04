@@ -1,248 +1,74 @@
-﻿using Cysharp.Threading.Tasks;
-using MajdataPlay.Buffers;
+﻿using MajdataPlay.Buffers;
+using MajdataPlay.Diagnostics;
 using MajdataPlay.Editor;
-using MajdataPlay.Scenes.Game.Buffers;
-using MajdataPlay.Utils;
+using MajdataPlay.Scenes.Game.Notes.Behaviours;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
-using Unity.IL2CPP.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
-    internal class NoteUpdater : MonoBehaviour
+    internal abstract class NoteUpdater<TNote> : MonoBehaviour where TNote : IStateful<NoteStatus>
     {
-        public double PreUpdateElapsedMs => _preUpdateElapsedMs;
-        public double UpdateElapsedMs => _updateElapsedMs;
-        public double FixedUpdateElapsedMs => _fixedUpdateElapsedMs;
-        public double LateUpdateElapsedMs => _lateUpdateElapsedMs;
+        [field: SerializeField, ReadOnlyField]
+        public double PreUpdateElapsedMs 
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            protected set; 
+        }
+        public double UpdateElapsedMs
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            protected set;
+        }
+        public double FixedUpdateElapsedMs
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            protected set;
+        }
+        public double LateUpdateElapsedMs
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            protected set;
+        }
 
-        ReadOnlyMemory<NoteInfo> _preUpdatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
-        ReadOnlyMemory<NoteInfo> _updatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
-        ReadOnlyMemory<NoteInfo> _fixedUpdatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
-        ReadOnlyMemory<NoteInfo> _lateUpdatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
-
-        NoteInfo[] _rentedArrayForPreUpdatebleComponents = Array.Empty<NoteInfo>();
-        NoteInfo[] _rentedArrayForUpdatebleComponents = Array.Empty<NoteInfo>();
-        NoteInfo[] _rentedArrayForFixedUpdatebleComponents = Array.Empty<NoteInfo>();
-        NoteInfo[] _rentedArrayForLateUpdatebleComponents = Array.Empty<NoteInfo>();
-
-        [ReadOnlyField]
         [SerializeField]
-        double _preUpdateElapsedMs = 0;
-        [ReadOnlyField]
-        [SerializeField]
-        double _updateElapsedMs = 0;
-        [ReadOnlyField]
-        [SerializeField]
-        double _fixedUpdateElapsedMs = 0;
-        [ReadOnlyField]
-        [SerializeField]
-        double _lateUpdateElapsedMs = 0;
+        [FormerlySerializedAs("noteListRoot")]
+        Transform _noteListRoot;
 
-        readonly static List<MonoBehaviour> SHARED_CACHE_LIST = new(64);
-        public async UniTask InitAsync()
+        protected TNote[] NoteInstances = Array.Empty<TNote>();
+
+
+        public virtual void Init()
         {
-            await UniTask.SwitchToMainThread();
-            var children = transform.GetChildren();
-
-            using RentedList<NoteInfo> preUpdatableComponents = new();
-            using RentedList<NoteInfo> updatableComponents = new();
-            using RentedList<NoteInfo> fixedUpdatableComponents = new();
-            using RentedList<NoteInfo> lateUpdatableComponents = new();
-            using RentedList<MonoBehaviour> components = new();
-
-            foreach (var child in children)
+            var noteCount = _noteListRoot.childCount;
+            using var noteInstances = new RentedList<TNote>(noteCount);
+            for (var i = 0; i < noteCount; i++)
             {
-                child.GetComponents<MonoBehaviour>(SHARED_CACHE_LIST);
-                if (SHARED_CACHE_LIST.Count != 0)
-                {
-                    components.AddRange(SHARED_CACHE_LIST);
-                }
-                SHARED_CACHE_LIST.Clear();
-            }
-            await UniTask.SwitchToThreadPool();
-            foreach (var component in components)
-            {
-                var noteInfo = new NoteInfo(component);
-                if (noteInfo.IsValid)
-                {
-                    if (noteInfo.IsUpdatable)
-                    {
-                        updatableComponents.Add(noteInfo);
-                    }
-                    if (noteInfo.IsFixedUpdatable)
-                    {
-                        fixedUpdatableComponents.Add(noteInfo);
-                    }
-                    if (noteInfo.IsLateUpdatable)
-                    {
-                        lateUpdatableComponents.Add(noteInfo);
-                    }
-                    if (noteInfo.IsPreUpdatable)
-                    {
-                        preUpdatableComponents.Add(noteInfo);
-                    }
-                }
-                else
-                {
-                    noteInfo.Dispose();
-                }
-            }
-            
-            _rentedArrayForPreUpdatebleComponents = Pool<NoteInfo>.RentArray(preUpdatableComponents.Count, true);
-            _rentedArrayForUpdatebleComponents = Pool<NoteInfo>.RentArray(updatableComponents.Count, true);
-            _rentedArrayForFixedUpdatebleComponents = Pool<NoteInfo>.RentArray(fixedUpdatableComponents.Count, true);
-            _rentedArrayForLateUpdatebleComponents = Pool<NoteInfo>.RentArray(lateUpdatableComponents.Count, true);
+                var noteObject = _noteListRoot.GetChild(i);
+                var noteInstance = noteObject.GetComponent<TNote>();
 
-            preUpdatableComponents.CopyTo(_rentedArrayForPreUpdatebleComponents);
-            updatableComponents.CopyTo(_rentedArrayForUpdatebleComponents);
-            fixedUpdatableComponents.CopyTo(_rentedArrayForFixedUpdatebleComponents);
-            lateUpdatableComponents.CopyTo(_rentedArrayForLateUpdatebleComponents);
-
-            _preUpdatebleComponents = _rentedArrayForPreUpdatebleComponents.AsMemory(0, preUpdatableComponents.Count);
-            _updatebleComponents = _rentedArrayForUpdatebleComponents.AsMemory(0, updatableComponents.Count);
-            _fixedUpdatebleComponents = _rentedArrayForFixedUpdatebleComponents.AsMemory(0, fixedUpdatableComponents.Count);
-            _lateUpdatebleComponents = _rentedArrayForLateUpdatebleComponents.AsMemory(0, lateUpdatableComponents.Count);
-        }
-
-        protected virtual void OnDestroy()
-        {
-            Clear();
-        }
-
-        internal virtual void Clear()
-        {
-            foreach (var component in _preUpdatebleComponents.Span)
-            {
-                component.Dispose();
-            }
-            foreach (var component in _updatebleComponents.Span)
-            {
-                component.Dispose();
-            }
-            foreach (var component in _fixedUpdatebleComponents.Span)
-            {
-                component.Dispose();
-            }
-            foreach (var component in _lateUpdatebleComponents.Span)
-            {
-                component.Dispose();
-            }
-            _preUpdatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
-            _updatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
-            _fixedUpdatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
-            _lateUpdatebleComponents = ReadOnlyMemory<NoteInfo>.Empty;
-
-            Pool<NoteInfo>.ReturnArray(_rentedArrayForPreUpdatebleComponents, true);
-            Pool<NoteInfo>.ReturnArray(_rentedArrayForUpdatebleComponents, true);
-            Pool<NoteInfo>.ReturnArray(_rentedArrayForFixedUpdatebleComponents, true);
-            Pool<NoteInfo>.ReturnArray(_rentedArrayForLateUpdatebleComponents, true);
-
-            _rentedArrayForPreUpdatebleComponents = Array.Empty<NoteInfo>();
-            _rentedArrayForUpdatebleComponents = Array.Empty<NoteInfo>();
-            _rentedArrayForFixedUpdatebleComponents = Array.Empty<NoteInfo>();
-            _rentedArrayForLateUpdatebleComponents = Array.Empty<NoteInfo>();
-        }
-        [Il2CppSetOption(Option.NullChecks, false)]
-        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal virtual void OnPreUpdate()
-        {
-            var start = MajTimeline.UnscaledTime;
-            var preUpdatebleComponents = _preUpdatebleComponents.Span;
-            var len = preUpdatebleComponents.Length;
-            for (var i = 0; i < len; i++)
-            {
-                var component = preUpdatebleComponents[i];
-                try
+                if (noteInstance == null)
                 {
-                    component.OnPreUpdate();
+                    MajDebug.LogDebug($"Child GameObject '{noteObject.name}' (index {i}) under '{_noteListRoot.name}' is missing required component '{typeof(TNote).FullName}'.");
+                    continue;
                 }
-                catch (Exception e)
-                {
-                    MajDebug.LogException(e);
-                }
+                noteInstances.Add(noteInstance);
             }
-
-            var end = MajTimeline.UnscaledTime;
-            var timeSpan = end - start;
-            _preUpdateElapsedMs = timeSpan.TotalMilliseconds;
-        }
-        [Il2CppSetOption(Option.NullChecks, false)]
-        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal virtual void OnUpdate()
-        {
-            var start = MajTimeline.UnscaledTime;
-            var updatebleComponents = _updatebleComponents.Span;
-            var len = updatebleComponents.Length;
-            for (var i = 0; i < len; i++)
-            {
-                var component = updatebleComponents[i];
-                try
-                {
-                    component.OnUpdate();
-                }
-                catch (Exception e)
-                {
-                    MajDebug.LogException(e);
-                }
-            }
-
-            var end = MajTimeline.UnscaledTime;
-            var timeSpan = end - start;
-            _updateElapsedMs = timeSpan.TotalMilliseconds;
-        }
-        [Il2CppSetOption(Option.NullChecks, false)]
-        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal virtual void OnFixedUpdate()
-        {
-            var start = MajTimeline.UnscaledTime;
-            var fixedUpdatebleComponents = _fixedUpdatebleComponents.Span;
-            var len = fixedUpdatebleComponents.Length;
-            for (var i = 0; i < len; i++)
-            {
-                var component = fixedUpdatebleComponents[i];
-                try
-                {
-                    component.OnFixedUpdate();
-                }
-                catch (Exception e)
-                {
-                    MajDebug.LogException(e);
-                }
-            }
-            var end = MajTimeline.UnscaledTime;
-            var timeSpan = end - start;
-            _fixedUpdateElapsedMs = timeSpan.TotalMilliseconds;
-        }
-        [Il2CppSetOption(Option.NullChecks, false)]
-        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal virtual void OnLateUpdate()
-        {
-            var start = MajTimeline.UnscaledTime;
-            var lateUpdatebleComponents = _lateUpdatebleComponents.Span;
-            var len = lateUpdatebleComponents.Length;
-            for (var i = 0; i < len; i++)
-            {
-                var component = lateUpdatebleComponents[i];
-                try
-                {
-                    component.OnLateUpdate();
-                }
-                catch (Exception e)
-                {
-                    MajDebug.LogException(e);
-                }
-            }
-
-            var end = MajTimeline.UnscaledTime;
-            var timeSpan = end - start;
-            _lateUpdateElapsedMs = timeSpan.TotalMilliseconds;
+            NoteInstances = noteInstances.ToArray();
         }
     }
 }

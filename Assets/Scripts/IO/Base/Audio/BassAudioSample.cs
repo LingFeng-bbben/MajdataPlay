@@ -1,22 +1,22 @@
-﻿using MajdataPlay.Extensions;
+using MajdataPlay.Diagnostics;
+using MajdataPlay.Extensions;
 using MajdataPlay.Numerics;
+using MajdataPlay.Utils;
 using ManagedBass;
+using ManagedBass.Aac;
 using ManagedBass.Fx;
 using ManagedBass.Mix;
+using ManagedBass.Opus;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay.IO
 {
     public class BassAudioSample : AudioSampleWrap
     {
-        private int _decode = -1;
-        private double _length = 0;
-        private int _resampler = -1;
-        private double _gain = 1f;
-        private bool _isSpeedChangeSupported = false;
         public override bool IsLoop
         {
             get
@@ -55,6 +55,7 @@ namespace MajdataPlay.IO
             get
             {
                 ThrowIfDisposed();
+                ThrowIfCanSeekNotSupported();
 
                 return Bass.ChannelBytes2Seconds(_decode, Bass.ChannelGetPosition(_decode));
             }
@@ -77,7 +78,7 @@ namespace MajdataPlay.IO
             {
                 ThrowIfDisposed();
 
-                var volume = value.Clamp(0, 2) * _gain * MajInstances.Settings.Audio.Volume.Global.Clamp(0, 1);
+                var volume = value.Clamp(0, 2) * _gain * MajEnv.Settings.Audio.Volume.Global.Clamp(0, 1);
                 Bass.ChannelSetAttribute(_decode, ChannelAttribute.Volume, volume);
             }
         }
@@ -126,9 +127,15 @@ namespace MajdataPlay.IO
                 return state == PlaybackState.Playing && !BassMix.ChannelHasFlag(_decode, BassFlags.MixerChanPause);
             }
         }
-        readonly GCHandle? _dataHandle = null;
 
-        BassAudioSample(int decode, int globalMixer,double gain, bool speedChange = false, GCHandle? dataHandle = null)
+        private int _decode = -1;
+        private double _length = 0;
+        private int _resampler = -1;
+        private double _gain = 1f;
+        private bool _isSpeedChangeSupported = false;
+        readonly GCHandle _dataHandle;
+
+        BassAudioSample(int decode, int globalMixer, double gain, GCHandle dataHandle, bool speedChange = false)
         {
             if(decode is 0 || globalMixer is 0)
             {
@@ -139,6 +146,7 @@ namespace MajdataPlay.IO
             _decode = decode;
             _gain = gain;
             _isSpeedChangeSupported = speedChange;
+            _dataHandle = dataHandle;
             _length = Bass.ChannelBytes2Seconds(_decode, Bass.ChannelGetLength(_decode));
 
             Bass.ChannelSetPosition(_decode, 0, PositionFlags.Decode | PositionFlags.Bytes);
@@ -152,7 +160,7 @@ namespace MajdataPlay.IO
             MajDebug.LogInfo($"Add Channel to Mixer: {BassMix.MixerAddChannel(globalMixer, _resampler, BassFlags.MixerChanMatrix)}");
             BassMix.ChannelSetMatrix(_resampler, AudioManager.MixingMatrix);
         }
-        public BassAudioSample(int decode, int globalMixer, double gain, bool speedChange = false) : this(decode, globalMixer, gain, speedChange, null)
+        public BassAudioSample(int decode, int globalMixer, double gain, bool speedChange = false) : this(decode, globalMixer, gain, default, speedChange)
         {
 
         }
@@ -170,7 +178,6 @@ namespace MajdataPlay.IO
         }
         public override void SetVolume(float volume)
         {
-            ThrowIfDisposed();
             Volume = volume;
         }
         public override void Play()
@@ -194,7 +201,7 @@ namespace MajdataPlay.IO
         }
         public override void Dispose()
         {
-            if(_isDisposed)
+            if (_isDisposed)
             {
                 return;
             }
@@ -212,10 +219,9 @@ namespace MajdataPlay.IO
             {
                 Bass.StreamFree(_decode);
             }
-            if (_dataHandle is not null)
+            if (_dataHandle.IsAllocated)
             {
-                var handle = (GCHandle)_dataHandle;
-                handle.Free();
+                _dataHandle.Free();
             }
         }
         public override ValueTask DisposeAsync()
@@ -226,20 +232,11 @@ namespace MajdataPlay.IO
         }
         static BassAudioSample Create(byte[] data, int globalMixer, bool normalize, bool speedChange)
         {
-            var handle = (GCHandle?)null;
-#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
-            handle = GCHandle.Alloc(data, GCHandleType.Pinned);
-            var decode = Bass.CreateStream(((GCHandle)handle).AddrOfPinnedObject(), 0, data.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
-#else
-            var decode = Bass.CreateStream(data, 0, data.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
-#endif
+            var handle = GCHandle.Alloc(data, GCHandleType.Pinned);
+            var addr = handle.AddrOfPinnedObject();
             try
             {
-                if (decode == 0)
-                {
-                    throw new NotSupportedException();
-                }
-                Bass.LastError.EnsureSuccessStatusCode();
+                var decode = BassHelper.CreateStream(addr, 0, data.LongLength, BassFlags.Decode | BassFlags.Prescan | BassFlags.AsyncFile);
                 if (speedChange)
                 {
                     //this will cause the music sometimes no sound, if press play after immedantly enter the songlist.
@@ -254,24 +251,35 @@ namespace MajdataPlay.IO
                 if (normalize)
                 {
                     double channelmax = 0;
-                    while (Bass.ChannelGetPosition(decode, PositionFlags.Decode | PositionFlags.Bytes) < bytelength)
+                    var thisCursorPos = 0L;
+                    var lastCursorPos = -1L;
+                    while (((thisCursorPos = Bass.ChannelGetPosition(decode, PositionFlags.Decode | PositionFlags.Bytes)) < bytelength) &&
+                            thisCursorPos != lastCursorPos)
                     {
+                        lastCursorPos = thisCursorPos;
                         var level = (double)BitHelper.LoWord(Bass.ChannelGetLevel(decode)) / 32768;
-                        if (level > channelmax) channelmax = level;
+                        if (level > channelmax)
+                        {
+                            channelmax = level;
+                        }
                     }
                     gain = 1 / channelmax;
                 }
 
-                var sample = new BassAudioSample(decode, globalMixer, gain, speedChange);
+                var sample = new BassAudioSample(decode, globalMixer, gain, speedChange)
+                {
+                    CanSeek = true,
+                };
                 sample.Volume = 1;
 
                 return sample;
             }
-            catch
+            catch (Exception e)
             {
-                if (handle is not null)
+                MajDebug.LogException(e);
+                if (handle.IsAllocated)
                 {
-                    ((GCHandle)handle).Free();
+                    handle.Free();
                 }
                 throw;
             }
@@ -294,7 +302,10 @@ namespace MajdataPlay.IO
             MajDebug.LogInfo(decode);
             MajDebug.LogInfo(Bass.LastError);
 
-            var sample = new BassAudioSample(decode, globalMixer, 1, false);
+            var sample = new BassAudioSample(decode, globalMixer, 1, false)
+            {
+                CanSeek = false
+            };
             sample.Volume = 1;
 
             return sample;

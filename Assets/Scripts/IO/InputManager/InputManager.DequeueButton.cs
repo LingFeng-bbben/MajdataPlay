@@ -1,4 +1,5 @@
 ﻿using Cysharp.Text;
+using MajdataPlay.Diagnostics;
 using MajdataPlay.Numerics;
 using MajdataPlay.Utils;
 using System;
@@ -7,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Profiling;
 #nullable enable
 namespace MajdataPlay.IO
 {
@@ -15,6 +17,7 @@ namespace MajdataPlay.IO
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void UpdateButtonState()
         {
+            Profiler.BeginSample("InputManager.OnPreUpdate.UpdateButtonState");
             var buttons = _buttons.Span;
             var now = MajTimeline.UnscaledTime;
             
@@ -30,11 +33,13 @@ namespace MajdataPlay.IO
                 newStates[index] |= report.State;
             }
 
+#if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS
             for (var i = 0; i < 12; i++)
             {
                 var state = (ButtonRing.IsOn(i) || ButtonRing.IsHadOn(i)) ? SwitchStatus.On : SwitchStatus.Off;
                 newStates[i] |= state;
             }
+#endif
 
             for (var i = 0; i < 12; i++)
             {
@@ -66,6 +71,7 @@ namespace MajdataPlay.IO
                 button.PushEvent(msg);
                 PushEvent(msg);
             }
+            Profiler.EndSample();
         }
         public static void BindButton(EventHandler<InputEventArgs> checker, ButtonZone zone)
         {

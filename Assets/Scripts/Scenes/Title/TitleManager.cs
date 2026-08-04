@@ -1,42 +1,79 @@
 using Cysharp.Threading.Tasks;
+using LitMotion;
+using LitMotion.Extensions;
 using MajdataPlay.Settings;
 using MajdataPlay.Extensions;
 using MajdataPlay.IO;
 using MajdataPlay.Utils;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Networking;
-using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using MajdataPlay.Diagnostics;
 #nullable enable
 namespace MajdataPlay.Scenes.Title
 {
     public class TitleManager : MonoBehaviour
     {
-        public TextMeshProUGUI echoText;
-        public Animator fadeInAnim;
+        [SerializeField]
+        RectTransform _xxlbRect = null!;
+
+        [SerializeField]
+        Image _xxlbImage = null!;
+
+        [SerializeField]
+        RectTransform _majdataPlayRect = null!;
+
+        [SerializeField]
+        Image _majdataPlayImage = null!;
+
+        [SerializeField]
+        Image _ribbonImage = null!;
+
+        [SerializeField]
+        RectTransform _echoBackground = null!;
+
+        [SerializeField]
+        TextMeshProUGUI _echoText = null!;
+
+        [SerializeField]
+        RectTransform _loadingIndicator = null!;
 
         bool _flag = false;
-        float _pressTime = 0f;
+
+        readonly CompositeMotionHandle _titleEntranceMotions = new(5);
+        MotionHandle _loadingRotationMotion;
+        float _xxlbTargetX;
+        float _majdataPlayTargetX;
+        float _echoBackgroundTargetWidth;
+        bool _isInitializationDone;
+
+        const float XXLB_ENTRANCE_DURATION_SEC = 80f / 60f;
+        const float XXLB_START_OFFSET_X = -540f;
+        const float MAJDATA_PLAY_START_OFFSET_X = 540f;
+        const float RIBBON_REVEAL_DELAY_SEC = XXLB_ENTRANCE_DURATION_SEC;
+        const float RIBBON_REVEAL_DURATION_SEC = 27f / 60f;
+        const float ECHO_BACKGROUND_DELAY_SEC = 102f / 60f;
+        const float ECHO_BACKGROUND_DURATION_SEC = 23f / 60f;
+        const float ECHO_TEXT_DELAY_SEC = 122f / 60f;
+        const float ECHO_TEXT_FADE_DURATION_SEC = 20f / 60f;
+        const float LOADING_ROTATION_DURATION_SEC = 3f;
+
+        void Awake()
+        {
+            _xxlbTargetX = _xxlbRect.anchoredPosition.x;
+            _majdataPlayTargetX = _majdataPlayRect.anchoredPosition.x;
+            _echoBackgroundTargetWidth = _echoBackground.sizeDelta.x;
+            PrepareTitleEntrance();
+        }
+
         void Start()
         {
-#if UNITY_ANDROID 
-            //we extract the streaming assets files here and let the user to restart the app
-            if (!Directory.Exists(MajEnv.AssetsPath))
-            {
-                StartCoroutine(ExtractStreamingAss());
-                return;
-            }
-#endif
+            PlayTitleEntranceAnimation();
             InitAsync().Forget();
-            LedRing.SetAllLight(Color.white);
+            CabinetLed.SetAllLight(Color.white);
             if (InputManager.IsTouchPanelConnected)
             {
                 Destroy(GameObject.Find("EventSystem"));
@@ -48,12 +85,10 @@ namespace MajdataPlay.Scenes.Title
             MajInstances.AudioManager.PlaySFX("MajdataPlay.wav");
             MajInstances.AudioManager.PlaySFX("bgm_title.mp3");
 
-
-
-            echoText.text = $"{Localization.GetLocalizedText("MAJTEXT_LOADING_SCORE_STORAGE")}...";
+            _echoText.text = $"{"MAJTEXT_LOADING_SCORE_STORAGE".i18n()}...";
             await UniTask.DelayFrame(9);
             var task1 = ScoreManager.InitAsync().AsValueTask();
-            while(!task1.IsCompleted)
+            while (!task1.IsCompleted)
             {
                 await UniTask.Yield();
             }
@@ -65,22 +100,17 @@ namespace MajdataPlay.Scenes.Title
                 await UniTask.Yield();
             }
             await UniTask.Delay(2000);
-            echoText.text = $"{Localization.GetLocalizedText("MAJTEXT_LOADING_SKIN")}...";
+            _echoText.text = $"{"MAJTEXT_LOADING_SKIN".i18n()}...";
             var task2 = MajInstances.SkinManager.InitAsync();
             while (!task2.IsCompleted)
             {
                 await UniTask.Yield();
             }
 
-            echoText.text = $"{Localization.GetLocalizedText("MAJTEXT_SCANNING_CHARTS")}...";
+            _echoText.text = $"{"MAJTEXT_SCANNING_CHARTS".i18n()}...";
             var task3 = StartScanningChart();
             try
             {
-                if (task3 is null)
-                {
-                    return;
-                }
-                var isEmpty = false;
                 while (true)
                 {
                     await UniTask.Yield(PlayerLoopTiming.Update);
@@ -89,36 +119,12 @@ namespace MajdataPlay.Scenes.Title
                     {
                         if (task3.IsFaulted)
                         {
-                            echoText.text = Localization.GetLocalizedText("MAJTEXT_SCAN_CHARTS_FAILED");
+                            _echoText.text = "MAJTEXT_ERR_SCAN_CHARTS_FAILED".i18n();
                             MajDebug.LogException(task3.Exception);
-                        }
-                        else if (SongStorage.IsEmpty)
-                        {
-                            isEmpty = true;
-                            echoText.text = Localization.GetLocalizedText("MAJTEXT_NO_CHART");
                         }
                         else
                         {
-                            if (MajInstances.Settings.Online.Enable)
-                            {
-                                foreach (var endpoint in MajInstances.Settings.Online.ApiEndpoints)
-                                {
-                                    try
-                                    {
-                                        if (endpoint.Username is null || endpoint.Password is null) continue;
-                                        echoText.text = "Login " + endpoint.Name + " as " + endpoint.Username;
-                                        await Online.Login(endpoint);
-                                        await UniTask.Delay(1000);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        MajDebug.LogError(ex);
-                                        echoText.text = "Login failed for " + endpoint.Name;
-                                        await UniTask.Delay(1000);
-                                    }
-                                }
-                            }
-                            echoText.text = "MAJTEXT_PRESS_ANY_KEY".i18n();
+                            _echoText.text = "MAJTEXT_PRESS_ANY_KEY".i18n();
                             InputManager.BindAnyArea(OnAreaDown);
 
                             var list = new string[] { "game_init.wav", "game_init_2.wav", "game_init_3.wav" };
@@ -128,65 +134,26 @@ namespace MajdataPlay.Scenes.Title
                         break;
                     }
                 }
-                fadeInAnim.SetBool("IsDone", true);
+                FinishLoadingAnimation();
             }
             finally
             {
                 _flag = true;
             }
         }
-        IEnumerator ExtractStreamingAss()
-        {
-            var extractRoot = MajEnv.AssetsPath;
-            echoText.text = $"Extracting Assets...";
-            Directory.CreateDirectory(extractRoot);
-            List<string> filePathsList = new List<string>();
-            TextAsset paths = Resources.Load<TextAsset>("StreamingAssetPaths");
-            string fs = paths.text;
-            MajDebug.LogInfo(fs);
-            string[] fLines = fs.Replace("\\","/").Split("\n");
-            foreach (string line in fLines)
-            {
-                if (line.Trim().Length <= 1) continue;
-                var path = Path.Combine( Application.streamingAssetsPath, line.Trim());
-                echoText.text = $"Extracting {path}...";
-                MajDebug.LogInfo($"Extracting {path}");
-                yield return new WaitForEndOfFrame();
-                byte[] data = null;
-                int dataLen = 0;
-                UnityWebRequest webRequest = UnityWebRequest.Get(path);
-                yield return webRequest.SendWebRequest();
-
-                if (webRequest.result == UnityWebRequest.Result.Success)
-                {
-                    dataLen = webRequest.downloadHandler.data.Length;
-                    data = webRequest.downloadHandler.data;
-                    var file = Path.Combine(extractRoot, line.Trim());
-                    var dir = Path.GetDirectoryName(file);
-                    Directory.CreateDirectory(dir);
-                    File.WriteAllBytes(file, data);
-                }
-                else
-                {
-                    MajDebug.LogError("Extract failed");
-                }
-            }
-            echoText.text = $"Please Reboot The Game";
-        }
 
         async Task StartScanningChart()
         {
             var progress = new Progress<string>();
-            progress.ProgressChanged += (o,e) =>
+            progress.ProgressChanged += (o, e) =>
             {
-                echoText.text = e;
+                _echoText.text = e;
             };
             await Task.Delay(3000);
             await SongStorage.InitAsync(progress);
 
             if (!SongStorage.IsEmpty)
             {
-                var setting = MajInstances.Settings;
                 var listConfig = MajEnv.RuntimeConfig.List;
                 var dirId = listConfig.SelectedDirGuid;
                 var selectedSongHash = listConfig.SelectedSongHash;
@@ -195,7 +162,7 @@ namespace MajdataPlay.Scenes.Title
                 if (dirId != Guid.Empty)
                 {
                     var dirIndex = Array.FindIndex(SongStorage.Collections, x => x.Id == dirId);
-                    if(dirIndex != -1)
+                    if (dirIndex != -1)
                     {
                         listConfig.SelectedDir = dirIndex;
                         isDirMatched = true;
@@ -210,7 +177,7 @@ namespace MajdataPlay.Scenes.Title
                 if (isDirMatched && !string.IsNullOrEmpty(selectedSongHash))
                 {
                     selectedIndex = Array.FindIndex(selectedCollection.ToArray(), x => x.Hash == selectedSongHash);
-                    if(selectedIndex == -1)
+                    if (selectedIndex == -1)
                     {
                         selectedIndex = 0;
                     }
@@ -233,6 +200,122 @@ namespace MajdataPlay.Scenes.Title
             }
         }
 
+        void PrepareTitleEntrance()
+        {
+            _titleEntranceMotions.Cancel();
+            _loadingRotationMotion.TryCancel();
+            SetXxlbPositionX(_xxlbTargetX + XXLB_START_OFFSET_X);
+            SetGraphicAlpha(_xxlbImage, 0f);
+            SetMajdataPlayPositionX(_majdataPlayTargetX + MAJDATA_PLAY_START_OFFSET_X);
+            SetGraphicAlpha(_majdataPlayImage, 0f);
+            _ribbonImage.type = Image.Type.Filled;
+            _ribbonImage.fillMethod = Image.FillMethod.Horizontal;
+            _ribbonImage.fillOrigin = (int)Image.OriginHorizontal.Left;
+            _ribbonImage.fillAmount = 0f;
+            SetGraphicAlpha(_ribbonImage, 1f);
+            SetGraphicAlpha(_echoText, 0f);
+            SetEchoBackgroundWidth(0f);
+            _loadingIndicator.localEulerAngles = Vector3.zero;
+            _loadingIndicator.gameObject.SetActive(false);
+        }
+
+        void PlayTitleEntranceAnimation()
+        {
+            LMotion.Create(0f, 1f, XXLB_ENTRANCE_DURATION_SEC)
+                   .WithEase(Ease.OutQuart)
+                   .Bind(progress =>
+                   {
+                       SetXxlbPositionX(Mathf.LerpUnclamped(
+                           _xxlbTargetX + XXLB_START_OFFSET_X,
+                           _xxlbTargetX,
+                           progress));
+                       SetGraphicAlpha(_xxlbImage, progress);
+                   })
+                   .AddTo(_titleEntranceMotions);
+
+            LMotion.Create(0f, 1f, XXLB_ENTRANCE_DURATION_SEC)
+                   .WithEase(Ease.OutQuart)
+                   .Bind(progress =>
+                   {
+                       SetMajdataPlayPositionX(Mathf.LerpUnclamped(
+                           _majdataPlayTargetX + MAJDATA_PLAY_START_OFFSET_X,
+                           _majdataPlayTargetX,
+                           progress));
+                       SetGraphicAlpha(_majdataPlayImage, progress);
+                   })
+                   .AddTo(_titleEntranceMotions);
+
+            LMotion.Create(0f, 1f, RIBBON_REVEAL_DURATION_SEC)
+                   .WithDelay(RIBBON_REVEAL_DELAY_SEC)
+                   .WithEase(Ease.InOutSine)
+                   .BindToFillAmount(_ribbonImage)
+                   .AddTo(_titleEntranceMotions);
+
+            LMotion.Create(0f, _echoBackgroundTargetWidth, ECHO_BACKGROUND_DURATION_SEC)
+                   .WithDelay(ECHO_BACKGROUND_DELAY_SEC)
+                   .WithEase(Ease.OutBack)
+                   .Bind(SetEchoBackgroundWidth)
+                   .AddTo(_titleEntranceMotions);
+
+            LMotion.Create(0f, 1f, ECHO_TEXT_FADE_DURATION_SEC)
+                   .WithDelay(ECHO_TEXT_DELAY_SEC)
+                   .WithEase(Ease.InOutSine)
+                   .WithOnComplete(StartLoadingAnimation)
+                   .Bind(alpha => SetGraphicAlpha(_echoText, alpha))
+                   .AddTo(_titleEntranceMotions);
+        }
+
+        void StartLoadingAnimation()
+        {
+            if (_isInitializationDone)
+            {
+                return;
+            }
+
+            _loadingIndicator.gameObject.SetActive(true);
+            _loadingRotationMotion.TryCancel();
+            _loadingRotationMotion = LMotion.Create(0f, -360f, LOADING_ROTATION_DURATION_SEC)
+                                            .WithEase(Ease.Linear)
+                                            .WithLoops(-1)
+                                            .BindToLocalEulerAnglesZ(_loadingIndicator);
+        }
+
+        void FinishLoadingAnimation()
+        {
+            _isInitializationDone = true;
+            _loadingRotationMotion.TryCancel();
+            _loadingIndicator.localEulerAngles = Vector3.zero;
+            _loadingIndicator.gameObject.SetActive(false);
+        }
+
+        void SetXxlbPositionX(float x)
+        {
+            var position = _xxlbRect.anchoredPosition;
+            position.x = x;
+            _xxlbRect.anchoredPosition = position;
+        }
+
+        void SetMajdataPlayPositionX(float x)
+        {
+            var position = _majdataPlayRect.anchoredPosition;
+            position.x = x;
+            _majdataPlayRect.anchoredPosition = position;
+        }
+
+        void SetEchoBackgroundWidth(float width)
+        {
+            var size = _echoBackground.sizeDelta;
+            size.x = width;
+            _echoBackground.sizeDelta = size;
+        }
+
+        static void SetGraphicAlpha(Graphic graphic, float alpha)
+        {
+            var color = graphic.color;
+            color.a = alpha;
+            graphic.color = color;
+        }
+
         private void OnAreaDown(object sender, InputEventArgs e)
         {
             if (!e.IsDown)
@@ -242,7 +325,7 @@ namespace MajdataPlay.Scenes.Title
                 switch (e.BZone)
                 {
                     case ButtonZone.Test:
-                        if(_flag)
+                        if (_flag)
                         {
                             EnterTestMode();
                         }
@@ -252,15 +335,19 @@ namespace MajdataPlay.Scenes.Title
             }
             else
             {
+#if UNITY_ANDROID || UNITY_IOS
+                NextScene();
+#else
                 switch (e.SArea)
                 {
                     case SensorArea.A8:
                         MajInstances.AudioManager.OpenAsioPannel();
                         break;
-                    case SensorArea.E5:
+                    case SensorArea.E4:
                         NextScene();
                         break;
                 }
+#endif
             }
         }
 
@@ -275,11 +362,23 @@ namespace MajdataPlay.Scenes.Title
         void NextScene()
         {
             InputManager.UnbindAnyArea(OnAreaDown);
-            _pressTime = 0;
             _flag = false;
             MajInstances.AudioManager.StopSFX("bgm_title.mp3");
             MajInstances.AudioManager.StopSFX("MajdataPlay.wav");
-            MajInstances.SceneSwitcher.SwitchScene("List", false);
+            if (MajEnv.Settings.Online.Enable)
+            {
+                MajInstances.SceneSwitcher.SwitchScene("Login", false);
+            }
+            else
+            {
+                MajInstances.SceneSwitcher.SwitchScene("List", false);
+            }
+        }
+
+        void OnDestroy()
+        {
+            _titleEntranceMotions.Cancel();
+            _loadingRotationMotion.TryCancel();
         }
     }
 }

@@ -20,7 +20,7 @@ namespace MajdataPlay.Collections
         {
             get
             {
-                return _sorted[Index];
+                return Sorted[Index];
             }
         }
         public int Index
@@ -29,41 +29,42 @@ namespace MajdataPlay.Collections
             set
             {
                 if (IsEmpty)
+                {
                     throw new ArgumentOutOfRangeException("this collection is empty");
-                _index = value.Clamp(0, _origin.Length - 1);
+                }
+                _index = value.Clamp(0, Sorted.Length - 1);
             }
         }
         public ISongDetail this[int index]
         {
             get
             {
-                return _sorted[index];
+                return Sorted[index];
             }
         }
-        public ChartStorageLocation Location { get; init; } = ChartStorageLocation.Local;
         public ChartStorageType Type { get; init; } = ChartStorageType.List;
-        public bool IsOnline => Location == ChartStorageLocation.Online;
+        public bool IsOnline { get; init; } = false;
         public string Name { get; private set; }
         public bool IsSorted { get; private set; } = false;
         public int Count
         {
             get
             {
-                return _sorted.Length;
+                return Sorted.Length;
             }
         }
         public bool IsEmpty
         {
             get
             {
-                return _sorted.Length == 0;
+                return Sorted.Length == 0;
             }
         }
         public bool IsVirtual { get; init; }
         public DanInfo? DanInfo { get; init; }
 
-        protected ISongDetail[] _sorted;
-        protected ISongDetail[] _origin;
+        protected ISongDetail[] Sorted;
+        protected ISongDetail[] Origin;
 
         readonly static Guid COLLECTION_ALL_GUID = new Guid(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1);
         readonly static Guid COLLECTION_MY_FAVORITE_GUID = new Guid(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2);
@@ -76,15 +77,15 @@ namespace MajdataPlay.Collections
         {
             if (pArray.Length == 0)
             {
-                _sorted = Array.Empty<ISongDetail>();
-                _origin = Array.Empty<ISongDetail>();
+                Sorted = Array.Empty<ISongDetail>();
+                Origin = Array.Empty<ISongDetail>();
             }
             else
             {
                 var array = new ISongDetail[pArray.Length];
                 Array.Copy(pArray, array, pArray.Length);
-                _sorted = array;
-                _origin = array;
+                Sorted = array;
+                Origin = array;
             }
             if(string.IsNullOrEmpty(dirPath))
             {
@@ -146,8 +147,8 @@ namespace MajdataPlay.Collections
         }
         public SongCollection()
         {
-            _origin = Array.Empty<ISongDetail>();
-            _sorted = _origin;
+            Origin = Array.Empty<ISongDetail>();
+            Sorted = Origin;
             Path = string.Empty;
             Name = string.Empty;
             Id = Guid.Empty;
@@ -166,16 +167,17 @@ namespace MajdataPlay.Collections
         }
         public void SortAndFilter(SongOrder orderBy)
         {
+            NormalizeIndex();
             if(Type == ChartStorageType.Dan || IsEmpty)
             {
                 return;
             }
             IsSorted = true;
-            var filtered = Filter(_origin, orderBy.Keyword);
+            var filtered = Filter(Origin, orderBy.Keyword);
             var sorted = Sort(filtered, orderBy.SortBy);
 
-            SetCursor(Current, sorted);
-            this._sorted = sorted;
+            SetCursor(Current.Hash, sorted);
+            this.Sorted = sorted;
         }
         public async Task SortAndFilterAsync(SongOrder orderBy)
         {
@@ -183,14 +185,15 @@ namespace MajdataPlay.Collections
         }
         public void Reset()
         {
+            NormalizeIndex();
             if (!IsSorted)
             {
                 return;
             }
             IsSorted = false;
-            if (_sorted.Length != 0)
+            if (Sorted.Length != 0)
             {
-                var newIndex = _origin.FindIndex(x => x == Current);
+                var newIndex = Origin.FindIndex(x => x == Current);
                 newIndex = newIndex is -1 ? 0 : newIndex;
                 _index = newIndex;
             }
@@ -198,30 +201,47 @@ namespace MajdataPlay.Collections
             {
                 _index = 0;
             }
-            _sorted = _origin;
+            Sorted = Origin;
+        }
+        protected void NormalizeIndex()
+        {
+            if (IsEmpty)
+            {
+                _index = 0;
+                return;
+            }
+            _index = _index.Clamp(0, Sorted.Length - 1);
         }
         public void SetCursor(ISongDetail target)
         {
-            SetCursor(target, _sorted);
-        }
-        void SetCursor(ISongDetail target, ISongDetail[] dataSet)
-        {
-            if(IsEmpty)
+            if (IsEmpty)
             {
                 return;
             }
-            var newIndex = dataSet.FindIndex(x => x.Hash == target.Hash);
+            SetCursor(target.Hash, Sorted);
+        }
+        public void SetCursor(string hash)
+        {
+            if (IsEmpty)
+            {
+                return;
+            }
+            SetCursor(hash, Sorted);
+        }
+        void SetCursor(string hash, ISongDetail[] dataSet)
+        {
+            var newIndex = dataSet.FindIndex(x => x.Hash == hash);
             newIndex = newIndex is -1 ? 0 : newIndex;
             _index = newIndex;
         }
         public ISongDetail[] ToArray()
         {
-            if(_origin.Length == 0)
+            if(Sorted.Length == 0)
             {
                 return Array.Empty<ISongDetail>();
             }
-            var array = new ISongDetail[_origin.Length];
-            Array.Copy(_origin, array, _origin.Length);
+            var array = new ISongDetail[Sorted.Length];
+            Array.Copy(Sorted, array, Sorted.Length);
 
             return array;
         }
@@ -266,7 +286,7 @@ namespace MajdataPlay.Collections
         }
         public static SongCollection Empty(string name) => new SongCollection(name, Array.Empty<ISongDetail>());
         public static SongCollection Empty(string path, string name) => new SongCollection(path, name, Array.Empty<ISongDetail>());
-        public IEnumerator<ISongDetail> GetEnumerator() => new Enumerator(_sorted);
+        public IEnumerator<ISongDetail> GetEnumerator() => new Enumerator(Sorted);
 
         // Implementation for the GetEnumerator method.
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

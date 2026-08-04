@@ -8,7 +8,7 @@ using UnityEngine.Scripting;
 
 namespace MajdataPlay.Settings.Runtime;
 [Preserve]
-internal class ListConfig
+public class ListConfig
 {
     [Preserve]
     public int SelectedSongIndex { get; set; } = 0;

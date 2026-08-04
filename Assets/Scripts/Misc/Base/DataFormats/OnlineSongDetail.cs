@@ -1,13 +1,12 @@
-﻿using Cysharp.Text;
+using Cysharp.Text;
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Buffers;
 using MajdataPlay.IO;
 using MajdataPlay.Net;
 using MajdataPlay.Numerics;
-using MajdataPlay.Settings;
 using MajdataPlay.Utils;
+using MajdataPlay.Drawing;
 using MajSimai;
-using NeoSmart.AsyncLock;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -22,6 +21,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
+using MajdataPlay.Settings;
+using Nito.AsyncEx;
+using MajdataPlay.Diagnostics;
 
 #nullable enable
 namespace MajdataPlay
@@ -51,6 +53,13 @@ namespace MajdataPlay
         public string Hash { get; init; }
         public ApiEndpoint ServerInfo => _serverInfo;
 
+        public bool IsVideoLoaded { get => _videoPath != null; }
+        public bool IsCoverLoaded { get => _fullSizeCoverRef.TryGetTarget(out _); }
+        public bool IsCompressedCoverLoaded { get => _coverRef.TryGetTarget(out _); }
+        public bool IsAudioTrackLoaded { get => _audioTrackRef.TryGetTarget(out _); }
+        public bool IsPreviewAudioTrackLoaded { get => _previewAudioTrackRef.TryGetTarget(out _); }
+        public bool IsMaidataLoaded { get => _maidata != null; }
+
         readonly string _hashHexStr = string.Empty;
         readonly string _cachePath = string.Empty;
         readonly ApiEndpoint _serverInfo;
@@ -64,17 +73,17 @@ namespace MajdataPlay
         readonly string[] _designers = new string[7];
         readonly string[] _levels = new string[7];
 
-        static readonly Action _emptyCallback = () => { };
-
         bool _isDisposed = false;
         bool _isPreloaded = false;
 
         string? _videoPath = null;
-        AudioSampleWrap? _audioTrack = null;
-        AudioSampleWrap? _previewAudioTrack = null;
-        Sprite? _cover = null;
-        Sprite? _fullSizeCover = null;
+        WeakReference<AudioSampleWrap> _audioTrackRef = new(null!);
+        WeakReference<AudioSampleWrap> _previewAudioTrackRef = new(null!);
+        WeakReference<Sprite> _coverRef = new(null!);
+        WeakReference<Sprite> _fullSizeCoverRef = new(null!);
         SimaiFile? _maidata = null;
+
+        volatile int _preloadJoinState = 0;
 
         readonly AsyncLock _previewAudioTrackLock = new();
         readonly AsyncLock _audioTrackLock = new();
@@ -82,16 +91,15 @@ namespace MajdataPlay
         readonly AsyncLock _coverLock = new();
         readonly AsyncLock _fullSizeCoverLock = new();
         readonly AsyncLock _maidataLock = new();
-        readonly AsyncLock _preloadLock = new();
 
         ~OnlineSongDetail()
         {
-            Dispose();
+            Dispose(false);
         }
         public OnlineSongDetail(ApiEndpoint serverInfo, MajnetSongDetail songDetail)
         {
-            var apiroot = $"{serverInfo.Url}/maichart";
-
+            var apiroot = serverInfo.Url.Combine($"maichart/{songDetail.Id}/");
+            
             Title = songDetail.Title;
             Artist = songDetail.Artist;
             for (var i = 0; i < 7; i++)
@@ -102,17 +110,11 @@ namespace MajdataPlay
                 }
                 _levels[i] = songDetail.Levels[i];
             }
-            var maidataUriStr = $"{apiroot}/{songDetail.Id}/chart";
-            var trackUriStr = $"{apiroot}/{songDetail.Id}/track";
-            var fullSizeCoverUriStr = $"{apiroot}/{songDetail.Id}/image?fullimage=true";
-            var videoUriStr = $"{apiroot}/{songDetail.Id}/video";
-            var coverUriStr = $"{apiroot}/{songDetail.Id}/image";
-
-            _maidataUri = new Uri(maidataUriStr);
-            _trackUri = new Uri(trackUriStr);
-            _fullSizeCoverUri = new Uri(fullSizeCoverUriStr);
-            _videoUri = new Uri(videoUriStr);
-            _coverUri = new Uri(coverUriStr);
+            _maidataUri = apiroot.Combine("chart");
+            _trackUri = apiroot.Combine("track");
+            _fullSizeCoverUri = apiroot.Combine("image?fullimage=true");
+            _videoUri = apiroot.Combine("video");
+            _coverUri = apiroot.Combine("image");
 
             Hash = songDetail.Hash;
             _hashHexStr = HashHelper.ToHexString(Convert.FromBase64String(Hash));
@@ -141,28 +143,30 @@ namespace MajdataPlay
                 }
                 sb.Clear();
             }
-
-            if (!Directory.Exists(_cachePath))
-            {
-                Directory.CreateDirectory(_cachePath);
-            }
         }
 
         #region Public
         public async ValueTask PreloadAsync(INetProgress? progress = null, CancellationToken token = default)
         {
             ThrowIfDisposed();
-            if (_isPreloaded)
+            if (Interlocked.CompareExchange(ref _preloadJoinState, 1, 0) != 0)
             {
                 return;
             }
-            await UniTask.SwitchToThreadPool();
-            if (!await _preloadLock.TryLockAsync(_emptyCallback, TimeSpan.Zero))
+            try
             {
-                return;
+                if (_isPreloaded)
+                {
+                    return;
+                }
+                await UniTask.SwitchToThreadPool();
+                await Task.WhenAll(GetMaidataAsync(token: token).AsTask(), GetCompressedCoverAsync(false, progress, token).AsTask());
+                _isPreloaded = true;
             }
-            await Task.WhenAll(GetMaidataAsync(token: token).AsTask(), GetCompressedCoverAsync(false, progress, token).AsTask());
-            _isPreloaded = true;
+            finally
+            {
+                _preloadJoinState = 0;
+            }
         }
         public async ValueTask<AudioSampleWrap> GetPreviewAudioTrackAsync(INetProgress? progress = null, CancellationToken token = default)
         {
@@ -170,28 +174,21 @@ namespace MajdataPlay
             try
             {
                 await UniTask.SwitchToThreadPool();
-                var waiting4LockTask = _previewAudioTrackLock.LockAsync(token);
-                await Task.WhenAny(waiting4LockTask, Task.Delay(Timeout.Infinite, token));
-                var @lock = waiting4LockTask.Result;
+                var @lock = await _previewAudioTrackLock.LockAsync(token);
                 using (@lock)
                 {
                     token.ThrowIfCancellationRequested();
-                    if (_audioTrack is not null)
+                    if (_audioTrackRef.TryGetTarget(out var audioTrack) || _previewAudioTrackRef.TryGetTarget(out audioTrack))
                     {
-                        _previewAudioTrack = _audioTrack;
-                        return _previewAudioTrack;
+                        return audioTrack;
                     }
-                    else if (_previewAudioTrack is not null)
-                    {
-                        return _previewAudioTrack;
-                    }
-                    var cacheFlagPath = Path.Combine(_cachePath, "track.cache");
+
                     var audioManager = MajInstances.AudioManager;
                     var sample = await audioManager.LoadMusicFromUriAsync(_trackUri);
 
-                    _previewAudioTrack = sample;
+                    _previewAudioTrackRef.SetTarget(sample);
 
-                    return _previewAudioTrack;
+                    return sample;
                 }
             }
             catch (Exception e)
@@ -214,9 +211,7 @@ namespace MajdataPlay
                     return _videoPath;
                 }
                 await UniTask.SwitchToThreadPool();
-                var waiting4LockTask = _videoPathLock.LockAsync(token);
-                await Task.WhenAny(waiting4LockTask, Task.Delay(Timeout.Infinite, token));
-                var @lock = waiting4LockTask.Result;
+                var @lock = await _videoPathLock.LockAsync(token);
                 using (@lock)
                 {
                     token.ThrowIfCancellationRequested();
@@ -237,41 +232,10 @@ namespace MajdataPlay
                     {
                         try
                         {
-#if (ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG)
-                            await using(UniTask.ReturnToCurrentSynchronizationContext())
-                            {
-                                await UniTask.SwitchToMainThread();
-                                using var getReq = UnityWebRequestFactory.Head(_videoUri);
-                                var asyncOperation = getReq.SendWebRequest();
-
-                                while (!asyncOperation.isDone)
-                                {
-                                    if (token.IsCancellationRequested)
-                                    {
-                                        getReq.Abort();
-                                        throw new HttpException(_coverUri.OriginalString, HttpErrorCode.Canceled);
-                                    }
-                                    await UniTask.Yield();
-                                }
-                                if(getReq.result is (UnityWebRequest.Result.Success or UnityWebRequest.Result.ProtocolError))
-                                {
-                                    if(getReq.responseCode != (long)HttpStatusCode.OK)
-                                    {
-                                        using var _ = File.Create(cacheFlagPath);
-                                        _videoPath = string.Empty;
-                                        return _videoPath;
-                                    }
-                                    else if(getReq.responseCode == (long)HttpStatusCode.NotFound)
-                                    {
-                                        break;
-                                    }
-                                }
-                            }
-#else
                             var httpClient = MajEnv.SharedHttpClient;
                             using var rsp = await httpClient.GetAsync(_videoUri, HttpCompletionOption.ResponseHeadersRead, token);
 
-                            if (rsp.StatusCode != HttpStatusCode.OK)
+                            if (rsp.StatusCode == HttpStatusCode.NotFound)
                             {
                                 using var _ = File.Create(cacheFlagPath);
                                 _videoPath = string.Empty;
@@ -281,7 +245,6 @@ namespace MajdataPlay
                             {
                                 break;
                             }
-#endif
                         }
                         catch (Exception e)
                         {
@@ -329,13 +292,7 @@ namespace MajdataPlay
             try
             {
                 await UniTask.SwitchToThreadPool();
-                var waiting4LockTask = _maidataLock.LockAsync(token);
-                await Task.WhenAny(waiting4LockTask, Task.Delay(Timeout.Infinite, token));
-                //while (!waiting4LockTask.IsCompleted)
-                //{
-                //    await Task.Yield();
-                //}
-                var @lock = waiting4LockTask.Result;
+                var @lock = await _maidataLock.LockAsync(token);
                 using (@lock)
                 {
                     token.ThrowIfCancellationRequested();
@@ -387,28 +344,46 @@ namespace MajdataPlay
         }
         public void Dispose()
         {
+            Dispose(true);
+        }
+        void Dispose(bool disposing)
+        {
             if (_isDisposed)
             {
                 return;
             }
             _isDisposed = true;
-            _audioTrack?.Dispose();
-            _previewAudioTrack?.Dispose();
+            if (_audioTrackRef.TryGetTarget(out var audioTrack))
+            {
+                audioTrack.Dispose();
+            }
+            if (_previewAudioTrackRef.TryGetTarget(out audioTrack))
+            {
+                audioTrack.Dispose();
+            }
             UniTask.Post(() =>
             {
-                var tex1 = _cover?.texture;
-                var tex2 = _fullSizeCover?.texture;
-                GameObject.DestroyImmediate(_cover, true);
-                GameObject.DestroyImmediate(_fullSizeCover, true);
-
-                GameObject.DestroyImmediate(tex1, true);
-                GameObject.DestroyImmediate(tex2, true);
+                if (_coverRef.TryGetTarget(out var cover) && cover.IsNativeAlive())
+                {
+                    var tex = cover.texture;
+                    GameObject.DestroyImmediate(cover, true);
+                    GameObject.DestroyImmediate(tex, true);
+                }
+                if (_fullSizeCoverRef.TryGetTarget(out cover) && cover.IsNativeAlive())
+                {
+                    var tex = cover.texture;
+                    GameObject.DestroyImmediate(cover, true);
+                    GameObject.DestroyImmediate(tex, true);
+                }
             });
             _maidata = null;
-            _audioTrack = null;
-            _previewAudioTrack = null;
-            _cover = null;
-            _fullSizeCover = null;
+            if(disposing)
+            {
+                _audioTrackRef.SetTarget(null!);
+                _previewAudioTrackRef.SetTarget(null!);
+                _coverRef.SetTarget(null!);
+                _fullSizeCoverRef.SetTarget(null!);
+            }
             _videoPath = null;
         }
         public async ValueTask DisposeAsync()
@@ -418,30 +393,35 @@ namespace MajdataPlay
                 return;
             }
             _isDisposed = true;
-            if (_audioTrack is not null)
+            if (_audioTrackRef.TryGetTarget(out var audioTrack))
             {
-                await _audioTrack.DisposeAsync();
+                await audioTrack.DisposeAsync();
             }
-            if (_previewAudioTrack is not null)
+            if (_previewAudioTrackRef.TryGetTarget(out audioTrack))
             {
-                await _previewAudioTrack.DisposeAsync();
+                await audioTrack.DisposeAsync();
             }
             await using (UniTask.ReturnToCurrentSynchronizationContext())
             {
                 await UniTask.SwitchToMainThread();
-                var tex1 = _cover?.texture;
-                var tex2 = _fullSizeCover?.texture;
-                GameObject.DestroyImmediate(_cover, true);
-                GameObject.DestroyImmediate(_fullSizeCover, true);
-
-                GameObject.DestroyImmediate(tex1, true);
-                GameObject.DestroyImmediate(tex2, true);
+                if (_coverRef.TryGetTarget(out var cover) && cover.IsNativeAlive())
+                {
+                    var tex = cover.texture;
+                    GameObject.DestroyImmediate(cover, true);
+                    GameObject.DestroyImmediate(tex, true);
+                }
+                if (_fullSizeCoverRef.TryGetTarget(out cover) && cover.IsNativeAlive())
+                {
+                    var tex = cover.texture;
+                    GameObject.DestroyImmediate(cover, true);
+                    GameObject.DestroyImmediate(tex, true);
+                }
             }
             _maidata = null;
-            _audioTrack = null;
-            _previewAudioTrack = null;
-            _cover = null;
-            _fullSizeCover = null;
+            _audioTrackRef.SetTarget(null!);
+            _previewAudioTrackRef.SetTarget(null!);
+            _coverRef.SetTarget(null!);
+            _fullSizeCoverRef.SetTarget(null!);
             _videoPath = null;
         }
         //public async ValueTask UnloadUnityAssetsAsync(CancellationToken token = default)
@@ -487,15 +467,13 @@ namespace MajdataPlay
                 try
                 {
                     await UniTask.SwitchToThreadPool();
-                    var waiting4LockTask = _audioTrackLock.LockAsync(token);
-                    await Task.WhenAny(waiting4LockTask, Task.Delay(Timeout.Infinite, token));
-                    var @lock = waiting4LockTask.Result;
+                    var @lock = await _audioTrackLock.LockAsync(token);
                     using (@lock)
                     {
                         token.ThrowIfCancellationRequested();
-                        if (_audioTrack is not null)
+                        if (_audioTrackRef.TryGetTarget(out var audioTrack))
                         {
-                            return _audioTrack;
+                            return audioTrack;
                         }
                         var savePath = Path.Combine(_cachePath, "track.mp3");
                         var cacheFlagPath = Path.Combine(_cachePath, "track.cache");
@@ -518,14 +496,14 @@ namespace MajdataPlay
                             }
                             await DownloadFile(_trackUri, savePath, false, progress, token);
                         }
-                        _audioTrack = sampleWarp;
+                        _audioTrackRef.SetTarget(sampleWarp);
 
                         return sampleWarp;
                     }
                 }
                 catch (Exception e)
                 {
-                    _audioTrack = null;
+                    _audioTrackRef.SetTarget(null!);
                     if (e is not OperationCanceledException)
                     {
                         MajDebug.LogException(e);
@@ -543,15 +521,13 @@ namespace MajdataPlay
                 try
                 {
                     await UniTask.SwitchToThreadPool();
-                    var waiting4LockTask = _coverLock.LockAsync(token);
-                    await Task.WhenAny(waiting4LockTask, Task.Delay(Timeout.Infinite, token));
-                    var @lock = waiting4LockTask.Result;
+                    var @lock = await _coverLock.LockAsync(token);
                     using (@lock)
                     {
                         token.ThrowIfCancellationRequested();
-                        if (_cover is not null)
+                        if (_coverRef.TryGetTarget(out var cover) && await cover.IsNativeAliveAsync())
                         {
-                            return _cover;
+                            return cover;
                         }
                         var savePath = Path.Combine(_cachePath, "bg.jpg");
                         var cacheFlagPath = Path.Combine(_cachePath, $"bg.jpg.cache");
@@ -560,7 +536,7 @@ namespace MajdataPlay
                         {
                             if (!File.Exists(savePath))
                             {
-                                _cover = MajEnv.EmptySongCover;
+                                _coverRef.SetTarget(MajEnv.EmptySongCover);
                             }
                             else if(!loadIntoMemory)
                             {
@@ -570,9 +546,10 @@ namespace MajdataPlay
                             else
                             {
                                 progress?.Report(1);
-                                _cover = await SpriteLoader.LoadAsync(savePath, token);
+                                cover = await SpriteLoader.LoadFromFileAsync(savePath, true, token);
                             }
-                            return _cover;
+                            _coverRef.SetTarget(cover);
+                            return cover;
                         }
                         try
                         {
@@ -584,17 +561,15 @@ namespace MajdataPlay
                         }
                         catch (HttpException e)
                         {
+                            var @return = default(Sprite);
+                            _fullSizeCoverRef.TryGetTarget(out @return);
+                            @return ??= MajEnv.EmptySongCover;
                             if (e.ErrorCode is HttpErrorCode.Unsuccessful)
                             {
                                 using var _ = File.Create(cacheFlagPath);
-                                _cover = MajEnv.EmptySongCover;
-                                return _cover;
+                                _coverRef.SetTarget(@return);
                             }
-                            else
-                            {
-                                _cover = MajEnv.EmptySongCover;
-                                return _cover;
-                            }
+                            return @return;
                         }
                         finally
                         {
@@ -602,9 +577,10 @@ namespace MajdataPlay
                         }
 
                         token.ThrowIfCancellationRequested();
-                        _cover = await SpriteLoader.LoadAsync(savePath, token);
+                        cover = await SpriteLoader.LoadFromFileAsync(savePath, true, token);
 
-                        return _cover;
+                        _coverRef.SetTarget(cover);
+                        return cover;
                     }
                 }
                 catch (Exception e)
@@ -622,24 +598,23 @@ namespace MajdataPlay
             try
             {
                 await UniTask.SwitchToThreadPool();
-                var waiting4LockTask = _fullSizeCoverLock.LockAsync(token);
-                await Task.WhenAny(waiting4LockTask, Task.Delay(Timeout.Infinite, token));
-                var @lock = waiting4LockTask.Result;
+                var @lock = await _fullSizeCoverLock.LockAsync(token);
                 using (@lock)
                 {
                     token.ThrowIfCancellationRequested();
-                    if (_fullSizeCover is not null)
+                    if (_fullSizeCoverRef.TryGetTarget(out var cover) && await cover.IsNativeAliveAsync())
                     {
-                        return _fullSizeCover;
+                        return cover;
                     }
                     var savePath = Path.Combine(_cachePath, "bg_fullSize.jpg");
-                    var cacheFlagPath = Path.Combine(_cachePath, $"bg_fullSize.jpg.cache");
+                    var cacheFlagPath = Path.Combine(_cachePath, "bg_fullSize.jpg.cache");
 
                     if (File.Exists(cacheFlagPath))
                     {
                         if (!File.Exists(savePath))
                         {
-                            _fullSizeCover = MajEnv.EmptySongCover;
+                            _fullSizeCoverRef.SetTarget(MajEnv.EmptySongCover);
+                            return MajEnv.EmptySongCover;
                         }
                         else if (!loadIntoMemory)
                         {
@@ -649,9 +624,10 @@ namespace MajdataPlay
                         else
                         {
                             progress?.Report(1);
-                            _fullSizeCover = await SpriteLoader.LoadAsync(savePath, token);
+                            cover = await SpriteLoader.LoadFromFileAsync(savePath, true, token);
                         }
-                        return _fullSizeCover;
+                        _fullSizeCoverRef.SetTarget(cover);
+                        return cover;
                     }
                     try
                     {
@@ -663,26 +639,25 @@ namespace MajdataPlay
                     }
                     catch (HttpException e)
                     {
+                        var @return = default(Sprite);
+                        _coverRef.TryGetTarget(out @return);
+                        @return ??= MajEnv.EmptySongCover;
                         if (e.ErrorCode is HttpErrorCode.Unsuccessful)
                         {
                             using var _ = File.Create(cacheFlagPath);
-                            _fullSizeCover = MajEnv.EmptySongCover;
-                            return _fullSizeCover;
+                            _fullSizeCoverRef.SetTarget(@return);
                         }
-                        else
-                        {
-                            _fullSizeCover = MajEnv.EmptySongCover;
-                            return _fullSizeCover;
-                        }
+                        return @return;
                     }
                     finally
                     {
                         progress?.Report(1);
                     }
                     token.ThrowIfCancellationRequested();
-                    _fullSizeCover = await SpriteLoader.LoadAsync(savePath, token);
+                    cover = await SpriteLoader.LoadFromFileAsync(savePath, true, token);
 
-                    return _fullSizeCover;
+                    _fullSizeCoverRef.SetTarget(cover);
+                    return cover;
                 }
             }
             catch (Exception e)
@@ -702,130 +677,18 @@ namespace MajdataPlay
                 throw new ObjectDisposedException(nameof(OnlineSongDetail));
             }
         }
-
-#if ENABLE_IL2CPP || MAJDATA_IL2CPP_DEBUG
-        async Task DownloadFile(Uri uri, string savePath, bool forceReDl = false, INetProgress? progress = null, CancellationToken token = default)
+        private void EnsureCachePath()
         {
-            var fileInfo = new FileInfo(savePath);
-            var cacheFlagPath = Path.Combine(fileInfo.Directory.FullName, $"{fileInfo.Name}.cache");
-            var hashFlagPath = Path.Combine(fileInfo.Directory.FullName, $"{fileInfo.Name}.sha256");
-            var fileSHA256 = (string?)null;
-            if (File.Exists(cacheFlagPath))
+            if (!Directory.Exists(_cachePath))
             {
-                if (!forceReDl)
-                {
-                    return;
-                }
-                else
-                {
-                    File.Delete(cacheFlagPath);
-                    if(fileInfo.Exists)
-                    {
-                        fileInfo.Delete();
-                    }
-                }
-            }
-
-            for (var i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
-            {
-                try
-                {
-                    await UniTask.SwitchToMainThread();
-                    using var request = UnityWebRequestFactory.Get(uri);
-                    var asyncOperation = request.SendWebRequest();
-
-                    while (!asyncOperation.isDone)
-                    {
-                        if (token.IsCancellationRequested)
-                        {
-                            request.Abort();
-                            throw new HttpException(uri.OriginalString, HttpErrorCode.Canceled);
-                        }
-                        progress?.Report(asyncOperation.progress);
-                        await UniTask.Yield();
-                    }
-                    request.EnsureSuccessStatusCode();
-                    if (File.Exists(hashFlagPath))
-                    {
-                        fileSHA256 = await File.ReadAllTextAsync(hashFlagPath);
-                    }
-                    else
-                    {
-                        var header = request.GetResponseHeader("hash");
-                        if (!string.IsNullOrEmpty(header))
-                        {
-                            var hash = header;
-                            fileSHA256 = hash;
-                            await File.WriteAllTextAsync(hashFlagPath, fileSHA256);
-                        }
-                    }
-                    using var fileStream = File.Create(savePath);
-                    var nativeData = request.downloadHandler.nativeData;
-                    await UniTask.SwitchToThreadPool();
-                    var fileLen = nativeData.Length;
-                    var buffer = Pool<byte>.RentArray(fileLen.Clamp(0, 512 * 1024)); // 512KB
-                    var totalRead = 0;
-                    try
-                    {
-                        while(true)
-                        {
-                            var remaining = fileLen - totalRead;
-                            var read = 0;
-                            if (remaining == 0)
-                            {
-                                break;
-                            }
-
-                            if (remaining > buffer.Length)
-                            {
-                                nativeData.AsReadOnlySpan().Slice(totalRead, buffer.Length).CopyTo(buffer);
-                                read = buffer.Length;
-                            }
-                            else
-                            {
-                                nativeData.AsReadOnlySpan().Slice(totalRead, remaining).CopyTo(buffer);
-                                read = remaining;
-                            }
-                            await fileStream.WriteAsync(buffer.AsMemory(0, read));
-                            totalRead += read;
-                        }
-                    }
-                    finally
-                    {
-                        Pool<byte>.ReturnArray(buffer);
-                    }
-                    if (string.IsNullOrEmpty(fileSHA256))
-                    {
-                        if (totalRead < 10)
-                        {
-                            continue;
-                        }
-                    }
-                    else
-                    {
-                        fileStream.Position = 0;
-                        var currentHash = SHA256.Create().ComputeHash(fileStream);
-                        if (fileSHA256 != Convert.ToBase64String(currentHash))
-                        {
-                            continue;
-                        }
-                    }
-                    File.Create(cacheFlagPath).Dispose();
-                    break;
-                }
-                catch (Exception e)
-                {
-                    if (i == MajEnv.HTTP_REQUEST_MAX_RETRY)
-                    {
-                        MajDebug.LogError($"Failed to request resource: {uri}\n{e}");
-                        throw new HttpException(uri.OriginalString, HttpErrorCode.Unreachable);
-                    }
-                }
+                Directory.CreateDirectory(_cachePath);
             }
         }
-#else
+
+
         async Task DownloadFile(Uri uri, string savePath, bool forceReDl = false, INetProgress? progress = null, CancellationToken token = default)
         {
+            EnsureCachePath();
             var bufferSize = MajEnv.HTTP_BUFFER_SIZE;
             var fileInfo = new FileInfo(savePath);
             var httpClient = MajEnv.SharedHttpClient;
@@ -876,7 +739,7 @@ namespace MajdataPlay
                         }
                         else
                         {
-                            if (rsp.Headers.TryGetValues("hash", out var values))
+                            if (rsp.Headers.TryGetValues("hash", out var values) || rsp.Headers.TryGetValues("Hash", out values))
                             {
                                 var hash = values.FirstOrDefault();
                                 if (!string.IsNullOrEmpty(hash))
@@ -900,10 +763,10 @@ namespace MajdataPlay
                             if (progress is not null)
                             {
                                 var percent = 0f;
-                                progress.ReadBytes = totalRead;
+                                progress.TransferredBytes = totalRead;
                                 if (progress.TotalBytes != 0)
                                 {
-                                    percent = (float)progress.ReadBytes / progress.TotalBytes;
+                                    percent = (float)progress.TransferredBytes / progress.TotalBytes;
                                 }
                                 percent = Mathf.Clamp01(percent);
                                 progress.Report(percent);
@@ -920,10 +783,19 @@ namespace MajdataPlay
                         else
                         {
                             fileStream.Position = 0;
-                            var currentHash = SHA256.Create().ComputeHash(fileStream);
-                            if(fileSHA256 != Convert.ToBase64String(currentHash))
+                            var currentHashBytes = SHA256.Create().ComputeHash(fileStream);
+                            var currentHash = Convert.ToBase64String(currentHashBytes);
+                            if (fileSHA256 != currentHash)
                             {
-                                continue;
+                                MajDebug.LogWarning($"Hash mismatch for online resource\nOrigin: {fileSHA256}\nLocal: {currentHash}");
+                                if (i == MajEnv.HTTP_REQUEST_MAX_RETRY)
+                                {
+                                    throw new HttpException(uri.OriginalString, HttpErrorCode.IntegrityCheckFailed);
+                                }
+                                else
+                                {
+                                    continue;
+                                }
                             }
                         }
                         
@@ -966,6 +838,5 @@ namespace MajdataPlay
                 Pool<byte>.ReturnArray(rentBuffer, true);
             }
         }
-#endif
     }
 }

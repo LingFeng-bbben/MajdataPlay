@@ -1,0 +1,19 @@
+{
+    "name": "MajdataPlay.Platform.iOS",
+    "rootNamespace": "MajdataPlay.Platform.iOS",
+    "references": [
+        "GUID:8545470905e4bf241a27188012585d36"
+    ],
+    "includePlatforms": [
+        "Editor",
+        "iOS"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

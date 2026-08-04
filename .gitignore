@@ -17,6 +17,7 @@
 /settings.json
 /ModSettings.json
 /MajDatabase.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db.db
+/MajScores.db
 # MemoryCaptures can get excessive in size.
 # They also could contain extremely sensitive data
 /[Mm]emoryCaptures/
@@ -77,7 +78,7 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
-/[Aa]ssets/[Ss]treamingAssets/MaiCharts/*
+#/[Aa]ssets/[Ss]treamingAssets/MaiCharts/*
 /[Aa]ssets/[Ss]treamingAssets/settings.json
 /[Aa]ssets/[Ss]prites/[Gg]ame/[Nn]otes/*
 /[Aa]ssets/[Ss]prites/[Gg]ame/[Tt]extSprites/*
@@ -93,3 +94,7 @@ Assets/Font/GenJyuuGothicScore.asset
 out.log
 /RecordOutputs
 /ChartSetting.db
+/android-publish.keystore
+*.slnx
+/machine_description.json
+/ExtStreamingAssets

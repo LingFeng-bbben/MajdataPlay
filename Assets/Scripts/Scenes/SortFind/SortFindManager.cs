@@ -1,34 +1,52 @@
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
 using MajdataPlay.IO;
-using UnityEngine.EventSystems;
-using MajdataPlay.Utils;
+using MajdataPlay.Editor;
 
 namespace MajdataPlay.Scenes.SortFind
 {
 #nullable enable
     public class SortFindManager : MonoBehaviour
     {
-        
-        public TextMeshProUGUI[] Sorts;
-        public InputField SearchBar;
+        [SerializeField]
+        TextMeshProUGUI _slotText;
+        [SerializeField]
+        TMP_InputField _searchBar;
+        [SerializeField]
+        GameObject _clearButton;
 
-        public Color selectedColor;
-        public SortType sortType;
-
-        EventSystem _eventSystem;
+        [SerializeField, ReadOnlyField]
+        SortType _sortType;
 
         bool _isExited = false;
+        int _selectIndex = (int)SortType.Default;
+
+        readonly SortType[] _slots = new SortType[6];
+        readonly string[] _slotTexts = new string[6]    
+        {
+            "MAJTEXT_SORTFIND_SortbyDefault",
+            "MAJTEXT_SORTFIND_SortbyTime",
+            "MAJTEXT_SORTFIND_SortbyDiff",
+            "MAJTEXT_SORTFIND_SortbyDes",
+            "MAJTEXT_SORTFIND_SortbyTitle",
+            "MAJTEXT_SORTFIND_SortbyRank"
+        };
 
         // Start is called before the first frame update
         void Start()
         {
-            _eventSystem = EventSystem.current;
-            _eventSystem.SetSelectedGameObject(SearchBar.gameObject);
-            LedRing.SetAllLight(Color.black);
-            SearchBar.text = SongStorage.OrderBy.Keyword;
-            SetActiveSort(SongStorage.OrderBy.SortBy);
+            for (var i = 0; i < _slots.Length; i++)
+            {
+                _slots[i] = (SortType)i;
+            }
+            Focus(_searchBar);
+            CabinetLed.SetAllLight(Color.black);
+            _searchBar.text = SongStorage.OrderBy.Keyword;
+            _searchBar.onValueChanged.AddListener(_ => _clearButton.SetActive(!string.IsNullOrEmpty(_searchBar.text)));
+            _clearButton.SetActive(!string.IsNullOrEmpty(_searchBar.text));
+            _searchBar.onSubmit.AddListener(_ => SortAndExit());
+            _selectIndex = (int)SongStorage.OrderBy.SortBy;
+            SetActiveSort((SortType)_selectIndex);
         }
         void Update()
         {
@@ -36,57 +54,51 @@ namespace MajdataPlay.Scenes.SortFind
             {
                 SortAndExit();
             }
-            else if (InputManager.IsSensorClickedInThisFrame(SensorArea.E6))
+            else if (InputManager.IsSensorClickedInThisFrame(SensorArea.E6)||
+                     InputManager.IsSensorClickedInThisFrame(SensorArea.B5)) // <
             {
-                //sort by add time
-                SetActiveSort(SortType.ByTime);
+                _selectIndex--;
+                if(_selectIndex < 0)
+                {
+                    _selectIndex = _slots.Length - 1;
+                }
+                SetActiveSort((SortType)_selectIndex);
             }
-            else if (InputManager.IsSensorClickedInThisFrame(SensorArea.B5))
+            else if (InputManager.IsSensorClickedInThisFrame(SensorArea.B4) ||
+                     InputManager.IsSensorClickedInThisFrame(SensorArea.E4)) // >
             {
-                //sort by difficulty
-                SetActiveSort(SortType.ByDiff);
+                _selectIndex++;
+                if (_selectIndex > _slots.Length - 1)
+                {
+                    _selectIndex = 0;
+                }
+                SetActiveSort((SortType)_selectIndex);
             }
-            else if (InputManager.IsSensorClickedInThisFrame(SensorArea.B4))
+            
+            if (InputManager.IsSensorClickedInThisFrame(SensorArea.E3))
             {
-                //sort by mapper
-                SetActiveSort(SortType.ByDes);
-            }
-            else if (InputManager.IsSensorClickedInThisFrame(SensorArea.E4))
-            {
-                //sort by title
-                SetActiveSort(SortType.ByTitle);
-            }
-            else if (InputManager.IsSensorClickedInThisFrame(SensorArea.E5))
-            {
-                //default
-                SetActiveSort(SortType.Default);
-            }
-            else if (InputManager.IsSensorClickedInThisFrame(SensorArea.E3))
-            {
-                SearchBar.text = string.Empty;
+                _searchBar.text = string.Empty;
             }
             else if (InputManager.IsSensorClickedInThisFrame(SensorArea.E7) ||
                      InputManager.IsSensorClickedInThisFrame(SensorArea.B7) ||
                      InputManager.IsSensorClickedInThisFrame(SensorArea.C) ||
                      InputManager.IsSensorClickedInThisFrame(SensorArea.B2))
             {
-                _eventSystem.SetSelectedGameObject(SearchBar.gameObject);
+                Focus(_searchBar);
             }
         }
 
-        void SetActiveSort(SortType _sortType)
+        static void Focus(TMP_InputField inputField)
         {
-            ClearColor();
-            Sorts[(int)_sortType].color = selectedColor;
-            sortType = _sortType;
+            inputField.Select();
+            inputField.ActivateInputField();
+            inputField.MoveTextEnd(false);
         }
 
-        void ClearColor()
+        void SetActiveSort(SortType sortType)
         {
-            foreach (var s in Sorts)
-            {
-                s.color = Color.white;
-            }
+            _slotText.text = _slotTexts[(int)sortType].i18n();
+            _sortType = sortType;
         }
 
         void SortAndExit()
@@ -97,8 +109,8 @@ namespace MajdataPlay.Scenes.SortFind
             }
             _isExited = true;
             var orderBy = SongStorage.OrderBy;
-            orderBy.Keyword = SearchBar.text;
-            orderBy.SortBy = sortType;
+            orderBy.Keyword = _searchBar.text;
+            orderBy.SortBy = _sortType;
             MajInstances.SceneSwitcher.SwitchScene("List", false);
         }
     }

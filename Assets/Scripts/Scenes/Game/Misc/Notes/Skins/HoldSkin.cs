@@ -17,6 +17,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
         public Sprite Break { get; init; }
         public Sprite Break_On { get; init; }
         public Sprite Ex { get; init; }
+        public Sprite Mine { get; init; }
+        public Sprite Mine_On { get; init; }
+        public Sprite BreakMine { get; init; }
+        public Sprite BreakMine_On { get; init; }
 
         public ReadOnlySpan<Sprite> Ends { get; init; }
 

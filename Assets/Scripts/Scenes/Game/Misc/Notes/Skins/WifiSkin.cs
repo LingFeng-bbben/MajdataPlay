@@ -13,5 +13,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
         public ReadOnlySpan<Sprite> Normal { get; init; }
         public ReadOnlySpan<Sprite> Each { get; init; }
         public ReadOnlySpan<Sprite> Break { get; init; }
+        public ReadOnlySpan<Sprite> Mine { get; init; }
+        public ReadOnlySpan<Sprite> BreakMine { get; init; }
     }
 }

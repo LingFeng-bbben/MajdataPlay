@@ -1,9 +1,17 @@
+using MajdataPlay.Scenes.Game.Notes.Behaviours;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Remoting.Messaging;
+using System.Text;
 using Unity.VisualScripting;
+#if UNITY_EDITOR
+using UnityEditor;
+using UnityEngine.WSA;
+#endif
 using UnityEngine;
 using UnityEngine.UIElements;
+
 
 namespace MajdataPlay.Scenes.SlideGen
 {
@@ -20,21 +28,62 @@ namespace MajdataPlay.Scenes.SlideGen
         // Start is called before the first frame update
         void Start()
         {
-            if (showLine)
-            {
-                lineRenderer = GetComponent<LineRenderer>();
-                var positions = new List<Vector3>();
-                for (int i = 0; i <= 100; i++)
-                {
-                    positions.Add((Vector2)GetPointAtPosition(type, i / 100f));
-                }
-                lineRenderer.positionCount = positions.Count;
-                lineRenderer.SetPositions(positions.ToArray());
-            }
-            if (generate)
-            {
-                GenerateSlides(type, step);
-            }
+            //if (showLine)
+            //{
+            //    lineRenderer = GetComponent<LineRenderer>();
+            //    var positions = new List<Vector3>();
+            //    for (int i = 0; i <= 100; i++)
+            //    {
+            //        positions.Add((Vector2)GetPointAtPosition(type, i / 100f));
+            //    }
+            //    lineRenderer.positionCount = positions.Count;
+            //    lineRenderer.SetPositions(positions.ToArray());
+            //}
+            //if (generate)
+            //{
+            //    GenerateSlides(type, step);
+            //}
+#if UNITY_EDITOR
+            //var guids = AssetDatabase.FindAssets("t:Prefab", new[] { "Assets/Prefab/Game/Slides" });
+            //var prefabs = new GameObject[guids.Length];
+
+            //for (int i = 0; i < guids.Length; i++)
+            //{
+            //    var path = AssetDatabase.GUIDToAssetPath(guids[i]);
+            //    prefabs[i] = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            //}
+            //var poss = new Vector3[8][];
+            //var sb = new StringBuilder();
+            //foreach (var prefab in prefabs.Where(x => x.name.StartsWith("Star")))
+            //{
+            //    var isMirror = false;
+            //MIRROR_START:
+            //    for (var j = 1; j < 9; j++)
+            //    {
+            //        var instance = PrefabUtility.InstantiatePrefab(prefab) as GameObject;
+            //        var slideDrop = instance.GetComponent<SlideDrop>();
+            //        slideDrop.StartPos = j;
+            //        slideDrop.IsMirror = isMirror;
+            //        slideDrop.Initialize();
+            //        var posArray = slideDrop._starPositions.ToArray();
+            //        poss[j - 1] = posArray;
+            //        Object.DestroyImmediate(instance);
+            //    }
+            //    var arrayName = prefab.name;
+            //    if(isMirror)
+            //    {
+            //        arrayName += "_Mirror";
+            //    }
+            //    var code = ArrayCodeGen(arrayName, poss);
+            //    sb.AppendLine(code);
+            //    if (!isMirror)
+            //    {
+            //        isMirror = true;
+            //        goto MIRROR_START;
+            //    }
+            //}
+            //var arrayCode = sb.ToString();
+#endif
         }
 
         void GenerateSlides(string type, float step)
@@ -129,6 +178,47 @@ namespace MajdataPlay.Scenes.SlideGen
             return new Vector3(
                 distance * Mathf.Cos((position * -2f + 5f) * 0.125f * Mathf.PI),
                 distance * Mathf.Sin((position * -2f + 5f) * 0.125f * Mathf.PI));
+        }
+
+        string ArrayCodeGen(string arrayName, Vector3[][] array)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.AppendLine($"public static readonly Vector3[][] {arrayName} =");
+            sb.AppendLine("{");
+
+            var rows = array;
+            for (int i = 0; i < rows.Length; i++)
+            {
+                var row = rows[i];
+
+                sb.Append("    new Vector3[] {");
+
+                for (int j = 0; j < row.Length; j++)
+                {
+                    if (j > 0)
+                    {
+                        sb.Append(",");
+                    }
+                    sb.Append("new Vector3 (");
+                    sb.Append(row[j].x).Append('f').Append(',');
+                    sb.Append(row[j].y).Append('f').Append(',');
+                    sb.Append(row[j].z).Append('f').Append(')');
+                }
+
+                sb.Append("}");
+
+                if (i < rows.Length - 1)
+                {
+                    sb.Append(",");
+                }
+
+                sb.AppendLine();
+            }
+
+            sb.AppendLine("};");
+
+            return sb.ToString();
         }
     }
 }

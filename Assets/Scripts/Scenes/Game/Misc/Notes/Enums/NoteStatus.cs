@@ -3,7 +3,7 @@
     public enum NoteStatus
     {
         Start,
-        Initialized,
+        Inited,
         Scaling,
         Running,
         Arrived,

@@ -1,4 +1,4 @@
-﻿using MajdataPlay.Settings;
+using MajdataPlay.Settings;
 using MajdataPlay.Scenes.Game.Notes;
 using System;
 using System.Collections.Generic;
@@ -33,7 +33,7 @@ namespace MajdataPlay.Scenes.Game
             AllTouch = options.AllTouch;
             SlideNoHead = options.SlideNoHead;
             SlideNoTrack = options.SlideNoTrack;
-#if !UNITY_ANDROID
+#if !(UNITY_ANDROID || UNITY_IOS)
             ButtonRingForTouch = options.ButtonRingForTouch;
 #endif
             NoteMask = options.NoteMask;

@@ -1,6 +1,6 @@
-﻿using MajdataPlay.Scenes.Game;
+using MajdataPlay.Scenes.Game;
 using MajdataPlay.IO;
-using MajdataPlay.Unsafe;
+using MajdataPlay.UnsafeKit;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
@@ -10,6 +10,10 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Profiling;
+using System.Threading;
+using MajdataPlay.Net;
+using MajdataPlay.Diagnostics;
+
 #nullable enable
 namespace MajdataPlay
 {
@@ -18,6 +22,12 @@ namespace MajdataPlay
         readonly ReadOnlyRef<GamePlayManager?> _gpManagerRef = new(ref Majdata<GamePlayManager>.Instance);
         DummyTouchPanelRenderer _dummyTouchPanelRenderer;
         DummyLedRenderer _dummyLedRenderer;
+
+        MajScenes _lastScene = MajScenes.Init;
+        MajScenes _currentScene = MajScenes.Init;
+        Task _onlineHeartbeatTask = Task.CompletedTask;
+        CancellationTokenSource _heartbeatCts = new();
+        TimeSpan _lastExecuteHeartbeatTime = TimeSpan.Zero;
         protected override void Awake()
         {
             base.Awake();
@@ -67,9 +77,7 @@ namespace MajdataPlay
             // Time Update
             MajTimeline.OnPreUpdate();
             InputManager.OnPreUpdate();
-            LedRing.OnPreUpdate();
             _dummyTouchPanelRenderer.OnPreUpdate();
-            _dummyLedRenderer.OnPreUpdate();
             try
             {
                 switch (SceneSwitcher.CurrentScene)
@@ -89,6 +97,29 @@ namespace MajdataPlay
         {
             try
             {
+                _lastScene = _currentScene;
+                _currentScene = SceneSwitcher.CurrentScene;
+
+                if(_currentScene == MajScenes.Game && _lastScene != MajScenes.Game)
+                {
+                    if(!_onlineHeartbeatTask.IsCompleted)
+                    {
+                        _heartbeatCts.Cancel();
+                        _heartbeatCts = new();
+                        MajDebug.LogDebug("Online heartbeat task cancellation has been requested");
+                    }
+                }
+                else if(_currentScene != MajScenes.Game)
+                {
+                    var currentTime = MajTimeline.UnscaledTime;
+                    if(_onlineHeartbeatTask.IsCompleted && (currentTime - _lastExecuteHeartbeatTime).TotalMinutes > 5)
+                    {
+                        _onlineHeartbeatTask = Online.HeartbeatAsync(_heartbeatCts.Token).AsTask();
+                        _lastExecuteHeartbeatTime = currentTime;
+                        MajDebug.LogDebug("Online heartbeat requested");
+                    }
+                }
+
                 switch (SceneSwitcher.CurrentScene)
                 {
                     case MajScenes.Game:
@@ -112,6 +143,8 @@ namespace MajdataPlay
                         _gpManagerRef.Target?.OnLateUpdate();
                         break;
                 }
+                CabinetLed.OnLateUpdate();
+                _dummyLedRenderer.OnLateUpdate();
             }
             catch (Exception e)
             {

@@ -11,6 +11,7 @@ namespace MajdataPlay.Scenes.Game.Notes
         public JudgeGrade Grade { get; init; }
         public bool IsBreak { get; init; }
         public bool IsEX { get; init; }
+        public bool IsMine { get; init; }
         public bool IsFast => Diff < 0;
         public bool IsMissOrTooFast => Grade is JudgeGrade.Miss or JudgeGrade.TooFast;
         /// <summary>

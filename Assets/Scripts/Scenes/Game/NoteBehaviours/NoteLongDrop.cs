@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.CompilerServices;
 using MajdataPlay.Editor;
 using MajdataPlay.Extensions;
@@ -9,6 +9,39 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
     internal abstract class NoteLongDrop : NoteDrop
     {
+        protected const float SLIDE_JUDGE_MAXIMUM_ALLOWED_EXT_LENGTH_MSEC = 22 * FRAME_LENGTH_MSEC;
+        protected const float SLIDE_JUDGE_SEG_BASE_3RD_PERFECT_MSEC = 14 * FRAME_LENGTH_MSEC;
+        protected const float SLIDE_JUDGE_SEG_1ST_GREAT_MSEC = 21 * FRAME_LENGTH_MSEC;
+        protected const float SLIDE_JUDGE_SEG_2ND_GREAT_MSEC = 25 * FRAME_LENGTH_MSEC;
+        protected const float SLIDE_JUDGE_SEG_3RD_GREAT_MSEC = 29 * FRAME_LENGTH_MSEC;
+
+        protected const float SLIDE_JUDGE_CLASSIC_FAST_SEG_1ST_PERFECT_MSEC = 4 * FRAME_LENGTH_MSEC;  // 4f
+        protected const float SLIDE_JUDGE_CLASSIC_FAST_SEG_2ND_PERFECT_MSEC = 8 * FRAME_LENGTH_MSEC;  // 8f
+        protected const float SLIDE_JUDGE_CLASSIC_FAST_SEG_3RD_PERFECT_MSEC = 12 * FRAME_LENGTH_MSEC; // 12f
+        protected const float SLIDE_JUDGE_CLASSIC_FAST_SEG_1ST_GREAT_MSEC = 16 * FRAME_LENGTH_MSEC;   // 16f
+        protected const float SLIDE_JUDGE_CLASSIC_FAST_SEG_2ND_GREAT_MSEC = 20 * FRAME_LENGTH_MSEC;   // 20f
+        protected const float SLIDE_JUDGE_CLASSIC_FAST_SEG_3RD_GREAT_MSEC = 24 * FRAME_LENGTH_MSEC;   // 24f
+
+        protected const float SLIDE_JUDGE_CLASSIC_LATE_SEG_1ST_PERFECT_MSEC = 4 * FRAME_LENGTH_MSEC;  // 4f
+        protected const float SLIDE_JUDGE_CLASSIC_LATE_SEG_2ND_PERFECT_MSEC = 8 * FRAME_LENGTH_MSEC;  // 8f
+        protected const float SLIDE_JUDGE_CLASSIC_LATE_SEG_3RD_PERFECT_MSEC = 12 * FRAME_LENGTH_MSEC; // 12f
+        protected const float SLIDE_JUDGE_CLASSIC_LATE_SEG_1ST_GREAT_MSEC = 16 * FRAME_LENGTH_MSEC;   // 16f
+        protected const float SLIDE_JUDGE_CLASSIC_LATE_SEG_2ND_GREAT_MSEC = 20 * FRAME_LENGTH_MSEC;   // 20f
+        protected const float SLIDE_JUDGE_CLASSIC_LATE_SEG_3RD_GREAT_MSEC = 24 * FRAME_LENGTH_MSEC;   // 24f
+
+        protected const float SLIDE_JUDGE_CLASSIC_SEG_1ST_PERFECT_MSEC = 4 * FRAME_LENGTH_MSEC;  // 4f
+        protected const float SLIDE_JUDGE_CLASSIC_SEG_2ND_PERFECT_MSEC = 8 * FRAME_LENGTH_MSEC;  // 8f
+        protected const float SLIDE_JUDGE_CLASSIC_SEG_3RD_PERFECT_MSEC = 12 * FRAME_LENGTH_MSEC; // 12f
+        protected const float SLIDE_JUDGE_CLASSIC_SEG_1ST_GREAT_MSEC = 16 * FRAME_LENGTH_MSEC;   // 16f
+        protected const float SLIDE_JUDGE_CLASSIC_SEG_2ND_GREAT_MSEC = 20 * FRAME_LENGTH_MSEC;   // 20f
+        protected const float SLIDE_JUDGE_CLASSIC_SEG_3RD_GREAT_MSEC = 24 * FRAME_LENGTH_MSEC;   // 24f
+        protected const float SLIDE_JUDGE_GOOD_AREA_MSEC = 36 * FRAME_LENGTH_MSEC;               // 36f
+
+        protected const int HOLD_STATE_HEAD_MISS_OR_NOT_JUDGED = -3;
+        protected const int HOLD_STATE_HEAD_JUDGED_AND_NOT_FEEDBACK = -2;
+        protected const int HOLD_STATE_HEAD_JUDGED = -1;
+        protected const int HOLD_STATE_RELEASED = 0;
+        protected const int HOLD_STATE_PRESSED = 1;
         public float Length
         {
             get => _length;
@@ -32,10 +65,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected JudgeGrade HoldEndJudge(in JudgeGrade headGrade, in float ingoreTimeSec)
         {
-            if (!_isJudged)
+            if (!IsJudged)
                 return headGrade;
 
-            var offset = (int)_judgeResult > 7 ? 0 : _judgeDiff;
+            var offset = (int)JudgeResult > 7 ? 0 : JudgeDiff;
             var realityHT = (Length - ingoreTimeSec - offset / 1000f).Clamp(0, Length - 0.3f);
             var percent = ((realityHT - _playerReleaseTimeSec) / realityHT).Clamp(0, 1);
 
@@ -87,7 +120,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                         switch (headGrade)
                         {
                             case JudgeGrade.Perfect:
-                                if (_judgeDiff >= 0)
+                                if (JudgeDiff >= 0)
                                 {
                                     return JudgeGrade.LatePerfect2nd;
                                 }
@@ -122,7 +155,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                         switch (headGrade)
                         {
                             case JudgeGrade.Perfect:
-                                if (_judgeDiff >= 0)
+                                if (JudgeDiff >= 0)
                                 {
                                     return JudgeGrade.LateGreat2nd;
                                 }
@@ -156,7 +189,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                         switch (headGrade)
                         {
                             case JudgeGrade.Perfect:
-                                if (_judgeDiff >= 0)
+                                if (JudgeDiff >= 0)
                                 {
                                     return JudgeGrade.LateGood;
                                 }
@@ -188,7 +221,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                         switch (headGrade)
                         {
                             case JudgeGrade.Perfect:
-                                if (_judgeDiff >= 0)
+                                if (JudgeDiff >= 0)
                                 {
                                     return JudgeGrade.LateGood;
                                 }
@@ -223,7 +256,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected JudgeGrade HoldClassicEndJudge(in JudgeGrade headGrade,float offset)
         {
-            if (!_isJudged)
+            if (!IsJudged)
             {
                 return headGrade;
             }

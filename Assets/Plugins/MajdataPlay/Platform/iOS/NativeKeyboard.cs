@@ -1,0 +1,208 @@
+﻿using MajdataPlay.Platform.iOS.PInvoke;
+using System;
+using System.Runtime.InteropServices;
+
+namespace MajdataPlay.Platform.iOS
+{
+    public static class NativeKeyboard
+    {
+        public static ErrorCode Init()
+        {
+#if (UNITY_IOS && !UNITY_EDITOR) || UNITY_EDITOR_OSX
+            return NativeKeyboardPInvoke.InitInternal();
+#else
+            return ErrorCode.NotSupported;
+#endif
+        }
+
+        public static nint GetKeyboardHandle()
+        {
+#if (UNITY_IOS && !UNITY_EDITOR) || UNITY_EDITOR_OSX
+            return NativeKeyboardPInvoke.GetKeyboardHandleInternal();
+#else
+            return 0;
+#endif
+        }
+
+        public static ErrorCode IsPressed(GCKeyCode keyCode, ref bool isPressed)
+        {
+#if (UNITY_IOS && !UNITY_EDITOR) || UNITY_EDITOR_OSX
+            var errorCode = NativeKeyboardPInvoke.IsPressedInternal((uint)keyCode, out var value);
+            isPressed = value != 0;
+            return errorCode;
+#else
+            isPressed = false;
+            return ErrorCode.NotSupported;
+#endif
+        }
+
+        public static ErrorCode IsPressed(nint keyboardHandle, GCKeyCode keyCode, ref bool isPressed)
+        {
+#if (UNITY_IOS && !UNITY_EDITOR) || UNITY_EDITOR_OSX
+            var errorCode = NativeKeyboardPInvoke.IsPressedWithHandleInternal(keyboardHandle, (uint)keyCode, out var value);
+            isPressed = value != 0;
+            return errorCode;
+#else
+            isPressed = false;
+            return ErrorCode.NotSupported;
+#endif
+        }
+
+        public static ErrorCode Free()
+        {
+#if (UNITY_IOS && !UNITY_EDITOR) || UNITY_EDITOR_OSX
+            return NativeKeyboardPInvoke.FreeInternal();
+#else
+            return ErrorCode.NotSupported;
+#endif
+        }
+    }
+    public enum ErrorCode
+    {
+        NoError,
+        NotSupported,
+        NoDevice,
+        NullPointer,
+        InvalidHandle,
+        InvalidOperation
+    }
+
+    public enum GCKeyCode : uint
+    {
+        Application = 0,
+        Lang7 = 1,
+        Lang6 = 2,
+        Lang5 = 3,
+        Lang4 = 4,
+        Lang3 = 5,
+        Lang2 = 6,
+        Lang1 = 7,
+        KeypadSlash = 8,
+        KeypadPlus = 9,
+        KeypadPeriod = 10,
+        KeypadNumLock = 11,
+        KeypadHyphen = 12,
+        KeypadEqualSign = 13,
+        KeypadEnter = 14,
+        KeypadAsterisk = 15,
+        Keypad9 = 16,
+        Keypad8 = 17,
+        Keypad7 = 18,
+        Keypad6 = 19,
+        Keypad5 = 20,
+        Keypad4 = 21,
+        Keypad3 = 22,
+        Keypad2 = 23,
+        Keypad1 = 24,
+        Keypad0 = 25,
+        KeyZ = 26,
+        KeyY = 27,
+        KeyX = 28,
+        KeyW = 29,
+        Lang8 = 30,
+        Lang9 = 31,
+        LeftAlt = 32,
+        LeftArrow = 33,
+        Two = 34,
+        Three = 35,
+        Tab = 36,
+        Spacebar = 37,
+        Slash = 38,
+        Six = 39,
+        Seven = 40,
+        Semicolon = 41,
+        ScrollLock = 42,
+        RightShift = 43,
+        RightGui = 44,
+        RightControl = 45,
+        RightArrow = 46,
+        RightAlt = 47,
+        KeyV = 48,
+        ReturnOrEnter = 49,
+        PrintScreen = 50,
+        Power = 51,
+        Period = 52,
+        Pause = 53,
+        PageUp = 54,
+        PageDown = 55,
+        OpenBracket = 56,
+        One = 57,
+        NonUSPound = 58,
+        NonUSBackslash = 59,
+        Nine = 60,
+        LeftShift = 61,
+        LeftGui = 62,
+        LeftControl = 63,
+        Quote = 64,
+        KeyU = 65,
+        KeyT = 66,
+        KeyS = 67,
+        F8 = 68,
+        F7 = 69,
+        F6 = 70,
+        F5 = 71,
+        F4 = 72,
+        F3 = 73,
+        F20 = 74,
+        F2 = 75,
+        F19 = 76,
+        F18 = 77,
+        F17 = 78,
+        F16 = 79,
+        F15 = 80,
+        F14 = 81,
+        F9 = 82,
+        F13 = 83,
+        F11 = 84,
+        F10 = 85,
+        F1 = 86,
+        Escape = 87,
+        EqualSign = 88,
+        End = 89,
+        Eight = 90,
+        DownArrow = 91,
+        DeleteOrBackspace = 92,
+        DeleteForward = 93,
+        Comma = 94,
+        CloseBracket = 95,
+        CapsLock = 96,
+        Backslash = 97,
+        F12 = 98,
+        UpArrow = 99,
+        Five = 100,
+        GraveAccentAndTilde = 101,
+        KeyR = 102,
+        KeyQ = 103,
+        KeyP = 104,
+        KeyO = 105,
+        KeyN = 106,
+        KeyM = 107,
+        KeyL = 108,
+        KeyK = 109,
+        KeyJ = 110,
+        KeyI = 111,
+        KeyH = 112,
+        KeyG = 113,
+        KeyF = 114,
+        KeyE = 115,
+        Four = 116,
+        KeyD = 117,
+        KeyB = 118,
+        KeyA = 119,
+        International9 = 120,
+        International8 = 121,
+        International7 = 122,
+        International6 = 123,
+        International5 = 124,
+        International4 = 125,
+        International3 = 126,
+        International2 = 127,
+        International1 = 128,
+        Insert = 129,
+        Hyphen = 130,
+        Home = 131,
+        KeyC = 132,
+        Zero = 133,
+        Max
+    }
+}

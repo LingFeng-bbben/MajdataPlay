@@ -1,0 +1,12 @@
+<linker>
+    <assembly fullname="Assembly-CSharp">
+        <type fullname="MajdataPlay.Settings*" preserve="all"/>
+    </assembly>
+	<assembly fullname="mscorlib">
+		<type fullname="System.Collections.Generic.HashSet`1" preserve="all"/>
+	</assembly>
+    <assembly fullname="Mono.Security" preserve="all"/>
+	<assembly fullname="System" preserve="all"/>
+	<assembly fullname="System.Net.Http" preserve="all"/>
+	<assembly fullname="System.Configuration" preserve="all"/>
+</linker>

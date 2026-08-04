@@ -7,6 +7,7 @@ using MajdataPlay.IO;
 using MajdataPlay.Numerics;
 using MajdataPlay.Timer;
 using MajdataPlay.Utils;
+using MajdataPlay.Drawing;
 using MajdataPlay.Scenes.View.Types;
 using MajSimai;
 using SkiaSharp;
@@ -20,6 +21,7 @@ using MajdataPlay.Settings;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using WebSocketSharp;
+using MajdataPlay.Diagnostics;
 #nullable enable
 namespace MajdataPlay.Scenes.View
 {
@@ -81,14 +83,14 @@ namespace MajdataPlay.Scenes.View
         static Sprite? _bgCover = null;
         static string? _videoPath = null;
         //WsServer _httpServer;
-        GameSetting _setting = MajInstances.Settings;
+        GameSetting _setting = MajEnv.Settings;
         NoteLoader _noteLoader;
         NoteManager _noteManager;
         NoteAudioManager _noteAudioManager;
         NotePoolManager _notePoolManager;
         BGManager _bgManager;
         TimeDisplayer _timeDisplayer;
-        ChartAnalyzer _chartAnalyzer;
+        ChartVisualDisplayer _chartAnalyzer;
 
         SimaiChart? _chart;
         
@@ -118,7 +120,7 @@ namespace MajdataPlay.Scenes.View
             _noteAudioManager = Majdata<NoteAudioManager>.Instance!;
             _notePoolManager = Majdata<NotePoolManager>.Instance!;
             _timeDisplayer = Majdata<TimeDisplayer>.Instance!;
-            _chartAnalyzer = Majdata<ChartAnalyzer>.Instance!;
+            _chartAnalyzer = Majdata<ChartVisualDisplayer>.Instance!;
 
             if (!string.IsNullOrEmpty(_videoPath))
             {
@@ -322,7 +324,7 @@ namespace MajdataPlay.Scenes.View
                 var sample = await MajInstances.AudioManager.LoadMusicAsync(audioPath, true, true);
                 if (File.Exists(bgPath))
                 {
-                    var cover = await SpriteLoader.LoadAsync(bgPath);
+                    var cover = await SpriteLoader.LoadFromFileAsync(bgPath);
                     _bgCover = cover;
                 }
                 else
@@ -385,7 +387,7 @@ namespace MajdataPlay.Scenes.View
             {
                 _chart = await SimaiParser.ParseChartAsync(string.Empty, string.Empty, fumen);
                 AudioLength = (float)_audioSample!.Length.TotalSeconds;
-                await _chartAnalyzer.AnalyzeAndDrawGraphAsync(_chart, (float)_audioSample.Length.TotalSeconds);
+                _chartAnalyzer.SetSimaiChart(_chart, (float)_audioSample.Length.TotalSeconds);
                 await UniTask.SwitchToMainThread();
                 var range = new Range<double>(startAt-Offset, double.MaxValue);
                 _chart = _chart.Clamp(range);

@@ -27,27 +27,37 @@ namespace MajdataPlay.Collections
 
         public void Add(ISongDetail item)
         {
+            NormalizeIndex();
+            var currentHash = IsEmpty ? null : Current.Hash;
             if (!_hashSet.Add(item.Hash))
             {
                 return;
             }
             _dataSet.Add(item);
-            _origin = _dataSet.ToArray();
+            Origin = _dataSet.ToArray();
             if(!IsSorted)
             {
-                _sorted = _origin;
+                Sorted = Origin;
             }
             else
             {
-                var sorted = new List<ISongDetail>(_sorted);
+                var sorted = new List<ISongDetail>(Sorted);
                 sorted.Add(item);
-                _sorted = sorted.ToArray();
+                Sorted = sorted.ToArray();
+            }
+            NormalizeIndex();
+            if (currentHash is not null)
+            {
+                SetCursor(currentHash);
             }
         }
         public void Clear()
         {
             _dataSet.Clear();
             _hashSet.Clear();
+            Origin = Array.Empty<ISongDetail>();
+            Sorted = Origin;
+            NormalizeIndex();
         }
         public bool Contains(ISongDetail item)
         {
@@ -63,26 +73,12 @@ namespace MajdataPlay.Collections
         }
         public bool Remove(ISongDetail item)
         {
-            if(!_hashSet.Remove(item.Hash))
-            {
-                return false;
-            }
-            _dataSet.Remove(item);
-            _origin = _dataSet.ToArray();
-            if (!IsSorted)
-            {
-                _sorted = _origin;
-            }
-            else if (_sorted.Any(x => x.Hash == item.Hash))
-            {
-                var sorted = new List<ISongDetail>(_sorted);
-                sorted.Remove(item);
-                _sorted = sorted.ToArray();
-            }
-            return true;
+            return Remove(item.Hash);
         }
         public bool Remove(string hashBase64Str)
         {
+            NormalizeIndex();
+            var currentHash = IsEmpty ? null : Current.Hash;
             if (!_hashSet.Remove(hashBase64Str))
             {
                 return false;
@@ -93,10 +89,19 @@ namespace MajdataPlay.Collections
                 throw new KeyNotFoundException();
             }
             _dataSet.RemoveAt(index);
-            _origin = _dataSet.ToArray();
+            Origin = _dataSet.ToArray();
             if (!IsSorted)
             {
-                _sorted = _origin;
+                Sorted = Origin;
+            }
+            else
+            {
+                Sorted = Sorted.Where(x => x.Hash != hashBase64Str).ToArray();
+            }
+            NormalizeIndex();
+            if (currentHash is not null && currentHash != hashBase64Str)
+            {
+                SetCursor(currentHash);
             }
             return true;
         }

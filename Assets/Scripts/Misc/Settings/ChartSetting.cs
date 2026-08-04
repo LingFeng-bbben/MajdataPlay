@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MajdataPlay.Settings.OptionEnumerators;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,15 +9,21 @@ using UnityEngine.Scripting;
 namespace MajdataPlay.Settings
 {
     [Preserve]
-    internal class ChartSetting
+    public class ChartSetting
     {
-        [SettingVisualizationIgnore, Preserve]
+        [HideInSettingUI, Preserve]
         public string Hash { get; init; }
-        [SettingVisualizationIgnore, Preserve]
+        [HideInSettingUI, Preserve]
         public OffsetUnitOption Unit { get; set; } = OffsetUnitOption.Second;
         [Preserve]
+        [OptionEnumerator(typeof(GameOffsetEnumerator))]
         public float AudioOffset { get; set; } = 0f;
         [Preserve]
+        [Step("0.05")]
+        [Range("-2", "2", HasMax = true, HasMin = true)]
         public float TrackVolumeOffset { get; set; } = 0f;
+        public bool DisableVideoBG { get; set; } = false;
+        [Optional]
+        public bool? SlideSkipping { get; set; } = null;
     }
 }

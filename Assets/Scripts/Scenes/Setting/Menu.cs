@@ -1,140 +1,182 @@
+using LitMotion;
 using MajdataPlay.Collections;
+using MajdataPlay.Editor;
 using MajdataPlay.Extensions;
-using MajdataPlay.IO;
 using MajdataPlay.Numerics;
+using MajdataPlay.Settings;
 using MajdataPlay.Settings.Runtime;
 using MajdataPlay.Utils;
 using System;
 using System.Linq;
 using System.Reflection;
-using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 #nullable enable
 namespace MajdataPlay.Scenes.Setting
 {
     public class Menu : MonoBehaviour
     {
+        const float OPTION_MOVE_DURATION = 0.18f;
+        static readonly Vector3 UNSELECTED_OPTION_SCALE = Vector3.one * 0.6f;
+        static readonly Color SELECTED_OPTION_COLOR = new(0.8823529f, 0.8078431f, 0.6392157f, 1f);
+        static readonly Color UNSELECTED_OPTION_COLOR = new(0.3607843f, 0.3098039f, 0.2862745f, 1f);
+
+        [field: SerializeField, ReadOnlyField]
         public string Name { get; set; } = string.Empty;
-        public int SelectedIndex => _selectedIndex;
+
+        [field: SerializeField, ReadOnlyField]
+        public int SelectedIndex { get; private set; }
         /// <summary>
         /// Option对象<para>e.g. GameSetting.Game</para>
         /// </summary>
-        public object SubOptionObject { get; set; }
-        public GameObject optionPrefab;
+        public object Instance { get; set; } = null!;
 
-        float _lastWaitTime = 0;
-        bool _isBound = false;
+        [SerializeField]
+        [FormerlySerializedAs("optionPrefab")]
+        GameObject _optionPrefab = null!;
+
+        SettingManager _manager = null!;
+
+        [SerializeField, ReadOnlyField]
+        float _listCursorPos = 0;
+
         Option[] _options = Array.Empty<Option>();
-        SettingManager manager;
+
+        MotionHandle _optionAnim;
 
         readonly SettingConfig _settingConfig = MajEnv.RuntimeConfig?.Setting ?? new();
+        void Awake()
+        {
+            _manager = FindAnyObjectByType<SettingManager>();
+        }
         public void Init()
         {
-            var type = SubOptionObject.GetType();
+            var type = Instance.GetType();
             var properties = type.GetProperties()
-                                 .Where(x => x.GetCustomAttributes<SettingVisualizationIgnoreAttribute>().Count() == 0)
+                                 .Where(x => !x.GetCustomAttributes<HideInSettingUIAttribute>().Any())
                                  .ToArray();
             _options = new Option[properties.Length];
             foreach(var (i,property) in properties.WithIndex())
             {
-                var optionObj = Instantiate(optionPrefab, transform);
+                var optionObj = Instantiate(_optionPrefab, transform);
                 var option = optionObj.GetComponent<Option>();
                 _options[i] = option;
-                option.PropertyInfo = property;
-                option.OptionObject = SubOptionObject;
-                option.Parent = this;
-                option.Index = i;
-                option.Init();
+                option.Init(_manager, property, Instance);
             }
 
-            var localizedText = $"MAJSETTING_CATEGORY_{Name}".i18n();
-            titleText.text = localizedText;
-            Localization.OnLanguageChanged += OnLangChanged;
-            manager = FindObjectOfType<SettingManager>();
+            UpdateDisplayerPosition();
         }
         void OnDisable()
         {
-            _selectedIndex = 0;
+            SelectedIndex = 0;
         }
         void OnDestroy()
         {
-            Localization.OnLanguageChanged -= OnLangChanged;
+            _optionAnim.TryCancel();
         }
-        void Update()
+        internal void SwitchOption(int direction)
         {
-            if(manager.IsPressed && manager.PressTime != 0)
+            MoveOption(direction);
+        }
+        void MoveOption(int direction)
+        {
+            var targetIndex = SelectedIndex + direction;
+            if (targetIndex < 0)
             {
-                if (manager.PressTime < 0.7f)
-                {
-                    return;
-                }
-                else if (_lastWaitTime < 0.2f)
-                {
-                    _lastWaitTime += Time.deltaTime;
-                    return;
-                }
-                switch(manager.Direction)
-                {
-                    case 1:
-                        NextOption();
-                        _lastWaitTime = 0;
-                        break;
-                    case -1:
-                        PreviousOption();
-                        _lastWaitTime = 0;
-                        break;
-                }
+                _manager.PreviousMenu();
+                return;
+            }
+            if (targetIndex >= _options.Length)
+            {
+                _manager.NextMenu();
+                return;
+            }
+
+            SelectOption(targetIndex, true);
+        }
+
+        void DisplayerMoveTo(float targetPos, float duration)
+        {
+            _optionAnim.TryCancel();
+            UpdateOptionSelectionState();
+            _optionAnim = LMotion.Create(_listCursorPos, targetPos, duration)
+                                     .WithScheduler(MotionScheduler.PostLateUpdate)
+                                     .WithEase(Ease.OutQuad)
+                                     .Bind(x =>
+                                     {
+                                         _listCursorPos = x;
+                                         UpdateDisplayerPosition();
+                                     });
+        }
+        void UpdateDisplayerPosition()
+        {
+            for (var i = 0; i < _options.Length; i++)
+            {
+                var distance = i - _listCursorPos;
+                var optionDisplayer = _options[i];
+
+                optionDisplayer.transform.localPosition = GetOptionTransformPosition(distance);
+                optionDisplayer.transform.localScale = GetOptionTransformScale(distance);
+                optionDisplayer.SetTextColor(GetOptionTextColor(distance));
+            }
+        }
+        void UpdateOptionSelectionState()
+        {
+            for (var i = 0; i < _options.Length; i++)
+            {
+                var optionDisplayer = _options[i];
+                optionDisplayer.SetSelected(i == SelectedIndex);
+            }
+        }
+
+        internal void ToTail()
+        {
+            SelectOption(_options.Length - 1, false);
+        }
+        internal void ToHead()
+        {
+            SelectOption(0, false);
+        }
+
+        internal void ToOption(string optionName)
+        {
+            var index = string.IsNullOrEmpty(optionName)
+                ? 0
+                : Array.FindIndex(_options, x => x.PropertyInfo.Name == optionName);
+            SelectOption(index, false);
+        }
+        void SelectOption(int index, bool useAnimation)
+        {
+            SelectedIndex = index.Clamp(0, _options.Length - 1);
+            _settingConfig.SelectedOption = _options[SelectedIndex].PropertyInfo.Name;
+            if (useAnimation)
+            {
+                DisplayerMoveTo(SelectedIndex, OPTION_MOVE_DURATION);
             }
             else
             {
-                _lastWaitTime = 0;
-                if(InputManager.IsButtonClickedInThisFrame(ButtonZone.A6))
-                {
-                    PreviousOption();
-                }
-                else if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A3))
-                {
-                    NextOption();
-                }
+                SnapDisplayerTo(SelectedIndex);
             }
         }
-        void OnLangChanged(object? sender, Language newLanguage)
+        void SnapDisplayerTo(float targetPos)
         {
-            var localizedText = $"MAJSETTING_CATEGORY_{Name}".i18n();
-            titleText.text = localizedText;
-        }
-        void PreviousOption()
-        {
-            _selectedIndex--;
-            if (_selectedIndex < 0)
-            {
-                manager.PreviousMenu();
-            }
-            _selectedIndex = _selectedIndex.Clamp(0, _options.Length - 1);
-            _settingConfig.SelectedMenuIndex = _selectedIndex;
-        }
-        void NextOption()
-        {
-            _selectedIndex++;
-            if (_selectedIndex > _options.Length - 1)
-            {
-                manager.NextMenu();
-            }
-            _selectedIndex = _selectedIndex.Clamp(0, _options.Length - 1);
-            _settingConfig.SelectedMenuIndex = _selectedIndex;
-        }
-        public void ToLast() => _selectedIndex = _options.Length - 1;
-        public void ToFirst() => _selectedIndex = 0;
-
-        public void ToIndex(int index)
-        {
-            _selectedIndex = index;
-            _selectedIndex = _selectedIndex.Clamp(0, _options.Length - 1);
+            _optionAnim.TryCancel();
+            _listCursorPos = targetPos;
+            UpdateOptionSelectionState();
+            UpdateDisplayerPosition();
         }
 
-        [SerializeField]
-        int _selectedIndex = 0;
-        [SerializeField]
-        TextMeshPro titleText;
+        static Vector3 GetOptionTransformScale(float diff)
+        {
+            return Vector3.Lerp(Vector3.one, UNSELECTED_OPTION_SCALE, Mathf.Clamp01(Mathf.Abs(diff)));
+        }
+        static Vector3 GetOptionTransformPosition(float diff)
+        {
+            return new Vector3(380 * diff, -220, 0);
+        }
+        static Color GetOptionTextColor(float diff)
+        {
+            return Color.Lerp(SELECTED_OPTION_COLOR, UNSELECTED_OPTION_COLOR, Mathf.Clamp01(Mathf.Abs(diff)));
+        }
     }
 }

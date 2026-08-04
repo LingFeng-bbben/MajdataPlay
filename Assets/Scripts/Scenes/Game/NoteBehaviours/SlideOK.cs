@@ -1,15 +1,19 @@
 ﻿using MajdataPlay.Buffers;
+using MajdataPlay.Diagnostics;
+using MajdataPlay.Scenes.Game.Misc.Notes;
 using MajdataPlay.Scenes.Game.Notes.Slide;
 using MajdataPlay.Utils;
 using System;
 using System.Runtime.CompilerServices;
 using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
+using UnityEngine.Profiling;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
     [Il2CppSetOption(Option.NullChecks, false)]
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+    [NoteComponent]
     internal class SlideOK : MajComponent, IStateful<NoteStatus>
     {
         public NoteStatus State { get; private set; } = NoteStatus.Start;
@@ -38,7 +42,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         protected override void Awake()
         {
             base.Awake();
-            _displayCP = MajInstances.Settings.Display.DisplayCriticalPerfect;
+            _displayCP = MajEnv.Settings.Display.DisplayCriticalPerfect;
             _spriteRenderer = GetComponent<SpriteRenderer>();
             _animator = GetComponent<Animator>();
             _defaultMaterial = _spriteRenderer.sharedMaterial;
@@ -128,15 +132,19 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void OnUpdate()
         {
-            if (_elapsedTime > 0.5f)
+            using (UnityProfiler.Create("SlideOK.OnUpdate"))
             {
-                State = NoteStatus.End;
-                _spriteRenderer.sharedMaterial = _defaultMaterial;
-                SetActiveInternal(false);
-            }
-            else
-            {
-                _elapsedTime += MajTimeline.DeltaTime;
+                if (_elapsedTime > 0.5f)
+                {
+                    State = NoteStatus.End;
+                    _spriteRenderer.sharedMaterial = _defaultMaterial;
+                    SetActiveInternal(false);
+                    GameObject.layer = MajEnv.HIDDEN_LAYER;
+                }
+                else
+                {
+                    _elapsedTime += MajTimeline.DeltaTime;
+                }
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -221,7 +229,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         public override void SetActive(bool state)
         {
             if (Active == state)
+            {
                 return;
+            }
             SetActiveInternal(state);
         }
         void SetActiveInternal(bool state)
@@ -230,14 +240,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             switch (state)
             {
                 case true:
-                    _spriteRenderer.forceRenderingOff = false;
                     _spriteRenderer.enabled = true;
                     _animator.enabled = true;
                     break;
                 case false:
-                    _spriteRenderer.forceRenderingOff = !false;
-                    _spriteRenderer.enabled = !true;
-                    _animator.enabled = !true;
+                    _spriteRenderer.enabled = false;
+                    _animator.enabled = false;
                     break;
             }
         }

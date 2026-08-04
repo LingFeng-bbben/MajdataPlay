@@ -19,7 +19,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         Sprite[] _each = new Sprite[2];
         Sprite[] _break = new Sprite[2];
 
-        readonly float USERSETTING_TOUCH_SCALE = MajInstances.Settings?.Display.TouchScale ?? 1;
+        readonly float USERSETTING_TOUCH_SCALE = MajEnv.Settings?.Display.TouchScale ?? 1;
         void Start()
         {
             var index = AreaPosition.GetIndex();
@@ -46,8 +46,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             _twoRenderer.sprite = _normal[0];
             _threeRenderer.sprite = _normal[1];
 
-            _twoRenderer.forceRenderingOff = true;
-            _threeRenderer.forceRenderingOff = true;
+            _twoRenderer.enabled = false;
+            _threeRenderer.enabled = false;
 
             _two.SetActive(true);
             _three.SetActive(true);
@@ -65,7 +65,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         public void Remove()
         {
             if (!queue.IsEmpty())
+            {
                 queue.RemoveAt(0);
+            }
             Refresh();
         }
         internal void Clear()
@@ -75,40 +77,54 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         void Refresh()
         {
-            if (queue.IsEmpty() || queue.Count < 2)
+            if (queue.Count < 2)
             {
-                _twoRenderer.forceRenderingOff = true;
-                _threeRenderer.forceRenderingOff = true;
+                _twoRenderer.enabled = false;
+                _threeRenderer.enabled = false;
                 return;
             }
 
             var first = queue[1];
             NoteRegister? second = null;
             if (queue.Count > 2)
+            {
                 second = queue[2];
+            }
 
-            _twoRenderer.forceRenderingOff = false;
+            _twoRenderer.enabled = true;
             if (first.IsBreak)
+            {
                 _twoRenderer.sprite = _break[0];
+            }
             else if (first.IsEach)
+            {
                 _twoRenderer.sprite = _each[0];
+            }
             else
+            {
                 _twoRenderer.sprite = _normal[0];
+            }
 
             if (second is not null)
             {
                 var _second = (NoteRegister)second;
-                _threeRenderer.forceRenderingOff = false;
+                _threeRenderer.enabled = true;
                 if (_second.IsBreak)
+                {
                     _threeRenderer.sprite = _break[1];
+                }
                 else if (_second.IsEach)
+                {
                     _threeRenderer.sprite = _each[1];
+                }
                 else
+                {
                     _threeRenderer.sprite = _normal[1];
+                }
             }
             else
             {
-                _threeRenderer.forceRenderingOff = true;
+                _threeRenderer.enabled = false;
             }
 
         }

@@ -39,7 +39,7 @@ namespace Videolabs.VLCUnity.Editor
 
         public void OnPreprocessBuild(BuildTarget target, string path)
         {
-            if(target == BuildTarget.Android)
+            if(target == BuildTarget.Android || target == BuildTarget.iOS)
             {
                 return;
                 //if(IsVulkanConfigured)

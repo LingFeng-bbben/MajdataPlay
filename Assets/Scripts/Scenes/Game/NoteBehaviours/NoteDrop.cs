@@ -70,10 +70,17 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => _isEX = value;
         }
-        public bool IsInitialized
+        public bool IsMine
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => State >= NoteStatus.Initialized;
+            get => _isMine;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => _isMine = value;
+        }
+        public bool IsInited
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => State >= NoteStatus.Inited;
         }
         public bool IsEnded
         {
@@ -92,10 +99,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             protected set => _state = value;
         }
-        public float JudgeTiming
+        public float JudgeTimingWithOffset
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _judgeTiming + USERSETTING_JUDGE_OFFSET_SEC;
+            get => JudgeTiming + USERSETTING_JUDGE_OFFSET_SEC;
         }
         public float ThisFrameSec
         {
@@ -111,21 +118,6 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _noteController;
-        }
-        protected bool IsAutoplay
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _isAutoplay;
-        }
-        protected AutoplayModeOption AutoplayMode
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _autoplayMode;
-        }
-        protected JudgeGrade AutoplayGrade
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _autoplayGrade;
         }
         protected Material BreakMaterial
         {
@@ -147,34 +139,40 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             get;
             private set;
         }
-
-        protected bool _isJudged = false;
+        protected bool IsAutoplay
+        {
+            get => AutoplayMode != AutoplayModeOption.Disable;
+        }
+        protected bool IsJudged = false;
+        protected JudgeGrade AutoplayGrade = JudgeGrade.Perfect;
+        protected AutoplayModeOption AutoplayMode = AutoplayModeOption.Disable;
         /// <summary>
         /// The answer frame
         /// </summary>
-        protected float _judgeTiming;
-        protected float _judgeDiff = -1;
-        protected Range<float> _judgableRange = new(float.MinValue, float.MinValue + 1, ContainsType.Closed);
-        protected JudgeGrade _judgeResult = JudgeGrade.Miss;
+        protected float JudgeTiming;
+        protected float JudgeDiff = -1;
+        protected Range<float> JudgableRange = new(float.MinValue, float.MinValue + 1, ContainsType.Closed);
+        protected JudgeGrade JudgeResult = JudgeGrade.Miss;
 
-        protected SensorArea _sensorPos;
+        protected SensorArea SensorPos;
 
-        readonly protected ObjectCounter _objectCounter = Majdata<ObjectCounter>.Instance!;
-        readonly protected NoteManager _noteManager = Majdata<NoteManager>.Instance!;
-        readonly protected NoteEffectManager _effectManager = Majdata<NoteEffectManager>.Instance!;
-        readonly protected NoteAudioManager _audioEffMana = Majdata<NoteAudioManager>.Instance!;
-        readonly protected GameSetting _settings = MajInstances.Settings;
-        protected static readonly Random _randomizer = new();
+        protected ObjectCounter ObjectCounter;
+        protected NoteManager NoteManager;
+        protected NoteEffectManager EffectManager;
+        protected NoteAudioManager AudioEffMana;
+        protected GameSetting Settings;
+        protected Random Randomizer;
 
-        protected readonly float USERSETTING_JUDGE_OFFSET_SEC = ((MajInstances.Settings?.Judge.JudgeOffset ?? 0) + (MajInstances.Settings?.Debug.DisplayOffset ?? 0)) * ((MajInstances.Settings?.Debug.OffsetUnit ?? OffsetUnitOption.Second) == OffsetUnitOption.Second ? 1 : FRAME_LENGTH_SEC);
-        protected readonly float USERSETTING_TOUCHPANEL_OFFSET_SEC = (MajInstances.Settings?.Judge.TouchPanelOffset ?? 0) * ((MajInstances.Settings?.Debug.OffsetUnit ?? OffsetUnitOption.Second) == OffsetUnitOption.Second ? 1 : FRAME_LENGTH_SEC);
-        protected readonly float USERSETTING_TAP_SCALE = MajInstances.Settings?.Display.TapScale ?? 1;
-        protected readonly float USERSETTING_HOLD_SCALE = MajInstances.Settings?.Display.HoldScale ?? 1;
-        protected readonly float USERSETTING_TOUCH_SCALE = MajInstances.Settings?.Display.TouchScale ?? 1;
-        protected readonly float USERSETTING_SLIDE_SCALE = MajInstances.Settings?.Display.SlideScale ?? 1;
-        protected readonly bool USERSETTING_DISPLAY_HOLD_HEAD_JUDGE_RESULT = MajInstances.Settings?.Display.DisplayHoldHeadJudgeResult ?? false;
-        protected readonly JudgeModeOption USERSETTING_SLIDE_JUDGE_MODE = MajInstances.Settings?.Judge.Mode ?? JudgeModeOption.Modern;
-        protected readonly DJAutoPolicyOption USERSETTING_DJAUTO_POLICY = MajInstances.Settings?.Debug.DJAutoPolicy ?? DJAutoPolicyOption.Strict;
+        protected bool USERSETTING_SLIDE_SKIPPING = false;
+        protected float USERSETTING_JUDGE_OFFSET_SEC = 0f;
+        protected float USERSETTING_TOUCHPANEL_OFFSET_SEC = 0f;
+        protected float USERSETTING_TAP_SCALE = 1;
+        protected float USERSETTING_HOLD_SCALE = 1;
+        protected float USERSETTING_TOUCH_SCALE = 1;
+        protected float USERSETTING_SLIDE_SCALE = 1;
+        protected bool USERSETTING_DISPLAY_HOLD_HEAD_JUDGE_RESULT = false;
+        protected JudgeModeOption USERSETTING_SLIDE_JUDGE_MODE = JudgeModeOption.Modern;
+        protected DJAutoPolicyOption USERSETTING_DJAUTO_POLICY = DJAutoPolicyOption.Strict;
 
         protected const float FRAME_LENGTH_SEC = MajEnv.FRAME_LENGTH_SEC;
         protected const float FRAME_LENGTH_MSEC = MajEnv.FRAME_LENGTH_MSEC;
@@ -198,18 +196,6 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         protected const float TOUCH_JUDGE_SEG_3RD_GREAT_MSEC = 15 * FRAME_LENGTH_MSEC;
         protected const float TOUCH_JUDGE_GOOD_AREA_MSEC = 18 * FRAME_LENGTH_MSEC;
 
-        protected const float SLIDE_JUDGE_MAXIMUM_ALLOWED_EXT_LENGTH_MSEC = 22 * FRAME_LENGTH_MSEC;
-        protected const float SLIDE_JUDGE_SEG_BASE_3RD_PERFECT_MSEC = 14 * FRAME_LENGTH_MSEC;
-        protected const float SLIDE_JUDGE_SEG_1ST_GREAT_MSEC = 21 * FRAME_LENGTH_MSEC;
-        protected const float SLIDE_JUDGE_SEG_2ND_GREAT_MSEC = 25 * FRAME_LENGTH_MSEC;
-        protected const float SLIDE_JUDGE_SEG_3RD_GREAT_MSEC = 29 * FRAME_LENGTH_MSEC;
-
-        protected const float SLIDE_JUDGE_CLASSIC_SEG_BASE_3RD_PERFECT_MSEC = 9 * FRAME_LENGTH_MSEC; // 9f
-        protected const float SLIDE_JUDGE_CLASSIC_SEG_1ST_GREAT_MSEC = 13 * FRAME_LENGTH_MSEC;       // 13f
-        protected const float SLIDE_JUDGE_CLASSIC_SEG_2ND_GREAT_MSEC = 17 * FRAME_LENGTH_MSEC;       // 27f
-        protected const float SLIDE_JUDGE_CLASSIC_SEG_3RD_GREAT_MSEC = 21 * FRAME_LENGTH_MSEC;       // 21f
-        protected const float SLIDE_JUDGE_GOOD_AREA_MSEC = 36 * FRAME_LENGTH_MSEC;                   // 36f
-
         protected const float TOUCH_DISPLAY_OFFSET_SEC = 0 * FRAME_LENGTH_SEC;
         protected const float TOUCH_HOLD_DISPLAY_OFFSET_SEC = 0 * FRAME_LENGTH_SEC;
 
@@ -223,15 +209,33 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         {
             base.Awake();
 
+            var gameInfo = Majdata<GameInfo>.Instance;
+            Settings = MajEnv.Settings;
+            Randomizer = new();
+            ObjectCounter = Majdata<ObjectCounter>.Instance!;
+            NoteManager = Majdata<NoteManager>.Instance!;
+            EffectManager = Majdata<NoteEffectManager>.Instance!;
+            AudioEffMana = Majdata<NoteAudioManager>.Instance!;
+
+            USERSETTING_SLIDE_SKIPPING = gameInfo?.ChartSettings.SlideSkipping ?? Settings.Game.SlideSkipping;
+            USERSETTING_JUDGE_OFFSET_SEC = ((MajEnv.Settings?.Judge.JudgeOffset ?? 0) + (MajEnv.Settings?.Debug.DisplayOffset ?? 0)) * ((MajEnv.Settings?.Debug.OffsetUnit ?? OffsetUnitOption.Second) == OffsetUnitOption.Second ? 1 : FRAME_LENGTH_SEC);
+            USERSETTING_TOUCHPANEL_OFFSET_SEC = (MajEnv.Settings?.Judge.TouchPanelOffset ?? 0) * ((MajEnv.Settings?.Debug.OffsetUnit ?? OffsetUnitOption.Second) == OffsetUnitOption.Second ? 1 : FRAME_LENGTH_SEC);
+            USERSETTING_TAP_SCALE = MajEnv.Settings?.Display.TapScale ?? 1;
+            USERSETTING_HOLD_SCALE = MajEnv.Settings?.Display.HoldScale ?? 1;
+            USERSETTING_TOUCH_SCALE = MajEnv.Settings?.Display.TouchScale ?? 1;
+            USERSETTING_SLIDE_SCALE = MajEnv.Settings?.Display.SlideScale ?? 1;
+            USERSETTING_DISPLAY_HOLD_HEAD_JUDGE_RESULT = MajEnv.Settings?.Display.DisplayHoldHeadJudgeResult ?? false;
+            USERSETTING_SLIDE_JUDGE_MODE = MajEnv.Settings?.Judge.Mode ?? JudgeModeOption.Modern;
+            USERSETTING_DJAUTO_POLICY = MajEnv.Settings?.Debug.DJAutoPolicy ?? DJAutoPolicyOption.Strict;
+
             _noteController = Majdata<INoteController>.Instance!;
             ModInfo = _noteController.ModInfo;
             _breakMaterial = _noteController.BreakMaterial;
             _defaultMaterial = _noteController.DefaultMaterial;
             _holdShineMaterial = _noteController.HoldShineMaterial;
-            _isAutoplay = _noteController.IsAutoplay;
-            _autoplayMode = ModInfo.AutoPlay;
-            _autoplayGrade = _noteController.AutoplayGrade;
-#if UNITY_ANDROID
+            AutoplayMode = ModInfo.AutoPlay;
+            AutoplayGrade = _noteController.AutoplayGrade;
+#if UNITY_ANDROID || UNITY_IOS
             IsUseButtonRingForTouch = false;
 #else
             IsUseButtonRingForTouch = ModInfo.ButtonRingForTouch;
@@ -246,12 +250,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         protected abstract void PlayJudgeSFX(in NoteJudgeResult judgeResult);
         protected virtual void Judge(float currentSec)
         {
-            if (_isJudged)
+            if (IsJudged)
                 return;
 
-            var diffSec = currentSec - JudgeTiming;
+            var diffSec = currentSec - JudgeTimingWithOffset;
             var isFast = diffSec < 0;
-            _judgeDiff = diffSec * 1000;
+            JudgeDiff = diffSec * 1000;
             var diffMSec = MathF.Abs(diffSec * 1000);
             var result = diffMSec switch
             {
@@ -270,28 +274,28 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
 
             ConvertJudgeGrade(ref result);
-            _judgeResult = result;
-            _isJudged = true;
+            JudgeResult = result;
+            IsJudged = true;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected virtual void Autoplay()
         {
-            if (_isJudged || !IsAutoplay)
+            if (IsJudged || !IsAutoplay)
                 return;
             if (GetTimeSpanToArriveTiming() >= -0.016667f)
             {
                 var autoplayGrade = NoteController.AutoplayGrade;
                 if (((int)autoplayGrade).InRange(0, 14))
                 {
-                    _judgeResult = autoplayGrade;
+                    JudgeResult = autoplayGrade;
                 }
                 else
                 {
-                    _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
+                    JudgeResult = (JudgeGrade)Randomizer.Next(0, 15);
                 }
-                ConvertJudgeGrade(ref _judgeResult);
-                _isJudged = true;
-                _judgeDiff = _judgeResult switch
+                ConvertJudgeGrade(ref JudgeResult);
+                IsJudged = true;
+                JudgeDiff = JudgeResult switch
                 {
                     < JudgeGrade.Perfect => 1,
                     > JudgeGrade.Perfect => -1,
@@ -317,9 +321,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         /// <para>If the current moment is ahead of the answer frame, the result is a negative number.</para>
         /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected float GetTimeSpanToJudgeTiming() => ThisFrameSec - JudgeTiming;
+        protected float GetTimeSpanToJudgeTiming() => ThisFrameSec - JudgeTimingWithOffset;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected float GetTimeSpanToJudgeTiming(float baseTiming) => baseTiming - JudgeTiming;
+        protected float GetTimeSpanToJudgeTiming(float baseTiming) => baseTiming - JudgeTimingWithOffset;
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void ConvertJudgeGrade(ref JudgeGrade grade)
         {
@@ -440,11 +444,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [ReadOnlyField, SerializeField]
         bool _isEX = false;
         [ReadOnlyField, SerializeField]
-        bool _isAutoplay = false;
-        [ReadOnlyField, SerializeField]
-        JudgeGrade _autoplayGrade = JudgeGrade.Perfect;
-        [ReadOnlyField, SerializeField]
-        AutoplayModeOption _autoplayMode = AutoplayModeOption.Disable;
+        bool _isMine = false;        
         [ReadOnlyField, SerializeField]
         NoteStatus _state = NoteStatus.Start;
 

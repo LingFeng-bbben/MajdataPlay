@@ -18,6 +18,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
         public Sprite Ex { get; init; }
         public Sprite ExDouble { get; init; }
 
+        public Sprite Mine { get; init; }
+        public Sprite DoubleMine {  get; init; }
+        public Sprite BreakMine {  get; init; }
+        public Sprite BreakDoubleMine {  get; init; }
+
         public ReadOnlySpan<Sprite> GuideLines { get; init; }
         public ReadOnlySpan<Color> ExEffects { get; init; }
     }

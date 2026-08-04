@@ -1,11 +1,15 @@
-﻿using MajdataPlay.Utils;
+﻿using MajdataPlay.Diagnostics;
+using MajdataPlay.Scenes.Game.Notes.Behaviours;
+using MajdataPlay.Utils;
+using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Unity.IL2CPP.CompilerServices;
 using UnityEngine.Profiling;
 
 namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
-    internal sealed class EachLineUpdater : NoteUpdater
+    internal sealed class EachLineUpdater : NoteUpdater<EachLineDrop>
     {
         const string UPDATER_NAME = "EachLineUpdater";
         const string PRE_UPDATE_METHOD_NAME = UPDATER_NAME + ".PreUpdate";
@@ -17,46 +21,57 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         {
             Majdata<EachLineUpdater>.Instance = this;
         }
-        protected override void OnDestroy()
+        void OnDestroy()
         {
             Majdata<EachLineUpdater>.Free();
-            base.OnDestroy();
         }
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal override void OnFixedUpdate()
+        internal void OnFixedUpdate()
         {
-            Profiler.BeginSample(FIXED_UPDATE_METHOD_NAME);
-            base.OnFixedUpdate();
-            Profiler.EndSample();
+            //using (UnityProfiler.Create(FIXED_UPDATE_METHOD_NAME))
+            //{
+            //    var instanceCount = NoteInstances.Length;
+            //    ref var instances = ref MemoryMarshal.GetReference(NoteInstances.AsSpan());
+            //    for (var i = 0; i < instanceCount; i++)
+            //    {
+            //        ref readonly var instance = ref Unsafe.Add(ref instances, i);
+            //    }
+            //}
         }
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal override void OnLateUpdate()
+        internal void OnLateUpdate()
         {
-            Profiler.BeginSample(LATE_UPDATE_METHOD_NAME);
-            base.OnLateUpdate();
-            Profiler.EndSample();
+            using (UnityProfiler.Create(LATE_UPDATE_METHOD_NAME))
+            {
+                var instanceCount = NoteInstances.Length;
+                ref var instances = ref MemoryMarshal.GetReference(NoteInstances.AsSpan());
+                for (var i = 0; i < instanceCount; i++)
+                {
+                    ref readonly var instance = ref Unsafe.Add(ref instances, i);
+                    if (instance.State > NoteStatus.Start && instance.State < NoteStatus.End)
+                    {
+                        instance.OnLateUpdate();
+                    }
+                }
+            }
         }
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal override void OnUpdate()
+        internal void OnUpdate()
         {
-            Profiler.BeginSample(UPDATE_METHOD_NAME);
-            base.OnUpdate();
-            Profiler.EndSample();
+
         }
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal override void OnPreUpdate()
+        internal void OnPreUpdate()
         {
-            Profiler.BeginSample(PRE_UPDATE_METHOD_NAME);
-            base.OnPreUpdate();
-            Profiler.EndSample();
+
         }
     }
 }

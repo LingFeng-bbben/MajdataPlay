@@ -1,23 +1,25 @@
-﻿using MajdataPlay.Extensions;
+using MajdataPlay.Buffers;
+using MajdataPlay.Diagnostics;
+using MajdataPlay.Editor;
+using MajdataPlay.Extensions;
+using MajdataPlay.IO;
+using MajdataPlay.Numerics;
+using MajdataPlay.Scenes.Game.Notes.Slide;
+using MajdataPlay.Scenes.Game.Notes.Slide.Utils;
 using MajdataPlay.Scenes.Game.Utils;
+using MajdataPlay.Settings;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
-using UnityEngine;
-using MajdataPlay.Editor;
-using MajdataPlay.Scenes.Game.Notes.Slide;
-using MajdataPlay.Scenes.Game.Notes.Slide.Utils;
-using MajdataPlay.IO;
-using MajdataPlay.Numerics;
-using MajdataPlay.Buffers;
-using MajdataPlay.Settings;
 using System.Runtime.CompilerServices;
 using Unity.IL2CPP.CompilerServices;
+using Unity.VisualScripting;
+using UnityEngine;
+using UnityEngine.Profiling;
 
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
-    using Unsafe = System.Runtime.CompilerServices.Unsafe;
     internal sealed class SlideDrop : SlideBase, IConnectableSlide, IMajComponent
     {
         public bool IsMirror
@@ -37,6 +39,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
         int _parentForceFinishFlag = 0;
 
+        static readonly Quaternion s_Z180Rotation = Quaternion.Euler(0f, 0f, 180f);
+
 //#if UNITY_EDITOR
 //        Transform _judgeFramePoint;
 //        [SerializeField]
@@ -45,7 +49,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         protected override void Awake()
         {
             base.Awake();
-            var star = Instantiate(_slideStarPrefab, _noteManager.transform.GetChild(3));
+            var star = Instantiate(SlideStarPrefab, NoteManager.transform.GetChild(3));
             var slideTable = SlideTables.FindTableByName(SlideType);
 
             if (slideTable is null)
@@ -54,7 +58,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
 
             _table = slideTable;
-            _judgeQueues[0] = _table.JudgeQueue;
+            JudgeQueues[0] = _table.JudgeQueue;
             EndPos = SlideType switch
             {
                 "line3" => 3,
@@ -100,8 +104,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 "L5" => 5,
                 _ => 1
             };
-            var stars = _stars.Span;
-            var starTransforms = _starTransforms.Span;
+            var stars = Stars.Span;
+            var starTransforms = StarTransforms.Span;
 
             star.SetActive(true);
             stars[0] = star;
@@ -110,23 +114,23 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             var slideOK = transform.GetChild(transform.childCount - 1).gameObject; //slideok is the last one
             slideOK.SetActive(true);
-            _slideOK = slideOK.GetComponent<SlideOK>();
-            _slideOK.IsClassic = IsClassic;
-            _slideOK.Shape = NoteHelper.GetSlideOKShapeFromSlideType(SlideType);
+            SlideOK = slideOK.GetComponent<SlideOK>();
+            SlideOK.IsClassic = IsClassic;
+            SlideOK.Shape = NoteHelper.GetSlideOKShapeFromSlideType(SlideType);
 
 
             for (var i = 0; i < Transform.childCount - 1; i++)
             {
-                _slideBars.Add(Transform.GetChild(i).gameObject);
-                _slideBarRenderers.Add(_slideBars[i].GetComponent<SpriteRenderer>());
-                _slideBarTransforms.Add(_slideBars[i].transform);
-                _slideBarTransforms[i].localScale *= USERSETTING_SLIDE_SCALE;
+                SlideBars.Add(Transform.GetChild(i).gameObject);
+                SlideBarRenderers.Add(SlideBars[i].GetComponent<SpriteRenderer>());
+                SlideBarTransforms.Add(SlideBars[i].transform);
+                SlideBarTransforms[i].localScale *= USERSETTING_SLIDE_SCALE;
             }
             LoadSlidePath();
             SetActive(false);
             SetStarActive(false);
             SetSlideBarAlpha(0f);
-            SlideLength = _slideBars.Count + 1;
+            SlideLength = SlideBars.Count + 1;
 
             starTransforms[0].position = _starPositions[0];
             starTransforms[0].transform.localScale = new Vector3(0f, 0f, 1f);
@@ -134,19 +138,18 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         /// <summary>
         /// Slide初始化
         /// </summary>
-        public override void Initialize()
+        public override void Init()
         {
-            if (IsInitialized)
+            if (IsInited)
             {
                 return;
             }
-
             if (_isMirror)
             {
                 _table.Mirror();
                 Transform.localScale = new Vector3(-1f, 1f, 1f);
                 Transform.rotation = Quaternion.Euler(0f, 0f, -45f * StartPos);
-                _slideOK!.transform.localScale = new Vector3(-1f, 1f, 1f);
+                SlideOK!.transform.localScale = new Vector3(-1f, 1f, 1f);
             }
             else
             {
@@ -161,44 +164,47 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             LoadSlidePath();
             LoadSkin();
-            _slideOK!.transform.SetParent(Transform.parent);
+            SlideOK!.transform.SetParent(Transform.parent);
             // 计算Slide淡入时机
             // 在8.0速时应当提前300ms显示Slide
             FadeInTiming = -3.926913f / Speed;
             var fadeInOffset = 0f;
-            if (_settings.Debug.OffsetUnit == OffsetUnitOption.Second)
+            if (Settings.Debug.OffsetUnit == OffsetUnitOption.Second)
             {
-                fadeInOffset = _settings.Game.SlideFadeInOffset;
+                fadeInOffset = Settings.Game.SlideFadeInOffset;
             }
             else
             {
-                fadeInOffset = _settings.Game.SlideFadeInOffset * MajEnv.FRAME_LENGTH_SEC;
+                fadeInOffset = Settings.Game.SlideFadeInOffset * MajEnv.FRAME_LENGTH_SEC;
             }
             FadeInTiming += fadeInOffset;
             FadeInTiming += Timing;
+            FadeInCompletedTiming = Timing - 0.05f;
             // Slide完全淡入时机
             // 正常情况下应为负值；速度过高将忽略淡入
-            FullFadeInTiming = FadeInTiming + 0.2f;
+            FadeInDurationTimeSec = (FadeInCompletedTiming - FadeInTiming).Clamp(0, 0.2f);
+            FadeInCutoffTiming = FadeInTiming + FadeInDurationTimeSec;
             //var interval = fullFadeInTiming - fadeInTiming;
             //fadeInAnimator = GetComponent<Animator>();
             //Destroy(GetComponent<Animator>());
             //淡入时机与正解帧间隔小于200ms时，加快淡入动画的播放速度
             //fadeInAnimator.speed = 0.2f / interval;
             //fadeInAnimator.SetTrigger("slide");
-            var starTransforms = _starTransforms.Span;
+            var starTransforms = StarTransforms.Span;
             starTransforms[0].position = _starPositions[0];
             starTransforms[0].transform.localScale = new Vector3(0f, 0f, 1f);
-            _judgeQueues[0] = _table.JudgeQueue;
+            JudgeQueues[0] = _table.JudgeQueue;
+            JudgeQueueLength = _table.JudgeQueue.Length;
 
             InitializeSlideGroup();
 
             if (ConnectInfo.IsConnSlide && !ConnectInfo.IsGroupPartEnd)
             {
-                Destroy(_slideOK);
-                _slideOK = null;
+                Destroy(SlideOK);
+                SlideOK = null;
             }
 
-            State = NoteStatus.Initialized;
+            State = NoteStatus.Inited;
             _djAutoplayRatio = SlideLength / 14;
 //#if UNITY_EDITOR
 //            var obj = Instantiate(_slideBars[0]);
@@ -219,7 +225,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         void InitializeSlideGroup()
         {
-            var judgeQueue = _judgeQueues[0].Span;
+            var judgeQueue = JudgeQueues[0].Span;
 
             if (ConnectInfo.IsConnSlide && ConnectInfo.IsGroupPartEnd)
             {
@@ -242,49 +248,71 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                     var parent = Parent.GameObject.GetComponent<SlideDrop>();
                     StartTiming = parent.StartTiming + parent.Length;
                 }
-                UpdateJudgeQueue();
             }
+            UpdateJudgeQueue();
 
             if (ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide)
             {
                 var percent = _table.Const;
-                _judgeTiming = StartTiming + Length * (1 - percent);
-                _lastWaitTimeSec = Length * percent;
+                if (IsClassic)
+                {
+                    percent = _table.ClassicConst;
+                }
+                JudgeTiming = StartTiming + Length * (1 - percent);
+                LastWaitTimeSec = Length * percent;
             }
         }
         void UpdateJudgeQueue()
         {
-            var judgeQueue = _judgeQueues[0].Span;
-            if (ConnectInfo.TotalJudgeQueueLen < 4)
+            var judgeQueue = JudgeQueues[0].Span;
+            if (!USERSETTING_SLIDE_SKIPPING)
             {
-                if (ConnectInfo.IsGroupPartHead)
+                foreach (ref var judgeArea in judgeQueue)
                 {
-                    judgeQueue[0].IsSkippable = true;
-                    judgeQueue[1].IsSkippable = false;
-                }
-                else if (ConnectInfo.IsGroupPartEnd)
-                {
-                    judgeQueue[0].IsSkippable = false;
-                    judgeQueue[1].IsSkippable = true;
+                    judgeArea.IsSkippable = false;
                 }
             }
             else
             {
-                foreach (ref var judgeArea in judgeQueue)
+                if (ConnectInfo.IsConnSlide)
                 {
-                    judgeArea.IsSkippable = true;
+                    if (ConnectInfo.TotalJudgeQueueLen < 4)
+                    {
+                        if (ConnectInfo.IsGroupPartHead)
+                        {
+                            judgeQueue[0].IsSkippable = true;
+                            judgeQueue[1].IsSkippable = false;
+                        }
+                        else if (ConnectInfo.IsGroupPartEnd)
+                        {
+                            judgeQueue[0].IsSkippable = false;
+                            judgeQueue[1].IsSkippable = true;
+                        }
+                    }
+                    else
+                    {
+                        foreach (ref var judgeArea in judgeQueue)
+                        {
+                            judgeArea.IsSkippable = true;
+                        }
+                    }
                 }
-            }
+            }     
         }
         [OnPreUpdate]
-        void OnPreUpdate()
+        internal void OnPreUpdate()
         {
-            SlideBarFadeIn();
-            SlideCheck();
+            using (UnityProfiler.Create("SlideDrop.OnPreUpdate"))
+            {
+                SlideBarFadeIn();
+                SlideCheck();
+            }
         }
         [OnUpdate]
-        void OnUpdate()
+        internal void OnUpdate()
         {
+            using (UnityProfiler.Create("SlideDrop.OnUpdate"))
+            {
 //#if UNITY_EDITOR
 //            {
 //                var indexProcess = (_starPositions.Count - 1) * (1 - _runtimeSlideConst);
@@ -298,97 +326,101 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 //                _judgeFramePoint.position = newPos;
 //            }
 //#endif
-            // ConnSlide
-            //var star = _stars[0];
-            var starTransform = _starTransforms.Span[0];
+                // ConnSlide
+                //var star = _stars[0];
+                var starTransform = StarTransforms.Span[0];
 
-            Autoplay();
-            SensorCheck();
+                AutoplayUpdate();
+                SensorCheck();
+                MineCheck();
 
-            switch (State)
-            {
-                case NoteStatus.Initialized:
-                    SetStarActive(false);
-                    if (ThisFrameSec - Timing > 0)
-                    {
-                        if (!(ConnectInfo.IsConnSlide && !ConnectInfo.IsGroupPartHead))
+                switch (State)
+                {
+                    case NoteStatus.Inited:
+                        SetStarActive(false);
+                        if (ThisFrameSec - Timing > 0)
                         {
+                            if (!(ConnectInfo.IsConnSlide && !ConnectInfo.IsGroupPartHead))
+                            {
+                                SetStarActive(true);
+                            }
+
+                            _starRenderer.color = new Color(1, 1, 1, 0);
+                            starTransform.localScale = new Vector3(0, 0, 1);
+                            starTransform.position = _starPositions[0];
+                            ApplyStarRotation(_starRotations[0]);
+                            State = NoteStatus.Scaling;
+                            goto case NoteStatus.Scaling;
+                        }
+                        break;
+                    case NoteStatus.Scaling:
+                        var timing = ThisFrameSec - StartTiming;
+                        if (timing > 0f)
+                        {
+                            _starRenderer.color = new Color(1, 1, 1, 1);
+                            if (!IsSlideNoHead)
+                            {
+                                starTransform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
+                            }
                             SetStarActive(true);
-                        }
 
-                        _starRenderer.color = new Color(1, 1, 1, 0);
-                        starTransform.localScale = new Vector3(0, 0, 1);
-                        starTransform.position = _starPositions[0];
-                        ApplyStarRotation(_starRotations[0]);
-                        State = NoteStatus.Scaling;
-                        goto case NoteStatus.Scaling;
-                    }
-                    break;
-                case NoteStatus.Scaling:
-                    var timing = ThisFrameSec - StartTiming;
-                    if (timing > 0f)
-                    {
-                        _starRenderer.color = new Color(1, 1, 1, 1);
-                        if (!IsSlideNoHead)
+                            State = NoteStatus.Running;
+                            goto case NoteStatus.Running;
+                        }
+                        if (ConnectInfo.IsConnSlide && !ConnectInfo.IsGroupPartHead)
                         {
-                            starTransform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
+                            return;
                         }
-                        SetStarActive(true);
-
-                        State = NoteStatus.Running;
-                        goto case NoteStatus.Running;
-                    }
-                    if (ConnectInfo.IsConnSlide && !ConnectInfo.IsGroupPartHead)
-                    {
-                        return;
-                    }
-                    else if (IsSlideNoHead)
-                    {
-                        return;
-                    }
-                    // 只有当它是一个起点Slide（而非Slide Group中的子部分）的时候，才会有开始的星星渐入动画
-                    var alpha = (1f - -timing / (StartTiming - Timing)).Clamp(0, 1);
-
-                    _starRenderer.color = new Color(1, 1, 1, alpha);
-                    starTransform.localScale = new Vector3(alpha + 0.5f, alpha + 0.5f, alpha + 0.5f);
-
-                    break;
-                case NoteStatus.Running:
-                    if (GetRemainingTimeWithoutOffset() == 0)
-                    {
-                        starTransform.position = _starPositions[_starPositions.Count - 1];
-                        ApplyStarRotation(_starRotations[_starRotations.Count - 1]);
-                        if (ConnectInfo.IsConnSlide && !ConnectInfo.IsGroupPartEnd)
+                        else if (IsSlideNoHead)
                         {
-                            DestroyStars();
+                            return;
                         }
-                        State = NoteStatus.Arrived;
-                        goto case NoteStatus.Arrived;
-                    }
-                    var process = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
-                    var indexProcess = (_starPositions.Count - 1) * process;
-                    var index = (int)indexProcess;
-                    var pos = indexProcess - index;
+                        // 只有当它是一个起点Slide（而非Slide Group中的子部分）的时候，才会有开始的星星渐入动画
+                        var alpha = (1f - -timing / (StartTiming - Timing)).Clamp(0, 1);
 
-                    var a = _starPositions[index + 1];
-                    var b = _starPositions[index];
-                    var ba = a - b;
-                    var newPos = ba * pos + b;
+                        _starRenderer.color = new Color(1, 1, 1, alpha);
+                        if (IsClassic)
+                        {
+                            var scale = 1 + alpha / 2;
+                            starTransform.localScale = new Vector3(scale, scale, scale);
+                        }
+                        else
+                        {
+                            starTransform.localScale = new Vector3(alpha + 0.5f, alpha + 0.5f, alpha + 0.5f);
+                        }
+                        break;
+                    case NoteStatus.Running:
+                        var remaingTimeWithoutOffset = GetRemainingTimeWithoutOffset();
+                        if (remaingTimeWithoutOffset == 0)
+                        {
+                            starTransform.position = _starPositions[_starPositions.Count - 1];
+                            ApplyStarRotation(_starRotations[_starRotations.Count - 1]);
+                            if (ConnectInfo.IsConnSlide && !ConnectInfo.IsGroupPartEnd)
+                            {
+                                DestroyStars();
+                            }
+                            State = NoteStatus.Arrived;
+                            goto case NoteStatus.Arrived;
+                        }
+                        var process = ((Length - remaingTimeWithoutOffset) / Length).Clamp(0, 1);
+                        var indexProcess = (_starPositions.Count - 1) * process;
+                        var index = (int)indexProcess;
+                        var pos = indexProcess - index;
 
-                    starTransform.position = newPos;
-                    if (index < _starRotations.Count - 1)
-                    {
-                        var _a = _starRotations[index + 1].eulerAngles.z;
-                        var _b = _starRotations[index].eulerAngles.z;
-                        var dAngle = Mathf.DeltaAngle(_b, _a) * pos;
-                        dAngle = Mathf.Abs(dAngle);
-                        var newRotation = Quaternion.Euler(0f, 0f,
-                                        Mathf.MoveTowardsAngle(_b, _a, dAngle));
+                        var a = _starPositions[index];
+                        var b = _starPositions[index + 1];
+                        var newPosition = Vector3.LerpUnclamped(a, b, pos);
+                        var newRotation = Quaternion.SlerpUnclamped(
+                            _starRotations[index],
+                            _starRotations[index + 1],
+                            pos
+                        );
+                        starTransform.position = newPosition;
                         ApplyStarRotation(newRotation);
-                    }
-                    break;
-                case NoteStatus.Arrived:
-                    break;
+                        break;
+                    case NoteStatus.Arrived:
+                        break;
+                }
             }
         }
         /// <summary>
@@ -399,11 +431,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void SensorCheck()
         {
-            if (AutoplayMode == AutoplayModeOption.Enable || !_isCheckable)
+            if (AutoplayMode == AutoplayModeOption.Enable || !IsCheckable)
             {
                 return;
             }
-            else if (IsEnded || !IsInitialized)
+            else if (IsEnded || !IsInited)
             {
                 return;
             }
@@ -411,7 +443,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 return;
             }
-            ref var queueMemory = ref _judgeQueues[0];
+            ref var queueMemory = ref JudgeQueues[0];
             var canPlaySFX = ConnectInfo.IsGroupPartHead || !ConnectInfo.IsConnSlide;
 
             for(; !queueMemory.IsEmpty; )
@@ -429,7 +461,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 for (var i = 0; i < fAreas.Length; i++)
                 {
                     var area = fAreas[i];
-                    var sensorState = _noteManager.GetSensorStatusInThisFrame(area);
+                    var sensorState = NoteManager.GetSensorStatusInThisFrame(area);
                     first.Check(area, sensorState);
                 }
 
@@ -447,7 +479,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                     for (var i = 0; i < sAreas.Length; i++)
                     {
                         var area = sAreas[i];
-                        var sensorState = _noteManager.GetSensorStatusInThisFrame(area);
+                        var sensorState = NoteManager.GetSensorStatusInThisFrame(area);
                         second.Check(area, sensorState);
                     }
 
@@ -489,22 +521,22 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             var tooLateTiming = StartTiming + _length + SLIDE_JUDGE_GOOD_AREA_MSEC / 1000 + MathF.Min(USERSETTING_JUDGE_OFFSET_SEC, 0);
             var isTooLate = thisFrameSec - tooLateTiming > 0;
 
-            if (!_isCheckable)
+            if (!IsCheckable)
             {
                 if (ConnectInfo.IsGroupPart)
                 {
                     if (ConnectInfo.IsGroupPartHead && startTiming >= -0.05f)
                     {
-                        _isCheckable = true;
+                        IsCheckable = true;
                     }
                     else if (!ConnectInfo.IsGroupPartHead)
                     {
-                        _isCheckable = ConnectInfo.ParentFinished || ConnectInfo.ParentPendingFinish;
+                        IsCheckable = ConnectInfo.ParentFinished || ConnectInfo.ParentPendingFinish;
                     }
                 }
                 else if (startTiming >= -0.05f)
                 {
-                    _isCheckable = true;
+                    IsCheckable = true;
                 }
             }
 
@@ -512,14 +544,14 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             if (isJudgable)
             {
-                if (!_isJudged)
+                if (!IsJudged)
                 {
                     if (IsFinished)
                     {
                         HideAllBar();
                         if (IsClassic)
                         {
-                            ClassicJudge(thisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
+                            JudgeClassic(thisFrameSec - USERSETTING_TOUCHPANEL_OFFSET_SEC);
                         }
                         else
                         {
@@ -534,13 +566,13 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 }
                 else
                 {
-                    if (_lastWaitTimeSec <= 0)
+                    if (LastWaitTimeSec <= 0)
                     {
                         End();
                     }
                     else
                     {
-                        _lastWaitTimeSec -= MajTimeline.DeltaTime;
+                        LastWaitTimeSec -= MajTimeline.DeltaTime;
                     }
                 }
             }
@@ -557,7 +589,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                         _parentForceFinishFlag = 1;
                         if (Parent is not null)
                         {
-                            if (_judgeQueues[0].Length < _table.JudgeQueue.Length && !ConnectInfo.ParentFinished)
+                            if (JudgeQueues[0].Length < _table.JudgeQueue.Length && !ConnectInfo.ParentFinished)
                             {
                                 Parent.ForceFinish();
                             }
@@ -571,7 +603,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override void TooLateJudge()
         {
-            if (_isJudged)
+            if (IsJudged)
             {
                 End();
                 return;
@@ -594,32 +626,34 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             if (ConnectInfo.IsGroupPartEnd || !ConnectInfo.IsConnSlide)
             {
-                ConvertJudgeGrade(ref _judgeResult);
+                ConvertJudgeGrade(ref JudgeResult);
                 if(!ModInfo.SubdivideSlideJudgeGrade)
                 {
-                    JudgeGradeCorrection(ref _judgeResult);
+                    JudgeGradeCorrection(ref JudgeResult);
                 }
                 var result = new NoteJudgeResult()
                 {
-                    Grade = _judgeResult,
-                    Diff = _judgeDiff,
+                    Grade = JudgeResult,
+                    Diff = JudgeDiff,
                     IsEX = IsEX,
                     IsBreak = IsBreak
                 };
                 // 只有组内最后一个Slide完成 才会显示判定条并增加总数
-                _objectCounter.ReportResult(this, result, Multiple);
+                ObjectCounter.ReportResult(this, result, Multiple);
                 if (PlaySlideOK(result))
                 {
-                    _slideOK.PlayResult(result);
+                    SlideOK.PlayResult(result);
                 }
 
                 PlayJudgeSFX(result);
             }
         }
-        protected override void Autoplay()
+        void AutoplayUpdate()
         {
-            if (!IsAutoplay)
+            if (!IsAutoplay || IsMine)
+            {
                 return;
+            }
             switch (State)
             {
                 case NoteStatus.Running:
@@ -628,56 +662,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 default:
                     return;
             }
-            switch(AutoplayMode)
+            switch (AutoplayMode)
             {
                 case AutoplayModeOption.Enable:
-                    var process = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
-                    var queueMemory = _judgeQueues[0];
-                    var queue = queueMemory.Span;
-                    var canPlaySFX = ConnectInfo.IsGroupPartHead || !ConnectInfo.IsConnSlide;
-                    if (queueMemory.IsEmpty)
-                        return;
-                    else if (process >= 1)
-                    {
-                        HideAllBar();
-                        var autoplayGrade = AutoplayGrade;
-                        if (((int)autoplayGrade).InRange(0, 14))
-                            _judgeResult = autoplayGrade;
-                        else
-                            _judgeResult = (JudgeGrade)_randomizer.Next(0, 15);
-                        _isJudged = true;
-                        _lastWaitTimeSec = 0;
-                        _judgeDiff = _judgeResult switch
-                        {
-                            < JudgeGrade.Perfect => 1,
-                            > JudgeGrade.Perfect => -1,
-                            _ => 0
-                        };
-                        return;
-                    }
-                    else if (process > 0 && canPlaySFX)
-                    {
-                        PlaySFX();
-                    }
-                    var areaIndex = (int)(process * queueMemory.Length);
-                    var isLast = areaIndex == queueMemory.Length - 1;
-                    var delta = (process * queueMemory.Length) - areaIndex;
-                    if (areaIndex < 0)
-                        return;
-                    int barIndex;
-                    if (delta > 0.9)
-                    {
-                        barIndex = queue[areaIndex].ArrowProgressWhenFinished;
-                    }
-                    else if (delta > 0.4 && !isLast)
-                    {
-                        barIndex = queue[areaIndex].ArrowProgressWhenOn;
-                    }
-                    else
-                    {
-                        return;
-                    }
-                    HideBar(barIndex);
+                    Autoplay();
                     break;
                 case AutoplayModeOption.DJAuto_TouchPanel_First:
                 case AutoplayModeOption.DJAuto_ButtonRing_First:
@@ -685,44 +673,87 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                     break;
             }
         }
+
+        protected override void Autoplay()
+        {
+            var process = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
+            ref var queueMemory = ref JudgeQueues[0];
+            var canPlaySFX = ConnectInfo.IsGroupPartHead || !ConnectInfo.IsConnSlide;
+            if (queueMemory.IsEmpty)
+            {
+                return;
+            }
+            else if (process >= 1)
+            {
+                HideAllBar();
+                var autoplayGrade = AutoplayGrade;
+                if (((int)autoplayGrade).InRange(0, 14))
+                {
+                    JudgeResult = autoplayGrade;
+                }
+                else
+                {
+                    JudgeResult = (JudgeGrade)Randomizer.Next(0, 15);
+                }
+                IsJudged = true;
+                LastWaitTimeSec = 0;
+                JudgeDiff = JudgeResult switch
+                {
+                    < JudgeGrade.Perfect => 1,
+                    > JudgeGrade.Perfect => -1,
+                    _ => 0
+                };
+                return;
+            }
+            else if (process > 0 && canPlaySFX)
+            {
+                PlaySFX();
+            }
+            var areaIndex = (int)(process * JudgeQueueLength);
+            if (areaIndex < 0)
+            {
+                return;
+            }
+            var lastAreaIndex = AutoplayLastAreaIndex;
+            if (lastAreaIndex != areaIndex)
+            {
+                AutoplayLastAreaIndex = areaIndex;
+                var remaining = JudgeQueueLength - areaIndex;
+                var indexDelta = queueMemory.Length - remaining;
+                if(indexDelta > 0)
+                {
+                    var queue = queueMemory.Span;
+                    queueMemory = queueMemory.Slice(indexDelta);
+                    HideBar(queue[0].ArrowProgressWhenFinished);
+                }
+            }
+            
+        }
         void DJAutoplay()
         {
+            const float DJAUTO_SIMULATE_RAD = 0.3f;
             if (IsFinished)
             {
                 return;
             }
             var currentProgress = ((Length - GetRemainingTimeWithoutOffset()) / Length).Clamp(0, 1);
-            var step = (currentProgress - _djAutoplayProgress) / (8 * _djAutoplayRatio);
+            var step = (currentProgress - DJAutoplayProgress) / (8 * _djAutoplayRatio);
             var delta = 0f;
             for(; ; )
             {
-                var pos = GetPositionFromProgress(_djAutoplayProgress);
-                pos.z = -10;
-                for (int i = 0; i < 9; i++)
-                {
-                    const float rad = 0.3f;
-                    var circular = new Vector3(rad * Mathf.Sin(45f * i), rad * Mathf.Cos(45f * i));
-                    if (i == 8) 
-                        circular = Vector3.zero;
-                    var ray = new Ray(pos + circular, Vector3.forward);
-                    var ishit = Physics.Raycast(ray, out var hitInfom);
-                    if (ishit)
-                    {
-                        var id = hitInfom.colliderInstanceID;
-                        var area = InputManager.GetSensorAreaFromInstanceID(id);
-                        _noteManager.SimulateSensorPress(area);
-                    }
-                }
-                if(delta > 0.2f || 
+                var cubeRay = GetPositionFromProgress(DJAutoplayProgress);
+                SlideDJAutoSimulateSensorPress(cubeRay, DJAUTO_SIMULATE_RAD);
+
+                if (delta > 0.2f || 
                    delta + step > 0.2f ||
-                   _djAutoplayProgress >= currentProgress)
+                   DJAutoplayProgress >= currentProgress)
                 {
                     break;
                 }
                 delta += step;
-                _djAutoplayProgress += step;
+                DJAutoplayProgress += step;
             }
-            _djAutoplayProgress = _djAutoplayProgress.Clamp(0, currentProgress);
+            DJAutoplayProgress = DJAutoplayProgress.Clamp(0, currentProgress);
         }
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
@@ -748,10 +779,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void ApplyStarRotation(Quaternion newRotation)
+        void ApplyStarRotation(in Quaternion newRotation)
         {
-            var star = _stars.Span[0];
-            var starTransform = _starTransforms.Span[0];
+            var star = Stars.Span[0];
+            var starTransform = StarTransforms.Span[0];
             if (star is null)
             {
                 return;
@@ -759,9 +790,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             if (_isMirror)
             {
-                var halfFlip = newRotation.eulerAngles;
-                halfFlip.z += 180f;
-                starTransform.rotation = Quaternion.Euler(halfFlip);
+                starTransform.rotation = newRotation * s_Z180Rotation;
             }
             else
             {
@@ -778,15 +807,16 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 StartPos = 1;
             }
             _starPositions.Add(NoteHelper.GetTapPosition(StartPos, 4.8f));
-            for (var i = 0; i < _slideBars.Count; i++)
+            _starRotations.Add(Quaternion.Euler(SlideBars[0].transform.rotation.normalized.eulerAngles + new Vector3(0f, 0f, 18f)));
+            for (var i = 0; i < SlideBars.Count; i++)
             {
-                var bar = _slideBars[i];
+                var bar = SlideBars[i];
                 _starPositions.Add(bar.transform.position);
 
-                _starRotations.Add(Quaternion.Euler(bar.transform.rotation.normalized.eulerAngles + new Vector3(0f, 0f, 18f)));
-                if (i == _slideBars.Count - 1)
+                _starRotations.Add(Quaternion.Euler(SlideBars[i].transform.rotation.normalized.eulerAngles + new Vector3(0f, 0f, 18f)));
+                if (i == SlideBars.Count - 1)
                 {
-                    var a = _slideBars[i - 1].transform.rotation.normalized.eulerAngles;
+                    var a = SlideBars[i - 1].transform.rotation.normalized.eulerAngles;
                     var b = bar.transform.rotation.normalized.eulerAngles;
                     var diff = a - b;
                     var newEulerAugle = b - diff;
@@ -807,23 +837,37 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         protected override void LoadSkin()
         {
-            var barRenderers = _slideBarRenderers;
+            var barRenderers = SlideBarRenderers;
             var skin = MajInstances.SkinManager.GetSlideSkin();
-            var star = _stars.Span[0]!;
+            var star = Stars.Span[0]!;
             var barSprite = skin.Normal;
             var starSprite = skin.Star.Normal;
             Material? breakMaterial = null;
 
-            if (IsEach)
+            if (IsMine)
             {
-                barSprite = skin.Each;
-                starSprite = skin.Star.Each;
+                barSprite = skin.Mine;
+                starSprite = skin.Star.Mine;
+                if (IsBreak)
+                {
+                    barSprite = skin.BreakMine;
+                    starSprite = skin.Star.BreakMine;
+                    breakMaterial = BreakMaterial;
+                }
             }
-            if (IsBreak)
+            else
             {
-                barSprite = skin.Break;
-                starSprite = skin.Star.Break;
-                breakMaterial = BreakMaterial;
+                if (IsEach)
+                {
+                    barSprite = skin.Each;
+                    starSprite = skin.Star.Each;
+                }
+                if (IsBreak)
+                {
+                    barSprite = skin.Break;
+                    starSprite = skin.Star.Break;
+                    breakMaterial = BreakMaterial;
+                }
             }
 
             foreach (var renderer in barRenderers)
@@ -833,14 +877,6 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 renderer.sortingLayerName = "Slides";
 
                 renderer.sprite = barSprite;
-
-
-                if (breakMaterial is not null)
-                {
-                    renderer.sharedMaterial = breakMaterial;
-                    //var controller = bar.AddComponent<BreakShineController>();
-                    //controller.Parent = this;
-                }
             }
 
             var starRenderer = star.GetComponent<SpriteRenderer>();
@@ -852,20 +888,20 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             if (IsJustR)
             {
-                if (_slideOK!.SetR() == 1 && _isMirror)
+                if (SlideOK!.SetR() == 1 && _isMirror)
                 {
-                    _slideOK!.transform.Rotate(new Vector3(0f, 0f, 180f));
-                    var angel = _slideOK.transform.rotation.eulerAngles.z * Mathf.Deg2Rad;
-                    _slideOK.transform.position += new Vector3(Mathf.Sin(angel) * 0.27f, Mathf.Cos(angel) * -0.27f);
+                    SlideOK!.transform.Rotate(new Vector3(0f, 0f, 180f));
+                    var angel = SlideOK.transform.rotation.eulerAngles.z * Mathf.Deg2Rad;
+                    SlideOK.transform.position += new Vector3(Mathf.Sin(angel) * 0.27f, Mathf.Cos(angel) * -0.27f);
                 }
             }
             else
             {
-                if (_slideOK!.SetL() == 1 && !_isMirror)
+                if (SlideOK!.SetL() == 1 && !_isMirror)
                 {
-                    _slideOK!.transform.Rotate(new Vector3(0f, 0f, 180f));
-                    var angel = _slideOK.transform.rotation.eulerAngles.z * Mathf.Deg2Rad;
-                    _slideOK.transform.position += new Vector3(Mathf.Sin(angel) * 0.27f, Mathf.Cos(angel) * -0.27f);
+                    SlideOK!.transform.Rotate(new Vector3(0f, 0f, 180f));
+                    var angel = SlideOK.transform.rotation.eulerAngles.z * Mathf.Deg2Rad;
+                    SlideOK.transform.position += new Vector3(Mathf.Sin(angel) * 0.27f, Mathf.Cos(angel) * -0.27f);
                 }
             }
         }

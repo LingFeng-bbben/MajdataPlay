@@ -150,9 +150,9 @@ public class WifiTable: IDisposable
         _left = Memory<SlideArea>.Empty;
         _center = Memory<SlideArea>.Empty;
         _right = Memory<SlideArea>.Empty;
-        Pool<SlideArea>.ArrayPool.Return(_rentedArrayForLeft, true);
-        Pool<SlideArea>.ArrayPool.Return(_rentedArrayForCenter, true);
-        Pool<SlideArea>.ArrayPool.Return(_rentedArrayForRight, true);
+        Pool<SlideArea>.ReturnArray(_rentedArrayForLeft, true);
+        Pool<SlideArea>.ReturnArray(_rentedArrayForCenter, true);
+        Pool<SlideArea>.ReturnArray(_rentedArrayForRight, true);
     }
     void ThrowIfDisposed()
     {

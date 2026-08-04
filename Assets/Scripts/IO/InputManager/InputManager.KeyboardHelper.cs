@@ -1,5 +1,10 @@
 ﻿using System;
-using MajdataPlay.Utils;
+#if UNITY_STANDALONE_WIN
+using MajdataPlay.Platform.Win32;
+#elif UNITY_IOS || UNITY_EDITOR_OSX
+using MajdataPlay.Platform.iOS;
+#endif
+using UnityEngine.InputSystem;
 //using Microsoft.Win32;
 //using System.Windows.Forms;
 //using Application = UnityEngine.Application;
@@ -16,17 +21,24 @@ namespace MajdataPlay.IO
 #if UNITY_STANDALONE_WIN
                 var result = Win32API.GetAsyncKeyState((int)ToWinKeyCode(keyCode));
                 return (result & 0x8000) != 0;
-#elif UNITY_ANDROID
-                return false;
+#elif UNITY_STANDALONE
+                var keyboard = Keyboard.current;
+                if(keyboard is null)
+                {
+                    return false;
+                }
+                var unityKeyCode = ToUnityKeyCode(keyCode);
+                return keyboard[unityKeyCode].isPressed;
 #else
-                return Input.GetKey(ToUnityKeyCode(keyCode));
+                return false;
 #endif
             }
             public static bool IsKeyUp(KeyCode keyCode)
             {
                 return !IsKeyDown(keyCode);
             }
-            static Win32API.RawKey ToWinKeyCode(KeyCode keyCode)
+#if UNITY_STANDALONE_WIN
+            public static Win32API.RawKey ToWinKeyCode(KeyCode keyCode)
             {
                 return keyCode switch
                 {
@@ -45,25 +57,47 @@ namespace MajdataPlay.IO
                     _ => throw new ArgumentOutOfRangeException(nameof(keyCode)),
                 };
             }
-            static UnityEngine.KeyCode ToUnityKeyCode(KeyCode keyCode)
+#endif
+            public static UnityEngine.InputSystem.Key ToUnityKeyCode(KeyCode keyCode)
             {
                 return keyCode switch
                 {
-                    KeyCode.B1 => UnityEngine.KeyCode.W,
-                    KeyCode.B2 => UnityEngine.KeyCode.E,
-                    KeyCode.B3 => UnityEngine.KeyCode.D,
-                    KeyCode.B4 => UnityEngine.KeyCode.C,
-                    KeyCode.B5 => UnityEngine.KeyCode.X,
-                    KeyCode.B6 => UnityEngine.KeyCode.Z,
-                    KeyCode.B7 => UnityEngine.KeyCode.A,
-                    KeyCode.B8 => UnityEngine.KeyCode.Q,
-                    KeyCode.Test => UnityEngine.KeyCode.Keypad9,
-                    KeyCode.SelectP1 => UnityEngine.KeyCode.KeypadMultiply,
-                    KeyCode.Service => UnityEngine.KeyCode.Keypad7,
-                    KeyCode.SelectP2 => UnityEngine.KeyCode.Keypad3,
+                    KeyCode.B1 => UnityEngine.InputSystem.Key.W,
+                    KeyCode.B2 => UnityEngine.InputSystem.Key.E,
+                    KeyCode.B3 => UnityEngine.InputSystem.Key.D,
+                    KeyCode.B4 => UnityEngine.InputSystem.Key.C,
+                    KeyCode.B5 => UnityEngine.InputSystem.Key.X,
+                    KeyCode.B6 => UnityEngine.InputSystem.Key.Z,
+                    KeyCode.B7 => UnityEngine.InputSystem.Key.A,
+                    KeyCode.B8 => UnityEngine.InputSystem.Key.Q,
+                    KeyCode.Test => UnityEngine.InputSystem.Key.Numpad9,
+                    KeyCode.SelectP1 => UnityEngine.InputSystem.Key.NumpadMultiply,
+                    KeyCode.Service => UnityEngine.InputSystem.Key.Numpad7,
+                    KeyCode.SelectP2 => UnityEngine.InputSystem.Key.Numpad3,
                     _ => throw new ArgumentOutOfRangeException(nameof(keyCode)),
                 };
             }
+#if UNITY_IOS || UNITY_EDITOR_OSX
+            public static GCKeyCode ToiOSGCKeyCode(KeyCode keyCode)
+            {
+                return keyCode switch
+                {
+                    KeyCode.B1 => GCKeyCode.KeyW,
+                    KeyCode.B2 => GCKeyCode.KeyE,
+                    KeyCode.B3 => GCKeyCode.KeyD,
+                    KeyCode.B4 => GCKeyCode.KeyC,
+                    KeyCode.B5 => GCKeyCode.KeyX,
+                    KeyCode.B6 => GCKeyCode.KeyZ,
+                    KeyCode.B7 => GCKeyCode.KeyA,
+                    KeyCode.B8 => GCKeyCode.KeyQ,
+                    KeyCode.Test => GCKeyCode.Keypad9,
+                    KeyCode.SelectP1 => GCKeyCode.KeypadAsterisk,
+                    KeyCode.Service => GCKeyCode.Keypad7,
+                    KeyCode.SelectP2 => GCKeyCode.Keypad3,
+                    _ => throw new ArgumentOutOfRangeException(nameof(keyCode)),
+                };
+            }
+#endif
         }
     }
 }

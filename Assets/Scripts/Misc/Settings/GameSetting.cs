@@ -1,211 +1,340 @@
-﻿using HidSharp;
-using MajdataPlay.Scenes.Game;
-using MajdataPlay.Scenes.Game.Notes;
-using MajdataPlay.IO;
-using MajdataPlay.Recording;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using UnityEngine.Scripting;
 using Newtonsoft.Json;
+using MajdataPlay.Net;
+using MajdataPlay.Settings.OptionEnumerators;
+using MajdataPlay.Diagnostics;
 #nullable enable
 namespace MajdataPlay.Settings
 {
-    [Preserve]
     public class GameSetting
     {
-        [Preserve]
+        
         public GameOptions Game { get; init; } = new();
-        [Preserve]
+        
         public JudgeOptions Judge { get; init; } = new();
-        [Preserve]
+        
         public DisplayOptions Display { get; init; } = new();
-        [Preserve]
+        
         public SoundOptions Audio { get; init; } = new();
-        [JsonIgnore, Preserve]
+        [JsonIgnore]
         public ModOptions Mod { get; init; } = new();
-        [Preserve]
+        
         public DebugOptions Debug { get; init; } = new();
-        [SettingVisualizationIgnore]
+        [HideInSettingUI]
         public OnlineOptions Online { get; init; } = new();
-        [SettingVisualizationIgnore]
+        [HideInSettingUI]
         public IOOptions IO { get; init; } = new();
     }
-    [Preserve]
+    
     public class GameOptions
     {
-        [Preserve]
+#if UNITY_ANDROID || UNITY_IOS
+        public const GameplaySubScreenClickBehaviorOption DEFAULT_GameplaySubScreenClickBehavior = GameplaySubScreenClickBehaviorOption.TrackSkip_1_Sec_Delay;
+#else
+        public const GameplaySubScreenClickBehaviorOption DEFAULT_GameplaySubScreenClickBehavior = GameplaySubScreenClickBehaviorOption.TrackSkip;
+#endif
+
+        [Step("0.25")]
+        [Range(HasMax = false, HasMin = false)]
         public float TapSpeed { get; set; } = 7.5f;
-        [Preserve]
+        
+        [Step("0.25")]
+        [Range(HasMax = false, HasMin = false)]
         public float TouchSpeed { get; set; } = 7.5f;
-        [Preserve]
+        
+        [OptionEnumerator(typeof(GameOffsetEnumerator))]
         public float SlideFadeInOffset { get; set; } = 0f;
-        [Preserve]
+        
+        [Step("0.05")]
+        [Range("0", "1" ,HasMax = true, HasMin = true)]
         public float BackgroundDim { get; set; } = 0.8f;
-        [Preserve]
+        
         public bool StarRotation { get; set; } = true;
-        [Preserve]
+        
         public BGInfoOption BGInfo { get; set; } = BGInfoOption.Combo;
-        [Preserve]
+        public BGInfoOption SecondaryBGInfo { get; set; } = BGInfoOption.None;
+        public BGInfoOption SubScreenBGInfo { get; set; } = BGInfoOption.Achievement;
+        
         public TopInfoDisplayOption TopInfo { get; set; } = TopInfoDisplayOption.None;
-        [Preserve]
+        public bool EnableJudgeTimingGauge { get; set; } = false;
+
         public bool TrackSkip { get; set; } = true;
-        [Preserve]
+
+        public EnforceGameFailureCondition EnforceGameFailure { get; set; } = EnforceGameFailureCondition.Disabled;
+        
         public bool FastRetry { get; set; } = true;
-        [Preserve]
+
+        public bool FastPractice { get; set; } = false;
+
+        public GameplaySubScreenClickBehaviorOption GameplaySubScreenClickBehavior { get; set; } = DEFAULT_GameplaySubScreenClickBehavior;
+        
         public MirrorOption Mirror { get; set; } = MirrorOption.Off;
-        [Preserve]
+        
+        [Step("1")]
+        [Range("-7", "7", HasMax = true, HasMin = true)]
         public int Rotation { get; set; } = 0;
-        [Preserve]
+        public bool SlideSkipping { get; set; } = true;
+
         public RandomModeOption Random { get; set; } = RandomModeOption.Disabled;
-        [Preserve]
+#if UNITY_ANDROID || UNITY_IOS
+        
+        public bool ButtonRingForTouch { get; set; } = true;
+#endif
+
+#if UNITY_STANDALONE
+        
         public RecordModeOption RecordMode { get; set; } = RecordModeOption.Disable;
+#endif
+        [Step("1")]
+        [Range("1", "5", HasMax = true, HasMin = true)]
+        public int LeadInTime { get; set; } = 1;
+
+        public bool ManualStartGame { get; set; } = false;
     }
-    [Preserve]
+    
     public class JudgeOptions
     {
-        [Preserve]
+        
+        [OptionEnumerator(typeof(GameOffsetEnumerator))]
         public float AudioOffset { get; set; } = 0f;
-        [Preserve]
+        
+        [OptionEnumerator(typeof(GameOffsetEnumerator))]
         public float JudgeOffset { get; set; } = 0f;
-        [Preserve]
+        
+        [OptionEnumerator(typeof(GameOffsetEnumerator))]
         public float AnswerOffset { get; set; } = 0f;
-        [Preserve]
+        
+        [OptionEnumerator(typeof(GameOffsetEnumerator))]
         public float TouchPanelOffset { get; set; } = 0f;
-        [Preserve]
+        
         public JudgeModeOption Mode { get; set; } = JudgeModeOption.Modern;
     }
-    [Preserve]
+    
     public class DisplayOptions
     {
-        [Preserve]
-        public string Language { get; set; } = "zh-CN - Majdata";
-        [Preserve]
+        
+        [OptionEnumerator(typeof(LanguageEnumerator))]
+        public string Language { get; set; } = "";
+        
+        [OptionEnumerator(typeof(SkinEnumerator))]
         public string Skin { get; set; } = "default";
-        [Preserve]
+        
         public bool DisplayCriticalPerfect { get; set; } = false;
-        [Preserve]
+        
         public bool DisplayBreakScore { get; set; } = true;
 
-        [Preserve]
+        
         public JudgeDisplayOption FastLateType { get; set; } = JudgeDisplayOption.Disable;
-        [Preserve]
+        
         public JudgeDisplayOption NoteJudgeType { get; set; } = JudgeDisplayOption.All;
-        [Preserve]
+        
         public JudgeDisplayOption TouchJudgeType { get; set; } = JudgeDisplayOption.All;
-        [Preserve]
+        
         public JudgeDisplayOption SlideJudgeType { get; set; } = JudgeDisplayOption.All;
-        [Preserve]
+        
         public JudgeDisplayOption BreakJudgeType { get; set; } = JudgeDisplayOption.All;
-        [Preserve]
+        
         public JudgeDisplayOption BreakFastLateType { get; set; } = JudgeDisplayOption.Disable;
-        [Preserve]
+        
         public JudgeModeOption SlideSortOrder { get; set; } = JudgeModeOption.Modern;
         /// <summary>
         /// Such like Tap、Star、Hold and Break
         /// </summary>
-        [Preserve]
+        
+        [Step("0.05")]
+        [Range("0", "1", HasMax = true, HasMin = true)]
         public float OuterJudgeDistance { get; set; } = 1f;
         /// <summary>
         /// Such like Touch and TouchHold
         /// </summary>
-        [Preserve]
+        
+        [Step("0.05")]
+        [Range("0", "1", HasMax = true, HasMin = true)]
         public float InnerJudgeDistance { get; set; } = 1f;
-        [SettingVisualizationIgnore]
+        
         public bool DisplayHoldHeadJudgeResult { get; set; } = false;
-        [Preserve]
+        
+        [Step("0.01")]
+        [Range("0", "2", HasMax = true, HasMin = true)]
         public float TapScale { get; set; } = 1f;
-        [Preserve]
+        
+        [Step("0.01")]
+        [Range("0", "2", HasMax = true, HasMin = true)]
         public float HoldScale { get; set; } = 1f;
-        [Preserve]
+        
+        [Step("0.01")]
+        [Range("0", "2", HasMax = true, HasMin = true)]
         public float TouchScale { get; set; } = 1f;
-        [Preserve]
+        
+        [Step("0.01")]
+        [Range("0", "2", HasMax = true, HasMin = true)]
         public float SlideScale { get; set; } = 1f;
-        [Preserve]
+        
         public TouchFeedbackLevel TouchFeedback { get; set; } = TouchFeedbackLevel.Outer_Only;
-        [SettingVisualizationIgnore]
+#if UNITY_STANDALONE
+        [HideInSettingUI]
         public string Resolution { get; set; } = "1080x1920";
-        [SettingVisualizationIgnore]
-        public float MainScreenPosition { get; set; } = 1f;
-        [Preserve]
+#endif
+        
+#if UNITY_ANDROID || UNITY_IOS
+        public bool MainScreenTransform { get; set; } = true;
+#else
+        public bool MainScreenTransform { get; set; } = false;
+#endif
+        
+        [Step("0.01")]
+        [Range("0.05", "1.5", HasMax = true, HasMin = true)]
+        public float MainScreenScale { get; set; } = 1f;
+        
+        [Step("0.01")]
+        [Range("-1", "1", HasMax = true, HasMin = true)]
+        public float MainScreenOffset { get; set; } = 1f;
+        [HideInSettingUI]
+        public float MainScreenCachedScreenCenterY { get; set; } = 960f;
+        
+        [Step("0.01")]
+        [Range("-5", "5", HasMax = true, HasMin = true)]
+        public float SubDisplayOffset { get; set; } = 0f;
+        
+        [Step("0.01")]
+        public float SubDisplayScale { get; set; } = 1f;
+        public GameplayScreenRotationAngleOption GameplayScreenRotationAngle { get; set; } = GameplayScreenRotationAngleOption.Zero;
+
+        [OptionEnumerator(typeof(EngineEnumSettingEnumerator))]
         public RenderQualityOption RenderQuality { get; set; } = RenderQualityOption.Low;
-        [SettingVisualizationIgnore]
+#if UNITY_STANDALONE
+        [HideInSettingUI]
         public bool Topmost { get; set; } = false;
-        [Preserve]
+#endif
+        
+        [Step("1")]
+        [Range("-1", null, HasMax = false, HasMin = true)]
+        [OptionEnumerator(typeof(EngineNumberSettingEnumerator))]
         public int FPSLimit { get; set; } = 120;
-#if !UNITY_ANDROID
-        [Preserve]
+#if !(UNITY_ANDROID || UNITY_IOS)
+        
+        [OptionEnumerator(typeof(EngineBooleanSettingEnumerator))]
         public bool VSync { get; set; } = true;
 #endif
+        
+        public bool SkipVideoDownload { get; set; } = false;
     }
-    [Preserve]
+    
     public class SoundOptions
     {
-        [Preserve]
+#if UNITY_IOS || UNITY_ANDROID
+        readonly static SoundBackendOption DEFAULT_SOUND_BACKEND = SoundBackendOption.BassSimple;
+#else
+        readonly static SoundBackendOption DEFAULT_SOUND_BACKEND = SoundBackendOption.Wasapi;
+#endif
+        
         public bool ForceMono { get; set; } = false;
-        [Preserve]
+        
         public SFXVolume Volume { get; set; } = new();
-#if !UNITY_ANDROID
-        [Preserve]
+#if !(UNITY_ANDROID || UNITY_IOS)
+        
         public WasapiOptions Wasapi { get; set; } = new();
-        [Preserve]
+        
         public AsioOptions Asio { get; set; } = new();
-        [Preserve]
+        
         public ChannelOptions Channel { get; set; } = new();
 #else
-        public AndroidAudioOptions Android { get; set; } = new();
+        public MobileAudioOptions Mobile { get; set; } = new();
 #endif
-        [Preserve]
-        public SoundBackendOption Backend { get; set; } = SoundBackendOption.Wasapi;
+        
+        public SoundBackendOption Backend { get; set; } = DEFAULT_SOUND_BACKEND;
     }
-    [Preserve]
+    
     public class SFXVolume
     {
-        [Preserve]
+        
+        [Step("0.05")]
+        [Range("0", "2", HasMax = true, HasMin = true)]
+        [OptionEnumerator(typeof(AudioVolumeEnumerator))]
         public float Global { get; set; } = 0.3f;
-        [Preserve]
-        public float Answer { get; set; } = 0.8f;
-        [Preserve]
+        
+        [Step("0.05")]
+        [Range("0", "2", HasMax = true, HasMin = true)]
+        [OptionEnumerator(typeof(AudioVolumeEnumerator))]
         public float BGM { get; set; } = 1f;
-        [Preserve]
+        
+        [Step("0.05")]
+        [Range("0", "2", HasMax = true, HasMin = true)]
+        [OptionEnumerator(typeof(AudioVolumeEnumerator))]
         public float Track { get; set; } = 1f;
-        [Preserve]
+        
+        [Step("0.05")]
+        [Range("0", "2", HasMax = true, HasMin = true)]
+        [OptionEnumerator(typeof(AudioVolumeEnumerator))]
+        public float Answer { get; set; } = 0.8f;
+        
+        [Step("0.05")]
+        [Range("0", "2", HasMax = true, HasMin = true)]
+        [OptionEnumerator(typeof(AudioVolumeEnumerator))]
         public float Tap { get; set; } = 0.3f;
-        [Preserve]
-        public float Slide { get; set; } = 0.3f;
-        [Preserve]
+
+        [Step("0.05")]
+        [Range("0", "2", HasMax = true, HasMin = true)]
+        [OptionEnumerator(typeof(AudioVolumeEnumerator))]
+        public float Ex { get; set; } = 0.3f;
+        
+        [Step("0.05")]
+        [Range("0", "2", HasMax = true, HasMin = true)]
+        [OptionEnumerator(typeof(AudioVolumeEnumerator))]
         public float Break { get; set; } = 0.3f;
-        [Preserve]
+        
+        [Step("0.05")]
+        [Range("0", "2", HasMax = true, HasMin = true)]
+        [OptionEnumerator(typeof(AudioVolumeEnumerator))]
+        public float Slide { get; set; } = 0.3f;
+        
+        [Step("0.05")]
+        [Range("0", "2", HasMax = true, HasMin = true)]
+        [OptionEnumerator(typeof(AudioVolumeEnumerator))]
         public float Touch { get; set; } = 0.3f;
-        [Preserve]
+
+        [Step("0.05")]
+        [Range("0", "2", HasMax = true, HasMin = true)]
+        [OptionEnumerator(typeof(AudioVolumeEnumerator))]
+        public float Hanabi { get; set; } = 0.3f;
+        
+        [Step("0.05")]
+        [Range("0", "2", HasMax = true, HasMin = true)]
+        [OptionEnumerator(typeof(AudioVolumeEnumerator))]
         public float Voice { get; set; } = 1f;
     }
-    [Preserve]
+    
     public class ModOptions
     {
-        [Preserve]
+        
+        [Step("0.05")]
+        [Range("0", null, HasMax = false, HasMin = true)]
         public float PlaybackSpeed { get; set; } = 1f;
-        [Preserve]
+        
         public AutoplayModeOption AutoPlay { get; set; } = AutoplayModeOption.Disable;
-        [Preserve]
+        
         public JudgeStyleOption JudgeStyle { get; set; } = JudgeStyleOption.DEFAULT;
-        [Preserve]
+        
         public bool SubdivideSlideJudgeGrade { get; set; } = false;
-        [Preserve]
+        
         public bool AllBreak { get; set; } = false;
-        [Preserve]
+        
         public bool AllEx { get; set; } = false;
-        [Preserve]
+        
         public bool AllTouch { get; set; } = false;
-        [Preserve]
+        
         public bool SlideNoHead { get; set; } = false;
-        [Preserve]
+        
         public bool SlideNoTrack { get; set; } = false;
-#if !UNITY_ANDROID
-        [Preserve]
+#if !(UNITY_ANDROID || UNITY_IOS)
+        
         public bool ButtonRingForTouch { get; set; } = false;
 #endif
-        [Preserve]
+        
+        [OptionEnumerator(typeof(NoteMaskEnumerator))]
         public string NoteMask { get; set; } = "Disable";
 
         public bool IsAnyModActive()
@@ -215,197 +344,333 @@ namespace MajdataPlay.Settings
         }
 
     }
-    [Preserve]
+    
     public class OnlineOptions
     {
-        [Preserve]
+        
+#if UNITY_IOS
+        [JsonIgnore]
+#endif
         public bool Enable { get; set; } = false;
-#if UNITY_STANDALONE && ENABLE_MONO
+#if UNITY_STANDALONE
         public bool UseProxy { get; init; } = true;
         public string Proxy { get; init; } = string.Empty;
 #endif
-        [Preserve]
-        public List<ApiEndpoint> ApiEndpoints { get; set; } = new List<ApiEndpoint>
+        
+        public ApiEndpoint[] ApiEndpoints { get; set; } = new ApiEndpoint[]
         {
+#if !UNITY_IOS
+            new ApiEndpoint()
             {
-                new ApiEndpoint()
-                {
-                    Name = "Majnet",
-                    Url = "https://majdata.net/api3/api" ,
-                    Username = "YourUsername",
-                    Password = "YourPassword"
-                }
+                Name = "MajdataNET",
+                Url = new("https://majdata.net/api3/api/"),
+                Username = "YourUsername",
+                Password = "YourPassword"
             }
+#endif
         };
     }
-    [Preserve]
-    public class ApiEndpoint
-    {
-        [Preserve]
-        public string Name { get; set; } = string.Empty;
-        [Preserve]
-        public string Url { get; set; } = string.Empty;
-        [Preserve]
-        public string? Username { get; set; }
-        [Preserve]
-        public string? Password { get; set; }
-    }
-    [Preserve]
+    
     public class DebugOptions
     {
-        [Preserve]
+        
         public bool DisplaySensor { get; set; } = false;
-        [Preserve]
+#if UNITY_ANDROID
+        
+        [Step("0.05")]
+        [Range("0", "2", HasMax = true, HasMin = true)]
+        public float TouchSimulationRadius { get; set; } = 0.5f;
+        
+        [Step("0.05")]
+        [Range("0", "2", HasMax = true, HasMin = true)]
+        public float TouchAAreaExtraRadius { get; set; } = 0f;
+        
+        [Step("0.05")]
+        [Range("0", "2", HasMax = true, HasMin = true)]
+        public float TouchBAreaExtraRadius { get; set; } = 0f;
+        
+        [Step("0.05")]
+        [Range("0", "2", HasMax = true, HasMin = true)]
+        public float TouchCAreaExtraRadius { get; set; } = 0.25f;
+        
+        [Step("0.05")]
+        [Range("0", "2", HasMax = true, HasMin = true)]
+        public float TouchDAreaExtraRadius { get; set; } = 0.2f;
+        
+        [Step("0.05")]
+        [Range("0", "2", HasMax = true, HasMin = true)]
+        public float TouchEAreaExtraRadius { get; set; } = 0.10f;
+        
+        [Step("0.05")]
+        [Range("0", "2", HasMax = true, HasMin = true)]
+        public float TouchRadiusAdjust { get; set; } = 0f;
+#else
+        
+        [Step("0.05")]
+        [Range("0", "2", HasMax = true, HasMin = true)]
+        public float TouchSimulationRadius { get; set; } = 0.5f;
+        
+        [Step("0.05")]
+        [Range("0", "2", HasMax = true, HasMin = true)]
+        public float TouchAAreaExtraRadius { get; set; } = 0f;
+        
+        [Step("0.05")]
+        [Range("0", "2", HasMax = true, HasMin = true)]
+        public float TouchBAreaExtraRadius { get; set; } = 0f;
+        
+        [Step("0.05")]
+        [Range("0", "2", HasMax = true, HasMin = true)]
+        public float TouchCAreaExtraRadius { get; set; } = 0.25f;
+        
+        [Step("0.05")]
+        [Range("0", "2", HasMax = true, HasMin = true)]
+        public float TouchDAreaExtraRadius { get; set; } = 0.2f;
+        
+        [Step("0.05")]
+        [Range("0", "2", HasMax = true, HasMin = true)]
+        public float TouchEAreaExtraRadius { get; set; } = 0.10f;
+        
+        [Step("0.05")]
+        [Range("0", "2", HasMax = true, HasMin = true)]
+        public float TouchRadiusAdjust { get; set; } = 0f;
+#endif
+        
         public bool DisplayFPS { get; set; } = true;
-        [SettingVisualizationIgnore]
+#if UNITY_STANDALONE
+        [HideInSettingUI]
         public bool FullScreen { get; set; } = true;
-        [SettingVisualizationIgnore]
+#endif
+        [HideInSettingUI]
         public int MenuOptionIterationSpeed { get; set; } = 45;
-        [Preserve]
+        
+        [Range("0", null, HasMax = false, HasMin = true)]
+        [OptionEnumerator(typeof(GameOffsetEnumerator))]
         public float DisplayOffset { get; set; } = 0f;
-        [Preserve]
+        
+        [Step("0.001")]
         public float NoteAppearRate { get; set; } = 0.265f;
-        [Preserve]
-        public OffsetUnitOption OffsetUnit { get; set; } = OffsetUnitOption.Second;
-        [SettingVisualizationIgnore]
+        
+        public OffsetUnitOption OffsetUnit { get; set; } = OffsetUnitOption.Frame;
+#if UNITY_STANDALONE
+        [HideInSettingUI]
         public bool HideCursorInGame { get; set; } = true;
-        [SettingVisualizationIgnore]
+#endif
+        [HideInSettingUI]
+#if UNITY_IOS
+        [JsonIgnore]
+#endif
         public bool NoteFolding { get; set; } = true;
-        [Preserve]
+        
         public DJAutoPolicyOption DJAutoPolicy { get; set; } = DJAutoPolicyOption.Strict;
-        [SettingVisualizationIgnore]
+        [HideInSettingUI]
         public int MaxQueuedFrames { get; set; } = 2;
-        [SettingVisualizationIgnore]
-        public int TapPoolCapacity { get; set; } = 96;
-        [SettingVisualizationIgnore]
+#if UNITY_IOS || UNITY_ANDROID
+        [HideInSettingUI]
+        public int TapPoolCapacity { get; set; } = 48;
+        [HideInSettingUI]
         public int HoldPoolCapacity { get; set; } = 48;
-        [SettingVisualizationIgnore]
+        [HideInSettingUI]
         public int TouchPoolCapacity { get; set; } = 64;
-        [SettingVisualizationIgnore]
-        public int TouchHoldPoolCapacity { get; set; } = 16;
-        [SettingVisualizationIgnore]
-        public int EachLinePoolCapacity { get; set; } = 64;
-        [Preserve]
-        [SettingVisualizationIgnore]
-        [JsonProperty]
-        internal MajDebug.LogLevel DebugLevel { get; set; } = MajDebug.LogLevel.Info;
+        [HideInSettingUI]
+        public int TouchHoldPoolCapacity { get; set; } = 64;
+        [HideInSettingUI]
+        public int EachLinePoolCapacity { get; set; } = 24;
+#else
+        [HideInSettingUI]
+        public int TapPoolCapacity { get; set; } = 96;
+        [HideInSettingUI]
+        public int HoldPoolCapacity { get; set; } = 96;
+        [HideInSettingUI]
+        public int TouchPoolCapacity { get; set; } = 64;
+        [HideInSettingUI]
+        public int TouchHoldPoolCapacity { get; set; } = 64;
+        [HideInSettingUI]
+        public int EachLinePoolCapacity { get; set; } = 48;
+#endif
+        
+        [HideInSettingUI]
+#if UNITY_IOS
+        [JsonIgnore]
+#endif
+        public LogLevel DebugLevel { get; set; } = LogLevel.Info;
     }
-    [Preserve]
+    
     public class IOOptions
     {
-        [Preserve]
+#if UNITY_STANDALONE
+        
         public DeviceManufacturerOption? Manufacturer { get; set; } = null;
-        [Preserve]
+#endif
+        
         public InputDeviceOptions InputDevice { get; set; } = new();
-        [Preserve]
+#if UNITY_STANDALONE
+        
         public OutputDeviceOptions OutputDevice { get; set; } = new();
+#endif
     }
-    [Preserve]
+    
     public class InputDeviceOptions
     {
-        [Preserve]
+#if UNITY_STANDALONE
+        
         public int Player { get; set; } = 1;
-        [Preserve]
+        
         public ButtonRingOptions ButtonRing { get; set; } = new();
-        [Preserve]
+        
         public TouchPanelOptions TouchPanel { get; set; } = new();
+#else
+        public MobileExternalButtonRingOption ExternalButtonRing { get; init; } = MobileExternalButtonRingOption.None;
+#endif
     }
-    [Preserve]
+#if UNITY_STANDALONE
+    
     public class OutputDeviceOptions
     {
-        [Preserve]
+        
         public LedOptions Led { get; set; } = new();
     }
-    [Preserve]
+    
     public class LedOptions
     {
-        [Preserve]
-        public bool Enable { get; set; } = true;
-        [Preserve]
+        
+        public bool Enable { get; init; } = true;
+        
         public float Brightness { get; set; } = 1.0f;
-        [Preserve]
-        public int RefreshRateMs { get; set; } = 100;
-        [Preserve]
-        public bool Throttler { get; set; } = false;
-        [Preserve]
+        
+        public int RefreshRateMs { get; set; } = 16;
+        
+        public bool Throttler { get; set; } = true;
+        
         public SerialPortOptions SerialPortOptions { get; set; } = new();
-        [Preserve]
+        
         public HidOptions HidOptions { get; set; } = new();
     }
-    [Preserve]
+    
     public class ButtonRingOptions
     {
-        [Preserve]
+        public bool Enable { get; init; } = true;
+
         public ButtonRingDeviceOption? Type { get; set; } = null;
-        [Preserve]
+        
         public bool Debounce { get; set; } = false;
-        [Preserve]
+        
         public int PollingRateMs { get; set; } = 0;
-        [Preserve]
+        
         public int DebounceThresholdMs { get; set; } = 0;
-        [Preserve]
+        
         public HidOptions HidOptions { get; set; } = new();
     }
-    [Preserve]
+    
     public class TouchPanelOptions
     {
-        [Preserve]
+        public bool Enable { get; init; } = true;
+
         public bool Debounce { get; set; } = false;
-        [Preserve]
+        
         public TouchPanelSensitivityConfig Sensitivities { get; set; } = default;
-        [Preserve]
+        
         public int PollingRateMs { get; set; } = 0;
-        [Preserve]
+        
         public int DebounceThresholdMs { get; set; } = 0;
-        [Preserve]
-        public float TouchSimulationRadius { get; set; } = 0.5f;
-        [Preserve]
+        
         public SerialPortOptions SerialPortOptions { get; set; } = new();
+        
+        public UsbOptions UsbOptions { get; set; } = new();
+        
+        public CapacitiveTouchPanelOptions CapacitivePanelOptions { get; set; } = new();
     }
-    [Preserve]
+
+    
     public class HidOptions
     {
-        [Preserve]
+        
         public string? DeviceName { get; set; } = null;
-        [Preserve]
+        
         public int? ProductId { get; set; } = null;
-        [Preserve]
+        
         public int? VendorId { get; set; } = null;
-        [Preserve]
+        
         public bool Exclusice { get; set; } = false;
-        [Preserve]
-        public OpenPriority OpenPriority { get; set; } = OpenPriority.VeryHigh;
+        
+        public HidOpenPriority OpenPriority { get; set; } = HidOpenPriority.VeryHigh;
     }
-    [Preserve]
+    
+    public class UsbOptions
+    {
+        
+        public string? DeviceName { get; set; } = null;
+        
+        public int? ProductId { get; set; } = null;
+        
+        public int? VendorId { get; set; } = null;
+        
+        public bool Exclusice { get; set; } = false;
+    }
+    
+    public class CapacitiveTouchPanelOptions
+    {
+        
+        public int TouchRadius { get; set; } = 30;
+        public CapacitiveTouchPanelRadiusOffsetConfig RadiusOffset { get; set; } = new()
+        {
+            A = 0,
+            B = 20,
+            C = 0,
+            D = 0,
+            E = 25
+        };
+    }
+    
     public class SerialPortOptions
     {
-        [Preserve]
+        
+#if UNITY_STANDALONE_WIN
         public int? Port { get; set; } = null;
-        [Preserve]
+#else
+        public string? Port { get; set; } = null;
+#endif
+        
         public int? BaudRate { get; set; } = null;
     }
-    [Preserve]
+    
     public struct TouchPanelSensitivityConfig
     {
-        [Preserve]
+        
         public short A { get; set; }
-        [Preserve]
+        
         public short B { get; set; }
-        [Preserve]
+        
         public short C { get; set; }
-        [Preserve]
+        
         public short D { get; set; }
-        [Preserve]
+        
         public short E { get; set; }
     }
-    [Preserve]
+    public struct CapacitiveTouchPanelRadiusOffsetConfig
+    {
+
+        public int A { get; set; }
+
+        public int B { get; set; }
+
+        public int C { get; set; }
+
+        public int D { get; set; }
+
+        public int E { get; set; }
+    }
+
     public class ChannelOptions
     {
         // Front (LF / RF)
         // Rear (LR / RR)
         // Side (LS / RS) (rear center)
         // CenterAndLFE (LFE / Center)
-        public string Main { get; set; } = "Front";
+        public float FrontVolume { get; set; } = 1f;
+        public float CenterAndLFEVolume { get; set; } = 1f;
+        public float SideVolume { get; set; } = 1f;
+        public float RearVolume { get; set; } = 1f;
+
     }
     public class AsioOptions
     {
@@ -419,12 +684,15 @@ namespace MajdataPlay.Settings
         public float BufferSize { get; set; } = 0.02f;
         public float Period { get; set; } = 0.005f;
     }
-    public class AndroidAudioOptions
+#endif
+    public class MobileAudioOptions
     {
+#if UNITY_ANDROID // Android Only (AAudio)
         public bool EnableAAudio { get; set; } = true;
-        public int BufferLengthMs { get; set; } = 64;
+#endif
+        public int BufferLengthMs { get; set; } = 128;
         public int UpdatePeriodMs { get; set; } = 16;
-        public int DeviceBufferLengthMs { get; set; } = 8;
+        public int DeviceBufferLengthMs { get; set; } = 32;
         public int DeviceUpdatePeriodMs { get; set; } = 4;
     }
 }

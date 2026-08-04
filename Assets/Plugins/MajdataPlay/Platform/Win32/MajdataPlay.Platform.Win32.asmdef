@@ -1,0 +1,20 @@
+{
+    "name": "MajdataPlay.Platform.Win32",
+    "rootNamespace": "MajdataPlay.Platform.Win32",
+    "references": [
+        "GUID:8545470905e4bf241a27188012585d36"
+    ],
+    "includePlatforms": [
+        "Editor",
+        "WindowsStandalone32",
+        "WindowsStandalone64"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}

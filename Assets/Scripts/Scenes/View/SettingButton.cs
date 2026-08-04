@@ -11,7 +11,7 @@ namespace MajdataPlay.Scenes.View
     {
         public void OnClick()
         {
-            MajInstances.SceneSwitcher.SwitchScene("Setting");
+            MajInstances.SceneSwitcher.SwitchScene("Setting", false);
         }
     }
 }

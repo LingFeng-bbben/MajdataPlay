@@ -1,5 +1,6 @@
 ﻿using MajdataPlay.Buffers;
 using MajdataPlay.Collections;
+using MajdataPlay.Diagnostics;
 using MajdataPlay.Extensions;
 using MajdataPlay.Scenes.Game.Notes.Behaviours;
 using MajdataPlay.Utils;
@@ -166,7 +167,7 @@ namespace MajdataPlay.Scenes.Game.Buffers
         void ActiveObject(IPoolableNote<TInfo, TMember> element, TInfo info)
         {
             info.Instance = element as NoteDrop;
-            element.Initialize(info);
+            element.Init(info);
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual void Collect(in IPoolableNote<TInfo, TMember> endNote)

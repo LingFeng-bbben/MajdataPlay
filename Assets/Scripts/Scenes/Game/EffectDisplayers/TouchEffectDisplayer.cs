@@ -53,7 +53,7 @@ namespace MajdataPlay.Scenes.Game
             fastLatePos.y = fastLateDistance;
             _fastLateDisplayerA.LocalPosition = fastLatePos;
 
-            _isEnabled = MajInstances.Settings.Display.InnerJudgeDistance != 0;
+            _isEnabled = MajEnv.Settings.Display.InnerJudgeDistance != 0;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset()
@@ -84,7 +84,9 @@ namespace MajdataPlay.Scenes.Game
             _fastLateDisplayerB.Reset();
             PlayEffect(judgeResult);
             if (!_isEnabled)
-                return;
+            { 
+                return; 
+            }
             if (IsClassCAvailable(judgeResult))
             {
                 _judgeTextDisplayer.Play(judgeResult,true);
@@ -104,13 +106,13 @@ namespace MajdataPlay.Scenes.Game
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void PlayEffect(in NoteJudgeResult judgeResult)
         {
-            if (!judgeResult.IsMissOrTooFast)
+            if (judgeResult.IsMine || judgeResult.IsMissOrTooFast)
             {
-                Reset();
+                return;
             }
             else
             {
-                return;
+                Reset();
             }
             _judgeEffectDisplayer.PlayEffect(judgeResult);
         }
@@ -118,10 +120,18 @@ namespace MajdataPlay.Scenes.Game
         bool PlayResult(in NoteJudgeResult judgeResult)
         {
             bool canPlay;
-            if (judgeResult.IsBreak)
-                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Settings.Display.BreakJudgeType, judgeResult);
+            if (judgeResult.IsMine && judgeResult.Grade is not (JudgeGrade.Miss or JudgeGrade.TooFast))
+            {
+                return false;
+            }
+            else if (judgeResult.IsBreak)
+            {
+                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajEnv.Settings.Display.BreakJudgeType, judgeResult);
+            }
             else
-                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Settings.Display.TouchJudgeType, judgeResult);
+            {
+                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajEnv.Settings.Display.TouchJudgeType, judgeResult);
+            }
             if (!canPlay)
             {
                 return false;
@@ -133,10 +143,18 @@ namespace MajdataPlay.Scenes.Game
         bool PlayFastLate(in NoteJudgeResult judgeResult, FastLateDisplayer displayer)
         {
             bool canPlay;
-            if (judgeResult.IsBreak)
-                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Settings.Display.BreakFastLateType, judgeResult);
+            if (judgeResult.IsMine && judgeResult.Grade is not (JudgeGrade.Miss or JudgeGrade.TooFast))
+            {
+                return false;
+            }
+            else if (judgeResult.IsBreak)
+            {
+                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajEnv.Settings.Display.BreakFastLateType, judgeResult);
+            }
             else
-                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Settings.Display.FastLateType, judgeResult);
+            {
+                canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajEnv.Settings.Display.FastLateType, judgeResult);
+            }
             if (!canPlay)
             {
                 return false;
@@ -147,17 +165,21 @@ namespace MajdataPlay.Scenes.Game
         static bool IsClassCAvailable(in NoteJudgeResult judgeResult)
         {
             if (judgeResult.IsMissOrTooFast)
+            {
                 return false;
+            }
 
             var isBreak = judgeResult.IsBreak;
-            var canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Settings.Display.TouchJudgeType, judgeResult);
-            canPlay = canPlay && NoteEffectManager.CheckJudgeDisplaySetting(MajInstances.Settings.Display.FastLateType, judgeResult);
+            var canPlay = NoteEffectManager.CheckJudgeDisplaySetting(MajEnv.Settings.Display.TouchJudgeType, judgeResult);
+            canPlay = canPlay && NoteEffectManager.CheckJudgeDisplaySetting(MajEnv.Settings.Display.FastLateType, judgeResult);
 
             if (!canPlay)
+            {
                 return canPlay;
+            }
             var skin = MajInstances.SkinManager.GetJudgeTextSkin();
-            var isCritical = MajInstances.Settings.Display.DisplayCriticalPerfect;
-            var displayBreakScore = MajInstances.Settings.Display.DisplayBreakScore;
+            var isCritical = MajEnv.Settings.Display.DisplayCriticalPerfect;
+            var displayBreakScore = MajEnv.Settings.Display.DisplayBreakScore;
             if (isBreak)
             {
                 if (displayBreakScore)

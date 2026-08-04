@@ -1,18 +1,31 @@
-﻿using MajdataPlay.Utils;
+﻿
+using MajdataPlay.Diagnostics;
+using MajdataPlay.i18n;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MajdataPlay
 {
     internal static class StringExtensions
-    {
-        public static string i18n(this string origin)
+    {   
+        public static string i18n(this string origin, params object[] args)
         {
-            return Localization.GetLocalizedText(origin);
+            Localization.TryGetLocalizedText(origin, out var result);
+            if (args == null || args.Length == 0 || !result.Contains('{'))
+            {
+                return result;
+            }
+            try
+            {
+                return string.Format(result, args);
+            }
+            catch (Exception e)
+            {
+                MajDebug.LogError($"i18n format failed: key={origin}, template={result}");
+                MajDebug.LogError(e);
+                return result;
+            }
         }
+
         public static bool Tryi18n(this string origin, out string result)
         {
             return Localization.TryGetLocalizedText(origin, out result);

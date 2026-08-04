@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Utils;
+﻿using MajdataPlay.Diagnostics;
+using MajdataPlay.Utils;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -43,9 +44,9 @@ namespace MajdataPlay.Recording
         public void Init()
         {
             _webSocket.OnMessage += OnMessageReceived;
-            Connect();
             try
             {
+                Connect();
                 Authenticate();
             }
             catch

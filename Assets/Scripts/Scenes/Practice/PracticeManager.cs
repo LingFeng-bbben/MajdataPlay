@@ -5,7 +5,7 @@ using MajdataPlay.Extensions;
 using MajdataPlay.Scenes.Game;
 using MajdataPlay.IO;
 using MajdataPlay.Numerics;
-using MajdataPlay.Unsafe;
+using MajdataPlay.UnsafeKit;
 using MajdataPlay.Utils;
 using MajSimai;
 using System;
@@ -21,15 +21,14 @@ using UnityEngine.UI;
 namespace MajdataPlay.Scenes.Practice
 {
 #nullable enable
-    using Unsafe = System.Runtime.CompilerServices.Unsafe;
     public class PracticeManager : MonoBehaviour
     {
         public TextMeshProUGUI startTimeText;
         public TextMeshProUGUI endTimeText;
-        public ChartAnalyzer chartAnalyzer;
+        public ChartVisualDisplayer chartAnalyzer;
         public RectTransform selectionBox;
-        public Text timeText;
-        public Text rTimeText;
+        public TextMeshProUGUI timeText;
+        public TextMeshProUGUI rTimeText;
         public Slider progress;
 
         const string TIME_STRING = "{0}:{1:00}.{2:000}";
@@ -56,10 +55,18 @@ namespace MajdataPlay.Scenes.Practice
 
         GameInfo _gameInfo;
         SimaiFile _simaiFile;
-        
+
+        float _touchSimulationRadius = 0f;
+
         readonly SwitchStatistic[] _buttonStatistics = new SwitchStatistic[12];
         readonly SwitchStatistic[] _sensorStatistics = new SwitchStatistic[33];
 
+        void Awake()
+        {
+            InputManager.TouchButtonRingEdge = 4.8f;
+            _touchSimulationRadius = MajEnv.Settings.Debug.TouchSimulationRadius;
+            MajEnv.Settings.Debug.TouchSimulationRadius = 0;
+        }
         private void Start()
         {
             _gameInfo = Majdata<GameInfo>.Instance!;
@@ -91,8 +98,8 @@ namespace MajdataPlay.Scenes.Practice
                 }
 
                 var chart = await SimaiParser.ParseChartAsync(songinfo.Levels[levelIndex], songinfo.Designers[levelIndex], maidata);
-
-                await chartAnalyzer.AnalyzeAndDrawGraphAsync(chart, _totalTime);
+                await UniTask.SwitchToMainThread();
+                chartAnalyzer.SetSimaiChart(chart, _totalTime);
                 if (_gameInfo.TimeRange is not null)
                 {
                     _startTime = (float)_gameInfo.TimeRange.Value.Start;
@@ -112,10 +119,10 @@ namespace MajdataPlay.Scenes.Practice
             }
             _audioTrack.Play();
             _audioTrack.CurrentSec = _startTime;
-            _audioTrack.Volume = MajInstances.Settings.Audio.Volume.BGM;
-            LedRing.SetAllLight(Color.white);
-            LedRing.SetButtonLight(Color.green, 3);
-            LedRing.SetButtonLight(Color.red, 4);
+            _audioTrack.Volume = MajEnv.Settings.Audio.Volume.BGM;
+            CabinetLed.SetAllLight(Color.white);
+            CabinetLed.SetButtonLight(Color.green, 3);
+            CabinetLed.SetButtonLight(Color.red, 4);
             MajInstances.SceneSwitcher.FadeOut();
             _isInited = true;
         }
@@ -242,6 +249,7 @@ namespace MajdataPlay.Scenes.Practice
             {
                 btnA5Statistic.IsClickEventUsed = true;
                 _isExited = true;
+                MajEnv.Settings.Mod.PlaybackSpeed = 1;
                 MajInstances.SceneSwitcher.SwitchScene("List", false);
                 throw new OperationCanceledException();
             }
@@ -249,13 +257,13 @@ namespace MajdataPlay.Scenes.Practice
         void SensorCheck()
         {
             // Start Time "<"
-            ref var e6Statistic = ref _sensorStatistics[(int)SensorArea.E6];
+            ref var e6Statistic = ref _sensorStatistics[(int)SensorArea.A6];
             // Start Time ">"
             ref var b5Statistic = ref _sensorStatistics[(int)SensorArea.B5];
             // End Time "<"
             ref var b4Statistic = ref _sensorStatistics[(int)SensorArea.B4];
             // End Time ">"
-            ref var e4Statistic = ref _sensorStatistics[(int)SensorArea.E4];
+            ref var e4Statistic = ref _sensorStatistics[(int)SensorArea.A3];
             //Playback Speed "<"
             ref var e8Statistic = ref _sensorStatistics[(int)SensorArea.E8];
             ref var b7Statistic = ref _sensorStatistics[(int)SensorArea.B7];
@@ -345,6 +353,7 @@ namespace MajdataPlay.Scenes.Practice
             _playbackSpeed = Mathf.Max(_playbackSpeed , 0.01f);
             if(needUpdatePBSValue)
             {
+                _playbackSpeed = MathF.Round(_playbackSpeed, 2);
                 _playbackSpeedValue.text = ZString.Format("{0:F2}", _playbackSpeed);
             }
             var pressTime = Mathf.Max(Mathf.Max(Mathf.Max(e6Statistic.PressTime, b5Statistic.PressTime), b4Statistic.PressTime), e4Statistic.PressTime);
@@ -444,8 +453,10 @@ namespace MajdataPlay.Scenes.Practice
         private void OnDestroy()
         {
             cts?.Cancel();
+            InputManager.TouchButtonRingEdge = 5.4f;
             _audioTrack?.Stop();
             _audioTrack = null;
+            MajEnv.Settings.Debug.TouchSimulationRadius = _touchSimulationRadius;
             _isExited = true;
         }
     }

@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Nito.AsyncEx.Tasks</id>
+    <version>5.1.2</version>
+    <authors>Stephen Cleary</authors>
+    <license type="expression">MIT</license>
+    <licenseUrl>https://licenses.nuget.org/MIT</licenseUrl>
+    <icon>icon.png</icon>
+    <projectUrl>https://github.com/StephenCleary/AsyncEx</projectUrl>
+    <description>Common helper methods for tasks as used in asynchronous programming.</description>
+    <tags>task async taskfactory cancellationtoken taskcompletionsource</tags>
+    <repository type="git" url="https://github.com/StephenCleary/AsyncEx" commit="0361015459938f2eb8f3c1ad1021d19ee01c93a4" />
+    <dependencies>
+      <group targetFramework=".NETFramework4.6.1">
+        <dependency id="Nito.Disposables" version="2.2.1" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETStandard1.3">
+        <dependency id="NETStandard.Library" version="1.6.1" exclude="Build,Analyzers" />
+        <dependency id="Nito.Disposables" version="2.2.1" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="Nito.Disposables" version="2.2.1" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

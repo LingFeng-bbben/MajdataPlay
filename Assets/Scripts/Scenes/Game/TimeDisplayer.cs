@@ -15,8 +15,8 @@ namespace MajdataPlay.Scenes.Game
     [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
     public class TimeDisplayer : MonoBehaviour
     {
-        const string NEGATIVE_TIME_STRING = "-{0}:{1:00}:{2:0000}";
-        const string TIME_STRING = "{0}:{1:00}:{2:0000}";
+        const string NEGATIVE_TIME_STRING = "-{0}:{1:00}:{2:000}";
+        const string TIME_STRING = "{0}:{1:00}:{2:000}";
 
         public TextMeshProUGUI timeText;
         public TextMeshProUGUI rTimeText;
@@ -70,7 +70,7 @@ namespace MajdataPlay.Scenes.Game
             {
                 _sb.Clear();
 
-                timeFormat.FormatTo(ref _sb, current.Minutes, current.Seconds,current.Milliseconds);
+                timeFormat.FormatTo(ref _sb, Mathf.Abs(current.Minutes), Mathf.Abs(current.Seconds), Mathf.Abs(current.Milliseconds));
                 var a = _sb.AsArraySegment();
                 timeText.SetCharArray(a.Array, a.Offset, a.Count);
 

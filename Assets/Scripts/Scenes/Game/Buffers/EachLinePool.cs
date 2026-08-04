@@ -1,4 +1,5 @@
 ﻿using MajdataPlay.Collections;
+using MajdataPlay.Diagnostics;
 using MajdataPlay.Extensions;
 using MajdataPlay.Scenes.Game.Notes;
 using MajdataPlay.Scenes.Game.Notes.Behaviours;
@@ -113,31 +114,7 @@ namespace MajdataPlay.Scenes.Game.Buffers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         bool ActiveObject(EachLinePoolingInfo info, EachLineDrop eachLine)
         {
-            var noteA = info.MemberA?.Instance;
-            var noteB = info.MemberB?.Instance;
-            IDistanceProvider? distanceProvider;
-
-            if (noteA is null && noteB is null)
-            {
-                return false;
-            }
-            if (noteA is TapDrop a && noteB is HoldDrop)
-            {
-                distanceProvider = a;
-            }
-            else if (noteA is HoldDrop && noteB is TapDrop aa)
-            {
-                distanceProvider = aa;
-            }
-            else
-            {
-                distanceProvider = (noteA as IDistanceProvider ?? noteB as IDistanceProvider);
-            }
-
-            eachLine.DistanceProvider = distanceProvider;
-            eachLine.NoteA = noteA;
-            eachLine.NoteB = noteB;
-            eachLine.Initialize(info);
+            eachLine.Init(info);
 
             return true;
         }

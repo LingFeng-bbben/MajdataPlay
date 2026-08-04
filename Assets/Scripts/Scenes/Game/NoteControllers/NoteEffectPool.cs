@@ -1,4 +1,5 @@
 ﻿using MajdataPlay.Buffers;
+using MajdataPlay.Diagnostics;
 using MajdataPlay.IO;
 using MajdataPlay.Scenes.Game.Utils;
 using MajdataPlay.Utils;
@@ -7,6 +8,7 @@ using System.Runtime.CompilerServices;
 using Unity.IL2CPP.CompilerServices;
 using UnityEngine;
 using UnityEngine.Profiling;
+using UnityEngine.Serialization;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Controllers
 {
@@ -15,16 +17,23 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         bool _isInited = false;
 
         [SerializeField]
-        GameObject tapEffectPrefab;
+        [FormerlySerializedAs("tapEffectPrefab")]
+        GameObject _tapEffectPrefab;
         [SerializeField]
-        GameObject touchEffectPrefab;
+        [FormerlySerializedAs("touchHoldEffectPrefab")]
+        GameObject _touchHoldEffectPrefab;
         [SerializeField]
-        GameObject holdEffectPrefab;
+        [FormerlySerializedAs("touchEffectPrefab")]
+        GameObject _touchEffectPrefab;
         [SerializeField]
+        [FormerlySerializedAs("holdEffectPrefab")]
+        GameObject _holdEffectPrefab;
+        [SerializeField]
+        [FormerlySerializedAs("_touchFeedbackEffectPrefab")]
         GameObject _touchFeedbackEffectPrefab;
 
         TapEffectDisplayer[] _tapJudgeEffects = new TapEffectDisplayer[8];
-        TapEffectDisplayer[] _touchHoldJudgeEffects = new TapEffectDisplayer[33];
+        TouchHoldEffectDisplayer[] _touchHoldJudgeEffects = new TouchHoldEffectDisplayer[33];
         TouchEffectDisplayer[] _touchJudgeEffects = new TouchEffectDisplayer[33];
 
         HoldEffectDisplayer[] _holdEffects = new HoldEffectDisplayer[8];
@@ -102,13 +111,13 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                     continue;
                 }
                 var rotation = Quaternion.Euler(0, 0, -22.5f + -45f * i);
-                var obj = Instantiate(tapEffectPrefab, tapParent);
+                var obj = Instantiate(_tapEffectPrefab, tapParent);
                 obj.name = $"TapEffect_{i + 1}";
                 obj.transform.rotation = rotation;
                 if (_gpManager != null && _gpManager.IsClassicMode)
                     obj.transform.GetChild(0).localScale = new Vector3(1.4f, 1.4f, 0);
                 var displayer = obj.GetComponent<TapEffectDisplayer>();
-                displayer.DistanceRatio = MajInstances.Settings.Display.OuterJudgeDistance;
+                displayer.DistanceRatio = MajEnv.Settings.Display.OuterJudgeDistance;
                 displayer.ResetAll();
                 _tapJudgeEffects[i] = displayer;
                 generatedTapEffectDisplayers.Add(displayer);
@@ -120,9 +129,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                     continue;
                 }
                 var sensorPos = (SensorArea)i;
-                var obj = Instantiate(touchEffectPrefab, touchParent);
+                var obj = Instantiate(_touchEffectPrefab, touchParent);
                 var displayer = obj.GetComponent<TouchEffectDisplayer>();
-                displayer.DistanceRatio = MajInstances.Settings.Display.InnerJudgeDistance;
+                displayer.DistanceRatio = MajEnv.Settings.Display.InnerJudgeDistance;
                 obj.name = $"TouchEffect_{sensorPos}";
                 displayer.SensorPos = sensorPos;
                 displayer.ResetAll();
@@ -136,7 +145,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 {
                     continue;
                 }
-                var obj = Instantiate(holdEffectPrefab, tapParent);
+                var obj = Instantiate(_holdEffectPrefab, tapParent);
                 obj.name = $"HoldEffect_{i + 1}";
                 var position = NoteHelper.GetTapPosition(i + 1, 4.8f);
                 var displayer = obj.GetComponent<HoldEffectDisplayer>();
@@ -151,7 +160,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                     continue;
                 }
                 var sensorPos = (SensorArea)i;
-                var obj = Instantiate(holdEffectPrefab, touchHoldParent);
+                var obj = Instantiate(_holdEffectPrefab, touchHoldParent);
                 obj.name = $"TouchHold_HoldingEffect_{sensorPos}";
                 var position = NoteHelper.GetTouchAreaPosition(sensorPos);
                 var displayer = obj.GetComponent<HoldEffectDisplayer>();
@@ -159,14 +168,14 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 displayer.Reset();
                 _touchHoldEffects[i] = displayer;
 
-                var obj4Hold = Instantiate(tapEffectPrefab, touchHoldParent);
+                var obj4Hold = Instantiate(_touchHoldEffectPrefab, touchHoldParent);
                 var distance = NoteHelper.GetTouchAreaDistance(sensorPos.GetGroup());
                 var position2 = Vector3.zero;
                 position2.y += distance;
                 var rotation = NoteHelper.GetTouchRoation(NoteHelper.GetTouchAreaPosition(sensorPos), sensorPos);
-                var displayer4Hold = obj4Hold.GetComponent<TapEffectDisplayer>();
+                var displayer4Hold = obj4Hold.GetComponent<TouchHoldEffectDisplayer>();
                 obj4Hold.transform.rotation = rotation;
-                displayer4Hold.DistanceRatio = MajInstances.Settings.Display.InnerJudgeDistance;
+                displayer4Hold.DistanceRatio = MajEnv.Settings.Display.InnerJudgeDistance;
                 displayer4Hold.LocalPosition = position2;
                 obj4Hold.name = $"TouchHoldEffect_{sensorPos}";
                 displayer4Hold.ResetAll();
@@ -208,35 +217,36 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void OnLateUpdate()
         {
-            Profiler.BeginSample("NoteEffectPool.OnLateUpdate");
-            if (!_isInited)
+            using (UnityProfiler.Create("NoteEffectPool.OnLateUpdate"))
             {
-                return;
-            }
-            var s1 = _generatedTapEffectDisplayers.Span;
-            var s2 = _generatedTouchEffectDisplayers.Span;
-            var count1 = _generatedTapEffectDisplayers.Length;
-            var count2 = _generatedTouchEffectDisplayers.Length;
+                if (!_isInited)
+                {
+                    return;
+                }
+                var s1 = _generatedTapEffectDisplayers.Span;
+                var s2 = _generatedTouchEffectDisplayers.Span;
+                var count1 = _generatedTapEffectDisplayers.Length;
+                var count2 = _generatedTouchEffectDisplayers.Length;
 
-            for (var i = 0; i < count1; i++)
-            {
-                s1[i].OnLateUpdate();
-            }
-            for (var i = 0; i < count2; i++)
-            {
-                s2[i].OnLateUpdate();
-            }
+                for (var i = 0; i < count1; i++)
+                {
+                    s1[i].OnLateUpdate();
+                }
+                for (var i = 0; i < count2; i++)
+                {
+                    s2[i].OnLateUpdate();
+                }
 
-            //for (var i = 0; i < 33; i++)
-            //{
-            //    _touchJudgeEffects[i].OnLateUpdate();
-            //    _touchHoldJudgeEffects[i].OnLateUpdate();
-            //}
-            //for (var i = 0; i < 8; i++)
-            //{
-            //    _tapJudgeEffects[i].OnLateUpdate();
-            //}
-            Profiler.EndSample();
+                //for (var i = 0; i < 33; i++)
+                //{
+                //    _touchJudgeEffects[i].OnLateUpdate();
+                //    _touchHoldJudgeEffects[i].OnLateUpdate();
+                //}
+                //for (var i = 0; i < 8; i++)
+                //{
+                //    _tapJudgeEffects[i].OnLateUpdate();
+                //}
+            }
         }
         /// <summary>
         /// Tap、Hold、Star
@@ -246,7 +256,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Play(in NoteJudgeResult judgeResult, int keyIndex)
+        public void PlayTapJudgeResult(in NoteJudgeResult judgeResult, int keyIndex)
         {
             var effectDisplayer = _tapJudgeEffects[keyIndex - 1];
             effectDisplayer.Play(judgeResult);
@@ -259,7 +269,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Play(in NoteJudgeResult judgeResult, SensorArea sensorPos)
+        public void PlayTouchJudgeResult(in NoteJudgeResult judgeResult, SensorArea sensorPos)
         {
             var effectDisplayer = _touchJudgeEffects[(int)sensorPos];
             effectDisplayer.Play(judgeResult);
@@ -272,7 +282,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void PlayTouchHoldEffect(in NoteJudgeResult judgeResult, SensorArea sensorPos)
+        public void PlayTouchHoldJudgeResult(in NoteJudgeResult judgeResult, SensorArea sensorPos)
         {
             var effectDisplayer = _touchHoldJudgeEffects[(int)sensorPos];
             effectDisplayer.Play(judgeResult);

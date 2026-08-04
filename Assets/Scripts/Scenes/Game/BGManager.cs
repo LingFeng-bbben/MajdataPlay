@@ -15,6 +15,8 @@ using LibVLCSharp;
 using UnityEngine.UI;
 using System.Runtime.CompilerServices;
 using System.Diagnostics;
+using MajdataPlay.Settings;
+using MajdataPlay.Diagnostics;
 #nullable enable
 namespace MajdataPlay.Scenes.Game
 {
@@ -74,6 +76,9 @@ namespace MajdataPlay.Scenes.Game
 
         long _mediaLengthMs = 0;
 
+        GameplayScreenRotationAngleOption _screenRotationAngle = GameplayScreenRotationAngleOption.Zero;
+
+
         void Awake()
         {
             Majdata<BGManager>.Instance = this;
@@ -86,10 +91,16 @@ namespace MajdataPlay.Scenes.Game
 #else
             _videoPlayer = GetComponent<VideoPlayer>();
 #endif
-
+            _screenRotationAngle = MajEnv.Settings.Display.GameplayScreenRotationAngle;
             _pictureCover = GameObject.Find("BackgroundCover").GetComponent<SpriteRenderer>();
             _pictureRenderer = GetComponent<SpriteRenderer>();
             _defaultScale = transform.localScale;
+            var angle = Quaternion.Euler(0, 0, (int)_screenRotationAngle * -90);
+            if(_videoRenderer != null)
+            {
+                _videoRenderer.transform.localRotation = angle;
+            }
+            transform.localRotation = angle;
         }
         void OnDestroy()
         {
@@ -248,7 +259,7 @@ namespace MajdataPlay.Scenes.Game
                     var remainingTime = timeout - (MajTimeline.UnscaledTime - startAt);
                     if (remainingTime.TotalSeconds < 0)
                     {
-                        MajDebug.LogError("Video loading timeout, fall back to default cover".i18n());
+                        MajDebug.LogError("MAJTEXT_ERR_VIDEO_PLAYER_PREPARE_TIMEOUT".i18n());
                         SetBackgroundPic(fallback);
                         return;
                     }

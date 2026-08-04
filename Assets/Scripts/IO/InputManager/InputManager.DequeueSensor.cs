@@ -1,19 +1,25 @@
 ﻿using Cysharp.Text;
 using MajdataPlay.Collections;
+using MajdataPlay.Diagnostics;
 using MajdataPlay.Extensions;
 using MajdataPlay.Numerics;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Profiling;
 #nullable enable
 namespace MajdataPlay.IO
 {
     internal static partial class InputManager
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void UpdateSensorState()
         {
+            Profiler.BeginSample("InputManager.OnPreUpdate.UpdateSensorState");
             var sensors = _sensors.Span;
             var now = MajTimeline.UnscaledTime;
             var sensorStates = _sensorStates.Span;
@@ -29,13 +35,16 @@ namespace MajdataPlay.IO
 
                 newStates[index] |= report.State;
             }
+
             for (var i = 0; i < 34; i++)
             {
+#if UNITY_STANDALONE
                 var state = TouchPanel.IsOn(i) || TouchPanel.IsHadOn(i);
-
                 newStates[i] |= state ? SwitchStatus.On : SwitchStatus.Off;
+#endif
                 sensorStates[i] = newStates[i] is SwitchStatus.On;
             }
+
             var C = newStates[16] | newStates[17];
             newStates[16] = C;
             newStates.Slice(18).CopyTo(newStates.Slice(17));
@@ -79,13 +88,16 @@ namespace MajdataPlay.IO
                 sensor.PushEvent(msg);
                 PushEvent(msg);
             }
+            Profiler.EndSample();
         }
         static void SetSensorState(SensorArea type,SwitchStatus nState)
         {
             var sensors = _sensors.Span;
             var sensor = sensors[(int)type];
             if (sensor is null)
+            {
                 throw new Exception($"{type} Sensor not found.");
+            }
             var oState = sensor.State;
             sensor.State = nState;
 
@@ -109,7 +121,9 @@ namespace MajdataPlay.IO
             var sensors = _sensors.Span;
             var sensor = sensors.Find(x => x?.Area == sType);
             if (sensor is null)
+            {
                 throw new Exception($"{sType} Sensor not found.");
+            }
             sensor.AddSubscriber(checker);
         }
         public static void UnbindSensor(EventHandler<InputEventArgs> checker, SensorArea sType)
@@ -117,7 +131,9 @@ namespace MajdataPlay.IO
             var sensors = _sensors.Span;
             var sensor = sensors.Find(x => x?.Area == sType);
             if (sensor is null)
+            {
                 throw new Exception($"{sType} Sensor not found.");
+            }
             sensor.RemoveSubscriber(checker);
         }
     }

@@ -24,7 +24,8 @@ namespace LibVLCSharp
             Gamma = 0,
             Linear = 1,
         }
-        
+
+#if UNITY_STANDALONE_WIN
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void OnBeforeSceneLoadRuntimeMethod()
         {
@@ -34,6 +35,7 @@ namespace LibVLCSharp
             GL.IssuePluginEvent(GetRenderEventFunc(), 1);
 #endif
         }
+#endif
         static UnityColorSpace PlayerColorSpace => QualitySettings.activeColorSpace == 0 ? UnityColorSpace.Gamma : UnityColorSpace.Linear;
     }
 }

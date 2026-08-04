@@ -1,8 +1,8 @@
-﻿using MajdataPlay.Extensions;
+﻿using MajdataPlay.Collections;
+using MajdataPlay.Extensions;
 using MajdataPlay.Numerics;
 using MajdataPlay.Scenes.Game.Notes;
 using MajdataPlay.Scenes.Game.Notes.Skins;
-using MajdataPlay.Utils;
 using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -50,8 +50,8 @@ namespace MajdataPlay.Scenes.Game
             base.Awake();
             _animator = GetComponent<Animator>();
             _skin = MajInstances.SkinManager.GetJudgeTextSkin();
-            _displayBreakScore = MajInstances.Settings.Display.DisplayBreakScore;
-            _displayCriticalPerfect = MajInstances.Settings.Display.DisplayCriticalPerfect;
+            _displayBreakScore = MajEnv.Settings.Display.DisplayBreakScore;
+            _displayCriticalPerfect = MajEnv.Settings.Display.DisplayCriticalPerfect;
             _animator.enabled = false;
             Sprite breakSprite;
 

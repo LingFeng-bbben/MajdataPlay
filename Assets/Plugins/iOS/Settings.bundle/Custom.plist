@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+    <dict>
+
+        <key>PreferenceSpecifiers</key>
+        <array>
+
+            <dict>
+                <key>Type</key>
+                <string>PSToggleSwitchSpecifier</string>
+                <key>Title</key>
+                <string>Enabled</string>
+                <key>Key</key>
+                <string>custom_enabled</string>
+                <key>DefaultValue</key>
+                <false/>
+            </dict>
+
+            <dict>
+                <key>Type</key>
+                <string>PSTextFieldSpecifier</string>
+                <key>Title</key>
+                <string>Name</string>
+                <key>Key</key>
+                <string>custom_name</string>
+                <key>DefaultValue</key>
+                <string></string>
+            </dict>
+
+            <dict>
+                <key>Type</key>
+                <string>PSTextFieldSpecifier</string>
+                <key>Title</key>
+                <string>API</string>
+                <key>Key</key>
+                <string>custom_api</string>
+                <key>DefaultValue</key>
+                <string></string>
+            </dict>
+
+            <dict>
+                <key>Type</key>
+                <string>PSTextFieldSpecifier</string>
+                <key>Title</key>
+                <string>Username</string>
+                <key>Key</key>
+                <string>custom_username</string>
+                <key>DefaultValue</key>
+                <string></string>
+                <key>IsSecure</key>
+                <false/>
+            </dict>
+
+            <dict>
+                <key>Type</key>
+                <string>PSTextFieldSpecifier</string>
+                <key>Title</key>
+                <string>Password</string>
+                <key>Key</key>
+                <string>custom_password</string>
+                <key>DefaultValue</key>
+                <string></string>
+                <key>IsSecure</key>
+                <true/>
+            </dict>
+
+            <dict>
+                <key>Type</key>
+                <string>PSToggleSwitchSpecifier</string>
+                <key>Title</key>
+                <string>AutoLogin</string>
+                <key>Key</key>
+                <string>custom_auto_login</string>
+                <key>DefaultValue</key>
+                <false/>
+            </dict>
+        </array>
+
+    </dict>
+</plist>

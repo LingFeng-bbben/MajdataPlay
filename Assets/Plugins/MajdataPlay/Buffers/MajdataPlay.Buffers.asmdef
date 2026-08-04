@@ -1,0 +1,14 @@
+{
+    "name": "MajdataPlay.Buffers",
+    "rootNamespace": "MajdataPlay.Buffers",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

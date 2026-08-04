@@ -14,7 +14,7 @@ namespace MajdataPlay.Settings
         Low,
         Medium,
         High,
-        VeryHight,
+        VeryHigh,
         Ultra
     }
 }

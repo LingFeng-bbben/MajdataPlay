@@ -3,15 +3,17 @@ using System.Collections.Generic;
 
 namespace MajdataPlay.Scenes.Game.Notes.Touch
 {
-    public class TouchGroup
+    public sealed class TouchGroup
     {
         public float Percent
         {
             get
             {
                 if (Members.Length == 0)
+                {
                     return 0f;
-                return results.Count / (float)Members.Length;
+                }
+                return _results.Count / (float)Members.Length;
             }
         }
         public JudgeGrade? JudgeResult
@@ -20,21 +22,26 @@ namespace MajdataPlay.Scenes.Game.Notes.Touch
             set
             {
                 if (Percent > 0.5f)
+                {
                     return;
+                }
                 else
+                {
                     _judgeResult = value;
+                }
             }
         }
         public float JudgeDiff { get; set; } = 0;
         public object[] Members { get; set; } = Array.Empty<IStatefulNote>();
-        public Guid? Hand { get; set; } = null;
-        List<JudgeGrade> results = new();
+        List<JudgeGrade> _results = new();
 
         public void RegisterResult(in JudgeGrade result)
         {
             if (result.IsMissOrTooFast())
+            {
                 return;
-            results.Add(result);
+            }
+            _results.Add(result);
         }
 
         JudgeGrade? _judgeResult = null;

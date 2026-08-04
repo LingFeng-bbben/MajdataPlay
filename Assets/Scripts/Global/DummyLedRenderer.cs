@@ -11,14 +11,20 @@ namespace MajdataPlay
     internal sealed class DummyLedRenderer: MajSingleton
     {
         SpriteRenderer[] _dummyLights = Array.Empty<SpriteRenderer>();
+
+        readonly static Color[] _ledRingColors = new Color[8];
         protected override void Awake()
         {
             base.Awake();
             _dummyLights = GameObject.GetComponentsInChildren<SpriteRenderer>();
         }
-        internal void OnPreUpdate()
+        public static void SetLedRingColorData(ReadOnlySpan<Color> colors)
         {
-            var ledColors = LedRing.LedColors;
+            colors.CopyTo(_ledRingColors);
+        }
+        internal void OnLateUpdate()
+        {
+            var ledColors = _ledRingColors.AsSpan();
             for (var i = 0; i < ledColors.Length; i++)
             {
                 _dummyLights[i].color = ledColors[i];
