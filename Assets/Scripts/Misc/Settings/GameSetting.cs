@@ -435,7 +435,7 @@ namespace MajdataPlay.Settings
         public float TouchRadiusAdjust { get; set; } = 0f;
 #endif
         
-        public bool DisplayFPS { get; set; } = true;
+        public bool DisplayRuntimeInfo { get; set; } = true;
 #if UNITY_STANDALONE
         [HideInSettingUI]
         public bool FullScreen { get; set; } = true;

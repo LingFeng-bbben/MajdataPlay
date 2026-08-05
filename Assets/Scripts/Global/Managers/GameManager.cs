@@ -104,7 +104,7 @@ namespace MajdataPlay
 #if UNITY_STANDALONE
             DiscordManager.Init();
 #endif
-            MajInstances.FPSDisplayer.Init();
+            MajInstances.RuntimeInfoDisplayer.Init();
             MajInstances.AudioManager.Init();
             Localization.Init();
 #if UNITY_STANDALONE_WIN

@@ -1,61 +1,19 @@
-using Cysharp.Text;
 using Cysharp.Threading.Tasks;
 using MajdataPlay.Diagnostics;
-using MajdataPlay.i18n;
-using MajdataPlay.Utils;
 using Newtonsoft.Json;
 using Semver;
 using System;
-using System.Net.Http;
 using System.Threading;
-using UnityEngine;
 
-namespace MajdataPlay.Scenes.Title
+#nullable enable
+namespace MajdataPlay
 {
-    public class VersionDisplayer : MonoBehaviour
+    internal static class VersionChecker
     {
         const string TAGS_API_URL = "https://api.github.com/repos/TeamMajdata/MajdataPlay_Build/tags?per_page=100";
         static readonly TimeSpan UPDATE_CHECK_TIMEOUT = TimeSpan.FromSeconds(5);
 
-        TMPro.TextMeshProUGUI _text;
-        bool _hasNewVersionAvailable;
-
-        void Awake()
-        {
-            _text = GetComponent<TMPro.TextMeshProUGUI>();
-            Localization.OnLanguageChanged += OnLanguageChanged;
-            RefreshText();
-        }
-
-        void Start()
-        {
-//#if !UNITY_EDITOR
-            CheckForUpdateAsync().Forget();
-//#endif
-        }
-
-        void OnDestroy()
-        {
-            Localization.OnLanguageChanged -= OnLanguageChanged;
-        }
-
-        void OnLanguageChanged(object sender, Language language)
-        {
-            RefreshText();
-        }
-
-        void RefreshText()
-        {
-            var versionText = MajInstances.GameVersion.ToString();
-            if (_hasNewVersionAvailable)
-            {
-                versionText += $" ({"MAJTEXT_NEW_VERSION_AVAILABLE".i18n()})";
-            }
-
-            _text.text = ZString.Format("MAJTEXT_VERSION_FORMAT".i18n(), versionText);
-        }
-
-        async UniTaskVoid CheckForUpdateAsync()
+        internal static async UniTask<bool> IsNewVersionAvailableAsync()
         {
             try
             {
@@ -64,48 +22,45 @@ namespace MajdataPlay.Scenes.Title
                 response.EnsureSuccessStatusCode();
                 var content = await response.Content.ReadAsStringAsync();
                 var tags = JsonConvert.DeserializeObject<GitHubTagInfo[]>(content);
-                if (tags == null || tags.Length == 0)
+                if (tags is null || tags.Length == 0)
                 {
                     MajDebug.LogWarning("Update check failed: no tags returned from GitHub.");
-                    return;
+                    return false;
                 }
 
                 var currentVersion = MajInstances.GameVersion;
-                SemVersion latestVersion = null;
+                SemVersion? latestVersion = null;
                 foreach (var tag in tags)
                 {
                     var parsedVersion = TryParseVersion(tag.Name);
-                    if (parsedVersion == null)
+                    if (parsedVersion is null)
                     {
                         continue;
                     }
 
-                    if (latestVersion == null || CompareMajorMinorPatch(parsedVersion, latestVersion) > 0)
+                    if (latestVersion is null || CompareMajorMinorPatch(parsedVersion, latestVersion) > 0)
                     {
                         latestVersion = parsedVersion;
                     }
                 }
 
-                if (latestVersion == null)
+                if (latestVersion is null)
                 {
                     MajDebug.LogWarning("Update check failed: no valid semantic version tags returned from GitHub.");
-                    return;
+                    return false;
                 }
 
-                if (CompareMajorMinorPatch(latestVersion, currentVersion) > 0)
-                {
-                    await UniTask.SwitchToMainThread();
-                    _hasNewVersionAvailable = true;
-                    RefreshText();
-                }
+                return CompareMajorMinorPatch(latestVersion, currentVersion) > 0;
             }
             catch (OperationCanceledException)
             {
                 MajDebug.LogWarning("Update check failed: request timed out.");
+                return false;
             }
             catch (Exception e)
             {
                 MajDebug.LogWarning($"Update check failed: {e.Message}");
+                return false;
             }
         }
 
@@ -126,7 +81,7 @@ namespace MajdataPlay.Scenes.Title
             return left.Patch.CompareTo(right.Patch);
         }
 
-        static SemVersion TryParseVersion(string tagName)
+        static SemVersion? TryParseVersion(string tagName)
         {
             if (string.IsNullOrWhiteSpace(tagName))
             {

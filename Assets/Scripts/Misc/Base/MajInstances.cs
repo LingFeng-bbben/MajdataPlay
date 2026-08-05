@@ -52,12 +52,12 @@ namespace MajdataPlay
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => Majdata<GameUpdater>.Instance = value;
         }
-        internal static FPSDisplayer FPSDisplayer
+        internal static RuntimeInfoDisplayer RuntimeInfoDisplayer
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => Majdata<FPSDisplayer>.Instance!;
+            get => Majdata<RuntimeInfoDisplayer>.Instance!;
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set => Majdata<FPSDisplayer>.Instance = value;
+            set => Majdata<RuntimeInfoDisplayer>.Instance = value;
         }
     }
 }
