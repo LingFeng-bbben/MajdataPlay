@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MajdataPlay.Net.Curl.PInvoke
+namespace MajdataPlay.Net.Curl.Core.PInvoke
 {
     internal enum CurlMsgCode
     {

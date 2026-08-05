@@ -2,7 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-namespace MajdataPlay.Net.Curl.PInvoke
+namespace MajdataPlay.Net.Curl.Core.PInvoke
 {
     [StructLayout(LayoutKind.Sequential)]
     internal struct CurlMsg

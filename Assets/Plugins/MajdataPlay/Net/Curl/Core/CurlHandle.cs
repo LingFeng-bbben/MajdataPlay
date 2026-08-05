@@ -1,4 +1,4 @@
-﻿using MajdataPlay.Net.Curl.PInvoke;
+﻿using MajdataPlay.Net.Curl.Core.PInvoke;
 using System;
 using System.Collections.Generic;
 using System.Linq;

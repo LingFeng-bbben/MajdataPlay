@@ -1,4 +1,4 @@
-﻿using MajdataPlay.Net.Curl.PInvoke;
+﻿using MajdataPlay.Net.Curl.Core.PInvoke;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 #nullable enable
-namespace MajdataPlay.Net.Curl.Utils
+namespace MajdataPlay.Net.Curl.Core.Utils
 {
     internal static class CurlUtility
     {

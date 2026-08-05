@@ -1,5 +1,6 @@
-﻿using MajdataPlay.Net.Curl.PInvoke;
-using MajdataPlay.Net.Curl.Utils;
+﻿using MajdataPlay.Net.Curl.Core.PInvoke;
+using MajdataPlay.Net.Curl.Core.Utils;
+using MajdataPlay.Net.Curl.Core.PInvoke;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -31,6 +32,7 @@ namespace MajdataPlay.Net.Curl.Core
             {
                 get => _taskSource.Task;
             }
+            public CurlHttpConfig Config { get; }
             public CancellationToken CancellationToken { get; }
 
             int _state = (int)CurlRequestState.Created;
@@ -38,10 +40,11 @@ namespace MajdataPlay.Net.Curl.Core
             readonly CurlReadOrWriteCallback _onHeaderReceivedCallback;
             readonly TaskCompletionSource<CurlResponse> _taskSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            public CurlTask(CurlRequest request, CancellationToken token = default)
+            public CurlTask(CurlRequest request, CurlHttpConfig config, CancellationToken token = default)
             {
                 Request = request;
                 Response = new CurlResponse(request);
+                Config = config;
                 CancellationToken = token;
                 _onHeaderReceivedCallback = OnHeaderReceived;
                 Request.SetOption(CurlOption.HeaderFunction, _onHeaderReceivedCallback);
@@ -366,10 +369,10 @@ namespace MajdataPlay.Net.Curl.Core
             _workerThread = Task.Factory.StartNew(Run, TaskCreationOptions.LongRunning);
         }
 
-        public Task<CurlResponse> AddToQueue(CurlRequest request, CancellationToken token = default)
+        public Task<CurlResponse> AddToQueue(CurlRequest request, CurlHttpConfig config,  CancellationToken token = default)
         {
             ThrowIfDisposed();
-            var curlTask = new CurlTask(request, token);
+            var curlTask = new CurlTask(request, config, token);
             var taskHandle = GCHandle.Alloc(curlTask, GCHandleType.Weak);
             request.SetOption(CurlOption.Private, GCHandle.ToIntPtr(taskHandle));
             _pendingTasks.Enqueue(curlTask);

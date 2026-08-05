@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MajdataPlay.Net.Curl.PInvoke
+namespace MajdataPlay.Net.Curl.Core.PInvoke
 {
     /// <summary>
     /// Defines the complete and commonly used libcurl options (corresponding to CURLoption in curl/curl.h).
@@ -22,9 +22,6 @@ namespace MajdataPlay.Net.Curl.PInvoke
     {
         // LONG options
         File = 10000 - 1, // placeholder, never used
-
-        /// <summary>URL to fetch.</summary>
-        Url = 10002,
 
         /// <summary>Enable verbose output.</summary>
         Verbose = 41,
@@ -72,7 +69,7 @@ namespace MajdataPlay.Net.Curl.PInvoke
         // OBJECTPOINT options (10000+)
 
         /// <summary>Request URL.</summary>
-        UrlObject = 10002,
+        Url = 10002,
 
         /// <summary>HTTP user agent.</summary>
         UserAgent = 10018,
@@ -97,6 +94,11 @@ namespace MajdataPlay.Net.Curl.PInvoke
 
         /// <summary>Proxy URL.</summary>
         Proxy = 10004,
+
+        /// <summary>
+        /// Basic Authentication
+        /// </summary>
+        UserPassword = 10005,
 
         /// <summary>Proxy username/password.</summary>
         ProxyUserPwd = 10006,
@@ -192,6 +194,16 @@ namespace MajdataPlay.Net.Curl.PInvoke
 
         /// <summary>SSL verify peer.</summary>
         SslVerifyPeer = 64,
+
+        /// <summary>
+        /// SSL version
+        /// </summary>
+        SslVersion = 32,
+
+        /// <summary>
+        /// SSL options
+        /// </summary>
+        SslOptions = 216,
 
         /// <summary>SSL verify host.</summary>
         SslVerifyHost = 81,

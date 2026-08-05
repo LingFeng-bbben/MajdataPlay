@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MajdataPlay.Net.Curl.PInvoke
+namespace MajdataPlay.Net.Curl.Core.PInvoke
 {
     /// <summary>
     /// Defines the libcurl return codes (corresponding to CURLcode in curl/curl.h).

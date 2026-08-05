@@ -1,5 +1,5 @@
 using AOT;
-using MajdataPlay.Net.Curl.PInvoke;
+using MajdataPlay.Net.Curl.Core.PInvoke;
 using System;
 using System.IO;
 using System.Net.Http;
@@ -13,8 +13,7 @@ namespace MajdataPlay.Net.Curl.Core
 {
     internal class CurlRequest : CurlHandle
     {
-        
-        public string RequestUri { get; }
+        public Uri RequestUri { get; }
         public HttpContent Content { get; }
         public HttpMethod Method { get; }
 
@@ -24,7 +23,8 @@ namespace MajdataPlay.Net.Curl.Core
 
         CurlReadOrWriteCallback _onReadCallback;  // Upload
 
-        public CurlRequest(string requestUri, HttpContent content, HttpMethod method)
+        public CurlRequest(string requestUri, HttpContent content, HttpMethod method) : this(new Uri(requestUri), content, method) { }
+        public CurlRequest(Uri requestUri, HttpContent content, HttpMethod method)
         {
             ThisHandle = LibCurl.curl_easy_init();
             if (ThisHandle == IntPtr.Zero)
@@ -35,7 +35,7 @@ namespace MajdataPlay.Net.Curl.Core
             Content = content ?? throw new ArgumentNullException(nameof(content));
             Method = method ?? throw new ArgumentNullException(nameof(method));
 
-            SetOption(CurlOption.Url, RequestUri);
+            SetOption(CurlOption.Url, RequestUri.OriginalString);
             SetOption(CurlOption.CustomRequest, Method.Method);
 
             _onReadCallback = OnReadCallback;

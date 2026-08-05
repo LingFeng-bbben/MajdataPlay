@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MajdataPlay.Net.Curl.PInvoke
+namespace MajdataPlay.Net.Curl.Core.PInvoke
 {
     [StructLayout(LayoutKind.Explicit)]
     internal readonly struct CurlMsgData

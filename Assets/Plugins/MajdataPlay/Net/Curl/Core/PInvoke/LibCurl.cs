@@ -1,5 +1,4 @@
 using Codice.CM.Common.Zlib;
-using MajdataPlay.Net.Curl.PInvoke.Enums;
 using System;
 using System.Dynamic;
 using System.Runtime.InteropServices;
@@ -7,7 +6,7 @@ using System.Threading;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace MajdataPlay.Net.Curl.PInvoke
+namespace MajdataPlay.Net.Curl.Core.PInvoke
 {
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate UIntPtr CurlReadOrWriteCallback(IntPtr ptr, UIntPtr size, UIntPtr nmemb, IntPtr userdata);
@@ -24,10 +23,19 @@ namespace MajdataPlay.Net.Curl.PInvoke
         public const long CURL_GLOBAL_WIN32 = 1 << 1;
         public const long CURL_GLOBAL_ALL = CURL_GLOBAL_SSL | CURL_GLOBAL_WIN32;
         public const long CURL_GLOBAL_DEFAULT = CURL_GLOBAL_ALL;
+
+        static LibCurl()
+        {
+            var returnCode = curl_global_init(CURL_GLOBAL_DEFAULT);
+            if(returnCode != CurlCode.Ok)
+            {
+                throw new CurlException(returnCode);
+            }
+        }
         
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CurlCode curl_global_init(long flags);
+        static extern CurlCode curl_global_init(long flags);
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern void curl_global_cleanup();
