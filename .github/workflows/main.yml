@@ -506,7 +506,7 @@ jobs:
           gh release create nightly \
             --title "Nightly" \
             --notes-file "${NOTES_FILE}" \
-            --latest
+            --prerelease
 
       - name: Upload all artifacts to the new nightly release
         env:
