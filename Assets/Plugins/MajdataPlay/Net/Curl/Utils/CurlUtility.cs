@@ -1,16 +1,53 @@
-﻿using MajdataPlay.Net.Curl.Core.PInvoke;
+﻿using MajdataPlay.Diagnostics;
+using MajdataPlay.Net.Curl.Core;
+using MajdataPlay.Net.Curl.Core.PInvoke;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEditor.PackageManager.Requests;
+using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Net.Curl.Utils
 {
     internal static class CurlUtility
     {
+        public static void ApplySystemCA(CurlRequest request)
+        {
+            var returnCode = default(CurlCode?);
+#if UNITY_ANDROID
+            var androidCAPath = Path.Combine(Application.persistentDataPath, "ca.pem");
+            if(File.Exists(androidCAPath))
+            {
+                returnCode = LibCurl.curl_easy_setopt(request.Handle, CurlOption.CaInfo, androidCAPath);
+                if (returnCode is CurlCode code && code != CurlCode.Ok)
+                {
+                    MajDebug.LogWarning(
+                        $"[libcurl]Failed to set CA certificate bundle. " +
+                        $"Path: \"{androidCAPath}\", " +
+                        $"Error: {code} ({GetCurlErrorMessage(code)})");
+                }
+            }
+            else
+            {
+                MajDebug.LogWarning($"[libcurl]CA certificate bundle not found");
+            }
+#elif UNITY_STANDALONE_WIN || UNITY_WSA
+            returnCode = LibCurl.curl_easy_setopt(request.Handle, CurlOption.SslOptions, LibCurl.CURLSSLOPT_NATIVE_CA);
+            if (returnCode is CurlCode code && code != CurlCode.Ok)
+            {
+                MajDebug.LogWarning(
+                    $"[libcurl]Failed to enable native CA certificate store. " +
+                    $"Option: CURLSSLOPT_NATIVE_CA, " +
+                    $"Error: {code} ({GetCurlErrorMessage(code)})");
+            }
+#endif
+
+        }
         public static void EnsureSuccess(IntPtr easyHandle, CurlCode code)
         {
             var ex = GetEasyException(easyHandle, code);

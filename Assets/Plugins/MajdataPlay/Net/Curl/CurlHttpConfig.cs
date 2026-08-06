@@ -116,6 +116,17 @@ namespace MajdataPlay.Net.Curl
                 CurlUtility.EnsureSuccess(easyHandle, returnCode);
             }
 
+            if(CookieContainer is not null)
+            {
+                var cookieHeader = CookieContainer.GetCookieHeader(requestUri);
+
+                if (!string.IsNullOrEmpty(cookieHeader))
+                {
+                    returnCode = LibCurl.curl_easy_setopt(easyHandle, CurlOption.Cookie, cookieHeader);
+                    CurlUtility.EnsureSuccess(easyHandle, returnCode);
+                }
+            }
+
         }
         readonly string GetEncodingString(DecompressionMethods methods)
         {

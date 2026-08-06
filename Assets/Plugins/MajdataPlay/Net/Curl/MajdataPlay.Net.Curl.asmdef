@@ -2,7 +2,8 @@
     "name": "MajdataPlay.Net.Curl",
     "rootNamespace": "",
     "references": [
-        "GUID:9dbacf025564c1a4a9223fa764c2a8d6"
+        "GUID:9dbacf025564c1a4a9223fa764c2a8d6",
+        "GUID:8545470905e4bf241a27188012585d36"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

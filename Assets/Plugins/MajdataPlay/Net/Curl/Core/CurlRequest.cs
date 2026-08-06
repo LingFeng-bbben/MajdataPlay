@@ -1,6 +1,7 @@
 using AOT;
 using MajdataPlay.Net.Curl.Core.PInvoke;
 using MajdataPlay.Net.Curl.Lifecycle;
+using MajdataPlay.Net.Curl.Utils;
 using System;
 using System.IO;
 using System.Linq;
@@ -27,7 +28,7 @@ namespace MajdataPlay.Net.Curl.Core
 
         readonly HttpRequestMessage _rawRequest;
 
-        public CurlRequest(HttpRequestMessage httpRequest)
+        public CurlRequest(HttpRequestMessage httpRequest, Stream? contentStream)
         {
             LibCurlLifecycle.Retain();
             ThisHandle = LibCurl.curl_easy_init();
@@ -43,42 +44,30 @@ namespace MajdataPlay.Net.Curl.Core
             Content = httpRequest.Content ?? throw new ArgumentNullException(nameof(httpRequest.Content));
             Method = httpRequest.Method ?? throw new ArgumentNullException(nameof(httpRequest.Method));
 
-            SetOption(CurlOption.Url, RequestUri.OriginalString);
-            SetOption(CurlOption.CustomRequest, Method.Method);
-            SetHeaders(httpRequest.Headers, Content.Headers);
-
             _rawRequest = httpRequest;
             _onReadCallback = OnReadCallback;
+
+            SetOption(CurlOption.Url, RequestUri.OriginalString);
+            SetOption(CurlOption.CustomRequest, Method.Method);
+            SetOption(CurlOption.ReadFunction, _onReadCallback);
+            SetHeaders(httpRequest.Headers, Content.Headers);
+
+            if(contentStream is not null)
+            {
+                _contentStream = contentStream;
+                SetOption(CurlOption.Upload, 1);
+                if (_contentStream.CanSeek)
+                {
+                    SetOption(CurlOption.InFileSizeLarge, _contentStream.Length);
+                }
+            }
+
+            CurlUtility.ApplySystemCA(this);            
         }
         ~CurlRequest()
         {
             Dispose();
         }
-
-        public async ValueTask ReadyToSubmitAsync()
-        {
-            var isUpload = Method == HttpMethod.Post || Method == HttpMethod.Put || Method == HttpMethod.Patch;
-            
-            if (isUpload)
-            {
-                SetOption(CurlOption.Upload, 1);
-                _contentStream = await Content.ReadAsStreamAsync();
-                if (_contentStream.CanSeek)
-                {
-                    SetOption(CurlOption.InFileSizeLarge, _contentStream.Length);
-                }
-                SetOption(CurlOption.ReadFunction, _onReadCallback);
-            }
-        }
-        public void ReadyToComplete()
-        {
-            if (_contentStream != null)
-            {
-                _contentStream.Dispose();
-                _contentStream = null;
-            }
-        }
-
 
         public void SetOption(CurlOption option, string value)
         {

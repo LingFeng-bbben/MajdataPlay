@@ -43,7 +43,8 @@ namespace MajdataPlay.Net.Curl
             CancellationToken cancellationToken)
         {
             var config = CopyCurrentConfig();
-            var curlTask = _curlMulti.AddToQueue(request, config, cancellationToken);
+            var contentStream = await request.Content.ReadAsStreamAsync();
+            var curlTask = _curlMulti.AddToQueue(request, contentStream, config, cancellationToken);
 
             try
             {

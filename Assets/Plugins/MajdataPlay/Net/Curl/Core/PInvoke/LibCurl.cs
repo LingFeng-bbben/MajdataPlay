@@ -39,6 +39,8 @@ namespace MajdataPlay.Net.Curl.Core.PInvoke
         /// </summary>
         public const int CURLPAUSE_CONT = 0;
 
+        public const long CURLSSLOPT_NATIVE_CA = 1 << 4;
+
 
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]

@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MajdataPlay.Net.Curl.Utils;
 using MajdataPlay.Net.Curl.Lifecycle;
+using System.IO;
 #nullable enable
 namespace MajdataPlay.Net.Curl.Core
 {
@@ -158,7 +159,7 @@ namespace MajdataPlay.Net.Curl.Core
 
                 return (UIntPtr)length;
             }
-            static bool ParseHttpHeader(ReadOnlySpan<byte> line, HttpResponseMessage response)
+            bool ParseHttpHeader(ReadOnlySpan<byte> line, HttpResponseMessage response)
             {
                 while (line.Length > 0)
                 {
@@ -231,6 +232,24 @@ namespace MajdataPlay.Net.Curl.Core
                 {
                     response.Content.Headers.TryAddWithoutValidation(keyStr, valueStr);
                 }
+
+                var cookieContainer = Config.CookieContainer;
+                var requestUri = Request.RequestUri;
+                if (cookieContainer != null)
+                {
+                    if (string.Equals(keyStr, "Set-Cookie", StringComparison.OrdinalIgnoreCase))
+                    {
+                        try
+                        {
+                            cookieContainer.SetCookies(requestUri, valueStr);
+                        }
+                        catch (CookieException)
+                        {
+
+                        }
+                    }
+                }
+
                 return false;
             }
 
@@ -391,10 +410,10 @@ namespace MajdataPlay.Net.Curl.Core
             _workerThread = Task.Factory.StartNew(Run, TaskCreationOptions.LongRunning);
         }
 
-        public Task<CurlResponse> AddToQueue(HttpRequestMessage request, CurlHttpConfig config, CancellationToken token = default)
+        public Task<CurlResponse> AddToQueue(HttpRequestMessage request, Stream? contentStream, CurlHttpConfig config, CancellationToken token = default)
         {
             ThrowIfDisposed();
-            var curlRequest = new CurlRequest(request);
+            var curlRequest = new CurlRequest(request, contentStream);
             var curlTask = new CurlTask(curlRequest, config, _onRequestResume, token);
             var taskHandle = GCHandle.Alloc(curlTask, GCHandleType.Weak);
             curlRequest.SetOption(CurlOption.Private, GCHandle.ToIntPtr(taskHandle));
