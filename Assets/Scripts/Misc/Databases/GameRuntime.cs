@@ -15,7 +15,7 @@ namespace MajdataPlay.Databases
     /// <para>This asset is created and managed as a ScriptableObject.</para>
     /// </summary>
     [CreateAssetMenu(fileName = "RuntimeDatabase")]
-    public sealed class Runtime : ScriptableObject
+    public sealed class GameRuntime : ScriptableObject
     {
         /// <summary>
         /// Colors assigned to each difficulty level.

@@ -12,11 +12,11 @@ namespace MajdataPlay
     public abstract class MajBehaviour : MonoBehaviour
     {
         [field: SerializeField, ReadOnlyField]
-        protected Runtime RuntimeDatabase { get; private set; }
+        protected GameRuntime RuntimeDatabase { get; private set; }
 
         protected virtual void Awake()
         {
-            RuntimeDatabase = Resources.Load<Runtime>("Databases/RuntimeDatabase");
+            RuntimeDatabase = Resources.Load<GameRuntime>("Databases/RuntimeDatabase");
         }
     }
 }
