@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MajdataPlay.Net.Curl.Core.PInvoke;
+using System;
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -6,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay.Net.Curl.Core
@@ -15,23 +17,74 @@ namespace MajdataPlay.Net.Curl.Core
         MemoryChunk _currentChunk;
         Exception? _abortException;
 
-        readonly BlockingCollection<MemoryChunk> _bufferQueue = new();        
+        volatile bool _isPaused = false;
 
-        public void WriteChunk(ReadOnlySpan<byte> chunk)
+        volatile int _bufferedBytes;
+
+        SpinLock _pauseOrResumeLock = new(false);
+
+        readonly int _lwmBytes;
+        readonly int _hwmBytes;
+
+        readonly int _chunkSize;
+        readonly long _maxBufferSize;
+        readonly Action _onResume;
+        readonly BlockingCollection<MemoryChunk> _bufferQueue;
+
+        public CurlResponseStream(long maxBufferLength, Action onResume) : this(8192, maxBufferLength, onResume) { }
+        public CurlResponseStream(int chunkSize, long maxBufferLength, Action onResume)
+        {
+            _onResume = onResume;
+            _chunkSize = chunkSize;
+            _maxBufferSize = maxBufferLength;
+            _lwmBytes = (int)(_maxBufferSize * 0.4);
+            _hwmBytes = (int)(_maxBufferSize * 0.8);
+            _bufferQueue = new();
+        }
+
+        public UIntPtr WriteChunk(ReadOnlySpan<byte> chunk)
         {
             if (chunk.IsEmpty)
             {
-                return;
+                return UIntPtr.Zero;
             }
-            var buffer = ArrayPool<byte>.Shared.Rent(chunk.Length);
-            var chunkInfo = new MemoryChunk()
+            var bytesToWrite = chunk.Length;
+            var isLocked = false;
+            try
             {
-                Buffer = buffer,
-                Length = chunk.Length,
-                Offset = 0
-            };
-            chunk.CopyTo(buffer);
-            _bufferQueue.Add(chunkInfo);
+                _pauseOrResumeLock.Enter(ref isLocked);
+                if (!_isPaused && _bufferedBytes + chunk.Length > _hwmBytes)
+                {
+                    _isPaused = true;
+                    return (UIntPtr)LibCurl.CURL_WRITEFUNC_PAUSE;
+                }
+            }
+            finally
+            {
+                if(isLocked)
+                {
+                    _pauseOrResumeLock.Exit();
+                }
+            }
+
+            while (bytesToWrite > 0)
+            {                
+                var buffer = ArrayPool<byte>.Shared.Rent(_chunkSize);
+                var bytesToWriteBuffer = Math.Min(buffer.Length, bytesToWrite);
+                var sourceOffset = chunk.Length - bytesToWrite;
+                Interlocked.Add(ref _bufferedBytes, bytesToWriteBuffer);
+                chunk.Slice(sourceOffset, bytesToWriteBuffer).CopyTo(buffer);
+                var chunkInfo = new MemoryChunk()
+                {
+                    Buffer = buffer,
+                    Length = bytesToWriteBuffer,
+                    Offset = 0
+                };
+                _bufferQueue.Add(chunkInfo);
+                bytesToWrite -= bytesToWriteBuffer;
+            }
+
+            return (UIntPtr)chunk.Length;
         }
 
         public void CompleteWriting()
@@ -78,12 +131,33 @@ namespace MajdataPlay.Net.Curl.Core
                 }
                 ref var chunk = ref _currentChunk;
                 var bytesToCopy = Math.Min(count, chunk.Length - chunk.Offset);
+                var currentBuffered = Interlocked.Add(ref _bufferedBytes, -bytesToCopy);
                 Buffer.BlockCopy(chunk.Buffer, chunk.Offset, buffer, offset, bytesToCopy);
 
                 offset += bytesToCopy;
                 count -= bytesToCopy;
                 totalBytesRead += bytesToCopy;
                 chunk.Offset += bytesToCopy;
+
+                var isLocked = false;
+
+                try
+                {
+                    _pauseOrResumeLock.Enter(ref isLocked);
+                    if (_isPaused && currentBuffered <= _lwmBytes)
+                    {
+                        _isPaused = false;
+
+                        ThreadPool.QueueUserWorkItem(_ => _onResume());
+                    }
+                }
+                finally
+                {
+                    if(isLocked)
+                    {
+                        _pauseOrResumeLock.Exit();
+                    }
+                }
 
                 if (totalBytesRead > 0)
                 {

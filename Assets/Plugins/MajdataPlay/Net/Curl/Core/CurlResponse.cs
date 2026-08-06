@@ -15,16 +15,19 @@ namespace MajdataPlay.Net.Curl.Core
     {
         public CurlCode? ResultCode { get; set; }
         public HttpResponseMessage Message { get; }
+        public CurlHttpConfig Config { get; }
         internal CurlRequest Request { get; }
 
-
+        readonly Action _onResume;
         readonly CurlResponseStream _responseStream;
         readonly CurlReadOrWriteCallback _onWriteCallback; // Download
 
-        internal CurlResponse(CurlRequest request)
+        internal CurlResponse(CurlRequest request, Action onResume, CurlHttpConfig config)
         {
             Request = request;
-             _responseStream = new CurlResponseStream();
+            Config = config;
+            _onResume = onResume;
+            _responseStream = new CurlResponseStream(config.MaxResponseHeadersLength, _onResume);
             _onWriteCallback = OnWriteCallback;
 
             Message = new();
@@ -52,9 +55,7 @@ namespace MajdataPlay.Net.Curl.Core
             var length = (int)(size.ToUInt32() * nmemb.ToUInt32());
             var buffer = new ReadOnlySpan<byte>((void*)ptr, length);
 
-            _responseStream.Write(buffer);
-
-            return (UIntPtr)length;
+            return _responseStream.WriteChunk(buffer);
         }
     }
 }

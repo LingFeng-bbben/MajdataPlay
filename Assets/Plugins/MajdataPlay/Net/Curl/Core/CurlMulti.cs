@@ -38,15 +38,19 @@ namespace MajdataPlay.Net.Curl.Core
 
             int _state = (int)CurlRequestState.Created;
 
+            long _currentHeadersLength = 0;
+
             readonly CurlReadOrWriteCallback _onHeaderReceivedCallback;
+            readonly Action<CurlTask> _onResume;
             readonly TaskCompletionSource<CurlResponse> _taskSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            public CurlTask(CurlRequest request, CurlHttpConfig config, CancellationToken token = default)
+            public CurlTask(CurlRequest request, CurlHttpConfig config, Action<CurlTask> onResume, CancellationToken token = default)
             {
                 Request = request;
-                Response = new CurlResponse(request);
+                Response = new CurlResponse(request, OnResumeRequest, config);
                 Config = config;
                 CancellationToken = token;
+                _onResume = onResume;
                 _onHeaderReceivedCallback = OnHeaderReceived;
                 Request.SetOption(CurlOption.HeaderFunction, _onHeaderReceivedCallback);
             }
@@ -130,10 +134,22 @@ namespace MajdataPlay.Net.Curl.Core
                 return false;
             }
 
+            void OnResumeRequest()
+            {
+                _onResume(this);
+            }
+
             unsafe UIntPtr OnHeaderReceived(IntPtr ptr, UIntPtr size, UIntPtr nmemb, IntPtr userdata)
             {
+                var maxHeadersLength = Config.MaxResponseHeadersLength;
                 var length = (int)(size.ToUInt32() * nmemb.ToUInt32());
                 var buffer = new ReadOnlySpan<byte>((void*)ptr, length);
+
+                if(_currentHeadersLength + buffer.Length > maxHeadersLength)
+                {
+                    return UIntPtr.Zero;
+                }
+
 
                 if (ParseHttpHeader(buffer, Response.Message))
                 {
@@ -361,13 +377,17 @@ namespace MajdataPlay.Net.Curl.Core
         readonly Task _workerThread;
         readonly CancellationTokenSource _cts = new();
         readonly HashSet<CurlTask> _activeTasks = new();
-        readonly ConcurrentQueue<CurlTask> _pendingTasks = new();
-        readonly ConcurrentQueue<CurlTask> _pendingCancels = new();
+        readonly ConcurrentQueue<CurlTask> _pendingToSubmitTasks = new();
+        readonly ConcurrentQueue<CurlTask> _pendingToCancelTasks = new();
+        readonly ConcurrentQueue<CurlTask> _pendingToResumeTasks = new();
+
+        readonly Action<CurlTask> _onRequestResume;
 
         internal CurlMulti() 
         {
             LibCurlLifecycle.Retain();
             ThisHandle = LibCurl.curl_multi_init();
+            _onRequestResume = OnTaskResume;
             _workerThread = Task.Factory.StartNew(Run, TaskCreationOptions.LongRunning);
         }
 
@@ -375,29 +395,34 @@ namespace MajdataPlay.Net.Curl.Core
         {
             ThrowIfDisposed();
             var curlRequest = new CurlRequest(request);
-            var curlTask = new CurlTask(curlRequest, config, token);
+            var curlTask = new CurlTask(curlRequest, config, _onRequestResume, token);
             var taskHandle = GCHandle.Alloc(curlTask, GCHandleType.Weak);
             curlRequest.SetOption(CurlOption.Private, GCHandle.ToIntPtr(taskHandle));
             config.ApplyToRequest(curlRequest);
             config.ApplyToMulti(this);
 
-            _pendingTasks.Enqueue(curlTask);
+            _pendingToSubmitTasks.Enqueue(curlTask);
             
             token.Register(() =>
             {
-                _pendingCancels.Enqueue(curlTask);
+                _pendingToCancelTasks.Enqueue(curlTask);
             });
 
             return curlTask.Task;
         }
 
+        void OnTaskResume(CurlTask request)
+        {
+            _pendingToResumeTasks.Enqueue(request);
+            LibCurl.curl_multi_wakeup(ThisHandle);
+        }
         void Run()
         {
             var thisToken = _cts.Token;
             Thread.CurrentThread.Name = "Curl multi worker";
             while(!thisToken.IsCancellationRequested)
             {
-                while(_pendingTasks.TryDequeue(out var pendingTask))
+                while(_pendingToSubmitTasks.TryDequeue(out var pendingTask))
                 {
                     if(pendingTask.CancellationToken.IsCancellationRequested)
                     {
@@ -407,12 +432,12 @@ namespace MajdataPlay.Net.Curl.Core
                     {
                         _activeTasks.Add(pendingTask);
                         LibCurl.curl_multi_add_handle(ThisHandle, pendingTask.Request.Handle);
-                    }                    
+                    }
                 }
 
-                while(_pendingCancels.TryDequeue(out var cancelTask))
+                while (_pendingToCancelTasks.TryDequeue(out var cancelTask))
                 {
-                    if(cancelTask.TryEnterCancelledState())
+                    if (cancelTask.TryEnterCancelledState())
                     {
                         if (_activeTasks.Remove(cancelTask))
                         {
@@ -421,7 +446,12 @@ namespace MajdataPlay.Net.Curl.Core
                     }
                 }
 
-                if(thisToken.IsCancellationRequested)
+                while (_pendingToResumeTasks.TryDequeue(out var pausedTask))
+                {
+                    LibCurl.curl_easy_pause(pausedTask.Request.Handle, LibCurl.CURLPAUSE_RECV_CONT);
+                }
+
+                if (thisToken.IsCancellationRequested)
                 {
                     return;
                 }
@@ -508,11 +538,11 @@ namespace MajdataPlay.Net.Curl.Core
                 task.Request.Dispose();
             }
             
-            while (_pendingTasks.TryDequeue(out var task))
+            while (_pendingToSubmitTasks.TryDequeue(out var task))
             {
                 DisposeCurlTask(task);
             }
-            while (_pendingCancels.TryDequeue(out var task))
+            while (_pendingToCancelTasks.TryDequeue(out var task))
             {
                 DisposeCurlTask(task);
             }

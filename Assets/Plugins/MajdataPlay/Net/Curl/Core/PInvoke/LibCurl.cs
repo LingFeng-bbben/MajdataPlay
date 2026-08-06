@@ -23,7 +23,23 @@ namespace MajdataPlay.Net.Curl.Core.PInvoke
         public const long CURL_GLOBAL_WIN32 = 1 << 1;
         public const long CURL_GLOBAL_ALL = CURL_GLOBAL_SSL | CURL_GLOBAL_WIN32;
         public const long CURL_GLOBAL_DEFAULT = CURL_GLOBAL_ALL;
-        
+
+        public const uint CURL_WRITEFUNC_PAUSE = 0x10000001;
+
+        /// <summary>
+        /// 暂停接收
+        /// </summary>
+        public const int CURLPAUSE_RECV = 1 << 0;
+        /// <summary>
+        /// 恢复接收 (Continue)
+        /// </summary>
+        public const int CURLPAUSE_RECV_CONT = 0;
+        /// <summary>
+        /// 恢复所有 (收/发)
+        /// </summary>
+        public const int CURLPAUSE_CONT = 0;
+
+
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern CurlCode curl_global_init(long flags);
@@ -43,6 +59,9 @@ namespace MajdataPlay.Net.Curl.Core.PInvoke
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr curl_easy_strerror(CurlCode errornum);
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern CurlCode curl_easy_pause(IntPtr handle, int bitmask);
 
         // curl_easy_setopt 的各个重载 (应对 C 语言的可变参数)
 
