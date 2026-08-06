@@ -1,8 +1,8 @@
 {
     "name": "MajdataPlay.Net.Curl",
-    "rootNamespace": "MajdataPlay.Net.Curl",
+    "rootNamespace": "",
     "references": [
-        "GUID:94767d0c2dbb5a24faaa619065419538"
+        "GUID:9dbacf025564c1a4a9223fa764c2a8d6"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

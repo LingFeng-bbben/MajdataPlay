@@ -1,7 +1,9 @@
 using AOT;
 using MajdataPlay.Net.Curl.Core.PInvoke;
+using MajdataPlay.Net.Curl.Lifecycle;
 using System;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
@@ -23,21 +25,29 @@ namespace MajdataPlay.Net.Curl.Core
 
         CurlReadOrWriteCallback _onReadCallback;  // Upload
 
-        public CurlRequest(string requestUri, HttpContent content, HttpMethod method) : this(new Uri(requestUri), content, method) { }
-        public CurlRequest(Uri requestUri, HttpContent content, HttpMethod method)
+        readonly HttpRequestMessage _rawRequest;
+
+        public CurlRequest(HttpRequestMessage httpRequest)
         {
+            LibCurlLifecycle.Retain();
             ThisHandle = LibCurl.curl_easy_init();
             if (ThisHandle == IntPtr.Zero)
             {
                 throw new InvalidOperationException("Failed to initialize libcurl.");
             }
-            RequestUri = requestUri ?? throw new ArgumentNullException(nameof(requestUri));
-            Content = content ?? throw new ArgumentNullException(nameof(content));
-            Method = method ?? throw new ArgumentNullException(nameof(method));
+            if(httpRequest is null)
+            {
+                throw new ArgumentNullException(nameof(httpRequest));
+            }
+            RequestUri = httpRequest.RequestUri ?? throw new ArgumentNullException(nameof(httpRequest.RequestUri));
+            Content = httpRequest.Content ?? throw new ArgumentNullException(nameof(httpRequest.Content));
+            Method = httpRequest.Method ?? throw new ArgumentNullException(nameof(httpRequest.Method));
 
             SetOption(CurlOption.Url, RequestUri.OriginalString);
             SetOption(CurlOption.CustomRequest, Method.Method);
+            SetHeaders(httpRequest.Headers, Content.Headers);
 
+            _rawRequest = httpRequest;
             _onReadCallback = OnReadCallback;
         }
         ~CurlRequest()
@@ -95,20 +105,15 @@ namespace MajdataPlay.Net.Curl.Core
             CheckCurlCode(result);
         }
         
-        public void SetHeaders(HttpHeaders headers)
+        void SetHeaders(HttpHeaders headers, HttpContentHeaders contentHeaders)
         {
-            if (headers == null)
-            {
-                throw new ArgumentNullException(nameof(headers));
-            }
-
             if (_headersList != IntPtr.Zero)
             {
                 LibCurl.curl_slist_free_all(_headersList);
                 _headersList = IntPtr.Zero;
             }
 
-            foreach (var header in headers)
+            foreach (var header in headers.Concat(contentHeaders))
             {
                 var headerString = $"{header.Key}: {string.Join(", ", header.Value)}";
                 _headersList = LibCurl.curl_slist_append(_headersList, headerString);
@@ -137,6 +142,7 @@ namespace MajdataPlay.Net.Curl.Core
             if (handle != IntPtr.Zero)
             {
                 LibCurl.curl_easy_cleanup(handle);
+                LibCurlLifecycle.Release();
                 GC.SuppressFinalize(this);
             }
         }

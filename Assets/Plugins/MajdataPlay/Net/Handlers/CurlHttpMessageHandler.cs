@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Net.Curl.Core;
+﻿using MajdataPlay.Net.Curl;
+using MajdataPlay.Net.Curl.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,11 +31,30 @@ namespace MajdataPlay.Net.Curl
         public bool UseDefaultCredentials { get; set; }
         public bool UseProxy { get; set; } = true;
 
+        readonly CurlMulti _curlMulti;
+
+        public CurlHttpMessageHandler()
+        {
+            _curlMulti = ClientUrl.CreateMulti();
+        }
+
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
-            return await Task.FromCanceled<HttpResponseMessage>(cancellationToken); // Ensure asynchronous behavior
+            var config = CopyCurrentConfig();
+            var curlTask = _curlMulti.AddToQueue(request, config, cancellationToken);
+
+            try
+            {
+                var rsp = await curlTask;
+
+                return rsp.Message;
+            }
+            catch(Exception e)
+            {
+                throw new HttpRequestException(e.Message, e);
+            }           
         }
 
         CurlHttpConfig CopyCurrentConfig()

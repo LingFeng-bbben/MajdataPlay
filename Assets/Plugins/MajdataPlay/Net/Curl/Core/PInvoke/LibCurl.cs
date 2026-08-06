@@ -23,19 +23,10 @@ namespace MajdataPlay.Net.Curl.Core.PInvoke
         public const long CURL_GLOBAL_WIN32 = 1 << 1;
         public const long CURL_GLOBAL_ALL = CURL_GLOBAL_SSL | CURL_GLOBAL_WIN32;
         public const long CURL_GLOBAL_DEFAULT = CURL_GLOBAL_ALL;
-
-        static LibCurl()
-        {
-            var returnCode = curl_global_init(CURL_GLOBAL_DEFAULT);
-            if(returnCode != CurlCode.Ok)
-            {
-                throw new CurlException(returnCode);
-            }
-        }
         
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        static extern CurlCode curl_global_init(long flags);
+        public static extern CurlCode curl_global_init(long flags);
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern void curl_global_cleanup();

@@ -1,5 +1,4 @@
-﻿using MajdataPlay.Net.Curl.Core.Utils;
-using MajdataPlay.Net.Curl.Core.PInvoke;
+﻿using MajdataPlay.Net.Curl.Core.PInvoke;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,8 +6,11 @@ using System.Net;
 using System.Security.Authentication;
 using System.Text;
 using System.Threading.Tasks;
+using MajdataPlay.Net.Curl.Core;
+using MajdataPlay.Net.Curl.Utils;
+
 #nullable enable
-namespace MajdataPlay.Net.Curl.Core
+namespace MajdataPlay.Net.Curl
 {
     public readonly struct CurlHttpConfig
     {

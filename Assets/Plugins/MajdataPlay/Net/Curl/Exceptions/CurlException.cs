@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MajdataPlay.Net.Curl.Core
+namespace MajdataPlay.Net.Curl
 {
     public class CurlException : Exception
     {

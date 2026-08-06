@@ -1,5 +1,4 @@
 ﻿using MajdataPlay.Net.Curl.Core.PInvoke;
-using MajdataPlay.Net.Curl.Core.Utils;
 using MajdataPlay.Net.Curl.Core.PInvoke;
 using System;
 using System.Collections.Concurrent;
@@ -12,10 +11,12 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MajdataPlay.Net.Curl.Utils;
+using MajdataPlay.Net.Curl.Lifecycle;
 #nullable enable
 namespace MajdataPlay.Net.Curl.Core
 {
-    internal class CurlMulti : CurlHandle, IAsyncDisposable
+    public class CurlMulti : CurlHandle, IAsyncDisposable
     {
         class CurlTask
         {
@@ -363,19 +364,25 @@ namespace MajdataPlay.Net.Curl.Core
         readonly ConcurrentQueue<CurlTask> _pendingTasks = new();
         readonly ConcurrentQueue<CurlTask> _pendingCancels = new();
 
-        public CurlMulti() 
+        internal CurlMulti() 
         {
+            LibCurlLifecycle.Retain();
             ThisHandle = LibCurl.curl_multi_init();
             _workerThread = Task.Factory.StartNew(Run, TaskCreationOptions.LongRunning);
         }
 
-        public Task<CurlResponse> AddToQueue(CurlRequest request, CurlHttpConfig config,  CancellationToken token = default)
+        public Task<CurlResponse> AddToQueue(HttpRequestMessage request, CurlHttpConfig config, CancellationToken token = default)
         {
             ThrowIfDisposed();
-            var curlTask = new CurlTask(request, config, token);
+            var curlRequest = new CurlRequest(request);
+            var curlTask = new CurlTask(curlRequest, config, token);
             var taskHandle = GCHandle.Alloc(curlTask, GCHandleType.Weak);
-            request.SetOption(CurlOption.Private, GCHandle.ToIntPtr(taskHandle));
+            curlRequest.SetOption(CurlOption.Private, GCHandle.ToIntPtr(taskHandle));
+            config.ApplyToRequest(curlRequest);
+            config.ApplyToMulti(this);
+
             _pendingTasks.Enqueue(curlTask);
+            
             token.Register(() =>
             {
                 _pendingCancels.Enqueue(curlTask);
@@ -387,6 +394,7 @@ namespace MajdataPlay.Net.Curl.Core
         void Run()
         {
             var thisToken = _cts.Token;
+            Thread.CurrentThread.Name = "Curl multi worker";
             while(!thisToken.IsCancellationRequested)
             {
                 while(_pendingTasks.TryDequeue(out var pendingTask))
@@ -515,6 +523,7 @@ namespace MajdataPlay.Net.Curl.Core
             _activeTasks.Clear();
 
             LibCurl.curl_multi_cleanup(handle);
+            LibCurlLifecycle.Release();
         }
     }    
 }

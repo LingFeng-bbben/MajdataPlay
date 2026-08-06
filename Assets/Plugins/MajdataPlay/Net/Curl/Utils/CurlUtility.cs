@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 #nullable enable
-namespace MajdataPlay.Net.Curl.Core.Utils
+namespace MajdataPlay.Net.Curl.Utils
 {
     internal static class CurlUtility
     {

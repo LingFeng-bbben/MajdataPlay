@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace MajdataPlay.Net.Curl.Core
 {
-    internal abstract class CurlHandle : IDisposable
+    public abstract class CurlHandle : IDisposable
     {
         internal IntPtr Handle
         {

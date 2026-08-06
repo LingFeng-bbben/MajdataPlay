@@ -1,0 +1,76 @@
+﻿using MajdataPlay.Net.Curl.Core;
+using MajdataPlay.Net.Curl.Core.PInvoke;
+using MajdataPlay.Runtime;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace MajdataPlay.Net.Curl.Lifecycle
+{
+    internal static class LibCurlLifecycle
+    {
+        static int s_refCount = 0;
+        static volatile bool s_isGlobalInited = false;
+        static readonly object s_initLock = new object();
+
+        static LibCurlLifecycle()
+        {
+            GCCallbackRegistration.RegisterGCCallback(OnGCCallback);
+        }
+
+        public static void Retain()
+        {
+            Interlocked.Increment(ref s_refCount);
+
+
+            if (!s_isGlobalInited)
+            {
+                lock (s_initLock)
+                {
+                    if (!s_isGlobalInited)
+                    {
+                        var returnCode = LibCurl.curl_global_init(LibCurl.CURL_GLOBAL_DEFAULT);
+                        if (returnCode != CurlCode.Ok)
+                        {
+                            throw new CurlException(returnCode);
+                        }
+                        s_isGlobalInited = true;
+                    }
+                }
+            }
+        }
+
+        public static void Release()
+        {
+            Interlocked.Decrement(ref s_refCount);
+        }
+
+        static bool OnGCCallback()
+        {
+            if(!s_isGlobalInited)
+            {
+                return true;
+            }
+            try
+            {
+                lock(s_initLock)
+                {
+                    if(!s_isGlobalInited || Volatile.Read(ref s_refCount) != 0)
+                    {
+                        return true;
+                    }
+                    LibCurl.curl_global_cleanup();
+                    s_isGlobalInited = false;
+                }
+            }
+            catch (Exception e)
+            {
+
+            }
+            return true;
+        }
+    }
+}

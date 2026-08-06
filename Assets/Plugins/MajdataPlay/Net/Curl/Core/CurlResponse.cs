@@ -11,17 +11,17 @@ using System.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay.Net.Curl.Core
 {
-    internal class CurlResponse
+    public class CurlResponse
     {
         public CurlCode? ResultCode { get; set; }
-        public CurlRequest Request { get; }
         public HttpResponseMessage Message { get; }
+        internal CurlRequest Request { get; }
 
 
         readonly CurlResponseStream _responseStream;
         readonly CurlReadOrWriteCallback _onWriteCallback; // Download
 
-        public CurlResponse(CurlRequest request)
+        internal CurlResponse(CurlRequest request)
         {
             Request = request;
              _responseStream = new CurlResponseStream();
@@ -33,15 +33,15 @@ namespace MajdataPlay.Net.Curl.Core
             Request.SetOption(CurlOption.WriteFunction, _onWriteCallback);
         }
 
-        public void Complete()
+        internal void Complete()
         {
             _responseStream.CompleteWriting();
         }
-        public void Abort()
+        internal void Abort()
         {
             Abort(new OperationCanceledException("Request was aborted."));
         }
-        public void Abort(Exception abortException)
+        internal void Abort(Exception abortException)
         {
             _responseStream.Abort(abortException);
         }
