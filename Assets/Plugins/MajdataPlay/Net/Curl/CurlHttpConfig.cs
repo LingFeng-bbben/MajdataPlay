@@ -34,7 +34,7 @@ namespace MajdataPlay.Net.Curl
         {
             var multiHandle = multi.Handle;
 
-            LibCurl.curl_multi_setopt(multiHandle, CURLMoption.CURLMOPT_MAX_HOST_CONNECTIONS, (IntPtr)MaxConnectionsPerServer);
+            LibCurl.curl_multi_setopt(multiHandle, CurlMOption.MaxHostConnections, (IntPtr)MaxConnectionsPerServer);
         }
 
         internal readonly void ApplyToRequest(CurlRequest request)

@@ -134,38 +134,38 @@ namespace MajdataPlay.Net.Curl.Core.PInvoke
         public static extern IntPtr curl_multi_init();
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLMcode curl_multi_cleanup(IntPtr multi_handle);
+        public static extern CurlMCode curl_multi_cleanup(IntPtr multi_handle);
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLMcode curl_multi_add_handle(IntPtr multi_handle, IntPtr easy_handle);
+        public static extern CurlMCode curl_multi_add_handle(IntPtr multi_handle, IntPtr easy_handle);
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLMcode curl_multi_remove_handle(IntPtr multi_handle, IntPtr easy_handle);
+        public static extern CurlMCode curl_multi_remove_handle(IntPtr multi_handle, IntPtr easy_handle);
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLMcode curl_multi_perform(IntPtr multi_handle, out int running_handles);
+        public static extern CurlMCode curl_multi_perform(IntPtr multi_handle, out int running_handles);
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr curl_multi_info_read(IntPtr multi_handle, out int msgs_in_queue);
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLMcode curl_multi_poll(IntPtr multiHandle, 
+        public static extern CurlMCode curl_multi_poll(IntPtr multiHandle, 
             IntPtr extraFds, 
             uint extraNfds,
             int timeoutMs, 
             out int numFds);
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLMcode curl_multi_wakeup(IntPtr multiHandle);
+        public static extern CurlMCode curl_multi_wakeup(IntPtr multiHandle);
 
         [DllImport(DLL_NAME, EntryPoint = "curl_unity_multi_setopt_long", CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLMcode curl_multi_setopt(IntPtr multi_handle, CURLMoption option, long value);
+        public static extern CurlMCode curl_multi_setopt(IntPtr multi_handle, CurlMOption option, long value);
 
         [DllImport(DLL_NAME, EntryPoint = "curl_unity_multi_setopt_ptr", CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLMcode curl_multi_setopt(IntPtr multi_handle, CURLMoption option, IntPtr pointer);
+        public static extern CurlMCode curl_multi_setopt(IntPtr multi_handle, CurlMOption option, IntPtr pointer);
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLMcode curl_multi_setopt(IntPtr multi_handle, CURLMoption option, __arglist);
+        public static extern CurlMCode curl_multi_setopt(IntPtr multi_handle, CurlMOption option, __arglist);
 
         #endregion
 

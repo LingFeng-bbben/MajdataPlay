@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace MajdataPlay.Net.Curl.Core.PInvoke
 {
-    internal enum CURLMoption
+    internal enum CurlMOption
     {
-        CURLMOPT_MAXCONNECTS = 6,
-        CURLMOPT_PIPELINING = 3,
-        CURLMOPT_MAX_HOST_CONNECTIONS = 7
+        MaxConnections = 6,
+        Pipelining = 3,
+        MaxHostConnections = 7
     }
 }

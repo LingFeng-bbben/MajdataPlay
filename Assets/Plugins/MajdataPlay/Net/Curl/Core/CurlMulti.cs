@@ -446,7 +446,7 @@ namespace MajdataPlay.Net.Curl.Core
                 try
                 {
                     var returnCode = default(CurlCode?);
-                    var multiReturnCode = default(CURLMcode?);
+                    var multiReturnCode = default(CurlMCode?);
                     while (_pendingToSubmitTasks.TryDequeue(out var pendingTask))
                     {
                         if (pendingTask.CancellationToken.IsCancellationRequested)
