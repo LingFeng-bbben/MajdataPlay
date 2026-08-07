@@ -23,7 +23,7 @@ namespace MajdataPlay.Net.Curl.Utils
             var androidCAPath = Path.Combine(Application.persistentDataPath, "Runtime", "Networking", "ca.pem");
             if(File.Exists(androidCAPath))
             {
-                returnCode = LibCurl.curl_easy_setopt(request.Handle, CurlOption.CaInfo, androidCAPath);
+                returnCode = LibCurl.Easy.SetOption(request.Handle, CurlOption.CaInfo, androidCAPath);
                 if (returnCode is CurlCode code && code != CurlCode.Ok)
                 {
                     MajDebug.LogWarning(
