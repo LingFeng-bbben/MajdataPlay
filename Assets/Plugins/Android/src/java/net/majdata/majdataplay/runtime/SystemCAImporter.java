@@ -17,8 +17,11 @@ import javax.net.ssl.X509TrustManager;
 public final class SystemCAImporter
 {
     public static boolean tryInit(Context context) {
-        // 等同于 Unity 的 Application.persistentDataPath
-        File cacheDir = context.getFilesDir();
+        File cacheDir = new File(context.getFilesDir(), "Runtime/Networking");
+
+        if (!cacheDir.exists()) {
+            cacheDir.mkdirs();
+        }
         File pemFile = new File(cacheDir, "ca.pem");
         File versionFile = new File(cacheDir, "ca.version");
 

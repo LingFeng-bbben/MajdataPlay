@@ -152,9 +152,8 @@ namespace MajdataPlay
             AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
             Proxy = WebRequest.GetSystemWebProxy(),
             UseProxy = true,
-            //UseCookies = true,
             CookieContainer = new CookieContainer(),
-            //MaxConnectionsPerServer = 64,
+            MaxConnectionsPerServer = 64,
         };
         readonly static UnityHttpMessageHandler _unityHttpHandler = new UnityHttpMessageHandler();
 
@@ -345,6 +344,7 @@ namespace MajdataPlay
             CreateDirectoryIfNotExists(ChartPath);
             CreateDirectoryIfNotExists(RecordOutputsPath);
             CreateDirectoryIfNotExists(LogsPath);
+            CreateDirectoryIfNotExists(Path.Combine(RootPath, "Runtime"));
         }
         static void InitLogger()
         {

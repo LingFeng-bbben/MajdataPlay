@@ -20,7 +20,7 @@ namespace MajdataPlay.Net.Curl.Utils
         {
             var returnCode = default(CurlCode?);
 #if UNITY_ANDROID
-            var androidCAPath = Path.Combine(Application.persistentDataPath, "ca.pem");
+            var androidCAPath = Path.Combine(Application.persistentDataPath, "Runtime", "Networking", "ca.pem");
             if(File.Exists(androidCAPath))
             {
                 returnCode = LibCurl.curl_easy_setopt(request.Handle, CurlOption.CaInfo, androidCAPath);

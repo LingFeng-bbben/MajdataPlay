@@ -21,7 +21,7 @@ namespace MajdataPlay.Net.Curl
         public bool PreAuthenticate { get; set; }
         public int MaxResponseHeadersLength { get; set; } = 64 * 1024; // 64KB
         public long MaxRequestContentBufferSize { get; set; } = int.MaxValue;
-        public int MaxConnectionsPerServer { get; set; } = 6;
+        public int MaxConnectionsPerServer { get; set; } = 8;
         public int MaxAutomaticRedirections { get; set; } = 50;
         public ICredentials? DefaultProxyCredentials { get; set; }
         public ICredentials? Credentials { get; set; }
@@ -36,7 +36,7 @@ namespace MajdataPlay.Net.Curl
 
         public CurlHttpMessageHandler()
         {
-            _curlMulti = ClientUrl.CreateMulti();
+            _curlMulti = new();
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(
