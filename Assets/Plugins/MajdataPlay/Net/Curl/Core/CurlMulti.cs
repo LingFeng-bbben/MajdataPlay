@@ -427,13 +427,15 @@ namespace MajdataPlay.Net.Curl.Core
                 _pendingToCancelTasks.Enqueue(curlTask);
             });
 
+            WakeUp();
+
             return curlTask.Task;
         }
 
         void OnTaskResume(CurlTask request)
         {
             _pendingToResumeTasks.Enqueue(request);
-            LibCurl.curl_multi_wakeup(ThisHandle);
+            WakeUp();
         }
         void Run()
         {
@@ -504,6 +506,10 @@ namespace MajdataPlay.Net.Curl.Core
                 }
             }            
         }
+        void WakeUp()
+        {
+            LibCurl.curl_multi_wakeup(ThisHandle);
+        }
 
         void CompleteTask(CurlMsg multiMsg)
         {
@@ -539,6 +545,7 @@ namespace MajdataPlay.Net.Curl.Core
             {
                 _cts.Cancel();
                 _cts.Dispose();
+                WakeUp();
                 _workerThread.Wait();
                 CleanUp(handle);
                 GC.SuppressFinalize(this);
@@ -551,6 +558,7 @@ namespace MajdataPlay.Net.Curl.Core
             {
                 _cts.Cancel();
                 _cts.Dispose();
+                WakeUp();
                 await _workerThread;
                 CleanUp(handle);
                 GC.SuppressFinalize(this);
