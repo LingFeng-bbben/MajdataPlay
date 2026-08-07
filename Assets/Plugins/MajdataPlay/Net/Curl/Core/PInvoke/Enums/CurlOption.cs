@@ -120,6 +120,21 @@ namespace MajdataPlay.Net.Curl.Core.PInvoke
         /// </summary>
         Private = 10103,
 
+        /// <summary>
+        /// Pass a pointer to the write callback userdata.
+        /// </summary>
+        WriteData = 10001,
+
+        /// <summary>
+        /// Pass a pointer to the read callback userdata.
+        /// </summary>
+        ReadData = 10009,
+
+        /// <summary>
+        /// Pass a pointer to the header callback userdata.
+        /// </summary>
+        HeaderData = 10029,
+
 
         // FUNCTIONPOINT options (20000+)
 

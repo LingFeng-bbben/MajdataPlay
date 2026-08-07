@@ -113,16 +113,27 @@ namespace MajdataPlay.Net.Curl.Core
         }
 
         [MonoPInvokeCallback(typeof(CurlReadOrWriteCallback))]
-        unsafe UIntPtr OnReadCallback(IntPtr ptr, UIntPtr size, UIntPtr nmemb, IntPtr userdata)
+        static unsafe UIntPtr OnReadCallback(IntPtr ptr, UIntPtr size, UIntPtr nmemb, IntPtr userdata)
         {
-            if (_contentStream is null)
+            if(userdata == IntPtr.Zero)
+            {
+                return UIntPtr.Zero;
+            }
+            var curlTask = CurlTask.FromHandle(userdata);
+            if (curlTask is null)
+            {
+                return UIntPtr.Zero;
+            }
+            var curlReq = curlTask.Request;
+            var contentStream = curlReq._contentStream;
+            if (contentStream is null)
             {
                 return UIntPtr.Zero;
             }
             var length = (int)(size.ToUInt32() * nmemb.ToUInt32());
             var buffer = new Span<byte>((void*)ptr, length);
 
-            _contentStream.Read(buffer);
+            contentStream.Read(buffer);
 
             return (UIntPtr)length;
         }

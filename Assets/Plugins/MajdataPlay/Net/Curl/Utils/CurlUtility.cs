@@ -15,19 +15,26 @@ namespace MajdataPlay.Net.Curl.Utils
 {
     internal static class CurlUtility
     {
+        static string _androidCAPath = string.Empty;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        static void SBUnityNMSL() // UNITY NMSL
+        {
+            _androidCAPath = Path.Combine(Application.persistentDataPath, "Runtime", "Networking", "ca.pem");
+        }
+
         public static void ApplySystemCA(CurlRequest request)
         {
             var returnCode = default(CurlCode?);
 #if UNITY_ANDROID
-            var androidCAPath = Path.Combine(Application.persistentDataPath, "Runtime", "Networking", "ca.pem");
-            if(File.Exists(androidCAPath))
+            if(File.Exists(_androidCAPath))
             {
-                returnCode = LibCurl.Easy.SetOption(request.Handle, CurlOption.CaInfo, androidCAPath);
+                returnCode = LibCurl.Easy.SetOption(request.Handle, CurlOption.CaInfo, _androidCAPath);
                 if (returnCode is CurlCode code && code != CurlCode.Ok)
                 {
                     MajDebug.LogWarning(
                         $"[libcurl]Failed to set CA certificate bundle. " +
-                        $"Path: \"{androidCAPath}\", " +
+                        $"Path: \"{_androidCAPath}\", " +
                         $"Error: {code} ({GetCurlErrorMessage(code)})");
                 }
             }
