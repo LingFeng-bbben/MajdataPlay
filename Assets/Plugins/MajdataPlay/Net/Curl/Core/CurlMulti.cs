@@ -14,6 +14,7 @@ using MajdataPlay.Net.Curl.Utils;
 using MajdataPlay.Net.Curl.Lifecycle;
 using System.IO;
 using MajdataPlay.Diagnostics;
+using AOT;
 #nullable enable
 namespace MajdataPlay.Net.Curl.Core
 {
@@ -139,7 +140,7 @@ namespace MajdataPlay.Net.Curl.Core
             {
                 _onResume(this);
             }
-
+            [MonoPInvokeCallback(typeof(CurlReadOrWriteCallback))]
             unsafe UIntPtr OnHeaderReceived(IntPtr ptr, UIntPtr size, UIntPtr nmemb, IntPtr userdata)
             {
                 var maxHeadersLength = Config.MaxResponseHeadersLength;

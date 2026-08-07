@@ -1,5 +1,3 @@
-using Codice.CM.Common.Zlib;
-using Mono.Cecil.Cil;
 using System;
 using System.Dynamic;
 using System.Runtime.InteropServices;
