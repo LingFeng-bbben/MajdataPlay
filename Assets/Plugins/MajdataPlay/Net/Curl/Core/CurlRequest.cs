@@ -3,6 +3,7 @@ using MajdataPlay.Net.Curl.Core.PInvoke;
 using MajdataPlay.Net.Curl.Lifecycle;
 using MajdataPlay.Net.Curl.Utils;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -17,7 +18,8 @@ namespace MajdataPlay.Net.Curl.Core
     internal class CurlRequest : CurlHandle
     {
         public Uri RequestUri { get; }
-        public HttpContent Content { get; }
+        public HttpRequestMessage Message { get; }
+        public HttpContent? Content { get; }
         public HttpMethod Method { get; }
 
         IntPtr _headersList = IntPtr.Zero;
@@ -40,8 +42,8 @@ namespace MajdataPlay.Net.Curl.Core
             {
                 throw new ArgumentNullException(nameof(httpRequest));
             }
+            Message = httpRequest;
             RequestUri = httpRequest.RequestUri ?? throw new ArgumentNullException(nameof(httpRequest.RequestUri));
-            Content = httpRequest.Content ?? throw new ArgumentNullException(nameof(httpRequest.Content));
             Method = httpRequest.Method ?? throw new ArgumentNullException(nameof(httpRequest.Method));
 
             _rawRequest = httpRequest;
@@ -50,7 +52,7 @@ namespace MajdataPlay.Net.Curl.Core
             SetOption(CurlOption.Url, RequestUri.OriginalString);
             SetOption(CurlOption.CustomRequest, Method.Method);
             SetOption(CurlOption.ReadFunction, _onReadCallback);
-            SetHeaders(httpRequest.Headers, Content.Headers);
+            SetHeaders(httpRequest.Headers, Content?.Headers);
 
             if(contentStream is not null)
             {
@@ -94,7 +96,7 @@ namespace MajdataPlay.Net.Curl.Core
             CheckCurlCode(result);
         }
         
-        void SetHeaders(HttpHeaders headers, HttpContentHeaders contentHeaders)
+        void SetHeaders(HttpHeaders headers, HttpContentHeaders? contentHeaders)
         {
             if (_headersList != IntPtr.Zero)
             {
@@ -102,7 +104,7 @@ namespace MajdataPlay.Net.Curl.Core
                 _headersList = IntPtr.Zero;
             }
 
-            foreach (var header in headers.Concat(contentHeaders))
+            foreach (var header in headers.Concat(contentHeaders?.AsEnumerable() ?? Array.Empty<KeyValuePair<string, IEnumerable<string>>>()))
             {
                 var headerString = $"{header.Key}: {string.Join(", ", header.Value)}";
                 _headersList = LibCurl.curl_slist_append(_headersList, headerString);

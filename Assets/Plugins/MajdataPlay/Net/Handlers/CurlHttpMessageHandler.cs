@@ -2,6 +2,7 @@
 using MajdataPlay.Net.Curl.Core;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -43,7 +44,12 @@ namespace MajdataPlay.Net.Curl
             CancellationToken cancellationToken)
         {
             var config = CopyCurrentConfig();
-            var contentStream = await request.Content.ReadAsStreamAsync();
+            var content = request.Content;
+            var contentStream = default(Stream?);
+            if(content is not null)
+            {
+                contentStream = await content.ReadAsStreamAsync();
+            }
             var curlTask = _curlMulti.AddToQueue(request, contentStream, config, cancellationToken);
 
             try

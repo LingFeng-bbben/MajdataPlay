@@ -1,4 +1,5 @@
-﻿using MajdataPlay.Net.Curl.Core;
+﻿using MajdataPlay.Diagnostics;
+using MajdataPlay.Net.Curl.Core;
 using MajdataPlay.Net.Curl.Core.PInvoke;
 using MajdataPlay.Runtime;
 using System;
@@ -37,6 +38,19 @@ namespace MajdataPlay.Net.Curl.Lifecycle
                         {
                             throw new CurlException(returnCode);
                         }
+                        var info = LibCurl.curl_version_info(0);
+                        MajDebug.LogInfo($"""
+                                        [libcurl]version info:
+                                        Age: {info.Age}
+                                        Version: {info.Version}
+                                        VersionNum: 0x{info.VersionNum:X6} ({info.VersionNum})
+                                        Host: {info.Host}
+                                        Features: 0x{info.Features:X8} ({info.Features})
+                                        SslVersion: {info.SslVersion}
+                                        SslVersionNum: {info.SslVersionNum}
+                                        LibzVersion: {info.LibzVersion}
+                                        Protocols: {(info.Protocols == null ? "<null>" : string.Join(", ", info.Protocols))}
+                                        """);
                         s_isGlobalInited = true;
                     }
                 }

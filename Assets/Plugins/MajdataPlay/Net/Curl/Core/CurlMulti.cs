@@ -1,5 +1,4 @@
 ﻿using MajdataPlay.Net.Curl.Core.PInvoke;
-using MajdataPlay.Net.Curl.Core.PInvoke;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -14,6 +13,7 @@ using System.Threading.Tasks;
 using MajdataPlay.Net.Curl.Utils;
 using MajdataPlay.Net.Curl.Lifecycle;
 using System.IO;
+using MajdataPlay.Diagnostics;
 #nullable enable
 namespace MajdataPlay.Net.Curl.Core
 {
@@ -439,60 +439,70 @@ namespace MajdataPlay.Net.Curl.Core
         {
             var thisToken = _cts.Token;
             Thread.CurrentThread.Name = "Curl multi worker";
-            while(!thisToken.IsCancellationRequested)
+            while (!thisToken.IsCancellationRequested)
             {
-                while(_pendingToSubmitTasks.TryDequeue(out var pendingTask))
+                try
                 {
-                    if(pendingTask.CancellationToken.IsCancellationRequested)
+                    var returnCode = default(CurlCode?);
+                    var multiReturnCode = default(CURLMcode?);
+                    while (_pendingToSubmitTasks.TryDequeue(out var pendingTask))
                     {
-                        continue;
-                    }
-                    if(pendingTask.TryEnterSubmittedState())
-                    {
-                        _activeTasks.Add(pendingTask);
-                        LibCurl.curl_multi_add_handle(ThisHandle, pendingTask.Request.Handle);
-                    }
-                }
-
-                while (_pendingToCancelTasks.TryDequeue(out var cancelTask))
-                {
-                    if (cancelTask.TryEnterCancelledState())
-                    {
-                        if (_activeTasks.Remove(cancelTask))
+                        if (pendingTask.CancellationToken.IsCancellationRequested)
                         {
-                            LibCurl.curl_multi_remove_handle(ThisHandle, cancelTask.Request.Handle);
+                            continue;
+                        }
+                        if (pendingTask.TryEnterSubmittedState())
+                        {
+                            _activeTasks.Add(pendingTask);
+                            multiReturnCode = LibCurl.curl_multi_add_handle(ThisHandle, pendingTask.Request.Handle);
                         }
                     }
-                }
 
-                while (_pendingToResumeTasks.TryDequeue(out var pausedTask))
-                {
-                    LibCurl.curl_easy_pause(pausedTask.Request.Handle, LibCurl.CURLPAUSE_RECV_CONT);
-                }
-
-                if (thisToken.IsCancellationRequested)
-                {
-                    return;
-                }
-
-                LibCurl.curl_multi_perform(ThisHandle, out var runningHandles);
-
-                if (thisToken.IsCancellationRequested)
-                {
-                    return;
-                }
-                var msgHandle = IntPtr.Zero;
-                while ((msgHandle = LibCurl.curl_multi_info_read(ThisHandle, out var remaining)) != IntPtr.Zero)
-                {
-                    var multiMsg = Marshal.PtrToStructure<CurlMsg>(msgHandle);
-                    if(multiMsg.Code == CurlMsgCode.Done)
+                    while (_pendingToCancelTasks.TryDequeue(out var cancelTask))
                     {
-                        CompleteTask(multiMsg);
+                        if (cancelTask.TryEnterCancelledState())
+                        {
+                            if (_activeTasks.Remove(cancelTask))
+                            {
+                                multiReturnCode = LibCurl.curl_multi_remove_handle(ThisHandle, cancelTask.Request.Handle);
+                            }
+                        }
                     }
-                }
 
-                LibCurl.curl_multi_poll(ThisHandle, IntPtr.Zero, 0, 1000, out _);
-            }
+                    while (_pendingToResumeTasks.TryDequeue(out var pausedTask))
+                    {
+                        returnCode = LibCurl.curl_easy_pause(pausedTask.Request.Handle, LibCurl.CURLPAUSE_RECV_CONT);
+                    }
+
+                    if (thisToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
+                    multiReturnCode = LibCurl.curl_multi_perform(ThisHandle, out var runningHandles);
+
+                    if (thisToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+                    var msgHandle = IntPtr.Zero;
+                    while ((msgHandle = LibCurl.curl_multi_info_read(ThisHandle, out var remaining)) != IntPtr.Zero)
+                    {
+                        var multiMsg = Marshal.PtrToStructure<CurlMsg>(msgHandle);
+                        if (multiMsg.Code == CurlMsgCode.Done)
+                        {
+                            CompleteTask(multiMsg);
+                        }
+                    }
+
+                    multiReturnCode = LibCurl.curl_multi_poll(ThisHandle, IntPtr.Zero, 0, 1000, out _);
+                }
+                catch (Exception e)
+                {
+                    MajDebug.LogError($"[libcurl][Multi worker]{e}");
+                    Thread.Sleep(2500);
+                }
+            }            
         }
 
         void CompleteTask(CurlMsg multiMsg)

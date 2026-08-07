@@ -73,10 +73,30 @@ namespace MajdataPlay.Net.Curl.Core.PInvoke
         [DllImport(DLL_NAME, EntryPoint = "curl_unity_setopt_long", CallingConvention = CallingConvention.Cdecl)]
         public static extern CurlCode curl_easy_setopt(IntPtr handle, CurlOption option, long value);
 
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CurlCode curl_easy_setopt(IntPtr handle, CurlOption option, CurlReadOrWriteCallback value);
+        public static CurlCode curl_easy_setopt(IntPtr handle, CurlOption option, CurlReadOrWriteCallback value)
+        {
+            if(option is CurlOption.ReadFunction)
+            {
+                return curl_unity_setopt_read_function(handle, value);
+            }
+            else if(option is CurlOption.HeaderFunction)
+            {
+                return curl_unity_setopt_header_function(handle, value);
+            }
+            else
+            {
+                return curl_unity_setopt_write_function(handle, value);
+            }
+        }
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        static extern CurlCode curl_unity_setopt_read_function(IntPtr handle, CurlReadOrWriteCallback value);
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        static extern CurlCode curl_unity_setopt_write_function(IntPtr handle, CurlReadOrWriteCallback value);
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        static extern CurlCode curl_unity_setopt_header_function(IntPtr handle, CurlReadOrWriteCallback value);
+
+        [DllImport(DLL_NAME, EntryPoint = "curl_unity_setopt_ptr", CallingConvention = CallingConvention.Cdecl)]
         public static extern CurlCode curl_easy_setopt(IntPtr handle, CurlOption option, IntPtr value);
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
@@ -138,10 +158,10 @@ namespace MajdataPlay.Net.Curl.Core.PInvoke
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern CURLMcode curl_multi_wakeup(IntPtr multiHandle);
 
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(DLL_NAME, EntryPoint = "curl_unity_multi_setopt_long", CallingConvention = CallingConvention.Cdecl)]
         public static extern CURLMcode curl_multi_setopt(IntPtr multi_handle, CURLMoption option, long value);
 
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(DLL_NAME, EntryPoint = "curl_unity_multi_setopt_ptr", CallingConvention = CallingConvention.Cdecl)]
         public static extern CURLMcode curl_multi_setopt(IntPtr multi_handle, CURLMoption option, IntPtr pointer);
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
@@ -156,5 +176,69 @@ namespace MajdataPlay.Net.Curl.Core.PInvoke
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern void curl_slist_free_all(IntPtr list);
+
+        public static unsafe CurlVersionInfo curl_version_info(int age)
+        {
+            var ptr = int_curl_version_info(age);
+            var info = Marshal.PtrToStructure<CurlVersionInfoRawData>(ptr);
+            var protocols = Array.Empty<string>();
+            var protocolsPtr = info.Protocols;
+            var protocolCount = 0;
+
+            while (*protocolsPtr != null)
+            {
+                protocolsPtr++;
+                protocolCount++;
+            }
+            protocolsPtr = info.Protocols;
+            if(protocolCount != 0)
+            {
+                protocols = new string[protocolCount];
+            }
+            for (var i = 0; i < protocolCount; i++)
+            {
+                var p = info.Protocols + i;
+                var protocol = Marshal.PtrToStringUTF8((IntPtr)(*p));
+                protocols[i] = protocol;
+            }
+            return new()
+            {
+                Age = info.Age,
+                Version = Marshal.PtrToStringUTF8((IntPtr)info.Version),
+                VersionNum = info.VersionNum,
+                Host = Marshal.PtrToStringUTF8((IntPtr)info.Host),
+                Features = info.Features,
+                SslVersion = Marshal.PtrToStringUTF8((IntPtr)info.SslVersion),
+                SslVersionNum = info.SslVersionNum,
+                LibzVersion = Marshal.PtrToStringUTF8((IntPtr)info.LibzVersion),
+                Protocols = protocols
+            };
+        }
+
+        [DllImport("libcurl", EntryPoint = "curl_version_info", CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr int_curl_version_info(int age);
+
+
+        [StructLayout(LayoutKind.Sequential)]
+        unsafe struct CurlVersionInfoRawData
+        {
+            public int Age;
+
+            public byte* Version;
+
+            public uint VersionNum;
+
+            public byte* Host;
+
+            public int Features;
+
+            public byte* SslVersion;
+
+            public long SslVersionNum;
+
+            public byte* LibzVersion;
+
+            public byte** Protocols;
+        }
     }
 }
