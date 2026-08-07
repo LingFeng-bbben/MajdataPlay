@@ -34,7 +34,7 @@ namespace MajdataPlay.Net.Curl
         {
             var multiHandle = multi.Handle;
 
-            LibCurl.curl_multi_setopt(multiHandle, CurlMOption.MaxHostConnections, (IntPtr)MaxConnectionsPerServer);
+            LibCurl.Multi.SetOption(multiHandle, CurlMOption.MaxHostConnections, (IntPtr)MaxConnectionsPerServer);
         }
 
         internal readonly void ApplyToRequest(CurlRequest request)
@@ -43,46 +43,46 @@ namespace MajdataPlay.Net.Curl
             var requestUri = request.RequestUri;
             var returnCode = default(CurlCode);
 
-            returnCode = LibCurl.curl_easy_setopt(easyHandle, CurlOption.FollowLocation, AllowAutoRedirect ? 1 : 0);
+            returnCode = LibCurl.Easy.SetOption(easyHandle, CurlOption.FollowLocation, AllowAutoRedirect ? 1 : 0);
             CurlUtility.EnsureSuccess(easyHandle, returnCode);
             if (AllowAutoRedirect)
             {
-                returnCode = LibCurl.curl_easy_setopt(easyHandle, CurlOption.MaxRedirs, MaxAutomaticRedirections);
+                returnCode = LibCurl.Easy.SetOption(easyHandle, CurlOption.MaxRedirs, MaxAutomaticRedirections);
                 CurlUtility.EnsureSuccess(easyHandle, returnCode);
             }
 
             if (AutomaticDecompression != DecompressionMethods.None)
             {
                 var encodings = GetEncodingString(AutomaticDecompression);
-                returnCode = LibCurl.curl_easy_setopt(easyHandle, CurlOption.AcceptEncoding, encodings);
+                returnCode = LibCurl.Easy.SetOption(easyHandle, CurlOption.AcceptEncoding, encodings);
                 CurlUtility.EnsureSuccess(easyHandle, returnCode);
             }
 
             if (UseProxy && Proxy != null && !Proxy.IsBypassed(requestUri))
             {
                 var proxyUri = Proxy.GetProxy(requestUri);
-                returnCode = LibCurl.curl_easy_setopt(easyHandle, CurlOption.Proxy, proxyUri.ToString());
+                returnCode = LibCurl.Easy.SetOption(easyHandle, CurlOption.Proxy, proxyUri.ToString());
                 CurlUtility.EnsureSuccess(easyHandle, returnCode);
 
                 var proxyCred = (DefaultProxyCredentials ?? Proxy.Credentials)?.GetCredential(proxyUri, "Basic");
                 if (proxyCred != null)
                 {
                     var userPwd = $"{proxyCred.UserName}:{proxyCred.Password}";
-                    returnCode = LibCurl.curl_easy_setopt(easyHandle, CurlOption.ProxyUserPwd, userPwd);
+                    returnCode = LibCurl.Easy.SetOption(easyHandle, CurlOption.ProxyUserPwd, userPwd);
                     CurlUtility.EnsureSuccess(easyHandle, returnCode);
                 }
             }
             else if (!UseProxy)
             {
-                returnCode = LibCurl.curl_easy_setopt(easyHandle, CurlOption.Proxy, "");
+                returnCode = LibCurl.Easy.SetOption(easyHandle, CurlOption.Proxy, "");
                 CurlUtility.EnsureSuccess(easyHandle, returnCode);
             }
 
             if (UseDefaultCredentials)
             {
-                returnCode = LibCurl.curl_easy_setopt(easyHandle, CurlOption.UserPassword, ":");
+                returnCode = LibCurl.Easy.SetOption(easyHandle, CurlOption.UserPassword, ":");
                 CurlUtility.EnsureSuccess(easyHandle, returnCode);
-                returnCode = LibCurl.curl_easy_setopt(easyHandle, CurlOption.HttpAuth, (long)(CurlAuth.NTLM | CurlAuth.GSSNEGOTIATE));
+                returnCode = LibCurl.Easy.SetOption(easyHandle, CurlOption.HttpAuth, (long)(CurlAuth.NTLM | CurlAuth.GSSNEGOTIATE));
                 CurlUtility.EnsureSuccess(easyHandle, returnCode);
             }
             else if (Credentials != null)
@@ -90,29 +90,29 @@ namespace MajdataPlay.Net.Curl
                 var cred = Credentials.GetCredential(requestUri, "Basic");
                 if (cred != null)
                 {
-                    returnCode = LibCurl.curl_easy_setopt(easyHandle, CurlOption.UserPassword, $"{cred.UserName}:{cred.Password}");
+                    returnCode = LibCurl.Easy.SetOption(easyHandle, CurlOption.UserPassword, $"{cred.UserName}:{cred.Password}");
                     CurlUtility.EnsureSuccess(easyHandle, returnCode);
 
                     var authType = PreAuthenticate ? (long)CurlAuth.Basic : (long)CurlAuth.Any;
-                    returnCode = LibCurl.curl_easy_setopt(easyHandle, CurlOption.HttpAuth, authType);
+                    returnCode = LibCurl.Easy.SetOption(easyHandle, CurlOption.HttpAuth, authType);
                     CurlUtility.EnsureSuccess(easyHandle, returnCode);
                 }
             }
 
             // SSL/TLS version
             var sslVersion = MapSslProtocols(SslProtocols);
-            returnCode = LibCurl.curl_easy_setopt(easyHandle, CurlOption.SslVersion, sslVersion);
+            returnCode = LibCurl.Easy.SetOption(easyHandle, CurlOption.SslVersion, sslVersion);
             CurlUtility.EnsureSuccess(easyHandle, returnCode);
 
             if (!CheckCertificateRevocationList)
             {
                 // CURLSSLOPT_NO_REVOKE = 2
-                returnCode = LibCurl.curl_easy_setopt(easyHandle, CurlOption.SslOptions, 2L);
+                returnCode = LibCurl.Easy.SetOption(easyHandle, CurlOption.SslOptions, 2L);
                 CurlUtility.EnsureSuccess(easyHandle, returnCode);
             }
             else
             {
-                returnCode = LibCurl.curl_easy_setopt(easyHandle, CurlOption.SslOptions, 0L);
+                returnCode = LibCurl.Easy.SetOption(easyHandle, CurlOption.SslOptions, 0L);
                 CurlUtility.EnsureSuccess(easyHandle, returnCode);
             }
 
@@ -122,7 +122,7 @@ namespace MajdataPlay.Net.Curl
 
                 if (!string.IsNullOrEmpty(cookieHeader))
                 {
-                    returnCode = LibCurl.curl_easy_setopt(easyHandle, CurlOption.Cookie, cookieHeader);
+                    returnCode = LibCurl.Easy.SetOption(easyHandle, CurlOption.Cookie, cookieHeader);
                     CurlUtility.EnsureSuccess(easyHandle, returnCode);
                 }
             }

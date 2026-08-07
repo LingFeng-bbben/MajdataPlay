@@ -37,7 +37,7 @@ namespace MajdataPlay.Net.Curl.Utils
                 MajDebug.LogWarning($"[libcurl]CA certificate bundle not found");
             }
 #elif UNITY_STANDALONE_WIN || UNITY_WSA
-            returnCode = LibCurl.curl_easy_setopt(request.Handle, CurlOption.SslOptions, LibCurl.CURLSSLOPT_NATIVE_CA);
+            returnCode = LibCurl.Easy.SetOption(request.Handle, CurlOption.SslOptions, LibCurl.CURLSSLOPT_NATIVE_CA);
             if (returnCode is CurlCode code && code != CurlCode.Ok)
             {
                 MajDebug.LogWarning(
@@ -67,7 +67,7 @@ namespace MajdataPlay.Net.Curl.Utils
             var osErrno = 0L;
             var sysMsg = string.Empty;
 
-            if (easyHandle != IntPtr.Zero && LibCurl.curl_easy_getinfo(easyHandle, CurlInfo.OsErrno, out osErrno) == CurlCode.Ok)
+            if (easyHandle != IntPtr.Zero && LibCurl.Easy.GetInfo(easyHandle, CurlInfo.OsErrno, out osErrno) == CurlCode.Ok)
             {
                 if (osErrno != 0)
                 {
@@ -85,9 +85,16 @@ namespace MajdataPlay.Net.Curl.Utils
 
         static string GetCurlErrorMessage(CurlCode code)
         {
-            var ptr = LibCurl.curl_easy_strerror(code);
+            var errMsg = LibCurl.Easy.GetErrorMessage(code);
 
-            return ptr != IntPtr.Zero ? Marshal.PtrToStringUTF8(ptr) : "Unknown curl error";
+            if(string.IsNullOrEmpty(errMsg))
+            {
+                return "Unknown curl error";
+            }
+            else
+            {
+                return errMsg!;
+            }
         }
     }
 }

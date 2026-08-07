@@ -33,12 +33,12 @@ namespace MajdataPlay.Net.Curl.Lifecycle
                 {
                     if (!s_isGlobalInited)
                     {
-                        var returnCode = LibCurl.curl_global_init(LibCurl.CURL_GLOBAL_DEFAULT);
+                        var returnCode = LibCurl.Init(LibCurl.CURL_GLOBAL_DEFAULT);
                         if (returnCode != CurlCode.Ok)
                         {
                             throw new CurlException(returnCode);
                         }
-                        var info = LibCurl.curl_version_info(0);
+                        var info = LibCurl.GetVersionInfo(0);
                         MajDebug.LogInfo($"""
                                         [libcurl]version info:
                                         Age: {info.Age}
@@ -76,7 +76,7 @@ namespace MajdataPlay.Net.Curl.Lifecycle
                     {
                         return true;
                     }
-                    LibCurl.curl_global_cleanup();
+                    LibCurl.CleanUp();
                     s_isGlobalInited = false;
                 }
             }

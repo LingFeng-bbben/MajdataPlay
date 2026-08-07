@@ -405,7 +405,7 @@ namespace MajdataPlay.Net.Curl.Core
         internal CurlMulti() 
         {
             LibCurlLifecycle.Retain();
-            ThisHandle = LibCurl.curl_multi_init();
+            ThisHandle = LibCurl.Multi.Init();
             _onRequestResume = OnTaskResume;
             _workerThread = Task.Factory.StartNew(Run, TaskCreationOptions.LongRunning);
         }
@@ -456,7 +456,7 @@ namespace MajdataPlay.Net.Curl.Core
                         if (pendingTask.TryEnterSubmittedState())
                         {
                             _activeTasks.Add(pendingTask);
-                            multiReturnCode = LibCurl.curl_multi_add_handle(ThisHandle, pendingTask.Request.Handle);
+                            multiReturnCode = LibCurl.Multi.AddEasyHandle(ThisHandle, pendingTask.Request.Handle);
                         }
                     }
 
@@ -466,14 +466,14 @@ namespace MajdataPlay.Net.Curl.Core
                         {
                             if (_activeTasks.Remove(cancelTask))
                             {
-                                multiReturnCode = LibCurl.curl_multi_remove_handle(ThisHandle, cancelTask.Request.Handle);
+                                multiReturnCode = LibCurl.Multi.RemoveEasyHandle(ThisHandle, cancelTask.Request.Handle);
                             }
                         }
                     }
 
                     while (_pendingToResumeTasks.TryDequeue(out var pausedTask))
                     {
-                        returnCode = LibCurl.curl_easy_pause(pausedTask.Request.Handle, LibCurl.CURLPAUSE_RECV_CONT);
+                        returnCode = LibCurl.Easy.Pause(pausedTask.Request.Handle, LibCurl.CURLPAUSE_RECV_CONT);
                     }
 
                     if (thisToken.IsCancellationRequested)
@@ -481,23 +481,21 @@ namespace MajdataPlay.Net.Curl.Core
                         return;
                     }
 
-                    multiReturnCode = LibCurl.curl_multi_perform(ThisHandle, out var runningHandles);
+                    multiReturnCode = LibCurl.Multi.Perform(ThisHandle, out var runningHandles);
 
                     if (thisToken.IsCancellationRequested)
                     {
                         return;
                     }
-                    var msgHandle = IntPtr.Zero;
-                    while ((msgHandle = LibCurl.curl_multi_info_read(ThisHandle, out var remaining)) != IntPtr.Zero)
+                    while (LibCurl.Multi.GetMessage(ThisHandle, out var remaining) is CurlMsg multiMsg)
                     {
-                        var multiMsg = Marshal.PtrToStructure<CurlMsg>(msgHandle);
                         if (multiMsg.Code == CurlMsgCode.Done)
                         {
                             CompleteTask(multiMsg);
                         }
                     }
 
-                    multiReturnCode = LibCurl.curl_multi_poll(ThisHandle, IntPtr.Zero, 0, 1000, out _);
+                    multiReturnCode = LibCurl.Multi.Poll(ThisHandle, IntPtr.Zero, 0, 1000, out _);
                 }
                 catch (Exception e)
                 {
@@ -508,13 +506,13 @@ namespace MajdataPlay.Net.Curl.Core
         }
         void WakeUp()
         {
-            LibCurl.curl_multi_wakeup(ThisHandle);
+            LibCurl.Multi.Wakeup(ThisHandle);
         }
 
         void CompleteTask(CurlMsg multiMsg)
         {
             var easyHandle = multiMsg.EasyHandle;
-            LibCurl.curl_easy_getinfo(easyHandle, CurlInfo.Private, out IntPtr privatePtr);
+            LibCurl.Easy.GetInfo(easyHandle, CurlInfo.Private, out IntPtr privatePtr);
             if (privatePtr != IntPtr.Zero)
             {
                 var taskHandle = GCHandle.FromIntPtr(privatePtr);
@@ -533,9 +531,9 @@ namespace MajdataPlay.Net.Curl.Core
                     }
                     taskHandle.Free();
                 }
-                LibCurl.curl_easy_setopt(easyHandle, CurlOption.Private, IntPtr.Zero);
+                LibCurl.Easy.SetOption(easyHandle, CurlOption.Private, IntPtr.Zero);
             }
-            LibCurl.curl_multi_remove_handle(ThisHandle, easyHandle);
+            LibCurl.Multi.RemoveEasyHandle(ThisHandle, easyHandle);
         }
 
         public override void Dispose()
@@ -571,7 +569,7 @@ namespace MajdataPlay.Net.Curl.Core
             {
                 task.TryFail(disposedEx);
                 var easyHandle = task.Request.Handle;
-                LibCurl.curl_multi_remove_handle(handle, easyHandle);
+                LibCurl.Multi.RemoveEasyHandle(handle, easyHandle);
                 task.Request.Dispose();
             }
             
@@ -589,7 +587,7 @@ namespace MajdataPlay.Net.Curl.Core
             }
             _activeTasks.Clear();
 
-            LibCurl.curl_multi_cleanup(handle);
+            LibCurl.Multi.CleanUp(handle);
             LibCurlLifecycle.Release();
         }
     }    

@@ -33,7 +33,7 @@ namespace MajdataPlay.Net.Curl.Core
         public CurlRequest(HttpRequestMessage httpRequest, Stream? contentStream)
         {
             LibCurlLifecycle.Retain();
-            ThisHandle = LibCurl.curl_easy_init();
+            ThisHandle = LibCurl.Easy.Init();
             if (ThisHandle == IntPtr.Zero)
             {
                 throw new InvalidOperationException("Failed to initialize libcurl.");
@@ -74,25 +74,25 @@ namespace MajdataPlay.Net.Curl.Core
         public void SetOption(CurlOption option, string value)
         {
             ThrowIfDisposed();
-            var result = LibCurl.curl_easy_setopt(ThisHandle, option, value);
+            var result = LibCurl.Easy.SetOption(ThisHandle, option, value);
             CheckCurlCode(result);
         }
         public void SetOption(CurlOption option, long value)
         {
             ThrowIfDisposed();
-            var result = LibCurl.curl_easy_setopt(ThisHandle, option, value);
+            var result = LibCurl.Easy.SetOption(ThisHandle, option, value);
             CheckCurlCode(result);
         }
         public void SetOption(CurlOption option, CurlReadOrWriteCallback callback)
         {
             ThrowIfDisposed();
-            var result = LibCurl.curl_easy_setopt(ThisHandle, option, callback);
+            var result = LibCurl.Easy.SetOption(ThisHandle, option, callback);
             CheckCurlCode(result);
         }
         public void SetOption(CurlOption option, IntPtr value)
         {
             ThrowIfDisposed();
-            var result = LibCurl.curl_easy_setopt(ThisHandle, option, value);
+            var result = LibCurl.Easy.SetOption(ThisHandle, option, value);
             CheckCurlCode(result);
         }
         
@@ -100,14 +100,14 @@ namespace MajdataPlay.Net.Curl.Core
         {
             if (_headersList != IntPtr.Zero)
             {
-                LibCurl.curl_slist_free_all(_headersList);
+                LibCurl.SlistFreeAll(_headersList);
                 _headersList = IntPtr.Zero;
             }
 
             foreach (var header in headers.Concat(contentHeaders?.AsEnumerable() ?? Array.Empty<KeyValuePair<string, IEnumerable<string>>>()))
             {
                 var headerString = $"{header.Key}: {string.Join(", ", header.Value)}";
-                _headersList = LibCurl.curl_slist_append(_headersList, headerString);
+                _headersList = LibCurl.SlistAppend(_headersList, headerString);
             }
             SetOption(CurlOption.HttpHeader, _headersList);
         }
@@ -132,7 +132,7 @@ namespace MajdataPlay.Net.Curl.Core
             var handle = Interlocked.Exchange(ref ThisHandle, IntPtr.Zero);
             if (handle != IntPtr.Zero)
             {
-                LibCurl.curl_easy_cleanup(handle);
+                LibCurl.Easy.CleanUp(handle);
                 LibCurlLifecycle.Release();
                 GC.SuppressFinalize(this);
             }

@@ -30,8 +30,11 @@ namespace MajdataPlay.Net.Curl.Core
         {
             if (result != CurlCode.Ok)
             {
-                IntPtr errorPtr = LibCurl.curl_easy_strerror(result);
-                string errorMessage = Marshal.PtrToStringAnsi(errorPtr) ?? "Unknown error";
+                var errorMessage = LibCurl.Easy.GetErrorMessage(result);
+                if (string.IsNullOrEmpty(errorMessage))
+                {
+                    errorMessage = "Unknown error";
+                }
                 throw new InvalidOperationException($"libcurl error: {errorMessage}");
             }
         }
