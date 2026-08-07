@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.os.Build;
 import android.util.Base64;
+import android.util.Log;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -17,16 +19,39 @@ import javax.net.ssl.X509TrustManager;
 public final class SystemCAImporter
 {
     public static boolean tryInit(Context context) {
-        File cacheDir = new File(context.getFilesDir(), "Runtime/Networking");
+        File externalFilesDir = context.getExternalFilesDir(null);
+
+        if (externalFilesDir == null) {
+            Log.e("Curl", "External files directory is unavailable");
+            return false;
+        }
+
+        File cacheDir = new File(
+                externalFilesDir,
+                "Runtime/Networking"
+        );
 
         if (!cacheDir.exists()) {
-            cacheDir.mkdirs();
+            boolean created = cacheDir.mkdirs();
+
+            Log.d(
+                    "Curl",
+                    "Create directory: " +
+                            cacheDir.getAbsolutePath() +
+                            ", success=" +
+                            created
+            );
         }
+
+        Log.i(
+                "Curl",
+                "CA cache directory: " +
+                        cacheDir.getAbsolutePath()
+        );
         File pemFile = new File(cacheDir, "ca.pem");
         File versionFile = new File(cacheDir, "ca.version");
 
         if (isCacheValid(context, versionFile, pemFile)) {
-
             return true;
         }
 
