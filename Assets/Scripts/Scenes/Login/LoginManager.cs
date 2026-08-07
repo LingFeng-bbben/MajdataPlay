@@ -452,7 +452,7 @@ namespace MajdataPlay.Scenes.Login
             {
                 await UniTask.Yield();
             }
-            if (!task2.IsCompletedSuccessfully)
+            if (!task2.IsCompletedSuccessfully || !task2.Result)
             {
                 sceneSwitcher.SetLoadingText("MAJTEXT_ERR_SCAN_ONLINE_FAV_COLLECTION_FAILED".i18n(), Color.red);
             }

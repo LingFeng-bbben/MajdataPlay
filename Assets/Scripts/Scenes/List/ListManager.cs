@@ -638,12 +638,13 @@ namespace MajdataPlay.Scenes.List
             {
                 MajInstances.SceneSwitcher.SetLoadingText(e);
             };
-            var task = SongStorage.RefreshAsync(progress);
-            while(!task.IsCompleted)
+            var refreshTask = SongStorage.RefreshAsync(progress);
+            while(!refreshTask.IsCompleted)
             {
                 await UniTask.Yield();
             }
-            if (!task.IsCompletedSuccessfully)
+            var isListRefreshSuccessful = refreshTask.IsCompletedSuccessfully;
+            if (!isListRefreshSuccessful)
             {
                 sceneSwitcher.SetLoadingText("MAJTEXT_ERR_SCAN_CHARTS_FAILED".i18n(), Color.red);
             }
@@ -651,6 +652,21 @@ namespace MajdataPlay.Scenes.List
             {
                 sceneSwitcher.SetLoadingText(string.Empty);
             }
+
+            var onlineFavoritesTask = SongStorage.RefreshUserOnlineFavAsync(progress);
+            while (!onlineFavoritesTask.IsCompleted)
+            {
+                await UniTask.Yield();
+            }
+            if (!onlineFavoritesTask.IsCompletedSuccessfully || !onlineFavoritesTask.Result)
+            {
+                sceneSwitcher.SetLoadingText("MAJTEXT_ERR_SCAN_ONLINE_FAV_COLLECTION_FAILED".i18n(), Color.red);
+            }
+            else if (isListRefreshSuccessful)
+            {
+                sceneSwitcher.SetLoadingText(string.Empty);
+            }
+
             await UniTask.Delay(3000);
             sceneSwitcher.SwitchScene("List", false);
         }

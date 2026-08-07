@@ -275,12 +275,13 @@ namespace MajdataPlay
                 throw;
             }
         }
-        internal static async Task RefreshUserOnlineFavAsync(IProgress<string>? progressReporter = null)
+        internal static async Task<bool> RefreshUserOnlineFavAsync(IProgress<string>? progressReporter = null)
         {
             if (!MajEnv.Settings.Online.Enable)
             {
-                return;
+                return true;
             }
+            var isSuccessful = true;
             using var collections = new RentedList<SongCollection>(Collections);
             for (var i = 0; i < collections.Count; i++)
             {
@@ -300,12 +301,20 @@ namespace MajdataPlay
                 {
                     continue;
                 }
+                if (!api.RuntimeConfig.IsLoggedIn)
+                {
+                    continue;
+                }
                 try
                 {
                     MajDebug.LogInfo($"[Online]Fetching fav list from {api.Url.OriginalString}");
                     progressReporter?.Report(ZString.Format("MAJTEXT_SCANNING_FAVORITES_FROM_{0}".i18n(), api.Name));
                     var daninfos = await Online.GetUserOnlineFavCollection(api);
-                    if (daninfos is not null && daninfos.Length > 0)
+                    if (daninfos is null)
+                    {
+                        isSuccessful = false;
+                    }
+                    else if (daninfos.Length > 0)
                     {
                         foreach (var dan in daninfos)
                         {
@@ -320,12 +329,14 @@ namespace MajdataPlay
                 }
                 catch (Exception e)
                 {
+                    isSuccessful = false;
                     MajDebug.LogError($"[Online]Fetching fav list from {api.Url.OriginalString} failed because of {e.Message}");
                     MajDebug.LogException(e);
                 }
             }
             //Potential bug: user may not return to the dir because this change after refresh.
             Collections = collections.ToArray();
+            return isSuccessful;
         }
         //get local song list and online song list
         static async Task<SongCollection[]> GetCollections(string rootPath, IProgress<string>? progressReporter)
