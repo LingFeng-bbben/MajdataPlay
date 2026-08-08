@@ -23,6 +23,8 @@ namespace MajdataPlay.Net.Curl.Core
 
         SpinLock _pauseOrResumeLock = new(false);
 
+        int _isDisposed = 0;
+
         readonly int _lwmBytes;
         readonly int _hwmBytes;
 
@@ -44,6 +46,7 @@ namespace MajdataPlay.Net.Curl.Core
 
         public UIntPtr WriteChunk(ReadOnlySpan<byte> chunk)
         {
+            ThrowIfDisposed();
             if (chunk.IsEmpty)
             {
                 return UIntPtr.Zero;
@@ -89,16 +92,19 @@ namespace MajdataPlay.Net.Curl.Core
 
         public void CompleteWriting()
         {
+            ThrowIfDisposed();
             _bufferQueue.CompleteAdding();
         }
         public void Abort(Exception ex)
         {
+            ThrowIfDisposed();
             _abortException = ex;
             _bufferQueue.CompleteAdding();
         }
 
         public override int Read(byte[] buffer, int offset, int count)
         {
+            ThrowIfDisposed();
             if (_abortException != null)
             {
                 ExceptionDispatchInfo.Capture(_abortException).Throw();
@@ -180,6 +186,10 @@ namespace MajdataPlay.Net.Curl.Core
 
         protected override void Dispose(bool disposing)
         {
+            if(Interlocked.CompareExchange(ref _isDisposed, 1 , 0) != 0)
+            {
+                return;
+            }
             if (disposing)
             {
                 if (!_bufferQueue.IsAddingCompleted)
@@ -198,6 +208,13 @@ namespace MajdataPlay.Net.Curl.Core
                 _bufferQueue.Dispose();
             }
             base.Dispose(disposing);
+        }
+        void ThrowIfDisposed()
+        {
+            if(Volatile.Read(ref _isDisposed) != 0)
+            {
+                throw new ObjectDisposedException(nameof(CurlResponseStream));
+            }
         }
 
         struct MemoryChunk
