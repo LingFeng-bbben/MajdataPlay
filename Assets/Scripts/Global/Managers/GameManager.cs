@@ -104,7 +104,7 @@ namespace MajdataPlay
 #if UNITY_STANDALONE
             DiscordManager.Init();
 #endif
-            MajInstances.FPSDisplayer.Init();
+            MajInstances.RuntimeInfoDisplayer.Init();
             MajInstances.AudioManager.Init();
             Localization.Init();
 #if UNITY_STANDALONE_WIN
@@ -654,7 +654,7 @@ namespace MajdataPlay
                 }
                 if (!task.IsCompletedSuccessfully)
                 {
-                    MajInstances.SceneSwitcher.SetLoadingText("MAJTEXT_SCAN_CHARTS_FAILED".i18n(), Color.red);
+                    MajInstances.SceneSwitcher.SetLoadingText("MAJTEXT_ERR_SCAN_CHARTS_FAILED".i18n(), Color.red);
                 }
                 else
                 {

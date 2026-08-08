@@ -335,6 +335,9 @@ namespace MajdataPlay.Scenes.Title
             }
             else
             {
+#if UNITY_ANDROID || UNITY_IOS
+                NextScene();
+#else
                 switch (e.SArea)
                 {
                     case SensorArea.A8:
@@ -344,6 +347,7 @@ namespace MajdataPlay.Scenes.Title
                         NextScene();
                         break;
                 }
+#endif
             }
         }
 

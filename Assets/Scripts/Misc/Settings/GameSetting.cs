@@ -88,6 +88,10 @@ namespace MajdataPlay.Settings
         
         public RecordModeOption RecordMode { get; set; } = RecordModeOption.Disable;
 #endif
+        [Step("1")]
+        [Range("1", "5", HasMax = true, HasMin = true)]
+        public int LeadInTime { get; set; } = 1;
+
         public bool ManualStartGame { get; set; } = false;
     }
     
@@ -431,7 +435,7 @@ namespace MajdataPlay.Settings
         public float TouchRadiusAdjust { get; set; } = 0f;
 #endif
         
-        public bool DisplayFPS { get; set; } = true;
+        public bool DisplayRuntimeInfo { get; set; } = true;
 #if UNITY_STANDALONE
         [HideInSettingUI]
         public bool FullScreen { get; set; } = true;

@@ -2089,8 +2089,9 @@ GameObject:
   - component: {fileID: 638014423}
   - component: {fileID: 638014422}
   - component: {fileID: 638014424}
+  - component: {fileID: 638014425}
   m_Layer: 5
-  m_Name: FPSDisplayer
+  m_Name: RuntimeInfoDisplayer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2112,8 +2113,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -107.96002, y: -27.699951}
-  m_SizeDelta: {x: 2.16, y: 0.55}
+  m_AnchoredPosition: {x: -340, y: -27.699951}
+  m_SizeDelta: {x: 6.8, y: 0.55}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &638014422
 MonoBehaviour:
@@ -2135,7 +2136,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: FPS  144.00   1%  --.--
+  m_text: FPS <mspace=0.62em> 144.00</mspace>   1% <mspace=0.62em>  --.--</mspace>   Ver. 2.0.0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 05efa2e3d6891424ea2b70283145ceb3, type: 2}
   m_sharedMaterial: {fileID: 2098280800310027963, guid: 05efa2e3d6891424ea2b70283145ceb3, type: 2}
@@ -2169,7 +2170,7 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
-  m_HorizontalAlignment: 1
+  m_HorizontalAlignment: 4
   m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
@@ -2201,7 +2202,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_margin: {x: 0, y: 0, z: 0.2, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   _SortingLayer: 0
@@ -2271,6 +2272,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 17c65aca7094c344381a722f47a8d47e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  <RuntimeDatabase>k__BackingField: {fileID: 0}
+--- !u!114 &638014425
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 638014420}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac69316f9f31482cb3364ea50282b68b, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
   <RuntimeDatabase>k__BackingField: {fileID: 0}
 --- !u!1 &639331720
 GameObject:
@@ -3694,9 +3708,6 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 7942307277902318624, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1066008516}
-    - targetCorrespondingSourceObject: {fileID: 7942307277902318624, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 1066008524}
     - targetCorrespondingSourceObject: {fileID: 7848876556989961994, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
       insertIndex: -1
@@ -3720,28 +3731,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 7848876556989961994, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
   m_PrefabInstance: {fileID: 1066008512}
   m_PrefabAsset: {fileID: 0}
---- !u!95 &1066008516
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1066008513}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: aba382af7eea3ab4d9eeb5d9c6ba0441, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!114 &1066008517
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3794,6 +3783,14 @@ MonoBehaviour:
   MainImage: {fileID: 1930814263}
   loadingText: {fileID: 1342664136}
   LoadingLightColor: {r: 0.3647059, g: 0.3137255, b: 0.2901961, a: 1}
+  _mainMaskRect: {fileID: 1309303937}
+  _coveredMaskSize: 1080
+  _closeDuration: 0.9
+  _openDuration: 0.8
+  _triangleColumns: 12
+  _triangleFadeSpan: 0.2
+  _triangleGridRotation: 0
+  _triangleSpinDegrees: 90
   _videoPlayer: {fileID: 130509344}
   _mvRenderer: {fileID: 130509345}
 --- !u!114 &1066008526
@@ -4472,7 +4469,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 31a19414c41e5ae4aae2af33fee712f6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_ShowMaskGraphic: 1
+  m_ShowMaskGraphic: 0
 --- !u!114 &1309303939
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5743,7 +5740,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2100000, guid: e1c2b723b9a742f4a88194e683b29bd6, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}

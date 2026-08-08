@@ -1,13 +1,10 @@
 ﻿using LitMotion;
 using MajdataPlay.Collections;
-using MajdataPlay.Diagnostics;
 using MajdataPlay.Editor;
 using MajdataPlay.Scenes.List.Models;
 using MajdataPlay.Settings.Runtime;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
@@ -16,17 +13,12 @@ using UnityEngine.UI;
 #nullable enable
 namespace MajdataPlay.Scenes.List
 {
-    public class CollectionListManager: MonoBehaviour
+    public class CollectionListManager : MonoBehaviour
     {
         const int DISPLAYER_ANIM_DURATION_MS = 250;
+        const float VISIBLE_COLLECTION_DISTANCE = 3f;
 
-        public SongCollection SelectedCollection
-        {
-            get
-            {
-                return _currentCollection;
-            }
-        }
+        public SongCollection SelectedCollection => _currentCollection;
 
         #region icon and color ref
         [SerializeField]
@@ -102,7 +94,7 @@ namespace MajdataPlay.Scenes.List
         SongCollection[] _collections = Array.Empty<SongCollection>();
 
         CollectionDisplayer[] _collectionDisplayers = Array.Empty<CollectionDisplayer>();
-        SongCollectionBinding[] _collectionBindings = Array.Empty<SongCollectionBinding>();
+        int[] _collectionDisplayerIndices = Array.Empty<int>();
 
         SongCollection[] _easySortedCollections = Array.Empty<SongCollection>();
         SongCollection[] _basicSortedCollections = Array.Empty<SongCollection>();
@@ -114,7 +106,6 @@ namespace MajdataPlay.Scenes.List
 
         MotionHandle _scrollMotion;
 
-        readonly Queue<CollectionDisplayer> _idleCollectionDisplayers = new();
         readonly ListConfig _listConfig = MajEnv.RuntimeConfig?.List ?? new();
 
         void Awake()
@@ -123,6 +114,8 @@ namespace MajdataPlay.Scenes.List
             var collectionListRoot = _collectionListRoot.transform;
             var displayerCount = collectionListRoot.childCount;
             _collectionDisplayers = new CollectionDisplayer[displayerCount];
+            _collectionDisplayerIndices = new int[displayerCount];
+            Array.Fill(_collectionDisplayerIndices, -1);
             for (int i = 0; i < displayerCount; i++)
             {
                 var child = collectionListRoot.GetChild(i);
@@ -133,19 +126,16 @@ namespace MajdataPlay.Scenes.List
                 }
                 _collectionDisplayers[i] = displayer;
                 displayer.gameObject.SetActive(false);
-                _idleCollectionDisplayers.Enqueue(displayer);
             }
+        }
+        void OnDestroy()
+        {
+            _scrollMotion.TryCancel();
         }
         internal void Init()
         {
             InitCollectionStorage();
-            InitCollectionBinding();
             RestoreContextFromConfiguration();
-        }
-        internal void SlideList(int delta, bool disableAnimation = false, bool forceUpdate = false)
-        {
-            var pos = _listDesiredPos + delta;
-            SlideListTo(pos, disableAnimation, forceUpdate);
         }
         public void SlideDifficulty(int delta)
         {
@@ -155,50 +145,32 @@ namespace MajdataPlay.Scenes.List
         void SlideListTo(int pos, bool disableAnimation, bool forceUpdate)
         {
             var oldDesiredPos = _listDesiredPos;
-            _listDesiredPos = pos;
-            if (_listDesiredPos < 0)
-            {
-                _listDesiredPos = _collections.Length - 1;
-            }
-            else if (_listDesiredPos >= _collections.Length)
-            {
-                _listDesiredPos = 0;
-            }            
+            var crossesBoundary = pos < 0 || pos >= _collections.Length;
+            _listDesiredPos = WrapIndex(pos, _collections.Length);
             UpdateSelectedSongCollection();
             UpdateListConfiguration();
             UpdateCollectionIcon();
-            if (_listDesiredPos != oldDesiredPos || forceUpdate)
+            var shouldUpdate = _listDesiredPos != oldDesiredPos || forceUpdate;
+            if (!shouldUpdate)
             {
-                _coverListManager.SetCollection(_currentCollection, false);
+                return;
             }
-            if (disableAnimation)
+
+            _coverListManager.SetCollection(_currentCollection, false);
+            if (disableAnimation || crossesBoundary)
             {
-                if (_listDesiredPos != oldDesiredPos || forceUpdate)
-                {
-                    _listCursorPos = _listDesiredPos;
-                    UpdateSongCollectionBinding();
-                    UpdateDisplayerPosition();
-                }
+                _scrollMotion.TryCancel();
+                _listCursorPos = _listDesiredPos;
+                UpdateDisplayerPosition();
             }
             else
             {
-                if (_listDesiredPos != oldDesiredPos || forceUpdate)
-                {
-                    DisplayerMoveTo(_listDesiredPos, DISPLAYER_ANIM_DURATION_MS / 1000f);
-                }
+                DisplayerMoveTo(_listDesiredPos, DISPLAYER_ANIM_DURATION_MS / 1000f);
             }
         }
         void SlideToDifficulty(int pos)
         {
-            _selectedDifficulty = pos;
-            if (_selectedDifficulty > 6)
-            {
-                _selectedDifficulty = 0;
-            }
-            if (_selectedDifficulty < 0)
-            {
-                _selectedDifficulty = 6;
-            }
+            _selectedDifficulty = WrapIndex(pos, 7);
             var chartLevel = (ChartLevel)_selectedDifficulty;
             _listConfig.SelectedDiff = chartLevel;
             UpdateSelectedSongCollection();
@@ -210,20 +182,21 @@ namespace MajdataPlay.Scenes.List
         
         internal void NextCollection()
         {
-            var oP = _listDesiredPos;
-            SlideList(1);
-            var nP = _listDesiredPos;
-            if(oP != nP)
-            {
-                _coverListManager.SlideListToHead();
-            }            
+            ChangeCollection(1);
         }
         internal void PreviousCollection()
         {
-            var oP = _listDesiredPos;
-            SlideList(-1);
-            var nP = _listDesiredPos;
-            if (oP != nP)
+            ChangeCollection(-1);
+        }
+        void ChangeCollection(int delta)
+        {
+            var targetPosition = _listDesiredPos + delta;
+            SlideListTo(targetPosition, false, false);
+            if (delta > 0)
+            {
+                _coverListManager.SlideListToHead();
+            }
+            else
             {
                 _coverListManager.SlideListToTail();
             }
@@ -235,10 +208,10 @@ namespace MajdataPlay.Scenes.List
             _scrollMotion = LMotion.Create(_listCursorPos, targetPos, duration)
                                    .WithScheduler(MotionScheduler.PostLateUpdate)
                                    .WithEase(Ease.OutQuad)
+                                   .WithOnComplete(NormalizeListCursor)
                                    .Bind(x =>
                                    {
                                        _listCursorPos = x;
-                                       UpdateSongCollectionBinding();
                                        UpdateDisplayerPosition();
                                    });
         }
@@ -272,55 +245,75 @@ namespace MajdataPlay.Scenes.List
             }
             _nameDisplayer.text = _currentCollection.Name;
         }
-        void UpdateSongCollectionBinding()
-        {
-            var currentListCursorPos = (int)_listCursorPos;
-            for (var i = 0; i < _collectionBindings.Length; i++)
-            {
-                ref var binding = ref _collectionBindings[i];
-                var absDistance = Math.Abs(i - currentListCursorPos);
-                var displayer = binding.Displayer;
-
-                if (absDistance > 3)
-                {                    
-                    if (displayer is null)
-                    {
-                        continue;
-                    }
-                    binding.Displayer = null;
-                    displayer.SetActive(false);
-                    _idleCollectionDisplayers.Enqueue(displayer);
-                }
-                else
-                {
-                    if(displayer is not null)
-                    {
-                        continue;
-                    }
-                    if (!_idleCollectionDisplayers.TryDequeue(out displayer))
-                    {
-                        MajDebug.LogWarning("No idle collection displayer available.");
-                        continue;
-                    }
-                    binding.Displayer = displayer;
-                    displayer.SetCollection(binding.Collection);
-                    displayer.SetActive(true);
-                }
-            }
-        }
         void UpdateDisplayerPosition()
         {
-            for (var i = 0; i < _collectionBindings.Length; i++)
+            var displayerCount = _collectionDisplayers.Length;
+            if (displayerCount == 0 || _collections.Length == 0)
             {
-                ref var binding = ref _collectionBindings[i];
-                var displayer = binding.Displayer;
-                if (displayer is null)
+                return;
+            }
+
+            var firstVisibleIndex = Mathf.Max(0, Mathf.CeilToInt(_listCursorPos - VISIBLE_COLLECTION_DISTANCE));
+            var lastVisibleIndex = Mathf.Min(
+                _collections.Length - 1,
+                Mathf.FloorToInt(_listCursorPos + VISIBLE_COLLECTION_DISTANCE));
+
+            for (var i = 0; i < displayerCount; i++)
+            {
+                var collectionIndex = _collectionDisplayerIndices[i];
+                if (collectionIndex >= firstVisibleIndex && collectionIndex <= lastVisibleIndex)
                 {
                     continue;
                 }
-                var delta = i - _listCursorPos;
-                displayer.RectTransform.anchoredPosition = GetDisplayerPositionFromDelta(delta);
+
+                _collectionDisplayerIndices[i] = -1;
+                _collectionDisplayers[i].SetActive(false);
             }
+
+            for (var collectionIndex = firstVisibleIndex; collectionIndex <= lastVisibleIndex; collectionIndex++)
+            {
+                if (Array.IndexOf(_collectionDisplayerIndices, collectionIndex) >= 0)
+                {
+                    continue;
+                }
+
+                var displayerIndex = Array.IndexOf(_collectionDisplayerIndices, -1);
+                if (displayerIndex < 0)
+                {
+                    break;
+                }
+                BindCollectionDisplayer(displayerIndex, collectionIndex);
+            }
+
+            for (var i = 0; i < displayerCount; i++)
+            {
+                var collectionIndex = _collectionDisplayerIndices[i];
+                if (collectionIndex < 0)
+                {
+                    continue;
+                }
+
+                var displayer = _collectionDisplayers[i];
+                var distance = collectionIndex - _listCursorPos;
+                displayer.RectTransform.anchoredPosition = GetDisplayerPositionFromDelta(distance);
+            }
+        }
+        void NormalizeListCursor()
+        {
+            _listCursorPos = _listDesiredPos;
+            UpdateDisplayerPosition();
+        }
+        void BindCollectionDisplayer(int displayerIndex, int collectionIndex)
+        {
+            _collectionDisplayerIndices[displayerIndex] = collectionIndex;
+            var displayer = _collectionDisplayers[displayerIndex];
+            displayer.SetCollection(_collections[collectionIndex]);
+            displayer.SetActive(true);
+        }
+        static int WrapIndex(int index, int count)
+        {
+            var wrappedIndex = index % count;
+            return wrappedIndex < 0 ? wrappedIndex + count : wrappedIndex;
         }
         void UpdateListConfiguration()
         {
@@ -400,7 +393,6 @@ namespace MajdataPlay.Scenes.List
                 newCollections[i].SortAndFilter(SongStorage.OrderBy);
             });
             _collections = newCollections;
-            var collection = _collections[SongStorage.CollectionIndex];
 
             if (SongStorage.OrderBy.SortBy == SortType.ByRank)
             {
@@ -500,14 +492,6 @@ namespace MajdataPlay.Scenes.List
                     {
                         Id = originCollection.Id
                     };
-
-                    //_easySortedCollections[i].SortAndFilter(SongStorage.OrderBy);
-                    //_basicSortedCollections[i].SortAndFilter(SongStorage.OrderBy);
-                    //_advanceSortedCollections[i].SortAndFilter(SongStorage.OrderBy);
-                    //_expertSortedCollections[i].SortAndFilter(SongStorage.OrderBy);
-                    //_masterSortedCollections[i].SortAndFilter(SongStorage.OrderBy);
-                    //_reMasterSortedCollections[i].SortAndFilter(SongStorage.OrderBy);
-                    //_utageSortedCollections[i].SortAndFilter(SongStorage.OrderBy);
                 });
             }
             else
@@ -519,19 +503,6 @@ namespace MajdataPlay.Scenes.List
                 _masterSortedCollections = newCollections;
                 _reMasterSortedCollections = newCollections;
                 _utageSortedCollections = newCollections;
-            }
-        }
-        void InitCollectionBinding()
-        {
-            _collectionBindings = new SongCollectionBinding[_collections.Length];
-            for (int i = 0; i < _collections.Length; i++)
-            {
-                var collection = _collections[i];
-                var binding = new SongCollectionBinding()
-                {
-                    Collection = collection
-                };
-                _collectionBindings[i] = binding;
             }
         }
         void RestoreContextFromConfiguration()
@@ -573,18 +544,6 @@ namespace MajdataPlay.Scenes.List
             };
 
             return new Vector2(Mathf.Sign(delta) * x, 0);
-        }
-
-        struct SongCollectionBinding
-        {
-            public SongCollection Collection { get; init; }
-            public CollectionDisplayer? Displayer { get; set; }
-
-            public SongCollectionBinding(SongCollection collection, CollectionDisplayer? displayer)
-            {
-                Collection = collection;
-                Displayer = displayer;
-            }
         }
     }
 }
