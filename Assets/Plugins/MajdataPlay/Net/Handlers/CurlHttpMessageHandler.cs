@@ -30,7 +30,7 @@ namespace MajdataPlay.Net.Curl
         public DecompressionMethods AutomaticDecompression { get; set; } = DecompressionMethods.None;
         public bool AllowAutoRedirect { get; set; } = true;
         public bool UseDefaultCredentials { get; set; }
-        public bool UseProxy { get; set; } = true;
+        public bool UseProxy { get; set; } = false;
 
         readonly CurlMulti _curlMulti;
 
