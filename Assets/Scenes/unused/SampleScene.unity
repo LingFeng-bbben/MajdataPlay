@@ -568,8 +568,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f53de87567e698c4a87365a564f3428c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.Scenes.Other.MultiHttpTest
-  testUrl: https://majdata.net/api3/api/utils/ping
-  concurrentRequests: 512
+  testUrl: https://majdata.net/api3/api/machine/register
+  concurrentRequests: 1
+  method: POST
+  payload: '{"Name": "MajdataPlay Client","Description": "MajdataPlay Client QR Code
+    Authentication"}'
   logText: {fileID: 1326397101}
   curlButton: {fileID: 1476387450}
   httpClientButton: {fileID: 1933307989}

@@ -21,6 +21,8 @@ namespace MajdataPlay.Scenes.Other
         [Header("Config")]
         [SerializeField] private string testUrl = "https://httpbin.org/get";
         [SerializeField, Min(1)] private int concurrentRequests = 20;
+        [SerializeField] string method = "GET";
+        [SerializeField] string payload = "";
 
         [Header("UI")]
         [SerializeField] private Text logText;
@@ -96,7 +98,7 @@ namespace MajdataPlay.Scenes.Other
             for (int i = 0; i < concurrentRequests; i++)
             {
                 int idx = i;
-                tasks[i] = PerformCurlAsync(testUrl, idx, ct);
+                tasks[i] = PerformCurlAsync(testUrl, idx, method, payload, ct);
             }
 
             try
@@ -115,11 +117,21 @@ namespace MajdataPlay.Scenes.Other
             }
         }
 
-        async UniTask PerformCurlAsync(string url, int index, CancellationToken ct)
+        async UniTask PerformCurlAsync(string url, int index, string method, string payload, CancellationToken ct)
         {
             try
             {
-                using var resp = await _curl.GetAsync(url, ct);
+                var httpMethod = new HttpMethod(method);
+                var httpPayload = default(HttpContent?);
+                if (!string.IsNullOrEmpty(payload))
+                {
+                    httpPayload = new StringContent(payload);
+                }
+                var httpMessage = new HttpRequestMessage(httpMethod, url)
+                {
+                    Content = httpPayload
+                };
+                using var resp = await _curl.SendAsync(httpMessage, ct);
                 bool success = resp.StatusCode is >= HttpStatusCode.OK and < HttpStatusCode.MultipleChoices;
                 var body = await resp.Content.ReadAsByteArrayAsync() ?? Array.Empty<byte>();
                 int length = body.Length;
@@ -148,7 +160,7 @@ namespace MajdataPlay.Scenes.Other
             for (int i = 0; i < concurrentRequests; i++)
             {
                 int idx = i;
-                tasks[i] = PerformHttpClientAsync(testUrl, idx, ct);
+                tasks[i] = PerformHttpClientAsync(testUrl, idx, method, payload, ct);
             }
 
             try
@@ -167,11 +179,21 @@ namespace MajdataPlay.Scenes.Other
             }
         }
 
-        async UniTask PerformHttpClientAsync(string url, int index, CancellationToken ct)
+        async UniTask PerformHttpClientAsync(string url, int index, string method, string payload, CancellationToken ct)
         {
             try
             {
-                using var resp = await _httpClient.GetAsync(url, ct);
+                var httpMethod = new HttpMethod(method);
+                var httpPayload = default(HttpContent?);
+                if (!string.IsNullOrEmpty(payload))
+                {
+                    httpPayload = new StringContent(payload);
+                }
+                var httpMessage = new HttpRequestMessage(httpMethod, url)
+                {
+                    Content = httpPayload
+                };
+                using var resp = await _httpClient.SendAsync(httpMessage, ct);
                 bool success = resp.IsSuccessStatusCode;
 
                 // 读取 body bytes
@@ -212,7 +234,7 @@ namespace MajdataPlay.Scenes.Other
             for (int i = 0; i < concurrentRequests; i++)
             {
                 int idx = i;
-                tasks[i] = PerformUnityWebRequestAsync(testUrl, idx, ct);
+                tasks[i] = PerformUnityWebRequestAsync(testUrl, idx, method, payload, ct);
             }
 
             try
@@ -231,7 +253,7 @@ namespace MajdataPlay.Scenes.Other
             }
         }
 
-        async UniTask PerformUnityWebRequestAsync(string url, int index, CancellationToken ct)
+        async UniTask PerformUnityWebRequestAsync(string url, int index, string method, string payload, CancellationToken ct)
         {
             using var req = UnityWebRequest.Get(url);
             try
@@ -241,7 +263,7 @@ namespace MajdataPlay.Scenes.Other
 #if UNITY_2020_2_OR_NEWER
                 bool success = req.result == UnityWebRequest.Result.Success;
 #else
-            bool success = !(req.isNetworkError || req.isHttpError);
+                bool success = !(req.isNetworkError || req.isHttpError);
 #endif
                 byte[] data = req.downloadHandler != null ? req.downloadHandler.data ?? Array.Empty<byte>() : Array.Empty<byte>();
                 int length = data.Length;
