@@ -568,7 +568,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f53de87567e698c4a87365a564f3428c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.Scenes.Other.MultiHttpTest
-  testUrl: https://majdata.net/api3/api/machine/register
+  testUrl: http://dlptest.com/api/http-post/
   concurrentRequests: 1
   method: POST
   payload: '{"Name": "MajdataPlay Client","Description": "MajdataPlay Client QR Code
