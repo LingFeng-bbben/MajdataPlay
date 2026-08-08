@@ -50,6 +50,7 @@ namespace MajdataPlay.Net.Curl.Core
             Request.SetOption(CurlOption.ReadData, handlePtr);
             Request.SetOption(CurlOption.WriteData, handlePtr);
             Request.SetOption(CurlOption.HeaderData, handlePtr);
+            Request.SetOption(CurlOption.SeekData, handlePtr);
         }
 
         public bool TryEnterSubmittedState()
@@ -133,16 +134,6 @@ namespace MajdataPlay.Net.Curl.Core
         void OnResumeRequest()
         {
             _onResume(this);
-        }
-        
-        public static CurlTask? FromHandle(IntPtr handle)
-        {
-            var gcHandle = GCHandle.FromIntPtr(handle);
-            if (gcHandle.IsAllocated)
-            {
-                return gcHandle.Target as CurlTask;
-            }
-            return null;
         }
     }
 }

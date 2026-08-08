@@ -1,5 +1,6 @@
 ﻿using AOT;
 using MajdataPlay.Net.Curl.Core.PInvoke;
+using MajdataPlay.UnsafeKit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -65,12 +66,7 @@ namespace MajdataPlay.Net.Curl.Core
         [MonoPInvokeCallback(typeof(CurlReadOrWriteCallback))]
         static unsafe UIntPtr OnWriteCallback(IntPtr ptr, UIntPtr size, UIntPtr nmemb, IntPtr userdata)
         {
-            if (userdata == IntPtr.Zero)
-            {
-                return UIntPtr.Zero;
-            }
-            var curlTask = CurlTask.FromHandle(userdata);
-            if (curlTask is null)
+            if (!UnsafeHelper.TryGetInstanceFromGCHandle<CurlTask>(userdata, out var curlTask))
             {
                 return UIntPtr.Zero;
             }
@@ -88,12 +84,7 @@ namespace MajdataPlay.Net.Curl.Core
         [MonoPInvokeCallback(typeof(CurlReadOrWriteCallback))]
         static unsafe UIntPtr OnHeaderReceived(IntPtr ptr, UIntPtr size, UIntPtr nmemb, IntPtr userdata)
         {
-            if (userdata == IntPtr.Zero)
-            {
-                return UIntPtr.Zero;
-            }
-            var curlTask = CurlTask.FromHandle(userdata);
-            if (curlTask is null)
+            if (!UnsafeHelper.TryGetInstanceFromGCHandle<CurlTask>(userdata, out var curlTask))
             {
                 return UIntPtr.Zero;
             }

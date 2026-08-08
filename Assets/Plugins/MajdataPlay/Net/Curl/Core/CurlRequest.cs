@@ -2,6 +2,7 @@ using AOT;
 using MajdataPlay.Net.Curl.Core.PInvoke;
 using MajdataPlay.Net.Curl.Lifecycle;
 using MajdataPlay.Net.Curl.Utils;
+using MajdataPlay.UnsafeKit;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -36,10 +37,12 @@ namespace MajdataPlay.Net.Curl.Core
         Stream? _contentStream;
 
         readonly static CurlReadOrWriteCallback _onReadCallback;  // Upload
+        readonly static CurlSeekCallback _onSeekCallback;
 
         static CurlRequest()
         {
             _onReadCallback = OnReadCallback;
+            _onSeekCallback = OnSeekCallback;
         }
 
         public CurlRequest(HttpRequestMessage httpRequest, Stream? contentStream)
@@ -59,6 +62,7 @@ namespace MajdataPlay.Net.Curl.Core
             SetOption(CurlOption.Url, RequestUri.OriginalString);
             SetOption(CurlOption.CustomRequest, Method.Method);
             SetOption(CurlOption.ReadFunction, Marshal.GetFunctionPointerForDelegate(_onReadCallback));
+            SetOption(CurlOption.SeekFunction, Marshal.GetFunctionPointerForDelegate(_onSeekCallback));
             SetHeaders(httpRequest.Headers, Content?.Headers);
 
             if(contentStream is not null)
@@ -116,12 +120,7 @@ namespace MajdataPlay.Net.Curl.Core
         [MonoPInvokeCallback(typeof(CurlReadOrWriteCallback))]
         static unsafe UIntPtr OnReadCallback(IntPtr ptr, UIntPtr size, UIntPtr nmemb, IntPtr userdata)
         {
-            if(userdata == IntPtr.Zero)
-            {
-                return UIntPtr.Zero;
-            }
-            var curlTask = CurlTask.FromHandle(userdata);
-            if (curlTask is null)
+            if(!UnsafeHelper.TryGetInstanceFromGCHandle<CurlTask>(userdata, out var curlTask))
             {
                 return UIntPtr.Zero;
             }
@@ -137,6 +136,33 @@ namespace MajdataPlay.Net.Curl.Core
             contentStream.Read(buffer);
 
             return (UIntPtr)length;
+        }
+
+        static unsafe CurlSeekCallbackReturn OnSeekCallback(IntPtr userdata, long offset, SeekOrigin origin)
+        {
+            if (!UnsafeHelper.TryGetInstanceFromGCHandle<CurlTask>(userdata, out var curlTask))
+            {
+                return CurlSeekCallbackReturn.Fail;
+            }
+            var curlReq = curlTask.Request;
+            var contentStream = curlReq._contentStream;
+            if (contentStream is null)
+            {
+                return CurlSeekCallbackReturn.Fail;
+            }
+            else if(!contentStream.CanSeek)
+            {
+                return CurlSeekCallbackReturn.CantSeek;
+            }
+            try
+            {
+                contentStream.Seek(offset, origin);
+            }
+            catch
+            {
+                return CurlSeekCallbackReturn.Fail;
+            }
+            return CurlSeekCallbackReturn.Ok;
         }
 
         public override void Dispose()
