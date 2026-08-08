@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay.Net.Curl.Core
 {
-    internal class CurlRequest : CurlHandle
+    internal unsafe class CurlRequest : CurlHandle
     {
         public Uri RequestUri
         {
@@ -35,7 +35,12 @@ namespace MajdataPlay.Net.Curl.Core
 
         Stream? _contentStream;
 
-        readonly CurlReadOrWriteCallback _onReadCallback;  // Upload
+        readonly static CurlReadOrWriteCallback _onReadCallback;  // Upload
+
+        static CurlRequest()
+        {
+            _onReadCallback = OnReadCallback;
+        }
 
         public CurlRequest(HttpRequestMessage httpRequest, Stream? contentStream)
         {
@@ -51,11 +56,9 @@ namespace MajdataPlay.Net.Curl.Core
             }
             Message = httpRequest;
 
-            _onReadCallback = OnReadCallback;
-
             SetOption(CurlOption.Url, RequestUri.OriginalString);
             SetOption(CurlOption.CustomRequest, Method.Method);
-            SetOption(CurlOption.ReadFunction, _onReadCallback);
+            SetOption(CurlOption.ReadFunction, Marshal.GetFunctionPointerForDelegate(_onReadCallback));
             SetHeaders(httpRequest.Headers, Content?.Headers);
 
             if(contentStream is not null)
@@ -85,12 +88,6 @@ namespace MajdataPlay.Net.Curl.Core
         {
             ThrowIfDisposed();
             var result = LibCurl.Easy.SetOption(ThisHandle, option, value);
-            CheckCurlCode(result);
-        }
-        public void SetOption(CurlOption option, CurlReadOrWriteCallback callback)
-        {
-            ThrowIfDisposed();
-            var result = LibCurl.Easy.SetOption(ThisHandle, option, callback);
             CheckCurlCode(result);
         }
         public void SetOption(CurlOption option, IntPtr value)

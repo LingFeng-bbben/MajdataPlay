@@ -98,7 +98,7 @@ namespace MajdataPlay.Net.Curl.Core
 
                     while (_pendingToResumeTasks.TryDequeue(out var pausedTask))
                     {
-                        returnCode = LibCurl.Easy.Pause(pausedTask.Request.Handle, LibCurl.CURLPAUSE_RECV_CONT);
+                        returnCode = LibCurl.Easy.Pause(pausedTask.Request.Handle, CurlPauseAction.None);
                     }
 
                     if (thisToken.IsCancellationRequested)

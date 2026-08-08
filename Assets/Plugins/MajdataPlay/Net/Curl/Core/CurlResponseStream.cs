@@ -1,4 +1,4 @@
-﻿using MajdataPlay.Net.Curl.Core.PInvoke;
+﻿using MajdataPlay.Net.Curl.Utils;
 using System;
 using System.Buffers;
 using System.Collections.Concurrent;
@@ -59,7 +59,7 @@ namespace MajdataPlay.Net.Curl.Core
                 if (!_isPaused && _bufferedBytes + chunk.Length > _hwmBytes)
                 {
                     _isPaused = true;
-                    return (UIntPtr)LibCurl.CURL_WRITEFUNC_PAUSE;
+                    return CurlCallbackReturn.Write.Pause;
                 }
             }
             finally

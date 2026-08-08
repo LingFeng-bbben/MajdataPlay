@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,8 +24,14 @@ namespace MajdataPlay.Net.Curl.Core
 
         readonly Action _onResume;
         readonly CurlResponseStream _responseStream;
-        readonly CurlReadOrWriteCallback _onWriteCallback; // Download
-        readonly CurlReadOrWriteCallback _onHeaderReceivedCallback;
+        readonly static CurlReadOrWriteCallback _onWriteCallback; // Download
+        readonly static CurlReadOrWriteCallback _onHeaderReceivedCallback;
+
+        static CurlResponse()
+        {
+            _onWriteCallback = OnWriteCallback;
+            _onHeaderReceivedCallback = OnHeaderReceived;
+        }
 
         internal CurlResponse(CurlRequest request, Action onResume, CurlHttpConfig config)
         {
@@ -32,14 +39,13 @@ namespace MajdataPlay.Net.Curl.Core
             Config = config;
             _onResume = onResume;
             _responseStream = new CurlResponseStream(config.MaxResponseHeadersLength, _onResume);
-            _onWriteCallback = OnWriteCallback;
-            _onHeaderReceivedCallback = OnHeaderReceived;
+            
 
             Message = new();
             Message.Content = new StreamContent(_responseStream);
             
-            Request.SetOption(CurlOption.WriteFunction, _onWriteCallback);
-            Request.SetOption(CurlOption.HeaderFunction, _onHeaderReceivedCallback);
+            Request.SetOption(CurlOption.WriteFunction, Marshal.GetFunctionPointerForDelegate(_onWriteCallback));
+            Request.SetOption(CurlOption.HeaderFunction, Marshal.GetFunctionPointerForDelegate(_onHeaderReceivedCallback));
         }
 
         internal void Complete()

@@ -20,7 +20,7 @@ namespace MajdataPlay.Net.Curl.Core.PInvoke
     /// </remarks>
     internal enum CurlOption
     {
-        // LONG options
+        #region LONG options
         File = 10000 - 1, // placeholder, never used
 
         /// <summary>Enable verbose output.</summary>
@@ -65,112 +65,6 @@ namespace MajdataPlay.Net.Curl.Core.PInvoke
         /// <summary>HTTP POST.</summary>
         Post = 47,
 
-
-        // OBJECTPOINT options (10000+)
-
-        /// <summary>Request URL.</summary>
-        Url = 10002,
-
-        /// <summary>HTTP user agent.</summary>
-        UserAgent = 10018,
-
-        /// <summary>HTTP headers list.</summary>
-        HttpHeader = 10023,
-
-        /// <summary>Cookie string.</summary>
-        Cookie = 10022,
-
-        /// <summary>Cookie file.</summary>
-        CookieFile = 10031,
-
-        /// <summary>Cookie save file.</summary>
-        CookieJar = 10082,
-
-        /// <summary>Custom HTTP method.</summary>
-        CustomRequest = 10036,
-
-        /// <summary>POST body.</summary>
-        PostFields = 10015,
-
-        /// <summary>Proxy URL.</summary>
-        Proxy = 10004,
-
-        /// <summary>
-        /// Basic Authentication
-        /// </summary>
-        UserPassword = 10005,
-
-        /// <summary>Proxy username/password.</summary>
-        ProxyUserPwd = 10006,
-
-        /// <summary>SSL CA certificate file.</summary>
-        CaInfo = 10065,
-
-        /// <summary>SSL CA directory.</summary>
-        CaPath = 10097,
-
-        /// <summary>Client certificate.</summary>
-        SslCert = 10025,
-
-        /// <summary>Client private key.</summary>
-        Key = 10087,
-
-        /// <summary>
-        /// Represents a private handle within libcurl.
-        /// </summary>
-        Private = 10103,
-
-        /// <summary>
-        /// Pass a pointer to the write callback userdata.
-        /// </summary>
-        WriteData = 10001,
-
-        /// <summary>
-        /// Pass a pointer to the read callback userdata.
-        /// </summary>
-        ReadData = 10009,
-
-        /// <summary>
-        /// Pass a pointer to the header callback userdata.
-        /// </summary>
-        HeaderData = 10029,
-
-
-        // FUNCTIONPOINT options (20000+)
-
-        /// <summary>Write callback.</summary>
-        WriteFunction = 20011,
-
-        /// <summary>Header callback.</summary>
-        HeaderFunction = 20079,
-
-        /// <summary>Read callback.</summary>
-        ReadFunction = 20012,
-
-        /// <summary>Progress callback.</summary>
-        ProgressFunction = 20056,
-
-        /// <summary>Debug callback.</summary>
-        DebugFunction = 20094,
-
-
-        // OFF_T options (30000+)
-
-        /// <summary>Upload size.</summary>
-        InFileSizeLarge = 30115,
-
-        /// <summary>POST size.</summary>
-        PostFieldSizeLarge = 30120,
-
-        /// <summary>Maximum download speed.</summary>
-        MaxRecvSpeedLarge = 30146,
-
-        /// <summary>Maximum upload speed.</summary>
-        MaxSendSpeedLarge = 30145,
-
-
-        // More common options
-
         /// <summary>Buffer size.</summary>
         BufferSize = 98,
 
@@ -189,20 +83,11 @@ namespace MajdataPlay.Net.Curl.Core.PInvoke
         /// <summary>Transfer encoding.</summary>
         TransferEncoding = 207,
 
-        /// <summary>Accept gzip/br compression.</summary>
-        AcceptEncoding = 10102,
-
         /// <summary>HTTP authentication.</summary>
         HttpAuth = 107,
 
         /// <summary>Proxy authentication.</summary>
         ProxyAuth = 111,
-
-        /// <summary>Referer header.</summary>
-        Referer = 10016,
-
-        /// <summary>Range request.</summary>
-        Range = 10007,
 
         /// <summary>Resume offset.</summary>
         ResumeFrom = 21,
@@ -223,17 +108,11 @@ namespace MajdataPlay.Net.Curl.Core.PInvoke
         /// <summary>SSL verify host.</summary>
         SslVerifyHost = 81,
 
-        /// <summary>SSL cipher list.</summary>
-        SslCipherList = 10083,
-
         /// <summary>HTTP proxy tunnel.</summary>
         HttpProxyTunnel = 61,
 
         /// <summary>Disable signals.</summary>
         Nosignal = 99,
-
-        /// <summary>Unix socket path.</summary>
-        UnixSocketPath = 10231,
 
         /// <summary>HTTP/3 support.</summary>
         Http3 = 264,
@@ -241,10 +120,165 @@ namespace MajdataPlay.Net.Curl.Core.PInvoke
         /// <summary>Enable HTTP/2 prior knowledge.</summary>
         Http2PriorKnowledge = 150,
 
-
         /// <summary>
         /// Last option marker.
         /// </summary>
-        Last = 314
+        Last = 314,
+
+        #endregion
+
+
+        #region OBJECTPOINT options (10000+)
+
+        /// <summary>Request URL.</summary>
+        Url = CurlOptionType.ObjectPointer + 2,
+
+        /// <summary>HTTP user agent.</summary>
+        UserAgent = CurlOptionType.ObjectPointer + 18,
+
+        /// <summary>HTTP headers list.</summary>
+        HttpHeader = CurlOptionType.ObjectPointer + 23,
+
+        /// <summary>Cookie string.</summary>
+        Cookie = CurlOptionType.ObjectPointer + 22,
+
+        /// <summary>Cookie file.</summary>
+        CookieFile = CurlOptionType.ObjectPointer + 31,
+
+        /// <summary>Cookie save file.</summary>
+        CookieJar = CurlOptionType.ObjectPointer + 82,
+
+        /// <summary>Custom HTTP method.</summary>
+        CustomRequest = CurlOptionType.ObjectPointer + 36,
+
+        /// <summary>POST body.</summary>
+        PostFields = CurlOptionType.ObjectPointer + 15,
+
+        /// <summary>Proxy URL.</summary>
+        Proxy = CurlOptionType.ObjectPointer + 4,
+
+        /// <summary>
+        /// Basic Authentication
+        /// </summary>
+        UserPassword = CurlOptionType.ObjectPointer + 5,
+
+        /// <summary>Proxy username/password.</summary>
+        ProxyUserPwd = CurlOptionType.ObjectPointer + 6,
+
+        /// <summary>SSL CA certificate file.</summary>
+        CaInfo = CurlOptionType.ObjectPointer + 65,
+
+        /// <summary>SSL CA directory.</summary>
+        CaPath = CurlOptionType.ObjectPointer + 97,
+
+        /// <summary>Client certificate.</summary>
+        SslCert = CurlOptionType.ObjectPointer + 25,
+
+        /// <summary>Client private key.</summary>
+        Key = CurlOptionType.ObjectPointer + 87,
+
+        /// <summary>Accept gzip/br compression.</summary>
+        AcceptEncoding = CurlOptionType.ObjectPointer + 102,
+
+        /// <summary>Referer header.</summary>
+        Referer = CurlOptionType.ObjectPointer + 16,
+
+        /// <summary>Range request.</summary>
+        Range = CurlOptionType.ObjectPointer + 7,
+
+        /// <summary>SSL cipher list.</summary>
+        SslCipherList = CurlOptionType.ObjectPointer + 83,
+
+        /// <summary>Unix socket path.</summary>
+        UnixSocketPath = CurlOptionType.ObjectPointer + 231,
+
+        /// <summary>
+        /// Represents a private handle within libcurl.
+        /// </summary>
+        Private = CurlOptionType.ObjectPointer + 103,
+
+        /// <summary>
+        /// Pass a pointer to the write callback userdata.
+        /// </summary>
+        WriteData = CurlOptionType.ObjectPointer + 1,
+
+        /// <summary>
+        /// Pass a pointer to the read callback userdata.
+        /// </summary>
+        ReadData = CurlOptionType.ObjectPointer + 9,
+
+        /// <summary>
+        /// Pass a pointer to the header callback userdata.
+        /// </summary>
+        HeaderData = CurlOptionType.ObjectPointer + 29,
+
+        /// <summary>
+        /// Pass a pointer to the seek callback userdata.
+        /// </summary>
+        SeekData = CurlOptionType.ObjectPointer + 168,
+
+        #endregion
+
+
+        #region FUNCTIONPOINT options (20000+)
+
+        /// <summary>Write callback.</summary>
+        WriteFunction = CurlOptionType.FunctionPointer + 11,
+
+        /// <summary>Read callback.</summary>
+        ReadFunction = CurlOptionType.FunctionPointer + 12,
+
+        /// <summary>Progress callback.</summary>
+        ProgressFunction = CurlOptionType.FunctionPointer + 56,
+
+        /// <summary>Header callback.</summary>
+        HeaderFunction = CurlOptionType.FunctionPointer + 79,        
+
+        /// <summary>Debug callback.</summary>
+        DebugFunction = CurlOptionType.FunctionPointer + 94,
+
+        /// <summary>
+        /// Set the SSL context callback function, currently only for OpenSSL or
+        /// wolfSSL ssl_ctx, or mbedTLS mbedtls_ssl_config in the second argument.
+        /// The function must match the curl_ssl_ctx_callback prototype.
+        /// </summary>
+        SslContextFunction = CurlOptionType.FunctionPointer + 108,
+
+        /// <summary>
+        /// callback function for setting socket options
+        /// </summary>
+        SocketOptFunction = CurlOptionType.FunctionPointer + 148,
+
+        /// <summary>
+        /// Callback function for opening socket (instead of socket(2)). Optionally,
+        /// callback is able change the address or refuse to connect returning
+        /// CURL_SOCKET_BAD. The callback should have type
+        /// curl_opensocket_callback
+        /// </summary>
+        OpenSocketFunction = CurlOptionType.FunctionPointer + 163,
+
+        /// <summary>
+        /// Callback function for seeking in the input stream
+        /// </summary>
+        SeekFunction = CurlOptionType.FunctionPointer + 167,
+
+        #endregion
+
+
+        #region OFF_T options (30000+)
+
+        /// <summary>Upload size.</summary>
+        InFileSizeLarge = CurlOptionType.Off_T + 115,
+
+        /// <summary>POST size.</summary>
+        PostFieldSizeLarge = CurlOptionType.Off_T + 120,
+
+        /// <summary>Maximum download speed.</summary>
+        MaxRecvSpeedLarge = CurlOptionType.Off_T + 146,
+
+        /// <summary>Maximum upload speed.</summary>
+        MaxSendSpeedLarge = CurlOptionType.Off_T + 145,
+
+        #endregion
     }
 }

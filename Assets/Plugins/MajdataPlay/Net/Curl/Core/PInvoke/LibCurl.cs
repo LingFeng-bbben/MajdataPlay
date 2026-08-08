@@ -1,15 +1,11 @@
 using System;
 using System.Dynamic;
+using System.IO;
 using System.Runtime.InteropServices;
-using System.Threading;
-using UnityEngine;
-using UnityEngine.Rendering;
+
 #nullable enable
 namespace MajdataPlay.Net.Curl.Core.PInvoke
 {
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate UIntPtr CurlReadOrWriteCallback(IntPtr ptr, UIntPtr size, UIntPtr nmemb, IntPtr userdata);
-
     internal class LibCurl
     {
 #if UNITY_IOS
@@ -23,20 +19,12 @@ namespace MajdataPlay.Net.Curl.Core.PInvoke
         public const long CURL_GLOBAL_ALL = CURL_GLOBAL_SSL | CURL_GLOBAL_WIN32;
         public const long CURL_GLOBAL_DEFAULT = CURL_GLOBAL_ALL;
 
-        public const uint CURL_WRITEFUNC_PAUSE = 0x10000001;
+        public const uint CURL_READFUNC_ABORT = 0x10000000;
+        public const uint CURL_READFUNC_PAUSE = 0x10000001;
 
-        /// <summary>
-        /// 暂停接收
-        /// </summary>
-        public const int CURLPAUSE_RECV = 1 << 0;
-        /// <summary>
-        /// 恢复接收 (Continue)
-        /// </summary>
-        public const int CURLPAUSE_RECV_CONT = 0;
-        /// <summary>
-        /// 恢复所有 (收/发)
-        /// </summary>
-        public const int CURLPAUSE_CONT = 0;
+        public const uint CURL_WRITEFUNC_PAUSE = 0x10000001;
+        public const uint CURL_WRITEFUNC_ERROR = 0xFFFFFFFF;
+
 
         public const long CURLSSLOPT_NATIVE_CA = 1 << 4;
 
@@ -60,30 +48,14 @@ namespace MajdataPlay.Net.Curl.Core.PInvoke
                     return Marshal.PtrToStringUTF8(ptr);
                 }
             }
-            public static CurlCode Pause(IntPtr handle, int bitmask)
-            {
-                return curl_easy_pause(handle, bitmask);
-            }
+
+            [DllImport(DLL_NAME, EntryPoint = "curl_easy_pause", CallingConvention = CallingConvention.Cdecl)]
+            public static extern CurlCode Pause(IntPtr handle, CurlPauseAction action);
 
             [DllImport(DLL_NAME, EntryPoint = "curl_unity_setopt_string", CallingConvention = CallingConvention.Cdecl)]
             public static extern CurlCode SetOption(IntPtr handle, CurlOption option, [MarshalAs(UnmanagedType.LPUTF8Str)] string value);
             [DllImport(DLL_NAME, EntryPoint = "curl_unity_setopt_long", CallingConvention = CallingConvention.Cdecl)]
             public static extern CurlCode SetOption(IntPtr handle, CurlOption option, long value);
-            public static CurlCode SetOption(IntPtr handle, CurlOption option, CurlReadOrWriteCallback value)
-            {
-                if (option is CurlOption.ReadFunction)
-                {
-                    return curl_unity_setopt_read_function(handle, value);
-                }
-                else if (option is CurlOption.HeaderFunction)
-                {
-                    return curl_unity_setopt_header_function(handle, value);
-                }
-                else
-                {
-                    return curl_unity_setopt_write_function(handle, value);
-                }
-            }
             [DllImport(DLL_NAME, EntryPoint = "curl_unity_setopt_ptr", CallingConvention = CallingConvention.Cdecl)]
             public static extern CurlCode SetOption(IntPtr handle, CurlOption option, IntPtr value);
 
@@ -119,14 +91,12 @@ namespace MajdataPlay.Net.Curl.Core.PInvoke
 
             [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
             static extern IntPtr curl_easy_strerror(CurlCode errornum);
-            [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-            static extern CurlCode curl_easy_pause(IntPtr handle, int bitmask);
-            [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-            static extern CurlCode curl_unity_setopt_read_function(IntPtr handle, CurlReadOrWriteCallback value);
-            [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-            static extern CurlCode curl_unity_setopt_write_function(IntPtr handle, CurlReadOrWriteCallback value);
-            [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-            static extern CurlCode curl_unity_setopt_header_function(IntPtr handle, CurlReadOrWriteCallback value);
+            //[DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+            //static extern CurlCode curl_unity_setopt_read_function(IntPtr handle, CurlReadOrWriteCallback value);
+            //[DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+            //static extern CurlCode curl_unity_setopt_write_function(IntPtr handle, CurlReadOrWriteCallback value);
+            //[DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+            //static extern CurlCode curl_unity_setopt_header_function(IntPtr handle, CurlReadOrWriteCallback value);
         }
 
         public static class Multi
