@@ -37,10 +37,9 @@ namespace MajdataPlay.Net.Curl
             LibCurl.Multi.SetOption(multiHandle, CurlMOption.MaxHostConnections, (IntPtr)MaxConnectionsPerServer);
         }
 
-        internal readonly void ApplyToRequest(CurlRequest request)
+        internal readonly void ApplyToEasy(CurlEasy curlEasy, Uri requestUri)
         {
-            var easyHandle = request.Handle;
-            var requestUri = request.RequestUri;
+            var easyHandle = curlEasy.Handle;
             var returnCode = default(CurlCode);
 
             returnCode = LibCurl.Easy.SetOption(easyHandle, CurlOption.FollowLocation, AllowAutoRedirect ? 1 : 0);

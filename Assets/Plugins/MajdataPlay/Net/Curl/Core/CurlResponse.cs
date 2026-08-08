@@ -14,16 +14,18 @@ using System.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay.Net.Curl.Core
 {
-    public class CurlResponse
+    public class CurlResponse : HttpResponseMessage
     {
         public CurlCode? ResultCode { get; set; }
-        public HttpResponseMessage Message { get; }
         public CurlHttpConfig Config { get; }
         internal CurlRequest Request { get; }
 
+        int _disposeFlag = 0;
         long _currentHeadersLength = 0;
 
         readonly Action _onResume;
+        readonly Action _onDispose;
+        readonly CurlEasy _handle;
         readonly CurlResponseStream _responseStream;
         readonly static CurlReadOrWriteCallback _onWriteCallback; // Download
         readonly static CurlReadOrWriteCallback _onHeaderReceivedCallback;
@@ -34,19 +36,20 @@ namespace MajdataPlay.Net.Curl.Core
             _onHeaderReceivedCallback = OnHeaderReceived;
         }
 
-        internal CurlResponse(CurlRequest request, Action onResume, CurlHttpConfig config)
+        internal CurlResponse(CurlEasy handle, CurlRequest request, Action onResume, Action onDispose, CurlHttpConfig config)
         {
+            _handle = handle;
             Request = request;
             Config = config;
             _onResume = onResume;
+            _onDispose = onDispose;
             _responseStream = new CurlResponseStream(config.MaxResponseHeadersLength, _onResume);
             
+            Content = new StreamContent(_responseStream);
+            RequestMessage = Request.Message;
 
-            Message = new();
-            Message.Content = new StreamContent(_responseStream);
-            
-            Request.SetOption(CurlOption.WriteFunction, Marshal.GetFunctionPointerForDelegate(_onWriteCallback));
-            Request.SetOption(CurlOption.HeaderFunction, Marshal.GetFunctionPointerForDelegate(_onHeaderReceivedCallback));
+            _handle.SetOption(CurlOption.WriteFunction, Marshal.GetFunctionPointerForDelegate(_onWriteCallback));
+            _handle.SetOption(CurlOption.HeaderFunction, Marshal.GetFunctionPointerForDelegate(_onHeaderReceivedCallback));
         }
 
         internal void Complete()
@@ -70,7 +73,7 @@ namespace MajdataPlay.Net.Curl.Core
             {
                 return UIntPtr.Zero;
             }
-            else if(curlTask.State != CurlRequestState.HeaderRead)
+            else if(curlTask.State != CurlTaskState.HeaderRead)
             {
                 curlTask.TryEnterHeaderReadState();
             }
@@ -88,7 +91,7 @@ namespace MajdataPlay.Net.Curl.Core
             {
                 return UIntPtr.Zero;
             }
-            else if(curlTask.State != CurlRequestState.Submitted)
+            else if(curlTask.State != CurlTaskState.Submitted)
             {
                 return UIntPtr.Zero;
             }
@@ -106,7 +109,7 @@ namespace MajdataPlay.Net.Curl.Core
                 return UIntPtr.Zero;
             }
 
-            curlResponse.ParseHttpHeader(buffer, curlResponse.Message);
+            curlResponse.ParseHttpHeader(buffer);
 
             return (UIntPtr)length;
         }
@@ -125,7 +128,7 @@ namespace MajdataPlay.Net.Curl.Core
                 }
             }
         }
-        void ParseHttpHeader(ReadOnlySpan<byte> line, HttpResponseMessage response)
+        void ParseHttpHeader(ReadOnlySpan<byte> line)
         {
             if (line.Length == 0)
             {
@@ -144,9 +147,9 @@ namespace MajdataPlay.Net.Curl.Core
                 var code = ParseStatusCode(line);
                 if (code > 0)
                 {
-                    response.StatusCode = (HttpStatusCode)code;
-                    response.Headers.Clear();
-                    response.Content.Headers.Clear();
+                    StatusCode = (HttpStatusCode)code;
+                    Headers.Clear();
+                    Content.Headers.Clear();
                 }
                 return;
             }
@@ -181,9 +184,9 @@ namespace MajdataPlay.Net.Curl.Core
             var keyStr = GetKeyString(keyBytes);
             var valueStr = Encoding.UTF8.GetString(valueBytes);
 
-            if (!response.Headers.TryAddWithoutValidation(keyStr, valueStr))
+            if (!Headers.TryAddWithoutValidation(keyStr, valueStr))
             {
-                response.Content.Headers.TryAddWithoutValidation(keyStr, valueStr);
+                Content.Headers.TryAddWithoutValidation(keyStr, valueStr);
             }
 
             var cookieContainer = Config.CookieContainer;
@@ -331,6 +334,22 @@ namespace MajdataPlay.Net.Curl.Core
                 return ReadOnlySpan<byte>.Empty;
             }
             return span.Slice(start, length);
+        }
+        internal void CleanUp()
+        {
+            _handle.Dispose();
+            _responseStream.Dispose();
+        }
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            if (disposing)
+            {
+                if (Interlocked.CompareExchange(ref _disposeFlag, 1, 0) == 0)
+                {
+                    _onDispose();
+                }
+            }
         }
     }
 }

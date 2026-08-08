@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MajdataPlay.Net.Curl.Core
 {
-    internal enum CurlRequestState
+    internal enum CurlTaskState
     {
         Created,
         Submitted,

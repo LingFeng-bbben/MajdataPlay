@@ -56,9 +56,13 @@ namespace MajdataPlay.Net.Curl
             {
                 var rsp = await curlTask;
 
-                return rsp.Message;
+                return rsp;
             }
-            catch(Exception e)
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception e)
             {
                 throw new HttpRequestException(e.Message, e);
             }           

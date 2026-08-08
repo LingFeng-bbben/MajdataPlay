@@ -14,11 +14,11 @@ namespace MajdataPlay.Net.Curl.Core
 {
     class CurlTask
     {
-        public CurlRequestState State
+        public CurlTaskState State
         {
             get
             {
-                return (CurlRequestState)Volatile.Read(ref _state);
+                return (CurlTaskState)Volatile.Read(ref _state);
             }
         }
         public CurlRequest Request { get; }
@@ -28,42 +28,59 @@ namespace MajdataPlay.Net.Curl.Core
             get => _taskSource.Task;
         }
         public CurlHttpConfig Config { get; }
-        public CancellationToken CancellationToken { get; }
+        internal CurlEasy Easy { get; }
+        internal CancellationToken CancellationToken { get; }
 
-        int _state = (int)CurlRequestState.Created;
 
-        
+        int _state = (int)CurlTaskState.Created;
+
         readonly Action<CurlTask> _onResume;
+        readonly Action<CurlTask> _onDispose;
+        readonly GCHandle _taskHandle;
         readonly TaskCompletionSource<CurlResponse> _taskSource = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        public CurlTask(CurlRequest request, CurlHttpConfig config, Action<CurlTask> onResume, CancellationToken token = default)
+        public CurlTask(CurlEasy curlEasy, 
+            CurlRequest request, 
+            CurlHttpConfig config, 
+            Action<CurlTask> onResume, 
+            Action<CurlTask> onDispose, 
+            CancellationToken token = default)
         {
+            Easy = curlEasy;
             Request = request;
-            Response = new CurlResponse(request, OnResumeRequest, config);
+            // transfer ownership of CurlEasy to CurlResponse
+            Response = new CurlResponse(curlEasy, request, OnResumeRequested, OnDisposeRequested, config);
             Config = config;
             CancellationToken = token;
             _onResume = onResume;
+            _onDispose = onDispose;
 
-            var taskHandle = GCHandle.Alloc(this, GCHandleType.Weak);
-            var handlePtr = GCHandle.ToIntPtr(taskHandle);
-            Request.SetOption(CurlOption.Private, handlePtr);
-            Request.SetOption(CurlOption.ReadData, handlePtr);
-            Request.SetOption(CurlOption.WriteData, handlePtr);
-            Request.SetOption(CurlOption.HeaderData, handlePtr);
-            Request.SetOption(CurlOption.SeekData, handlePtr);
+            _taskHandle = GCHandle.Alloc(this, GCHandleType.Weak);
+            var handlePtr = GCHandle.ToIntPtr(_taskHandle);
+            Easy.SetOption(CurlOption.Private, handlePtr);
+            Easy.SetOption(CurlOption.WriteData, handlePtr);
+            Easy.SetOption(CurlOption.HeaderData, handlePtr);
+        }
+
+        ~CurlTask()
+        {
+            if (_taskHandle.IsAllocated)
+            {
+                _taskHandle.Free();
+            }
         }
 
         public bool TryEnterSubmittedState()
         {
-            var lastState = Interlocked.CompareExchange(ref _state, (int)CurlRequestState.Submitted, (int)CurlRequestState.Created);
+            var lastState = Interlocked.CompareExchange(ref _state, (int)CurlTaskState.Submitted, (int)CurlTaskState.Created);
 
-            return lastState == (int)CurlRequestState.Created;
+            return lastState == (int)CurlTaskState.Created;
         }
         public bool TryEnterHeaderReadState()
         {
-            var lastState = Interlocked.CompareExchange(ref _state, (int)CurlRequestState.HeaderRead, (int)CurlRequestState.Submitted);
+            var lastState = Interlocked.CompareExchange(ref _state, (int)CurlTaskState.HeaderRead, (int)CurlTaskState.Submitted);
 
-            if (lastState == (int)CurlRequestState.Submitted)
+            if (lastState == (int)CurlTaskState.Submitted)
             {
                 _taskSource.TrySetResult(Response);
                 return true;
@@ -72,9 +89,9 @@ namespace MajdataPlay.Net.Curl.Core
         }
         public bool TryEnterCompletedState(CurlCode result)
         {
-            var lastState = Interlocked.CompareExchange(ref _state, (int)CurlRequestState.Completed, (int)CurlRequestState.HeaderRead);
+            var lastState = Interlocked.CompareExchange(ref _state, (int)CurlTaskState.Completed, (int)CurlTaskState.HeaderRead);
 
-            if (lastState == (int)CurlRequestState.HeaderRead)
+            if (lastState == (int)CurlTaskState.HeaderRead)
             {
                 Response.ResultCode = result;
                 Response.Complete();
@@ -86,16 +103,16 @@ namespace MajdataPlay.Net.Curl.Core
         public bool TryFail(Exception abortException)
         {
             var state = Volatile.Read(ref _state);
-            switch ((CurlRequestState)state)
+            switch ((CurlTaskState)state)
             {
-                case CurlRequestState.Created:
-                case CurlRequestState.Submitted:
-                case CurlRequestState.HeaderRead:
+                case CurlTaskState.Created:
+                case CurlTaskState.Submitted:
+                case CurlTaskState.HeaderRead:
                     break;
                 default:
                     return false;
             }
-            var oldState = Interlocked.CompareExchange(ref _state, (int)CurlRequestState.Faulted, state);
+            var oldState = Interlocked.CompareExchange(ref _state, (int)CurlTaskState.Faulted, state);
             if (oldState == state)
             {
                 Response.Abort(abortException);
@@ -108,18 +125,18 @@ namespace MajdataPlay.Net.Curl.Core
         {
             var state = Volatile.Read(ref _state);
 
-            switch ((CurlRequestState)state)
+            switch ((CurlTaskState)state)
             {
-                case CurlRequestState.Created:
-                case CurlRequestState.Submitted:
-                case CurlRequestState.HeaderRead:
+                case CurlTaskState.Created:
+                case CurlTaskState.Submitted:
+                case CurlTaskState.HeaderRead:
                     break;
 
                 default:
                     return false;
             }
 
-            var oldState = Interlocked.CompareExchange(ref _state, (int)CurlRequestState.Cancelled, state);
+            var oldState = Interlocked.CompareExchange(ref _state, (int)CurlTaskState.Cancelled, state);
 
             if (oldState == state)
             {
@@ -131,9 +148,13 @@ namespace MajdataPlay.Net.Curl.Core
             return false;
         }
 
-        void OnResumeRequest()
+        void OnResumeRequested()
         {
             _onResume(this);
+        }
+        void OnDisposeRequested()
+        {
+            _onDispose(this);
         }
     }
 }

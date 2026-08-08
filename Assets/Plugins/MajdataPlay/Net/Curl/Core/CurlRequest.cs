@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay.Net.Curl.Core
 {
-    internal unsafe class CurlRequest : CurlHandle
+    internal class CurlRequest
     {
         public Uri RequestUri
         {
@@ -32,10 +32,11 @@ namespace MajdataPlay.Net.Curl.Core
             get => Message.Method;
         }
 
-        IntPtr _headersList = IntPtr.Zero;
+        int _applyFlag = 0;
 
         Stream? _contentStream;
 
+        GCHandle _handle;
         readonly static CurlReadOrWriteCallback _onReadCallback;  // Upload
         readonly static CurlSeekCallback _onSeekCallback;
 
@@ -44,87 +45,57 @@ namespace MajdataPlay.Net.Curl.Core
             _onReadCallback = OnReadCallback;
             _onSeekCallback = OnSeekCallback;
         }
-
         public CurlRequest(HttpRequestMessage httpRequest, Stream? contentStream)
         {
-            LibCurlLifecycle.Retain();
-            ThisHandle = LibCurl.Easy.Init();
-            if (ThisHandle == IntPtr.Zero)
-            {
-                throw new InvalidOperationException("Failed to initialize libcurl.");
-            }
             if(httpRequest is null)
             {
                 throw new ArgumentNullException(nameof(httpRequest));
             }
             Message = httpRequest;
-
-            SetOption(CurlOption.Url, RequestUri.OriginalString);
-            SetOption(CurlOption.CustomRequest, Method.Method);
-            SetOption(CurlOption.ReadFunction, Marshal.GetFunctionPointerForDelegate(_onReadCallback));
-            SetOption(CurlOption.SeekFunction, Marshal.GetFunctionPointerForDelegate(_onSeekCallback));
-            SetHeaders(httpRequest.Headers, Content?.Headers);
-
-            if(contentStream is not null)
-            {
-                _contentStream = contentStream;
-                SetOption(CurlOption.Upload, 1);
-                if (_contentStream.CanSeek)
-                {
-                    SetOption(CurlOption.InFileSizeLarge, _contentStream.Length);
-                }
-            }
-
-            CurlUtility.ApplySystemCA(this);            
+            _contentStream = contentStream;    
         }
         ~CurlRequest()
         {
-            Dispose();
-        }
-
-        public void SetOption(CurlOption option, string value)
-        {
-            ThrowIfDisposed();
-            var result = LibCurl.Easy.SetOption(ThisHandle, option, value);
-            CheckCurlCode(result);
-        }
-        public void SetOption(CurlOption option, long value)
-        {
-            ThrowIfDisposed();
-            var result = LibCurl.Easy.SetOption(ThisHandle, option, value);
-            CheckCurlCode(result);
-        }
-        public void SetOption(CurlOption option, IntPtr value)
-        {
-            ThrowIfDisposed();
-            var result = LibCurl.Easy.SetOption(ThisHandle, option, value);
-            CheckCurlCode(result);
-        }
-        
-        void SetHeaders(HttpHeaders headers, HttpContentHeaders? contentHeaders)
-        {
-            if (_headersList != IntPtr.Zero)
+            if (_handle.IsAllocated)
             {
-                LibCurl.SListFreeAll(_headersList);
-                _headersList = IntPtr.Zero;
+                _handle.Free();
             }
-
-            foreach (var header in headers.Concat(contentHeaders?.AsEnumerable() ?? Array.Empty<KeyValuePair<string, IEnumerable<string>>>()))
+        }
+        public void ApplyTo(CurlEasy curlEasy)
+        {
+            if (Interlocked.CompareExchange(ref _applyFlag, 1 , 0) == 1)
             {
-                var headerString = $"{header.Key}: {string.Join(", ", header.Value)}";
-                _headersList = LibCurl.SListAppend(_headersList, headerString);
+                throw new InvalidOperationException("The curl options have already been applied and cannot be applied again.");
             }
-            SetOption(CurlOption.HttpHeader, _headersList);
+            curlEasy.SetOption(CurlOption.Url, RequestUri.OriginalString);
+            curlEasy.SetOption(CurlOption.CustomRequest, Method.Method);
+            curlEasy.SetHeaders(Message.Headers.Concat(Message.Content?.Headers?.AsEnumerable() ?? Array.Empty<KeyValuePair<string, IEnumerable<string>>>()));
+            curlEasy.SetOption(CurlOption.ReadFunction, Marshal.GetFunctionPointerForDelegate(_onReadCallback));
+            curlEasy.SetOption(CurlOption.SeekFunction, Marshal.GetFunctionPointerForDelegate(_onSeekCallback));
+
+            _handle = GCHandle.Alloc(this, GCHandleType.Weak);
+            var handlePtr = GCHandle.ToIntPtr(_handle);
+            curlEasy.SetOption(CurlOption.ReadData, handlePtr);
+            curlEasy.SetOption(CurlOption.SeekData, handlePtr);
+
+            if (_contentStream is not null)
+            {
+                curlEasy.SetOption(CurlOption.Upload, 1);
+                if (_contentStream.CanSeek)
+                {
+                    curlEasy.SetOption(CurlOption.InFileSizeLarge, _contentStream.Length);
+                }
+            }
+            CurlUtility.ApplySystemCA(curlEasy);
         }
 
         [MonoPInvokeCallback(typeof(CurlReadOrWriteCallback))]
         static unsafe UIntPtr OnReadCallback(IntPtr ptr, UIntPtr size, UIntPtr nmemb, IntPtr userdata)
         {
-            if(!UnsafeHelper.TryGetInstanceFromGCHandle<CurlTask>(userdata, out var curlTask))
+            if(!UnsafeHelper.TryGetInstanceFromGCHandle<CurlRequest>(userdata, out var curlReq))
             {
                 return UIntPtr.Zero;
             }
-            var curlReq = curlTask.Request;
             var contentStream = curlReq._contentStream;
             if (contentStream is null)
             {
@@ -137,14 +108,13 @@ namespace MajdataPlay.Net.Curl.Core
 
             return (UIntPtr)length;
         }
-
+        [MonoPInvokeCallback(typeof(CurlSeekCallback))]
         static unsafe CurlSeekCallbackReturn OnSeekCallback(IntPtr userdata, long offset, SeekOrigin origin)
         {
-            if (!UnsafeHelper.TryGetInstanceFromGCHandle<CurlTask>(userdata, out var curlTask))
+            if (!UnsafeHelper.TryGetInstanceFromGCHandle<CurlRequest>(userdata, out var curlReq))
             {
                 return CurlSeekCallbackReturn.Fail;
             }
-            var curlReq = curlTask.Request;
             var contentStream = curlReq._contentStream;
             if (contentStream is null)
             {
@@ -165,15 +135,15 @@ namespace MajdataPlay.Net.Curl.Core
             return CurlSeekCallbackReturn.Ok;
         }
 
-        public override void Dispose()
+        public static async ValueTask<CurlRequest> CreateAsync(HttpRequestMessage requestMessage)
         {
-            var handle = Interlocked.Exchange(ref ThisHandle, IntPtr.Zero);
-            if (handle != IntPtr.Zero)
+            var contentStream = default(Stream?);
+            var content = requestMessage.Content;
+            if(content is not null)
             {
-                LibCurl.Easy.CleanUp(handle);
-                LibCurlLifecycle.Release();
-                GC.SuppressFinalize(this);
+                contentStream = await content.ReadAsStreamAsync();
             }
+            return new(requestMessage, contentStream);
         }
     }
 }
