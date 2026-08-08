@@ -105,14 +105,14 @@ namespace MajdataPlay.Net.Curl.Core
         {
             if (_headersList != IntPtr.Zero)
             {
-                LibCurl.SlistFreeAll(_headersList);
+                LibCurl.SListFreeAll(_headersList);
                 _headersList = IntPtr.Zero;
             }
 
             foreach (var header in headers.Concat(contentHeaders?.AsEnumerable() ?? Array.Empty<KeyValuePair<string, IEnumerable<string>>>()))
             {
                 var headerString = $"{header.Key}: {string.Join(", ", header.Value)}";
-                _headersList = LibCurl.SlistAppend(_headersList, headerString);
+                _headersList = LibCurl.SListAppend(_headersList, headerString);
             }
             SetOption(CurlOption.HttpHeader, _headersList);
         }

@@ -18,7 +18,7 @@ namespace MajdataPlay.Net.Curl.Core.PInvoke
     /// <item><description><c>OFF_T</c> (Large Integers / 64-bit) = 30000 + offset</description></item>
     /// </list>
     /// </remarks>
-    internal enum CurlOption
+    public enum CurlOption
     {
         #region LONG options
         File = 10000 - 1, // placeholder, never used

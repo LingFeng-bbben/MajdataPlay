@@ -22,7 +22,7 @@ namespace MajdataPlay.Net.Curl.Core.PInvoke
     /// Passing <see cref="None"/> resumes all paused directions.
     /// </remarks>
     [Flags]
-    internal enum CurlPauseAction
+    public enum CurlPauseAction
     {
         /// <summary>
         /// No pause flags are set. Resumes both receiving and sending.

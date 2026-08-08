@@ -5,12 +5,20 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MajdataPlay.Net.Curl.Core
 {
     public abstract class CurlHandle : IDisposable
     {
+        public bool IsAllocated
+        {
+            get
+            {
+                return Volatile.Read(ref ThisHandle) != IntPtr.Zero;
+            }
+        }
         internal IntPtr Handle
         {
             get

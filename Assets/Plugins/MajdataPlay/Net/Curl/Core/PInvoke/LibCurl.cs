@@ -163,10 +163,10 @@ namespace MajdataPlay.Net.Curl.Core.PInvoke
 
 
         [DllImport(DLL_NAME, EntryPoint = "curl_slist_append", CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr SlistAppend(IntPtr list, [MarshalAs(UnmanagedType.LPUTF8Str)] string str);
+        public static extern IntPtr SListAppend(IntPtr list, [MarshalAs(UnmanagedType.LPUTF8Str)] string str);
 
         [DllImport(DLL_NAME, EntryPoint = "curl_slist_free_all", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void SlistFreeAll(IntPtr list);
+        public static extern void SListFreeAll(IntPtr list);
 
         public static unsafe CurlVersionInfo GetVersionInfo(int age)
         {
