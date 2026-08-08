@@ -17,18 +17,25 @@ namespace MajdataPlay.Net.Curl.Core
 {
     internal class CurlRequest : CurlHandle
     {
-        public Uri RequestUri { get; }
+        public Uri RequestUri
+        {
+            get => Message.RequestUri;
+        }
         public HttpRequestMessage Message { get; }
-        public HttpContent? Content { get; }
-        public HttpMethod Method { get; }
+        public HttpContent? Content
+        {
+            get => Message.Content;
+        }
+        public HttpMethod Method
+        {
+            get => Message.Method;
+        }
 
         IntPtr _headersList = IntPtr.Zero;
 
         Stream? _contentStream;
 
-        CurlReadOrWriteCallback _onReadCallback;  // Upload
-
-        readonly HttpRequestMessage _rawRequest;
+        readonly CurlReadOrWriteCallback _onReadCallback;  // Upload
 
         public CurlRequest(HttpRequestMessage httpRequest, Stream? contentStream)
         {
@@ -43,10 +50,7 @@ namespace MajdataPlay.Net.Curl.Core
                 throw new ArgumentNullException(nameof(httpRequest));
             }
             Message = httpRequest;
-            RequestUri = httpRequest.RequestUri ?? throw new ArgumentNullException(nameof(httpRequest.RequestUri));
-            Method = httpRequest.Method ?? throw new ArgumentNullException(nameof(httpRequest.Method));
 
-            _rawRequest = httpRequest;
             _onReadCallback = OnReadCallback;
 
             SetOption(CurlOption.Url, RequestUri.OriginalString);

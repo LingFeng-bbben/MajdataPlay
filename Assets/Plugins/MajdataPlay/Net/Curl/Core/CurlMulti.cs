@@ -152,6 +152,7 @@ namespace MajdataPlay.Net.Curl.Core
                     }
                     else
                     {
+                        curlTask.TryEnterHeaderReadState();
                         curlTask.TryEnterCompletedState(multiMsg.Data.Result);
                     }
                     taskHandle.Free();
