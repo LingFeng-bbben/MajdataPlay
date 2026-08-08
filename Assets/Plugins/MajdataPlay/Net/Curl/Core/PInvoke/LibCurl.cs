@@ -1,3 +1,4 @@
+using MajdataPlay.UnsafeKit;
 using System;
 using System.Dynamic;
 using System.IO;
@@ -206,7 +207,7 @@ namespace MajdataPlay.Net.Curl.Core.PInvoke
         }
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        static extern IntPtr curl_version_info(int age);
+        static extern IntPtr curl_version_info(CLong age);
 
 
         [StructLayout(LayoutKind.Sequential)]
