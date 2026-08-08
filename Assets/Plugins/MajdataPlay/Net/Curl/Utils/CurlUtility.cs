@@ -43,7 +43,7 @@ namespace MajdataPlay.Net.Curl.Utils
                 MajDebug.LogWarning($"[libcurl]CA certificate bundle not found");
             }
 #elif UNITY_STANDALONE_WIN || UNITY_WSA
-            returnCode = LibCurl.Easy.SetOption(request.Handle, CurlOption.SslOptions, LibCurl.CURLSSLOPT_NATIVE_CA);
+            returnCode = LibCurl.Easy.SetOption(request.Handle, CurlOption.SslOptions, CurlSslOption.NativeCa);
             if (returnCode is CurlCode code && code != CurlCode.Ok)
             {
                 MajDebug.LogWarning(

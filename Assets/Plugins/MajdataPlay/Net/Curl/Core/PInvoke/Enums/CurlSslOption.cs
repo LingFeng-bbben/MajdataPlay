@@ -83,6 +83,11 @@ namespace MajdataPlay.Net.Curl.Core.PInvoke
         /// 
         /// This option is only supported by the Schannel backend.
         /// </summary>
-        AutoClientCert = 1L << 5
+        AutoClientCert = 1L << 5,
+
+        /// <summary>
+        /// If possible, send data using TLS 1.3 early data
+        /// </summary>
+        EarlyData = 1L << 6,
     }
 }

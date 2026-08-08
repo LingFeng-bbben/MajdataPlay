@@ -33,7 +33,7 @@ namespace MajdataPlay.Net.Curl.Lifecycle
                 {
                     if (!s_isGlobalInited)
                     {
-                        var returnCode = LibCurl.Init(LibCurl.CURL_GLOBAL_DEFAULT);
+                        var returnCode = LibCurl.Init(CurlInitOption.Default);
                         if (returnCode != CurlCode.Ok)
                         {
                             throw new CurlException(returnCode);

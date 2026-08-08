@@ -1,6 +1,7 @@
 using System;
 using System.Dynamic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 #nullable enable
@@ -13,20 +14,12 @@ namespace MajdataPlay.Net.Curl.Core.PInvoke
 #else
         const string DLL_NAME = "libcurl";
 #endif
-        // libcurl Init flags
-        public const long CURL_GLOBAL_SSL = 1 << 0;
-        public const long CURL_GLOBAL_WIN32 = 1 << 1;
-        public const long CURL_GLOBAL_ALL = CURL_GLOBAL_SSL | CURL_GLOBAL_WIN32;
-        public const long CURL_GLOBAL_DEFAULT = CURL_GLOBAL_ALL;
-
         public const uint CURL_READFUNC_ABORT = 0x10000000;
         public const uint CURL_READFUNC_PAUSE = 0x10000001;
 
         public const uint CURL_WRITEFUNC_PAUSE = 0x10000001;
         public const uint CURL_WRITEFUNC_ERROR = 0xFFFFFFFF;
 
-
-        public const long CURLSSLOPT_NATIVE_CA = 1 << 4;
 
         public static class Easy
         {
@@ -58,6 +51,13 @@ namespace MajdataPlay.Net.Curl.Core.PInvoke
             public static extern CurlCode SetOption(IntPtr handle, CurlOption option, long value);
             [DllImport(DLL_NAME, EntryPoint = "curl_unity_setopt_ptr", CallingConvention = CallingConvention.Cdecl)]
             public static extern CurlCode SetOption(IntPtr handle, CurlOption option, IntPtr value);
+
+            public static CurlCode SetOption<T>(IntPtr handle, CurlOption option, T value) where T : struct, Enum
+            {
+                var num = Unsafe.As<T, long>(ref value);
+
+                return SetOption(handle, option, num);
+            }
 
 
 
@@ -154,7 +154,7 @@ namespace MajdataPlay.Net.Curl.Core.PInvoke
 
 
         [DllImport(DLL_NAME, EntryPoint = "curl_global_init", CallingConvention = CallingConvention.Cdecl)]
-        public static extern CurlCode Init(long flags);
+        public static extern CurlCode Init(CurlInitOption flags);
 
         [DllImport(DLL_NAME, EntryPoint = "curl_global_cleanup", CallingConvention = CallingConvention.Cdecl)]
         public static extern void CleanUp();
