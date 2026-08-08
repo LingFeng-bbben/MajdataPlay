@@ -736,6 +736,7 @@ namespace MajdataPlay
                         if(File.Exists(hashFlagPath))
                         {
                             fileSHA256 = await File.ReadAllTextAsync(hashFlagPath);
+                            fileSHA256 = fileSHA256.Trim();
                         }
                         else
                         {
@@ -785,6 +786,7 @@ namespace MajdataPlay
                             fileStream.Position = 0;
                             var currentHashBytes = SHA256.Create().ComputeHash(fileStream);
                             var currentHash = Convert.ToBase64String(currentHashBytes);
+                            currentHash = currentHash.Trim();
                             if (fileSHA256 != currentHash)
                             {
                                 MajDebug.LogWarning($"Hash mismatch for online resource\nOrigin: {fileSHA256}\nLocal: {currentHash}");
@@ -802,15 +804,15 @@ namespace MajdataPlay
                         File.Create(cacheFlagPath).Dispose();
                         break;
                     }
-                    catch (HttpException)
+                    catch (HttpException e)
                     {
                         throw;
                     }
-                    catch (InvalidOperationException)
+                    catch (InvalidOperationException e)
                     {
                         throw new HttpException(uri.OriginalString, HttpErrorCode.InvalidRequest);
                     }
-                    catch (OperationCanceledException)
+                    catch (OperationCanceledException e)
                     {
                         if (token.IsCancellationRequested)
                         {
