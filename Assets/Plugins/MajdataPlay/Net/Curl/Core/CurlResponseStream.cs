@@ -1,8 +1,10 @@
-﻿using MajdataPlay.Net.Curl.Utils;
+﻿using MajdataPlay.Buffers;
+using MajdataPlay.Net.Curl.Utils;
 using System;
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Runtime.ExceptionServices;
@@ -15,6 +17,7 @@ namespace MajdataPlay.Net.Curl.Core
     internal class CurlResponseStream : Stream
     {
         MemoryChunk _currentChunk;
+        MemoryChunk _writingChunk;
         Exception? _abortException;
 
         volatile bool _isPaused = false;
@@ -33,7 +36,7 @@ namespace MajdataPlay.Net.Curl.Core
         readonly Action _onResume;
         readonly BlockingCollection<MemoryChunk> _bufferQueue;
 
-        public CurlResponseStream(long maxBufferLength, Action onResume) : this(8192, maxBufferLength, onResume) { }
+        public CurlResponseStream(long maxBufferLength, Action onResume) : this(1024, maxBufferLength, onResume) { }
         public CurlResponseStream(int chunkSize, long maxBufferLength, Action onResume)
         {
             _onResume = onResume;
@@ -71,19 +74,30 @@ namespace MajdataPlay.Net.Curl.Core
             }
 
             while (bytesToWrite > 0)
-            {                
-                var buffer = ArrayPool<byte>.Shared.Rent(_chunkSize);
-                var bytesToWriteBuffer = Math.Min(buffer.Length, bytesToWrite);
+            {
+                ref var chunkInfo = ref _writingChunk;
+                var buffer = _writingChunk.Buffer;
+                if (!_writingChunk.IsValid)
+                {
+                    buffer = Pool<byte>.RentArray(_chunkSize);
+                    chunkInfo = new MemoryChunk()
+                    {
+                        Buffer = buffer,
+                        Length = 0,
+                        Offset = 0
+                    };
+                }
+                var bufferRemaining = buffer!.Length - chunkInfo.Length;
+                var bytesToWriteBuffer = Math.Min(bufferRemaining, bytesToWrite);
                 var sourceOffset = chunk.Length - bytesToWrite;
                 Interlocked.Add(ref _bufferedBytes, bytesToWriteBuffer);
-                chunk.Slice(sourceOffset, bytesToWriteBuffer).CopyTo(buffer);
-                var chunkInfo = new MemoryChunk()
+                chunk.Slice(sourceOffset, bytesToWriteBuffer).CopyTo(buffer.AsSpan(chunkInfo.Length));
+                chunkInfo.Length += bytesToWriteBuffer;
+                if(chunkInfo.Length == buffer.Length)
                 {
-                    Buffer = buffer,
-                    Length = bytesToWriteBuffer,
-                    Offset = 0
-                };
-                _bufferQueue.Add(chunkInfo);
+                    _bufferQueue.Add(chunkInfo);
+                    chunkInfo = default;
+                }                
                 bytesToWrite -= bytesToWriteBuffer;
             }
 
@@ -93,7 +107,13 @@ namespace MajdataPlay.Net.Curl.Core
         public void CompleteWriting()
         {
             ThrowIfDisposed();
+            ref var writingChunk = ref _writingChunk;
+            if(writingChunk.IsValid)
+            {
+                _bufferQueue.Add(writingChunk);
+            }
             _bufferQueue.CompleteAdding();
+            writingChunk = default;
         }
         public void Abort(Exception ex)
         {
@@ -115,7 +135,7 @@ namespace MajdataPlay.Net.Curl.Core
             {
                 if (_currentChunk.IsCompleted)
                 {
-                    ArrayPool<byte>.Shared.Return(_currentChunk.Buffer ?? Array.Empty<byte>());
+                    Pool<byte>.ReturnArray(_currentChunk.Buffer ?? Array.Empty<byte>());
                     _currentChunk = default;
                     if (_bufferQueue.IsCompleted)
                     {
@@ -200,11 +220,13 @@ namespace MajdataPlay.Net.Curl.Core
                 {
                     if (chunk.Buffer != null)
                     {
-                        ArrayPool<byte>.Shared.Return(chunk.Buffer);
+                        Pool<byte>.ReturnArray(chunk.Buffer);
                     }
                 }
-                ArrayPool<byte>.Shared.Return(_currentChunk.Buffer ?? Array.Empty<byte>());
+                Pool<byte>.ReturnArray(_currentChunk.Buffer ?? Array.Empty<byte>());
+                Pool<byte>.ReturnArray(_writingChunk.Buffer ?? Array.Empty<byte>());
                 _currentChunk = default;
+                _writingChunk = default;
                 _bufferQueue.Dispose();
             }
             base.Dispose(disposing);
@@ -219,12 +241,17 @@ namespace MajdataPlay.Net.Curl.Core
 
         struct MemoryChunk
         {
-            public byte[] Buffer { get; init; }
-            public int Length { get; init; }
+            public byte[]? Buffer { get; init; }
+            public int Length { get; set; }
             public int Offset { get; set; }
             public bool IsCompleted
             {
                 get => Offset >= Length;
+            }
+            public bool IsValid
+            {
+                [MemberNotNullWhen(true, nameof(Buffer))]
+                get => Buffer is not null;
             }
         }
     }
