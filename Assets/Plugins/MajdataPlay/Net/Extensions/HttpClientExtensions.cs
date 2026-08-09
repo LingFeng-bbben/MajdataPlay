@@ -18,25 +18,28 @@ namespace MajdataPlay.Net
         public static Task<HttpResponseMessage> GetPartialAsync(this HttpClient client,
             string requestUri,
             HttpRange range,
+            bool allowFullResponse = false,
             CancellationToken token = default)
         {
-            return GetPartialAsync(client, requestUri, range, HttpCompletionOption.ResponseContentRead, token);
+            return GetPartialAsync(client, requestUri, range, HttpCompletionOption.ResponseContentRead, allowFullResponse, token);
         }
         public static Task<HttpResponseMessage> GetPartialAsync(this HttpClient client,
             string requestUri,
             HttpRange range,
             HttpCompletionOption completionOption,
+            bool allowFullResponse = false,
             CancellationToken token = default)
         {
             using var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
             request.Headers.Range = range.ToRangeHeaderValue();
 
-            return GetPartialAsyncInternal(client, request, completionOption, token);
+            return GetPartialAsyncInternal(client, request, completionOption, allowFullResponse, token);
         }
         public static async Task GetPartialAsync(this HttpClient client,
             string requestUri,
             Stream dst,
             HttpRange range,
+            bool allowFullResponse = false,
             IProgress<float> progress = null,
             CancellationToken token = default)
         {
@@ -44,33 +47,37 @@ namespace MajdataPlay.Net
                 requestUri,
                 range,
                 HttpCompletionOption.ResponseHeadersRead,
+                allowFullResponse,
                 token);
 
-            await GetPartialAsyncInternal(client, response, dst, range, progress, token);
+            await GetPartialAsyncInternal(client, response, dst, range, allowFullResponse, progress, token);
         }
 
         public static Task<HttpResponseMessage> GetPartialAsync(this HttpClient client,
             Uri uri,
             HttpRange range,
+            bool allowFullResponse = false,
             CancellationToken token = default)
         {
-            return GetPartialAsync(client, uri, range, HttpCompletionOption.ResponseContentRead, token);
+            return GetPartialAsync(client, uri, range, HttpCompletionOption.ResponseContentRead, allowFullResponse, token);
         }
         public static Task<HttpResponseMessage> GetPartialAsync(this HttpClient client,
             Uri uri,
             HttpRange range,
             HttpCompletionOption completionOption,
+            bool allowFullResponse = false,
             CancellationToken token = default)
         {
             using var request = new HttpRequestMessage(HttpMethod.Get, uri);
             request.Headers.Range = range.ToRangeHeaderValue();
 
-            return GetPartialAsyncInternal(client, request, completionOption, token);
+            return GetPartialAsyncInternal(client, request, completionOption, allowFullResponse, token);
         }
         public static async Task GetPartialAsync(this HttpClient client, 
             Uri uri, 
             Stream dst,
             HttpRange range,
+            bool allowFullResponse = false,
             IProgress<float> progress = null,
             CancellationToken token = default)
         {
@@ -78,14 +85,16 @@ namespace MajdataPlay.Net
                 uri,
                 range,
                 HttpCompletionOption.ResponseHeadersRead,
+                allowFullResponse,
                 token);
 
-            await GetPartialAsyncInternal(client, response, dst, range, progress, token);
+            await GetPartialAsyncInternal(client, response, dst, range, allowFullResponse, progress, token);
         }
 
         static async Task<HttpResponseMessage> GetPartialAsyncInternal(HttpClient client, 
             HttpRequestMessage request,
             HttpCompletionOption completionOption,
+            bool allowFullResponse,
             CancellationToken token)
         {
             var response = await client.SendAsync(request, completionOption, token);
@@ -103,6 +112,7 @@ namespace MajdataPlay.Net
             HttpResponseMessage response,
             Stream dst,
             HttpRange range,
+            bool allowFullResponse,
             IProgress<float> progress,
             CancellationToken token)
         {
