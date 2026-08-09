@@ -9,7 +9,15 @@ namespace MajdataPlay.Runtime
     public delegate bool GCCallbackWithObject(object @object);
     public static class GCCallbackRegistration
     {
-        class GCCallbackSource: CriticalFinalizerObject
+        class GCCallbackCriticalSource: CriticalFinalizerObject
+        {
+            ~GCCallbackCriticalSource()
+            {
+                OnGCCallback();
+                GC.ReRegisterForFinalize(this);
+            }
+        }
+        class GCCallbackSource
         {
             ~GCCallbackSource()
             {
@@ -94,13 +102,16 @@ namespace MajdataPlay.Runtime
         static GCCallbackTask? _callbackTaskHead;
         static GCCallbackTask? _callbackTaskTail;
 
+        readonly static GCHandle _criticalSourceHandle;
         readonly static GCHandle _sourceHandle;
         readonly static object _lock = new object();
 
         static GCCallbackRegistration()
         {
-            var source = new GCCallbackSource();
-            _sourceHandle  = GCHandle.Alloc(source, GCHandleType.Weak);
+            //var source = new GCCallbackSource();
+            var criticalSource = new GCCallbackCriticalSource();
+            //_sourceHandle = GCHandle.Alloc(source, GCHandleType.Weak);
+            _criticalSourceHandle = GCHandle.Alloc(criticalSource, GCHandleType.Weak);
         }
         
         

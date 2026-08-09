@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MajdataPlay.Buffers.Pool;
+using System;
 using System.Buffers;
 using System.Runtime.CompilerServices;
 
@@ -6,10 +7,14 @@ namespace MajdataPlay.Buffers
 {
     public static class Pool<T>
     {
-        const int MAX_ARRAY_LENGTH = 2 * 1024 * 1024; // 2MB
-        const int MAX_ARRAY_PER_BUCKET = 2048;
+        const int MAX_ARRAY_LENGTH = 512 * 1024; // 0.5MB
+        const int MAX_ARRAY_PER_BUCKET = 128;
 
-        internal readonly static ArrayPool<T> ArrayPool = ArrayPool<T>.Create(MAX_ARRAY_LENGTH, MAX_ARRAY_PER_BUCKET);
+        const int BYTE_MAX_ARRAY_LENGTH = 1 * 1024 * 1024; // 1MB
+        const int BYTE_MAX_ARRAY_PER_BUCKET = 1024;
+
+        internal readonly static SharedArrayPool<byte> ByteArrayPool = new(16, BYTE_MAX_ARRAY_LENGTH, BYTE_MAX_ARRAY_PER_BUCKET);
+        internal readonly static SharedArrayPool<T> ArrayPool = new(8, MAX_ARRAY_LENGTH, MAX_ARRAY_PER_BUCKET);
         internal readonly static MemoryPool<T> MemoryPool = MemoryPool<T>.Shared;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -19,11 +24,8 @@ namespace MajdataPlay.Buffers
             {
                 throw new ArgumentOutOfRangeException(nameof(length), $"Length must be greater than 0");
             }
-            else if (length > MAX_ARRAY_LENGTH)
-            {
-                return new T[length];
-            }
-            var array = ArrayPool.Rent(length);
+            
+            var array = GetCurrentArrayPool().Rent(length);
             if (clearArray)
             {
                 Array.Clear(array, 0, array.Length);
@@ -46,7 +48,15 @@ namespace MajdataPlay.Buffers
                 throw new ArgumentNullException(nameof(array), "Array cannot be null.");
             }
 
-            ArrayPool.Return(array, clearArray);
+            GetCurrentArrayPool().Return(array, clearArray);
+        }
+        static ArrayPool<T> GetCurrentArrayPool()
+        {
+            if (typeof(T) == typeof(byte))
+            {
+                return Unsafe.As<ArrayPool<T>>(ByteArrayPool);
+            }
+            return ArrayPool;
         }
     }
 }
