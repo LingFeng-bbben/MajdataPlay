@@ -24,6 +24,7 @@ using UnityEngine.Networking;
 using MajdataPlay.Settings;
 using Nito.AsyncEx;
 using MajdataPlay.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 #nullable enable
 namespace MajdataPlay
@@ -686,80 +687,132 @@ namespace MajdataPlay
         }
 
 
-        async Task DownloadFile(Uri uri, string savePath, bool forceReDl = false, INetProgress? progress = null, CancellationToken token = default)
+        async Task DownloadFile(DownloadOption options, CancellationToken token = default)
         {
             EnsureCachePath();
+
+            var savePath = Path.Combine(options.SaveTo, options.Filename);
+            var chunkPath = Path.Combine(options.SaveTo, $"{options.Filename}.chunk");
+            var hashPath = Path.Combine(options.SaveTo, $"{options.Filename}.sha256");
+
+            var saveFileStream = default(FileStream?);
+            var chunkFileStream = default(FileStream?);
+
             var bufferSize = MajEnv.HTTP_BUFFER_SIZE;
-            var fileInfo = new FileInfo(savePath);
             var httpClient = MajEnv.SharedHttpClient;
             var rentBuffer = Pool<byte>.RentArray(bufferSize, true);
             var buffer = rentBuffer.AsMemory();
-            var cacheFlagPath = Path.Combine(fileInfo.Directory.FullName, $"{fileInfo.Name}.cache");
-            var hashFlagPath = Path.Combine(fileInfo.Directory.FullName, $"{fileInfo.Name}.sha256");
             var fileSHA256 = (string?)null;
 
+            if (options.ForceReDownload)
+            {
+                DeleteFileIfExists(savePath);
+                DeleteFileIfExists(chunkPath);
+                DeleteFileIfExists(hashPath);
+                fileSHA256 = null;
+            }
+            else
+            {
+                if (File.Exists(hashPath))
+                {
+                    fileSHA256 = await File.ReadAllTextAsync(hashPath);
+                }
+                if (File.Exists(savePath))
+                {
+                    EnsureFileStreamIsOpened(chunkPath, ref saveFileStream);
+                    var currentFileHash = GetHashFromStream(saveFileStream);
+                    if (!string.IsNullOrEmpty(fileSHA256)) // hash metadata found
+                    {
+                        if(!CheckFileIntegrity(fileSHA256, currentFileHash)) // integrity check failed
+                        {
+                            MajDebug.LogDebug($"[{nameof(OnlineSongDetail)}] ReDownload online resource: {options.RequestedUri}");
+                            await saveFileStream.DisposeAsync();
+                            DeleteFileIfExists(savePath);
+                            DeleteFileIfExists(hashPath);
+                            fileSHA256 = null;
+                        }
+                        else
+                        {
+                            DeleteFileIfExists(chunkPath);
+                            return;
+                        }
+                    }
+                    else // hash metadata not found
+                    {
+                        DeleteFileIfExists(chunkPath);
+                        return;
+                    }
+                }
+                else if (File.Exists(chunkPath))
+                {
+                    EnsureFileStreamIsOpened(chunkPath, ref chunkFileStream);
+                    var currentFileHash = GetHashFromStream(chunkFileStream);
+                    if (!string.IsNullOrEmpty(fileSHA256)) // hash metadata found
+                    {
+                        if (!CheckFileIntegrity(fileSHA256, currentFileHash)) // integrity check failed
+                        {
+                            MajDebug.LogDebug($"[{nameof(OnlineSongDetail)}] ReDownload online resource: {options.RequestedUri}");
+                            await chunkFileStream.DisposeAsync();
+                            DeleteFileIfExists(chunkPath);
+                            DeleteFileIfExists(hashPath);
+                            fileSHA256 = null;
+                        }
+                        else
+                        {
+                            File.Move(chunkPath, savePath);
+                            return;
+                        }
+                    }
+                    else // hash metadata not found
+                    {
+                        DeleteFileIfExists(chunkPath);
+                    }
+                }
+            }
+            var requestUri = options.RequestedUri;
+            var progress = options.Progress;
             try
             {
+                EnsureFileStreamIsOpened(chunkPath, ref chunkFileStream);
                 for (var i = 0; i <= MajEnv.HTTP_REQUEST_MAX_RETRY; i++)
                 {
                     try
                     {
-                        if (File.Exists(cacheFlagPath))
-                        {
-                            if (!forceReDl)
-                            {
-                                return;
-                            }
-                            else
-                            {
-                                File.Delete(cacheFlagPath);
-                                if(fileInfo.Exists)
-                                {
-                                    fileInfo.Delete();
-                                }
-                            }
-                        }
-                        using var rsp = await httpClient.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, token);
+                        using var req = (i == 0 ? options.CurrentRequest : default) ?? new HttpRequestMessage(HttpMethod.Get, requestUri);
+                        using var rsp = await httpClient.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, token);
                         if (!rsp.IsSuccessStatusCode)
                         {
-                            throw new HttpException(uri.OriginalString, HttpErrorCode.Unsuccessful, rsp.StatusCode);
+                            throw new HttpException(requestUri.OriginalString, HttpErrorCode.Unsuccessful, rsp.StatusCode);
                         }
                         token.ThrowIfCancellationRequested();
-                        MajDebug.LogInfo($"Received http response header from: {uri}");
-
-                        if (!rsp.IsSuccessStatusCode) throw new Exception($"HTTP Req Failed: {uri}");
+                        MajDebug.LogDebug($"[{nameof(OnlineSongDetail)}] Received http response header from: {requestUri}");
 
                         if (progress is not null)
                         {
                             progress.TotalBytes = rsp.Content.Headers.ContentLength ?? 0;
                         }
-                        if(File.Exists(hashFlagPath))
-                        {
-                            fileSHA256 = await File.ReadAllTextAsync(hashFlagPath);
-                            fileSHA256 = fileSHA256.Trim();
-                        }
-                        else
+                        if(string.IsNullOrEmpty(fileSHA256)) // write resource hash into disk
                         {
                             if (rsp.Headers.TryGetValues("hash", out var values) || rsp.Headers.TryGetValues("Hash", out values))
                             {
-                                var hash = values.FirstOrDefault();
-                                if (!string.IsNullOrEmpty(hash))
+                                foreach(var hash in values)
                                 {
-                                    fileSHA256 = hash;
-                                    await File.WriteAllTextAsync(hashFlagPath, fileSHA256);
-                                }
+                                    if (!string.IsNullOrEmpty(hash))
+                                    {
+                                        fileSHA256 = hash;
+                                        await File.WriteAllTextAsync(hashPath, fileSHA256);
+                                        break;
+                                    }
+                                }                                
                             }
                         }
-                        using var fileStream = File.Create(savePath);
                         using var httpStream = await rsp.Content.ReadAsStreamAsync();
                         var read = 0;
                         var totalRead = 0;
                         do
                         {
-                            token.ThrowIfCancellationRequested();
                             read = await httpStream.ReadAsync(buffer, token);
-                            token.ThrowIfCancellationRequested();
-                            await fileStream.WriteAsync(buffer.Slice(0, read), token);
+                            await chunkFileStream.WriteAsync(buffer.Slice(0, read), token);
                             totalRead += read;
                             if (progress is not null)
                             {
@@ -774,25 +827,18 @@ namespace MajdataPlay
                             }
                         }
                         while (read > 0);
-                        if(string.IsNullOrEmpty(fileSHA256))
+                        await chunkFileStream.FlushAsync();
+
+                        if(!string.IsNullOrEmpty(fileSHA256))
                         {
-                            if (totalRead < 10)
+                            chunkFileStream.Position = 0;
+                            var currentHash = GetHashFromStream(chunkFileStream);
+                            if (!CheckFileIntegrity(fileSHA256, currentHash))
                             {
-                                continue;
-                            }
-                        }
-                        else
-                        {
-                            fileStream.Position = 0;
-                            var currentHashBytes = SHA256.Create().ComputeHash(fileStream);
-                            var currentHash = Convert.ToBase64String(currentHashBytes);
-                            currentHash = currentHash.Trim();
-                            if (fileSHA256 != currentHash)
-                            {
-                                MajDebug.LogWarning($"Hash mismatch for online resource\nOrigin: {fileSHA256}\nLocal: {currentHash}");
+                                MajDebug.LogWarning($"[{nameof(OnlineSongDetail)}]Hash mismatch for online resource\nOrigin: {fileSHA256}\nLocal: {currentHash}");
                                 if (i == MajEnv.HTTP_REQUEST_MAX_RETRY)
                                 {
-                                    throw new HttpException(uri.OriginalString, HttpErrorCode.IntegrityCheckFailed);
+                                    throw new HttpException(requestUri.OriginalString, HttpErrorCode.IntegrityCheckFailed);
                                 }
                                 else
                                 {
@@ -800,8 +846,6 @@ namespace MajdataPlay
                                 }
                             }
                         }
-                        
-                        File.Create(cacheFlagPath).Dispose();
                         break;
                     }
                     catch (HttpException e)
@@ -810,27 +854,27 @@ namespace MajdataPlay
                     }
                     catch (InvalidOperationException e)
                     {
-                        throw new HttpException(uri.OriginalString, HttpErrorCode.InvalidRequest);
+                        throw new HttpException(requestUri.OriginalString, HttpErrorCode.InvalidRequest);
                     }
                     catch (OperationCanceledException e)
                     {
                         if (token.IsCancellationRequested)
                         {
-                            MajDebug.LogWarning($"Request for resource \"{uri}\" was canceled");
-                            throw new HttpException(uri.OriginalString, HttpErrorCode.Canceled);
+                            MajDebug.LogWarning($"Request for resource \"{requestUri}\" was canceled");
+                            throw new HttpException(requestUri.OriginalString, HttpErrorCode.Canceled);
                         }
                         else if (i == MajEnv.HTTP_REQUEST_MAX_RETRY)
                         {
-                            MajDebug.LogError($"Failed to request resource: {uri}\nTimeout");
-                            throw new HttpException(uri.OriginalString, HttpErrorCode.Timeout);
+                            MajDebug.LogError($"Failed to request resource: {requestUri}\nTimeout");
+                            throw new HttpException(requestUri.OriginalString, HttpErrorCode.Timeout);
                         }
                     }
                     catch (Exception e)
                     {
                         if (i == MajEnv.HTTP_REQUEST_MAX_RETRY)
                         {
-                            MajDebug.LogError($"Failed to request resource: {uri}\n{e}");
-                            throw new HttpException(uri.OriginalString, HttpErrorCode.Unreachable);
+                            MajDebug.LogError($"Failed to request resource: {requestUri}\n{e}");
+                            throw new HttpException(requestUri.OriginalString, HttpErrorCode.Unreachable);
                         }
                     }
                 }
@@ -839,6 +883,57 @@ namespace MajdataPlay
             {
                 Pool<byte>.ReturnArray(rentBuffer, true);
             }
+        }
+
+        string GetHashFromStream(Stream? stream)
+        {
+            var currentHashBytes = SHA256.Create().ComputeHash(stream);
+            return Convert.ToBase64String(currentHashBytes);
+        }
+        void DeleteFileIfExists(string path)
+        {
+            if(File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+
+        bool CheckFileIntegrity(string targetHash, string currentHash)
+        {
+            if(targetHash != currentHash)
+            {
+                MajDebug.LogWarning($"[{nameof(OnlineSongDetail)}] Hash mismatch for online resource\nOrigin: {targetHash}\nLocal: {currentHash}");
+                return false;
+            }
+            return true;
+        }
+        void EnsureFileStreamIsOpened(string filePath, [NotNull] ref FileStream? fileStream)
+        {
+            if(fileStream is null)
+            {
+                fileStream = File.Open(filePath, FileMode.OpenOrCreate);
+            }
+        }
+
+        readonly struct DownloadOption
+        {
+            public Uri RequestedUri { get; init; }
+            public string SaveTo { get; init; }
+            /// <summary>
+            /// e.g: maidata.txt
+            /// </summary>
+            public string Filename { get; init; }
+            /// <summary>
+            /// e.g: maidata
+            /// </summary>
+            public string Name { get; init; }
+            /// <summary>
+            /// e.g: .txt
+            /// </summary>
+            public string Extension { get; init; }
+            public bool ForceReDownload { get; init; }
+            public INetProgress? Progress { get; init; }
+            public HttpRequestMessage? CurrentRequest { get; init; }
         }
     }
 }
