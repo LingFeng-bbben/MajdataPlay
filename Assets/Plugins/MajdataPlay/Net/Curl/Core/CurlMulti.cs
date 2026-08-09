@@ -79,6 +79,7 @@ namespace MajdataPlay.Net.Curl.Core
             var thisToken = _cts.Token;
             Thread.CurrentThread.Name = "Curl multi worker";
             Thread.CurrentThread.Priority = ThreadPriority.Lowest;
+            var disposedEx = new ObjectDisposedException(nameof(CurlEasy));
             while (!thisToken.IsCancellationRequested)
             {
                 try
@@ -116,9 +117,12 @@ namespace MajdataPlay.Net.Curl.Core
 
                     while (_pendingToDisposeTasks.TryDequeue(out var disposeTask))
                     {
-                        disposeTask.TryFail(new ObjectDisposedException(nameof(CurlEasy)));
+                        if(_activeTasks.Remove(disposeTask))
+                        {
+                            LibCurl.Multi.RemoveEasyHandle(ThisHandle, disposeTask.Easy.Handle);
+                        }
+                        disposeTask.TryFail(disposedEx);
                         disposeTask.Response.CleanUp();
-                        _activeTasks.Remove(disposeTask);
                     }
 
                     if (thisToken.IsCancellationRequested)
@@ -160,20 +164,22 @@ namespace MajdataPlay.Net.Curl.Core
             LibCurl.Easy.GetInfo(easyHandle, CurlInfo.Private, out IntPtr privatePtr);
             if(UnsafeHelper.TryGetInstanceFromGCHandle<CurlTask>(privatePtr, out var curlTask))
             {
-                _activeTasks.Remove(curlTask);
-                var curlErr = CurlUtility.GetEasyException(easyHandle, multiMsg.Data.Result);
-                if (curlErr is not null)
+                if(_activeTasks.Remove(curlTask))
                 {
-                    curlTask.TryFail(curlErr);
+                    var curlErr = CurlUtility.GetEasyException(easyHandle, multiMsg.Data.Result);
+                    if (curlErr is not null)
+                    {
+                        curlTask.TryFail(curlErr);
+                    }
+                    else
+                    {
+                        curlTask.TryEnterHeaderReadState();
+                        curlTask.TryEnterCompletedState(multiMsg.Data.Result);
+                    }
+                    LibCurl.Easy.SetOption(easyHandle, CurlOption.Private, IntPtr.Zero);
+                    LibCurl.Multi.RemoveEasyHandle(ThisHandle, easyHandle);
                 }
-                else
-                {
-                    curlTask.TryEnterHeaderReadState();
-                    curlTask.TryEnterCompletedState(multiMsg.Data.Result);
-                }
-                LibCurl.Easy.SetOption(easyHandle, CurlOption.Private, IntPtr.Zero);
-            }
-            LibCurl.Multi.RemoveEasyHandle(ThisHandle, easyHandle);
+            }            
         }
 
         public override void Dispose()

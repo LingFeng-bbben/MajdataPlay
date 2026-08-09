@@ -26,7 +26,7 @@ namespace MajdataPlay.Net.Curl.Core
 
         SpinLock _pauseOrResumeLock = new(false);
 
-        int _isDisposed = 0;
+        volatile int _isDisposed = 0;
 
         readonly int _lwmBytes;
         readonly int _hwmBytes;
@@ -49,7 +49,10 @@ namespace MajdataPlay.Net.Curl.Core
 
         public UIntPtr WriteChunk(ReadOnlySpan<byte> chunk)
         {
-            ThrowIfDisposed();
+            if (_isDisposed == 1)
+            {
+                return CurlCallbackReturn.Write.Error;
+            }
             if (chunk.IsEmpty)
             {
                 return UIntPtr.Zero;
@@ -73,32 +76,39 @@ namespace MajdataPlay.Net.Curl.Core
                 }
             }
 
-            while (bytesToWrite > 0)
+            try
             {
-                ref var chunkInfo = ref _writingChunk;
-                var buffer = _writingChunk.Buffer;
-                if (!_writingChunk.IsValid)
+                while (bytesToWrite > 0)
                 {
-                    buffer = Pool<byte>.RentArray(_chunkSize);
-                    chunkInfo = new MemoryChunk()
+                    ref var chunkInfo = ref _writingChunk;
+                    var buffer = _writingChunk.Buffer;
+                    if (!_writingChunk.IsValid)
                     {
-                        Buffer = buffer,
-                        Length = 0,
-                        Offset = 0
-                    };
+                        buffer = Pool<byte>.RentArray(_chunkSize);
+                        chunkInfo = new MemoryChunk()
+                        {
+                            Buffer = buffer,
+                            Length = 0,
+                            Offset = 0
+                        };
+                    }
+                    var bufferRemaining = buffer!.Length - chunkInfo.Length;
+                    var bytesToWriteBuffer = Math.Min(bufferRemaining, bytesToWrite);
+                    var sourceOffset = chunk.Length - bytesToWrite;
+                    Interlocked.Add(ref _bufferedBytes, bytesToWriteBuffer);
+                    chunk.Slice(sourceOffset, bytesToWriteBuffer).CopyTo(buffer.AsSpan(chunkInfo.Length));
+                    chunkInfo.Length += bytesToWriteBuffer;
+                    if (chunkInfo.Length == buffer.Length)
+                    {
+                        _bufferQueue.Add(chunkInfo);
+                        chunkInfo = default;
+                    }
+                    bytesToWrite -= bytesToWriteBuffer;
                 }
-                var bufferRemaining = buffer!.Length - chunkInfo.Length;
-                var bytesToWriteBuffer = Math.Min(bufferRemaining, bytesToWrite);
-                var sourceOffset = chunk.Length - bytesToWrite;
-                Interlocked.Add(ref _bufferedBytes, bytesToWriteBuffer);
-                chunk.Slice(sourceOffset, bytesToWriteBuffer).CopyTo(buffer.AsSpan(chunkInfo.Length));
-                chunkInfo.Length += bytesToWriteBuffer;
-                if(chunkInfo.Length == buffer.Length)
-                {
-                    _bufferQueue.Add(chunkInfo);
-                    chunkInfo = default;
-                }                
-                bytesToWrite -= bytesToWriteBuffer;
+            }
+            catch
+            {
+                return CurlCallbackReturn.Write.Error;
             }
 
             return (UIntPtr)chunk.Length;
@@ -117,7 +127,10 @@ namespace MajdataPlay.Net.Curl.Core
         }
         public void Abort(Exception ex)
         {
-            ThrowIfDisposed();
+            if (_isDisposed == 1)
+            {
+                return;
+            }
             _abortException = ex;
             _bufferQueue.CompleteAdding();
         }

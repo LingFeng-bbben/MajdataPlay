@@ -56,7 +56,7 @@ namespace MajdataPlay.Net.Curl.Core
         {
             _responseStream.CompleteWriting();
         }
-        internal void Abort()
+        public void Abort()
         {
             Abort(new OperationCanceledException("Request was aborted."));
         }
