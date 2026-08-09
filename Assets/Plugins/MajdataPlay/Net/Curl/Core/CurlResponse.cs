@@ -109,7 +109,7 @@ namespace MajdataPlay.Net.Curl.Core
                 return UIntPtr.Zero;
             }
 
-            curlResponse.ParseHttpHeader(buffer);
+            curlResponse.ParseHttpHeader(line);
 
             return (UIntPtr)length;
         }
