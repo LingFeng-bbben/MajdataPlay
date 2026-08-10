@@ -2474,6 +2474,7 @@ GameObject:
   - component: {fileID: 364490110}
   - component: {fileID: 364490112}
   - component: {fileID: 364490111}
+  - component: {fileID: 910000000000000005}
   m_Layer: 5
   m_Name: Icon
   m_TagString: Untagged
@@ -18093,6 +18094,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1516235285}
   - component: {fileID: 1516235286}
+  - component: {fileID: 910000000000000006}
   m_Layer: 5
   m_Name: ScoreUpload
   m_TagString: Untagged
@@ -23071,6 +23073,50 @@ Camera:
   m_CorrespondingSourceObject: {fileID: 1350311737120837062, guid: c56103e2e04c2c44ea96bafac763935a, type: 3}
   m_PrefabInstance: {fileID: 6959415326676185805}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &910000000000000005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 364490109}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ae676a105b153c449b10f977d8a884e, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.UI.ButtonAnimation
+  BindSensor: 1b0000000a000000
+  BindButton:
+  HoldTriggerTime: 0
+  ReleasedScale: 1
+  PressedScale: 0.9
+  AnimationDuration: 0.1
+  EaseType: 5
+  HoldCircle: {fileID: 0}
+  StartColor: {r: 1, g: 1, b: 1, a: 1}
+  EndColor: {r: 0, g: 1, b: 0, a: 1}
+--- !u!114 &910000000000000006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1516235284}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ae676a105b153c449b10f977d8a884e, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.UI.ButtonAnimation
+  BindSensor: 1c0000001400000002000000
+  BindButton:
+  HoldTriggerTime: 0
+  ReleasedScale: 1
+  PressedScale: 0.9
+  AnimationDuration: 0.1
+  EaseType: 5
+  HoldCircle: {fileID: 0}
+  StartColor: {r: 1, g: 1, b: 1, a: 1}
+  EndColor: {r: 0, g: 1, b: 0, a: 1}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

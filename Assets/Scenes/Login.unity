@@ -1734,6 +1734,7 @@ GameObject:
   - component: {fileID: 506705540}
   - component: {fileID: 506705542}
   - component: {fileID: 506705541}
+  - component: {fileID: 910000000000000001}
   m_Layer: 5
   m_Name: Clear_button
   m_TagString: Untagged
@@ -2827,6 +2828,7 @@ GameObject:
   - component: {fileID: 1122664625}
   - component: {fileID: 1122664627}
   - component: {fileID: 1122664626}
+  - component: {fileID: 910000000000000002}
   m_Layer: 5
   m_Name: Clear_button
   m_TagString: Untagged
@@ -3936,6 +3938,50 @@ MonoBehaviour:
   HoldTriggerTime: 0
   ReleasedScale: 1
   PressedScale: 1.03
+  AnimationDuration: 0.1
+  EaseType: 5
+  HoldCircle: {fileID: 0}
+  StartColor: {r: 1, g: 1, b: 1, a: 1}
+  EndColor: {r: 0, g: 1, b: 0, a: 1}
+--- !u!114 &910000000000000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 506705539}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ae676a105b153c449b10f977d8a884e, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.UI.ButtonAnimation
+  BindSensor: 13000000
+  BindButton:
+  HoldTriggerTime: 0
+  ReleasedScale: 1
+  PressedScale: 0.9
+  AnimationDuration: 0.1
+  EaseType: 5
+  HoldCircle: {fileID: 0}
+  StartColor: {r: 1, g: 1, b: 1, a: 1}
+  EndColor: {r: 0, g: 1, b: 0, a: 1}
+--- !u!114 &910000000000000002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1122664624}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ae676a105b153c449b10f977d8a884e, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.UI.ButtonAnimation
+  BindSensor: 02000000
+  BindButton:
+  HoldTriggerTime: 0
+  ReleasedScale: 1
+  PressedScale: 0.9
   AnimationDuration: 0.1
   EaseType: 5
   HoldCircle: {fileID: 0}

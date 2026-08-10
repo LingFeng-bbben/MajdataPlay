@@ -537,7 +537,7 @@ namespace MajdataPlay.Scenes.Result
             {
                 return;
             }
-            if(InputManager.IsButtonClickedInThisFrame(ButtonZone.A5))
+            if(InputManager.IsButtonClickCompletedInThisFrame(ButtonZone.A5))
             {
                 favoriteAdder.FavoratePressed();
             }
@@ -545,7 +545,7 @@ namespace MajdataPlay.Scenes.Result
             {
                 return;
             }
-            if(InputManager.IsButtonClickedInThisFrame(ButtonZone.A4))
+            if(InputManager.IsButtonClickCompletedInThisFrame(ButtonZone.A4))
             {
                 var canNextRound = _gameInfo.NextRound();
                 if (_gameInfo.IsDanMode)

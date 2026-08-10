@@ -25,9 +25,6 @@ namespace MajdataPlay.Scenes.Setting
         Color _selectedTextColor = Color.white;
 
         [SerializeField]
-        float _selectedFontSizeMin = 18f;
-
-        [SerializeField]
         float _selectedFontSizeMax = 32f;
 
         RectTransform _rectTransform = null!;
@@ -38,8 +35,8 @@ namespace MajdataPlay.Scenes.Setting
         Color _unselectedBackgroundColor;
         Color _selectedBackgroundColor;
         Color _unselectedTextColor;
-        float _unselectedFontSizeMin;
         float _unselectedFontSizeMax;
+        float _selectedTitleScale = 1f;
         string _localizationKey = string.Empty;
 
         void Awake()
@@ -52,13 +49,14 @@ namespace MajdataPlay.Scenes.Setting
             _unselectedBackgroundColor = _unselectedBackground.color;
             _selectedBackgroundColor = _selectedBackground.color;
             _unselectedTextColor = _titleDisplayer.color;
-            _unselectedFontSizeMin = _titleDisplayer.fontSizeMin;
             _unselectedFontSizeMax = _titleDisplayer.fontSizeMax;
+            _selectedTitleScale = _selectedFontSizeMax / Mathf.Max(1f, _unselectedFontSizeMax);
         }
 
         void OnEnable()
         {
             Localization.OnLanguageChanged += OnLanguageChanged;
+            UpdateLocalizedText();
         }
 
         void OnDisable()
@@ -90,8 +88,16 @@ namespace MajdataPlay.Scenes.Setting
 
             var textColor = Color.Lerp(_unselectedTextColor, _selectedTextColor, selectedAmount);
             _titleDisplayer.color = textColor;
-            _titleDisplayer.fontSizeMin = Mathf.Lerp(_unselectedFontSizeMin, _selectedFontSizeMin, selectedAmount);
-            _titleDisplayer.fontSizeMax = Mathf.Lerp(_unselectedFontSizeMax, _selectedFontSizeMax, selectedAmount);
+            var titleScale = Mathf.Lerp(1f, _selectedTitleScale, selectedAmount);
+            _titleRectTransform.localScale = new Vector3(titleScale, titleScale, 1f);
+        }
+
+        internal void SetVisible(bool isVisible)
+        {
+            if (gameObject.activeSelf != isVisible)
+            {
+                gameObject.SetActive(isVisible);
+            }
         }
 
         void OnLanguageChanged(object? sender, Language language)

@@ -14,7 +14,7 @@ namespace MajdataPlay.UI
         public float HoldTriggerTime = 0f;   // 按住多久算完成
         public float ReleasedScale = 1f;
         public float PressedScale = 0.9f;
-        public float AnimationDuration = 0.1f;
+        public float AnimationDuration = InputManager.UI_CLICK_ANIMATION_DURATION_SEC;
         public Ease EaseType = Ease.OutQuad;
 
         public Image HoldCircle;            // 圆环 Image
@@ -48,24 +48,18 @@ namespace MajdataPlay.UI
 
             foreach (var button in BindButton)
             {
-                isDown |= InputManager.CheckButtonStatusInPreviousFrame(button, SwitchStatus.Off) &&
-                          InputManager.CheckButtonStatusInThisFrame(button, SwitchStatus.On);
-
-                isUp |= InputManager.CheckButtonStatusInPreviousFrame(button, SwitchStatus.On) &&
-                        InputManager.CheckButtonStatusInThisFrame(button, SwitchStatus.Off);
-
-                isPressed |= InputManager.CheckButtonStatusInThisFrame(button, SwitchStatus.On);
+                ref readonly var state = ref InputManager.GetButtonState(button);
+                isDown |= state.PressedThisFrame;
+                isUp |= state.ReleasedThisFrame;
+                isPressed |= state.IsPressed;
             }
 
             foreach (var sensor in BindSensor)
             {
-                isDown |= InputManager.CheckSensorStatusInPreviousFrame(sensor, SwitchStatus.Off) &&
-                          InputManager.CheckSensorStatusInThisFrame(sensor, SwitchStatus.On);
-
-                isUp |= InputManager.CheckSensorStatusInPreviousFrame(sensor, SwitchStatus.On) &&
-                        InputManager.CheckSensorStatusInThisFrame(sensor, SwitchStatus.Off);
-
-                isPressed |= InputManager.CheckSensorStatusInThisFrame(sensor, SwitchStatus.On);
+                ref readonly var state = ref InputManager.GetSensorState(sensor);
+                isDown |= state.PressedThisFrame;
+                isUp |= state.ReleasedThisFrame;
+                isPressed |= state.IsPressed;
             }
 
             // -------------------------
@@ -78,7 +72,7 @@ namespace MajdataPlay.UI
                     .WithEase(EaseType)
                     .BindToLocalScale(transform);
                 if (HoldTriggerTime > 0f)
-                    _holdTimer = 0f; // 开始计时
+                    _holdTimer = 0f;
             }
 
             // -------------------------
@@ -118,7 +112,6 @@ namespace MajdataPlay.UI
             if (isPressed && HoldTriggerTime > 0f)
             {
                 _holdTimer += Time.deltaTime;
-
                 float targetFill = Mathf.Clamp01(_holdTimer / HoldTriggerTime);
 
                 if (HoldCircle != null)
@@ -136,6 +129,21 @@ namespace MajdataPlay.UI
                         });
                 }
             }
+        }
+
+        void OnDisable()
+        {
+            _holdTimer = 0f;
+            if (_holdMotion.IsValid() && _holdMotion.IsPlaying())
+            {
+                _holdMotion.Cancel();
+            }
+            if (HoldCircle != null)
+            {
+                HoldCircle.fillAmount = 0f;
+                HoldCircle.color = StartColor;
+            }
+            transform.localScale = new Vector3(ReleasedScale, ReleasedScale, ReleasedScale);
         }
     }
 }

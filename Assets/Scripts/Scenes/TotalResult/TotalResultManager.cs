@@ -134,7 +134,7 @@ namespace MajdataPlay.Scenes.TotalResult
                 return;
             }
 
-            if(InputManager.IsButtonClickedInThisFrame(ButtonZone.A4))
+            if(InputManager.IsButtonClickCompletedInThisFrame(ButtonZone.A4))
             {
                 MajInstances.AudioManager.StopSFX("bgm_dan.mp3");
                 _isExited = true;

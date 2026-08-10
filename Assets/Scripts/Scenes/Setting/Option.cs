@@ -27,33 +27,34 @@ namespace MajdataPlay.Scenes.Setting
 
 
         bool _isSelected = false;
-        bool _isPressed = false;
-        bool _isUp = false;
         bool _isNoDescription = false;
-        float _pressTime = 0;
+        bool _isInitialized = false;
+        bool _isLocalizationSubscribed = false;
 
         string _optionDescription = string.Empty;
         string _optionName = string.Empty;
 
-        float _iterationThrottle = 0;
-
         IOptionEnumerator _optionEnumerator = null!;
         SettingManager _manager = null!;
-        object _menuInstance = null!;
+        InputRepeatState _inputRepeat;
 
         internal void Init(SettingManager manager, PropertyInfo propertyInfo, object menuInstance)
         {
             _manager = manager;
             PropertyInfo = propertyInfo;
-            _menuInstance = menuInstance;
-            InitOptions();
-            Localization.OnLanguageChanged += OnLangChanged;
+            InitOptions(menuInstance);
+            _isInitialized = true;
+            SubscribeLocalization();
             _nameTextDisplayer.text = _optionName.i18n();
             RefreshValueText();
         }
 
         internal void SetSelected(bool isSelected)
         {
+            if (_isSelected != isSelected)
+            {
+                _inputRepeat.SuppressUntilRelease();
+            }
             _isSelected = isSelected;
             if (isSelected)
             {
@@ -68,6 +69,7 @@ namespace MajdataPlay.Scenes.Setting
 
         void OnLangChanged(object? sender,Language newLanguage)
         {
+            _optionEnumerator.RefreshLocalization();
             _nameTextDisplayer.text = _optionName.i18n();
             RefreshValueText();
             if (_isSelected && isActiveAndEnabled)
@@ -75,7 +77,7 @@ namespace MajdataPlay.Scenes.Setting
                 SetDescriptionText();
             }
         }
-        void InitOptions()
+        void InitOptions(object menuInstance)
         {
             var type = PropertyInfo.PropertyType;
             var isNum = type.IsIntType() || type.IsFloatType();
@@ -134,70 +136,46 @@ namespace MajdataPlay.Scenes.Setting
                     _optionEnumerator = new DefaultReadOnlyEnumerator();
                 }
             }
-            _optionEnumerator.Init(PropertyInfo, _menuInstance);
+            _optionEnumerator.Init(PropertyInfo, menuInstance);
         }
-        void Update()
+        internal void HandleInput()
         {
-            _optionEnumerator.OnUpdate();
-            if (_isSelected)
+            if (!_isSelected)
             {
-                var isE4OrB4OrB3On = InputManager.CheckSensorStatusInThisFrame(SensorArea.E4, SwitchStatus.On) ||
-                                     InputManager.CheckSensorStatusInThisFrame(SensorArea.B4, SwitchStatus.On) ||
-                                     InputManager.CheckSensorStatusInThisFrame(SensorArea.B3, SwitchStatus.On);
-                var isE6OrB5OrB6On = InputManager.CheckSensorStatusInThisFrame(SensorArea.E6, SwitchStatus.On) ||
-                                     InputManager.CheckSensorStatusInThisFrame(SensorArea.B5, SwitchStatus.On) ||
-                                     InputManager.CheckSensorStatusInThisFrame(SensorArea.B6, SwitchStatus.On);
-
-                if (_pressTime >= 0.4f)
-                {
-                    var iterationSpeed = MajEnv.Settings.Debug.MenuOptionIterationSpeed;
-                    if (_iterationThrottle <= 1f / (iterationSpeed is 0 ? 15 : iterationSpeed))
-                    {
-                        _iterationThrottle += MajTimeline.DeltaTime;
-                    }
-                    else
-                    {
-                        MoveOption(_isUp);
-                        _iterationThrottle = 0;
-                    }
-                }
-
-                if (_isPressed)
-                {
-                    if(_pressTime < 0.4f)
-                    {
-                        _pressTime += MajTimeline.DeltaTime;
-                    }
-                    if(isE4OrB4OrB3On)
-                    {
-                        _isUp = true;
-                    }
-                    else if(isE6OrB5OrB6On)
-                    {
-                        _isUp = false;
-                    }
-                    else
-                    {
-                        _isPressed = false;
-                        _pressTime = 0;
-                    }
-                }
-                else
-                {
-                    if (isE4OrB4OrB3On)
-                    {
-                        MoveOption(true);
-                        _isUp = true;
-                        _isPressed = true;
-                    }
-                    else if (isE6OrB5OrB6On)
-                    {
-                        MoveOption(false);
-                        _isUp = false;
-                        _isPressed = true;
-                    }
-                }
+                return;
             }
+
+            var moveNextPressed =
+                InputManager.CheckSensorStatusInThisFrame(SensorArea.E4, SwitchStatus.On) ||
+                InputManager.CheckSensorStatusInThisFrame(SensorArea.B4, SwitchStatus.On) ||
+                InputManager.CheckSensorStatusInThisFrame(SensorArea.B3, SwitchStatus.On);
+            var movePreviousPressed =
+                InputManager.CheckSensorStatusInThisFrame(SensorArea.E6, SwitchStatus.On) ||
+                InputManager.CheckSensorStatusInThisFrame(SensorArea.B5, SwitchStatus.On) ||
+                InputManager.CheckSensorStatusInThisFrame(SensorArea.B6, SwitchStatus.On);
+
+            if (_inputRepeat.Update(
+                moveNextPressed,
+                movePreviousPressed,
+                MajTimeline.DeltaTime,
+                0.4f,
+                GetRepeatInterval(),
+                out var direction))
+            {
+                MoveOption(direction > 0);
+            }
+        }
+
+        static float GetRepeatInterval()
+        {
+            var iterationSpeed = MajEnv.Settings.Debug.MenuOptionIterationSpeed;
+            return 1f / (iterationSpeed is 0 ? 15 : iterationSpeed);
+        }
+
+        internal void RefreshEnumerator()
+        {
+            _optionEnumerator.Refresh();
+            RefreshValueText();
         }
 
         void MoveOption(bool moveNext)
@@ -205,7 +183,7 @@ namespace MajdataPlay.Scenes.Setting
             var hasChanged = moveNext ? _optionEnumerator.MoveNext() : _optionEnumerator.MovePrevious();
             if (hasChanged)
             {
-                RefreshValueText();
+                RefreshEnumerator();
             }
         }
         void SetDescriptionText()
@@ -216,18 +194,19 @@ namespace MajdataPlay.Scenes.Setting
             }
             else
             {
-                _manager.SetDescriptionText(_optionDescription.i18n());
-                switch (PropertyInfo.Name)
+                var description = _optionDescription.i18n();
+                var isOffsetOption = PropertyInfo.Name is
+                    "SlideFadeInOffset" or
+                    "AudioOffset" or
+                    "JudgeOffset" or
+                    "AnswerOffset" or
+                    "TouchPanelOffset" or
+                    "DisplayOffset";
+                if (isOffsetOption)
                 {
-                    case "SlideFadeInOffset":
-                    case "AudioOffset":
-                    case "JudgeOffset":
-                    case "AnswerOffset":
-                    case "TouchPanelOffset":
-                    case "DisplayOffset":
-                        _manager.SetDescriptionText(_optionDescription.i18n() + $"\n{$"MAJTEXT_SETTING_OFFSETUNIT_{MajEnv.Settings.Debug.OffsetUnit}".i18n()}");
-                        break;
+                    description += $"\n{$"MAJTEXT_SETTING_OFFSETUNIT_{MajEnv.Settings.Debug.OffsetUnit}".i18n()}";
                 }
+                _manager.SetDescriptionText(description);
             }
         }
         void RefreshValueText()
@@ -236,8 +215,50 @@ namespace MajdataPlay.Scenes.Setting
         }
         void OnDestroy()
         {
+            UnsubscribeLocalization();
+            if (_isInitialized)
+            {
+                _optionEnumerator.Dispose();
+            }
+        }
+        void OnEnable()
+        {
+            if (!_isInitialized)
+            {
+                return;
+            }
+
+            SubscribeLocalization();
+            _optionEnumerator.Refresh();
+            OnLangChanged(null, Localization.Current);
+        }
+        void OnDisable()
+        {
+            UnsubscribeLocalization();
+            if (_isInitialized)
+            {
+                _inputRepeat.SuppressUntilRelease();
+            }
+        }
+        void SubscribeLocalization()
+        {
+            if (_isLocalizationSubscribed || !isActiveAndEnabled)
+            {
+                return;
+            }
+
+            Localization.OnLanguageChanged += OnLangChanged;
+            _isLocalizationSubscribed = true;
+        }
+        void UnsubscribeLocalization()
+        {
+            if (!_isLocalizationSubscribed)
+            {
+                return;
+            }
+
             Localization.OnLanguageChanged -= OnLangChanged;
-            _optionEnumerator.Dispose();
+            _isLocalizationSubscribed = false;
         }
     }
 }

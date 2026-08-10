@@ -50,12 +50,12 @@ namespace MajdataPlay.Scenes.SortFind
         }
         void Update()
         {
-            if (InputManager.IsSensorClickedInThisFrame(SensorArea.D5) || _isExited)
+            if (InputManager.IsSensorClickCompletedInThisFrame(SensorArea.D5) || _isExited)
             {
                 SortAndExit();
             }
-            else if (InputManager.IsSensorClickedInThisFrame(SensorArea.E6)||
-                     InputManager.IsSensorClickedInThisFrame(SensorArea.B5)) // <
+            else if (InputManager.IsSensorClickCompletedInThisFrame(SensorArea.E6)||
+                     InputManager.IsSensorClickCompletedInThisFrame(SensorArea.B5)) // <
             {
                 _selectIndex--;
                 if(_selectIndex < 0)
@@ -64,8 +64,8 @@ namespace MajdataPlay.Scenes.SortFind
                 }
                 SetActiveSort((SortType)_selectIndex);
             }
-            else if (InputManager.IsSensorClickedInThisFrame(SensorArea.B4) ||
-                     InputManager.IsSensorClickedInThisFrame(SensorArea.E4)) // >
+            else if (InputManager.IsSensorClickCompletedInThisFrame(SensorArea.B4) ||
+                     InputManager.IsSensorClickCompletedInThisFrame(SensorArea.E4)) // >
             {
                 _selectIndex++;
                 if (_selectIndex > _slots.Length - 1)
@@ -75,14 +75,14 @@ namespace MajdataPlay.Scenes.SortFind
                 SetActiveSort((SortType)_selectIndex);
             }
             
-            if (InputManager.IsSensorClickedInThisFrame(SensorArea.E3))
+            if (InputManager.IsSensorClickCompletedInThisFrame(SensorArea.E3))
             {
                 _searchBar.text = string.Empty;
             }
-            else if (InputManager.IsSensorClickedInThisFrame(SensorArea.E7) ||
-                     InputManager.IsSensorClickedInThisFrame(SensorArea.B7) ||
-                     InputManager.IsSensorClickedInThisFrame(SensorArea.C) ||
-                     InputManager.IsSensorClickedInThisFrame(SensorArea.B2))
+            else if (InputManager.IsSensorClickCompletedInThisFrame(SensorArea.E7) ||
+                     InputManager.IsSensorClickCompletedInThisFrame(SensorArea.B7) ||
+                     InputManager.IsSensorClickCompletedInThisFrame(SensorArea.C) ||
+                     InputManager.IsSensorClickCompletedInThisFrame(SensorArea.B2))
             {
                 Focus(_searchBar);
             }

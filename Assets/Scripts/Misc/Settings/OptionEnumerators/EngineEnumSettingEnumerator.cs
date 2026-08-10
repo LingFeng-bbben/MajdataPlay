@@ -1,16 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 
 namespace MajdataPlay.Settings.OptionEnumerators;
 public sealed class EngineEnumSettingEnumerator: DefaultEnumEnumerator, IOptionEnumerator
 {
     object _lastValue;
-    public override void OnUpdate()
+    public override void Refresh()
     {
         if (Current == _lastValue)
         {

@@ -2,11 +2,7 @@
 using MajdataPlay.i18n;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using Unity.Collections.LowLevel.Unsafe;
 #nullable enable
 namespace MajdataPlay.Settings.OptionEnumerators
 {
@@ -41,7 +37,6 @@ namespace MajdataPlay.Settings.OptionEnumerators
                 return LocalizedValueTexts[ValueIndex];
             }
         }
-
         protected int ModeFlag = 0;
 
         protected object Value
@@ -126,7 +121,6 @@ namespace MajdataPlay.Settings.OptionEnumerators
             IsReadOnly = GetCustomAttribute<ReadOnlyOptionAttribute>() != null || FieldInfo.IsInitOnly;
             Name = fieldInfo.Name;
             InitInternal();
-            Localization.OnLanguageChanged += OnLanguageChanged;
         }
         public void Init(PropertyInfo propertyInfo, object property)
         {
@@ -152,7 +146,6 @@ namespace MajdataPlay.Settings.OptionEnumerators
             IsReadOnly = GetCustomAttribute<ReadOnlyOptionAttribute>() != null || !PropertyInfo.CanWrite;
             Name = propertyInfo.Name;
             InitInternal();
-            Localization.OnLanguageChanged += OnLanguageChanged;
         }
 
         public virtual bool MoveNext()
@@ -189,7 +182,7 @@ namespace MajdataPlay.Settings.OptionEnumerators
 
             return true;
         }
-        public virtual void OnUpdate()
+        public virtual void Refresh()
         {
 
         }
@@ -211,7 +204,7 @@ namespace MajdataPlay.Settings.OptionEnumerators
                 LocalizedValueTexts[i] = localizedText;
             }
         }
-        protected virtual void OnLanguageChanged(object? sender, Language e)
+        public virtual void RefreshLocalization()
         {
             for (var i = 0; i < OptionValues.Length; i++)
             {
@@ -225,7 +218,6 @@ namespace MajdataPlay.Settings.OptionEnumerators
         }
         public virtual void Dispose()
         {
-            Localization.OnLanguageChanged -= OnLanguageChanged;
         }
         protected T? GetCustomAttribute<T>() where T : Attribute
         {

@@ -125,7 +125,7 @@ namespace MajdataPlay.Scenes.Title
                         else
                         {
                             _echoText.text = "MAJTEXT_PRESS_ANY_KEY".i18n();
-                            InputManager.BindAnyArea(OnAreaDown);
+                            InputManager.BindAnyArea(OnAreaClick);
 
                             var list = new string[] { "game_init.wav", "game_init_2.wav", "game_init_3.wav" };
                             MajInstances.AudioManager.PlaySFX(list[UnityEngine.Random.Range(0, list.Length)]);
@@ -316,9 +316,9 @@ namespace MajdataPlay.Scenes.Title
             graphic.color = color;
         }
 
-        private void OnAreaDown(object sender, InputEventArgs e)
+        private void OnAreaClick(object sender, InputEventArgs e)
         {
-            if (!e.IsDown)
+            if (e.IsDown)
                 return;
             if (e.IsButton)
             {
@@ -353,7 +353,7 @@ namespace MajdataPlay.Scenes.Title
 
         void EnterTestMode()
         {
-            InputManager.UnbindAnyArea(OnAreaDown);
+            InputManager.UnbindAnyArea(OnAreaClick);
             _flag = false;
             MajInstances.AudioManager.StopSFX("bgm_title.mp3");
             MajInstances.AudioManager.StopSFX("MajdataPlay.wav");
@@ -361,7 +361,7 @@ namespace MajdataPlay.Scenes.Title
         }
         void NextScene()
         {
-            InputManager.UnbindAnyArea(OnAreaDown);
+            InputManager.UnbindAnyArea(OnAreaClick);
             _flag = false;
             MajInstances.AudioManager.StopSFX("bgm_title.mp3");
             MajInstances.AudioManager.StopSFX("MajdataPlay.wav");

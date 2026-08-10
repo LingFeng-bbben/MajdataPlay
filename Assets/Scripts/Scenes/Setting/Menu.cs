@@ -1,5 +1,4 @@
 using LitMotion;
-using MajdataPlay.Collections;
 using MajdataPlay.Editor;
 using MajdataPlay.Extensions;
 using MajdataPlay.Numerics;
@@ -17,6 +16,7 @@ namespace MajdataPlay.Scenes.Setting
     public class Menu : MonoBehaviour
     {
         const float OPTION_MOVE_DURATION = 0.18f;
+        const int VISIBLE_OPTION_RADIUS = 2;
         static readonly Vector3 UNSELECTED_OPTION_SCALE = Vector3.one * 0.6f;
         static readonly Color SELECTED_OPTION_COLOR = new(0.8823529f, 0.8078431f, 0.6392157f, 1f);
         static readonly Color UNSELECTED_OPTION_COLOR = new(0.3607843f, 0.3098039f, 0.2862745f, 1f);
@@ -40,9 +40,14 @@ namespace MajdataPlay.Scenes.Setting
         [SerializeField, ReadOnlyField]
         float _listCursorPos = 0;
 
-        Option[] _options = Array.Empty<Option>();
+        PropertyInfo[] _properties = Array.Empty<PropertyInfo>();
+        Option?[] _options = Array.Empty<Option?>();
 
         MotionHandle _optionAnim;
+        int _visibleStart = -1;
+        int _visibleEnd = -1;
+        int _appliedSelectedIndex = -1;
+        bool _isInitialized = false;
 
         readonly SettingConfig _settingConfig = MajEnv.RuntimeConfig?.Setting ?? new();
         void Awake()
@@ -51,23 +56,21 @@ namespace MajdataPlay.Scenes.Setting
         }
         public void Init()
         {
-            var type = Instance.GetType();
-            var properties = type.GetProperties()
-                                 .Where(x => !x.GetCustomAttributes<HideInSettingUIAttribute>().Any())
-                                 .ToArray();
-            _options = new Option[properties.Length];
-            foreach(var (i,property) in properties.WithIndex())
+            if (_isInitialized)
             {
-                var optionObj = Instantiate(_optionPrefab, transform);
-                var option = optionObj.GetComponent<Option>();
-                _options[i] = option;
-                option.Init(_manager, property, Instance);
+                return;
             }
 
-            UpdateDisplayerPosition();
+            var type = Instance.GetType();
+            _properties = type.GetProperties()
+                              .Where(x => !x.GetCustomAttributes<HideInSettingUIAttribute>().Any())
+                              .ToArray();
+            _options = new Option?[_properties.Length];
+            _isInitialized = true;
         }
         void OnDisable()
         {
+            _optionAnim.TryCancel();
             SelectedIndex = 0;
         }
         void OnDestroy()
@@ -76,7 +79,36 @@ namespace MajdataPlay.Scenes.Setting
         }
         internal void SwitchOption(int direction)
         {
+            if (!_isInitialized)
+            {
+                return;
+            }
             MoveOption(direction);
+        }
+        internal void HandleInput()
+        {
+            if (!_isInitialized || _options.Length == 0)
+            {
+                return;
+            }
+
+            EnsureOption(SelectedIndex).HandleInput();
+        }
+        internal void RefreshVisibleEnumerators()
+        {
+            if (!_isInitialized)
+            {
+                return;
+            }
+
+            for (var i = _visibleStart; i <= _visibleEnd; i++)
+            {
+                var option = i >= 0 ? _options[i] : null;
+                if (option is not null)
+                {
+                    option.RefreshEnumerator();
+                }
+            }
         }
         void MoveOption(int direction)
         {
@@ -110,45 +142,86 @@ namespace MajdataPlay.Scenes.Setting
         }
         void UpdateDisplayerPosition()
         {
-            for (var i = 0; i < _options.Length; i++)
+            if (_options.Length == 0)
+            {
+                return;
+            }
+
+            var visibleStart = Mathf.Max(0, Mathf.FloorToInt(_listCursorPos) - VISIBLE_OPTION_RADIUS);
+            var visibleEnd = Mathf.Min(_options.Length - 1, Mathf.CeilToInt(_listCursorPos) + VISIBLE_OPTION_RADIUS);
+            if (visibleStart != _visibleStart || visibleEnd != _visibleEnd)
+            {
+                for (var i = _visibleStart; i <= _visibleEnd; i++)
+                {
+                    if (i >= 0 && (i < visibleStart || i > visibleEnd))
+                    {
+                        _options[i]?.gameObject.SetActive(false);
+                    }
+                }
+                _visibleStart = visibleStart;
+                _visibleEnd = visibleEnd;
+            }
+
+            for (var i = visibleStart; i <= visibleEnd; i++)
             {
                 var distance = i - _listCursorPos;
-                var optionDisplayer = _options[i];
-
+                var optionDisplayer = EnsureOption(i);
                 optionDisplayer.transform.localPosition = GetOptionTransformPosition(distance);
                 optionDisplayer.transform.localScale = GetOptionTransformScale(distance);
                 optionDisplayer.SetTextColor(GetOptionTextColor(distance));
+                if (!optionDisplayer.gameObject.activeSelf)
+                {
+                    optionDisplayer.gameObject.SetActive(true);
+                }
             }
         }
         void UpdateOptionSelectionState()
         {
-            for (var i = 0; i < _options.Length; i++)
+            if (_appliedSelectedIndex == SelectedIndex)
             {
-                var optionDisplayer = _options[i];
-                optionDisplayer.SetSelected(i == SelectedIndex);
+                return;
             }
+
+            if (_appliedSelectedIndex >= 0 && _appliedSelectedIndex < _options.Length)
+            {
+                _options[_appliedSelectedIndex]?.SetSelected(false);
+            }
+            EnsureOption(SelectedIndex).SetSelected(true);
+            _appliedSelectedIndex = SelectedIndex;
         }
 
         internal void ToTail()
         {
+            if (!_isInitialized || _options.Length == 0)
+            {
+                return;
+            }
             SelectOption(_options.Length - 1, false);
         }
         internal void ToHead()
         {
+            if (!_isInitialized || _options.Length == 0)
+            {
+                return;
+            }
             SelectOption(0, false);
         }
 
         internal void ToOption(string optionName)
         {
+            if (!_isInitialized || _options.Length == 0)
+            {
+                return;
+            }
             var index = string.IsNullOrEmpty(optionName)
                 ? 0
-                : Array.FindIndex(_options, x => x.PropertyInfo.Name == optionName);
+                : Array.FindIndex(_properties, x => x.Name == optionName);
             SelectOption(index, false);
         }
         void SelectOption(int index, bool useAnimation)
         {
             SelectedIndex = index.Clamp(0, _options.Length - 1);
-            _settingConfig.SelectedOption = _options[SelectedIndex].PropertyInfo.Name;
+            _settingConfig.SelectedOption = _properties[SelectedIndex].Name;
             if (useAnimation)
             {
                 DisplayerMoveTo(SelectedIndex, OPTION_MOVE_DURATION);
@@ -157,6 +230,21 @@ namespace MajdataPlay.Scenes.Setting
             {
                 SnapDisplayerTo(SelectedIndex);
             }
+        }
+        Option EnsureOption(int index)
+        {
+            var option = _options[index];
+            if (option is not null)
+            {
+                return option;
+            }
+
+            var optionObj = Instantiate(_optionPrefab, transform);
+            optionObj.SetActive(false);
+            option = optionObj.GetComponent<Option>();
+            _options[index] = option;
+            option.Init(_manager, _properties[index], Instance);
+            return option;
         }
         void SnapDisplayerTo(float targetPos)
         {
