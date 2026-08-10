@@ -240,13 +240,16 @@ namespace MajdataPlay
                         Progress = progress
                     };
                     var result = await DownloadFile(options, token);
-                    if(result == DownloadResult.ResourceNotFound)
+                    progress?.Report(1);
+                    if (result == DownloadResult.ResourceNotFound)
                     {
                         using var _ = File.Create(cacheFlagPath);
                         _videoPath = string.Empty;
                     }
-                    progress?.Report(1);
-                    _videoPath = savePath;
+                    else
+                    {
+                        _videoPath = savePath;
+                    }                        
                     return _videoPath;
                 }
             }
