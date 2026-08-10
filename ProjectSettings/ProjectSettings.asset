@@ -116,7 +116,7 @@ PlayerSettings:
   xboxEnableGuest: 0
   xboxEnablePIXSampling: 0
   metalFramebufferOnly: 0
-  metalUseMetalDisplayLink: 0
+  metalUseMetalDisplayLink: 1
   xboxOneResolution: 0
   xboxOneSResolution: 0
   xboxOneXResolution: 3
