@@ -675,7 +675,7 @@ namespace MajdataPlay
                         return DownloadResult.Success;
                     }
 
-                    MajDebug.LogDebug($"[{nameof(OnlineSongDetail)}] The complete file is corrupted, re-download it: {options.RequestedUri}");
+                    MajDebug.LogDebug(nameof(OnlineSongDetail), $"The complete file is corrupted, re-download it: {options.RequestedUri}");
                     DeleteFileIfExists(savePath);
                     DeleteFileIfExists(hashPath);
                     expectedSHA256 = null;
@@ -688,7 +688,7 @@ namespace MajdataPlay
                         return DownloadResult.Success;
                     }
 
-                    MajDebug.LogDebug($"[{nameof(OnlineSongDetail)}] Found incomplete chunk file: {options.RequestedUri}");
+                    MajDebug.LogDebug(nameof(OnlineSongDetail), $"Found incomplete chunk file: {options.RequestedUri}");
                 }
             }
 
@@ -712,7 +712,7 @@ namespace MajdataPlay
 
                     if (rsp.StatusCode == HttpStatusCode.RequestedRangeNotSatisfiable)
                     {
-                        MajDebug.LogWarning($"[{nameof(OnlineSongDetail)}] Range {existingChunkLength}- not satisfiable. Resetting chunk.");
+                        MajDebug.LogWarning(nameof(OnlineSongDetail), $"Range {existingChunkLength}- not satisfiable. Resetting chunk.");
                         DeleteFileIfExists(chunkPath);
                         continue;
                     }
@@ -725,12 +725,12 @@ namespace MajdataPlay
                         throw new HttpException(requestUri.OriginalString, HttpErrorCode.Unsuccessful, rsp.StatusCode);
                     }
 
-                    MajDebug.LogDebug($"[{nameof(OnlineSongDetail)}] Received http response {(int)rsp.StatusCode} from: {requestUri}");
+                    MajDebug.LogDebug(nameof(OnlineSongDetail), $"Received http response {(int)rsp.StatusCode} from: {requestUri}");
 
                     var isPartial = rsp.StatusCode == HttpStatusCode.PartialContent;
                     if (!isPartial && existingChunkLength > 0)
                     {
-                        MajDebug.LogWarning($"[{nameof(OnlineSongDetail)}] Server does not support partial download. Falling back to full download.");
+                        MajDebug.LogWarning(nameof(OnlineSongDetail), $"Server does not support partial download. Falling back to full download.");
                         existingChunkLength = 0;
                         DeleteFileIfExists(chunkPath);
                     }
@@ -776,7 +776,7 @@ namespace MajdataPlay
 
                     if (!isIntegrityValid)
                     {
-                        MajDebug.LogWarning($"[{nameof(OnlineSongDetail)}] Hash mismatch for online resource. Origin: {expectedSHA256}");
+                        MajDebug.LogWarning(nameof(OnlineSongDetail), $"Hash mismatch for online resource. Origin: {expectedSHA256}");
                         DeleteFileIfExists(chunkPath);
 
                         if (i == MajEnv.HTTP_REQUEST_MAX_RETRY)
@@ -792,7 +792,7 @@ namespace MajdataPlay
                 }
                 catch (OperationCanceledException) when (token.IsCancellationRequested)
                 {
-                    MajDebug.LogWarning($"[{nameof(OnlineSongDetail)}] Request for resource \"{requestUri}\" was canceled");
+                    MajDebug.LogWarning(nameof(OnlineSongDetail), $"Request for resource \"{requestUri}\" was canceled");
                     throw new HttpException(requestUri.OriginalString, HttpErrorCode.Canceled);
                 }
                 catch (Exception e) when (e is not HttpException || ((HttpException)e).ErrorCode == HttpErrorCode.IntegrityCheckFailed)
@@ -812,7 +812,7 @@ namespace MajdataPlay
                             throw new HttpException(requestUri.OriginalString, HttpErrorCode.Timeout);
                         }
 
-                        MajDebug.LogError($"[{nameof(OnlineSongDetail)}] Failed to request resource: {requestUri}\n{e}");
+                        MajDebug.LogError(nameof(OnlineSongDetail), $"Failed to request resource: {requestUri}\n{e}");
                         throw new HttpException(requestUri.OriginalString, HttpErrorCode.Unreachable);
                     }
                 }
