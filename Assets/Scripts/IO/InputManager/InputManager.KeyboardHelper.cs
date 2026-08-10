@@ -77,7 +77,7 @@ namespace MajdataPlay.IO
                     _ => throw new ArgumentOutOfRangeException(nameof(keyCode)),
                 };
             }
-#if UNITY_IOS || UNITY_EDITOR_OSX
+#if (UNITY_IOS || UNITY_EDITOR_OSX) && !UNITY_STANDALONE_WIN
             public static GCKeyCode ToiOSGCKeyCode(KeyCode keyCode)
             {
                 return keyCode switch
