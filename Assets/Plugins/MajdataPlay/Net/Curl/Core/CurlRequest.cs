@@ -103,10 +103,9 @@ namespace MajdataPlay.Net.Curl.Core
             }
             var length = (int)(size.ToUInt32() * nmemb.ToUInt32());
             var buffer = new Span<byte>((void*)ptr, length);
+            var read = contentStream.Read(buffer);
 
-            contentStream.Read(buffer);
-
-            return (UIntPtr)length;
+            return (UIntPtr)read;
         }
         [MonoPInvokeCallback(typeof(CurlSeekCallback))]
         static unsafe CurlSeekCallbackReturn OnSeekCallback(IntPtr userdata, long offset, SeekOrigin origin)
