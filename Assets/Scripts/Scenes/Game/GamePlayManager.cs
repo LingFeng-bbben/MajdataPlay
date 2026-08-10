@@ -1584,13 +1584,14 @@ namespace MajdataPlay.Scenes.Game
                             var realTimeDifferenceb = (float)_bgManager.CurrentSec - timeOffset * playbackSpeed;
 
                             _thisFrameSec = timeOffset;
-#if UNITY_ANDROID || UNITY_IOS
-                            var diff = _thisFrameSec - _audioTrackStartAt;
-                            if (diff <= 2f && diff >= 0f)
+                            if (MajEnv.Settings.Audio.Backend == SoundBackendOption.BassSimple)
                             {
-                                _devicePlaybackOffset += realTimeDifference*0.8f;
+                                var diff = _thisFrameSec - _audioTrackStartAt;
+                                if (diff <= 2f && diff >= 0f)
+                                {
+                                    _devicePlaybackOffset += realTimeDifference * 0.8f;
+                                }
                             }
-#endif
 
                             var sb = ZString.CreateStringBuilder(true);
                             try
