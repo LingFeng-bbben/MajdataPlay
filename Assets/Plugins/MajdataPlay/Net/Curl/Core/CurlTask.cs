@@ -34,6 +34,8 @@ namespace MajdataPlay.Net.Curl.Core
 
         int _state = (int)CurlTaskState.Created;
 
+        int _disposeProgress = 0;
+
         readonly Action<CurlTask> _onResume;
         readonly Action<CurlTask> _onDispose;
         readonly GCHandle _taskHandle;
@@ -154,7 +156,10 @@ namespace MajdataPlay.Net.Curl.Core
         }
         void OnDisposeRequested()
         {
-            _onDispose(this);
+            if(Interlocked.CompareExchange(ref _disposeProgress, 1, 0) == 0)
+            {
+                _onDispose(this);
+            }            
         }
     }
 }

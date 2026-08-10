@@ -34,12 +34,14 @@ namespace MajdataPlay.Net.Curl.Core
         readonly int _chunkSize;
         readonly long _maxBufferSize;
         readonly Action _onResume;
+        readonly Action _onDispose;
         readonly BlockingCollection<MemoryChunk> _bufferQueue;
 
-        public CurlResponseStream(long maxBufferLength, Action onResume) : this(1024, maxBufferLength, onResume) { }
-        public CurlResponseStream(int chunkSize, long maxBufferLength, Action onResume)
+        public CurlResponseStream(long maxBufferLength, Action onResume, Action onDispose) : this(1024, maxBufferLength, onResume, onDispose) { }
+        public CurlResponseStream(int chunkSize, long maxBufferLength, Action onResume, Action onDispose)
         {
             _onResume = onResume;
+            _onDispose = onDispose;
             _chunkSize = chunkSize;
             _maxBufferSize = maxBufferLength;
             _lwmBytes = (int)(_maxBufferSize * 0.4);
@@ -217,36 +219,38 @@ namespace MajdataPlay.Net.Curl.Core
         public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
         public override void SetLength(long value) => throw new NotSupportedException();
 
+        internal void CleanUp()
+        {
+            _isDisposed = 1;
+            if (!_bufferQueue.IsAddingCompleted)
+            {
+                _bufferQueue.CompleteAdding();
+            }
+            while (_bufferQueue.TryTake(out var chunk))
+            {
+                if (chunk.Buffer != null)
+                {
+                    Pool<byte>.ReturnArray(chunk.Buffer);
+                }
+            }
+            Pool<byte>.ReturnArray(_currentChunk.Buffer ?? Array.Empty<byte>());
+            Pool<byte>.ReturnArray(_writingChunk.Buffer ?? Array.Empty<byte>());
+            _currentChunk = default;
+            _writingChunk = default;
+            _bufferQueue.Dispose();
+        }
+
         protected override void Dispose(bool disposing)
         {
-            if(Interlocked.CompareExchange(ref _isDisposed, 1 , 0) != 0)
-            {
-                return;
-            }
+            base.Dispose(disposing);
             if (disposing)
             {
-                if (!_bufferQueue.IsAddingCompleted)
-                {
-                    _bufferQueue.CompleteAdding();
-                }
-                while (_bufferQueue.TryTake(out var chunk))
-                {
-                    if (chunk.Buffer != null)
-                    {
-                        Pool<byte>.ReturnArray(chunk.Buffer);
-                    }
-                }
-                Pool<byte>.ReturnArray(_currentChunk.Buffer ?? Array.Empty<byte>());
-                Pool<byte>.ReturnArray(_writingChunk.Buffer ?? Array.Empty<byte>());
-                _currentChunk = default;
-                _writingChunk = default;
-                _bufferQueue.Dispose();
+                _onDispose();                
             }
-            base.Dispose(disposing);
         }
         void ThrowIfDisposed()
         {
-            if(Volatile.Read(ref _isDisposed) != 0)
+            if(_isDisposed == 1)
             {
                 throw new ObjectDisposedException(nameof(CurlResponseStream));
             }

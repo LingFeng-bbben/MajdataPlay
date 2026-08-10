@@ -43,7 +43,7 @@ namespace MajdataPlay.Net.Curl.Core
             Config = config;
             _onResume = onResume;
             _onDispose = onDispose;
-            _responseStream = new CurlResponseStream(config.MaxResponseHeadersLength, _onResume);
+            _responseStream = new CurlResponseStream(config.MaxResponseHeadersLength, _onResume, _onDispose);
             
             Content = new StreamContent(_responseStream);
             RequestMessage = Request.Message;
@@ -338,17 +338,14 @@ namespace MajdataPlay.Net.Curl.Core
         internal void CleanUp()
         {
             _handle.Dispose();
-            _responseStream.Dispose();
+            _responseStream.CleanUp();
         }
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
             if (disposing)
             {
-                if (Interlocked.CompareExchange(ref _disposeFlag, 1, 0) == 0)
-                {
-                    _onDispose();
-                }
+                _onDispose();
             }
         }
     }
