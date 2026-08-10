@@ -13,16 +13,14 @@ namespace MajdataPlay.Runtime
         {
             ~GCCallbackCriticalSource()
             {
-                OnGCCallback();
-                GC.ReRegisterForFinalize(this);
+                RunCallbackAndReRegister(this);
             }
         }
         class GCCallbackSource
         {
             ~GCCallbackSource()
             {
-                OnGCCallback();
-                GC.ReRegisterForFinalize(this);
+                RunCallbackAndReRegister(this);
             }
         }
         class GCCallbackTask
@@ -105,13 +103,35 @@ namespace MajdataPlay.Runtime
         readonly static GCHandle _criticalSourceHandle;
         readonly static GCHandle _sourceHandle;
         readonly static object _lock = new object();
+        static volatile bool _isShuttingDown;
 
         static GCCallbackRegistration()
         {
+            Application.quitting += OnApplicationQuitting;
             //var source = new GCCallbackSource();
             var criticalSource = new GCCallbackCriticalSource();
             //_sourceHandle = GCHandle.Alloc(source, GCHandleType.Weak);
             _criticalSourceHandle = GCHandle.Alloc(criticalSource, GCHandleType.Weak);
+        }
+
+        static void OnApplicationQuitting()
+        {
+            _isShuttingDown = true;
+        }
+
+        static void RunCallbackAndReRegister(object source)
+        {
+            if (_isShuttingDown || Environment.HasShutdownStarted)
+            {
+                return;
+            }
+
+            OnGCCallback();
+
+            if (!_isShuttingDown && !Environment.HasShutdownStarted)
+            {
+                GC.ReRegisterForFinalize(source);
+            }
         }
         
         
