@@ -77,12 +77,6 @@ Shader "UI/Rounded Rect"
                 return OUT;
             }
 
-            float cornerSDF(float2 p, float2 halfSize, float r, float2 signMask)
-            {
-                float2 q = p * signMask - (halfSize - r);
-                return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;
-            }
-
             fixed4 frag(v2f IN) : SV_Target
             {
                 float w = length(float2(ddx(IN.localPos.x), ddy(IN.localPos.x))) / (length(float2(ddx(IN.texcoord.x), ddy(IN.texcoord.x))) + 1e-5);
@@ -92,18 +86,13 @@ Shader "UI/Rounded Rect"
 
                 float2 p = (IN.texcoord - 0.5) * size;
 
-                float rTR = max(_RadiusTR, 0.0);
-                float rTL = max(_RadiusTL, 0.0);
-                float rBL = max(_RadiusBL, 0.0);
-                float rBR = max(_RadiusBR, 0.0);
+                float topRadius = p.x >= 0.0 ? _RadiusTR : _RadiusTL;
+                float bottomRadius = p.x >= 0.0 ? _RadiusBR : _RadiusBL;
+                float radius = max(p.y >= 0.0 ? topRadius : bottomRadius, 0.0);
+                radius = min(radius, min(halfSize.x, halfSize.y));
 
-
-                float dTR = cornerSDF(p, halfSize, rTR, float2( 1.0,  1.0));
-                float dTL = cornerSDF(p, halfSize, rTL, float2(-1.0,  1.0));
-                float dBL = cornerSDF(p, halfSize, rBL, float2(-1.0, -1.0));
-                float dBR = cornerSDF(p, halfSize, rBR, float2( 1.0, -1.0));
-
-                float dist = max(max(dTR, dTL), max(dBL, dBR));
+                float2 q = abs(p) - (halfSize - radius);
+                float dist = length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - radius;
 
                 float aa = max(length(float2(ddx(dist), ddy(dist))), 1e-3);
                 float alpha = smoothstep(aa, -aa, dist);
