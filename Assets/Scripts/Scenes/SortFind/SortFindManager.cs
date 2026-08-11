@@ -50,7 +50,9 @@ namespace MajdataPlay.Scenes.SortFind
         }
         void Update()
         {
-            if (InputManager.IsSensorClickCompletedInThisFrame(SensorArea.D5) || _isExited)
+            if (InputManager.IsSensorClickCompletedInThisFrame(SensorArea.D5) ||
+                InputManager.IsButtonClickCompletedInThisFrame(ButtonZone.P1) ||
+                _isExited)
             {
                 SortAndExit();
             }
