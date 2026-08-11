@@ -1,3 +1,4 @@
+using Live2D.Cubism.Rendering;
 using Live2D.Cubism.Rendering.URP;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
@@ -31,7 +32,38 @@ namespace MajdataPlay.Rendering
             }
 #endif
 
+            if (!CameraCanRenderCubism(renderingData.cameraData.camera))
+            {
+                return;
+            }
+
             renderer.EnqueuePass(_renderPass);
+        }
+
+        static bool CameraCanRenderCubism(Camera camera)
+        {
+            if (camera == null)
+            {
+                return false;
+            }
+
+            // The Cubism pass draws from a global controller group, so enforce
+            // each camera's culling mask before allocating its full-screen pass.
+            var cameraCullingMask = camera.cullingMask;
+            var renderControllers = CubismRenderControllerGroup.GetInstance().RenderControllers;
+
+            for (var i = 0; i < renderControllers.Length; i++)
+            {
+                var renderController = renderControllers[i];
+                if (renderController != null
+                    && renderController.isActiveAndEnabled
+                    && (cameraCullingMask & (1 << renderController.gameObject.layer)) != 0)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
