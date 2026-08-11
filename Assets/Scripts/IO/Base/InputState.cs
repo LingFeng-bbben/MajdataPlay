@@ -13,6 +13,7 @@ namespace MajdataPlay.IO
         float _clickCompletionDelay;
         bool _isClickPending;
         bool _completeClickNextFrame;
+        bool _suppressUntilRelease;
 
         public bool IsPressed { get; private set; }
         public bool PressedThisFrame { get; private set; }
@@ -23,6 +24,15 @@ namespace MajdataPlay.IO
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void Update(bool isPressed, bool pressedThisFrame, bool releasedThisFrame, float deltaTime)
         {
+            if (_suppressUntilRelease)
+            {
+                if (!isPressed)
+                {
+                    _suppressUntilRelease = false;
+                }
+                return;
+            }
+
             ClickCompletedThisFrame = _completeClickNextFrame;
             ClickHeldDuration = ClickCompletedThisFrame ? _pendingClickHeldDuration : 0f;
             _completeClickNextFrame = false;
@@ -57,6 +67,12 @@ namespace MajdataPlay.IO
             IsPressed = isPressed;
             PressedThisFrame = pressedThisFrame;
             ReleasedThisFrame = releasedThisFrame;
+        }
+
+        internal void ResetForSceneChange(bool isCurrentlyPressed)
+        {
+            this = default;
+            _suppressUntilRelease = isCurrentlyPressed;
         }
     }
 

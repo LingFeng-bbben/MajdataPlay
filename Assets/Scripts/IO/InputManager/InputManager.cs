@@ -559,6 +559,20 @@ namespace MajdataPlay.IO
                     deltaTime);
             }
         }
+        internal static void ResetUIInputForSceneChange()
+        {
+            for (var i = 0; i < _buttonControlStates.Length; i++)
+            {
+                _buttonControlStates[i].ResetForSceneChange(
+                    _btnStatusInThisFrame[i] == SwitchStatus.On);
+            }
+
+            for (var i = 0; i < _sensorControlStates.Length; i++)
+            {
+                _sensorControlStates[i].ResetForSceneChange(
+                    _sensorStatusInThisFrame[i] == SwitchStatus.On);
+            }
+        }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static void UpdateControlState(
             ref InputControlState state,
