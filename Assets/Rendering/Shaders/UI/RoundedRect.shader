@@ -28,6 +28,7 @@ Shader "UI/Rounded Rect"
             "RenderType"="Transparent"
             "PreviewType"="Plane"
             "CanUseSpriteAtlas"="True"
+            "RenderPipeline"="UniversalPipeline"
         }
 
         Stencil { Ref [_Stencil] Comp [_StencilComp] Pass [_StencilOp] ReadMask [_StencilReadMask] WriteMask [_StencilWriteMask] }
@@ -36,13 +37,13 @@ Shader "UI/Rounded Rect"
         Pass
         {
             Name "Default"
-        CGPROGRAM
+            Tags { "LightMode"="SRPDefaultUnlit" }
+        HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
             #pragma target 3.0
 
-            #include "UnityCG.cginc"
-            #include "UnityUI.cginc"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
             #pragma shader_feature __ UNITY_UI_ALPHACLIP
 
@@ -56,13 +57,13 @@ Shader "UI/Rounded Rect"
             struct v2f
             {
                 float4 vertex   : SV_POSITION;
-                fixed4 color    : COLOR;
+                half4 color    : COLOR;
                 float2 texcoord : TEXCOORD0;
                 float2 localPos : TEXCOORD1;
             };
 
-            fixed4 _Color;
-            fixed4 _TextureSampleAdd;
+            half4 _Color;
+            half4 _TextureSampleAdd;
             
             float _RadiusTL, _RadiusTR, _RadiusBL, _RadiusBR;
             sampler2D _MainTex;
@@ -70,14 +71,14 @@ Shader "UI/Rounded Rect"
             v2f vert(appdata_t v)
             {
                 v2f OUT;
-                OUT.vertex = UnityObjectToClipPos(v.vertex);
+                OUT.vertex = TransformObjectToHClip(v.vertex.xyz);
                 OUT.texcoord = v.texcoord;
                 OUT.localPos = v.vertex.xy;
                 OUT.color = v.color * _Color;
                 return OUT;
             }
 
-            fixed4 frag(v2f IN) : SV_Target
+            half4 frag(v2f IN) : SV_Target
             {
                 float w = length(float2(ddx(IN.localPos.x), ddy(IN.localPos.x))) / (length(float2(ddx(IN.texcoord.x), ddy(IN.texcoord.x))) + 1e-5);
                 float h = length(float2(ddx(IN.localPos.y), ddy(IN.localPos.y))) / (length(float2(ddx(IN.texcoord.y), ddy(IN.texcoord.y))) + 1e-5);
@@ -97,7 +98,7 @@ Shader "UI/Rounded Rect"
                 float aa = max(length(float2(ddx(dist), ddy(dist))), 1e-3);
                 float alpha = smoothstep(aa, -aa, dist);
 
-                fixed4 color = (tex2D(_MainTex, IN.texcoord) + _TextureSampleAdd) * IN.color;
+                half4 color = (tex2D(_MainTex, IN.texcoord) + _TextureSampleAdd) * IN.color;
                 color.a *= alpha;
 
                 #ifdef UNITY_UI_ALPHACLIP
@@ -106,7 +107,7 @@ Shader "UI/Rounded Rect"
 
                 return color;
             }
-        ENDCG
+        ENDHLSL
         }
     }
 }

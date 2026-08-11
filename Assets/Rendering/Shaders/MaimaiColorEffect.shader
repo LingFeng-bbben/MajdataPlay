@@ -21,21 +21,21 @@ Shader "Unlit/MaimaiColorEffect"
 				"RenderType" = "Transparent"
 				"PreviewType" = "Plane"
 				"CanUseSpriteAtlas" = "True"
+				"RenderPipeline" = "UniversalPipeline"
 			}
 			LOD 100
 
 			Pass
 			{
+				Tags { "LightMode" = "SRPDefaultUnlit" }
 				ZWrite Off
 				Blend SrcAlpha OneMinusSrcAlpha
 
-				CGPROGRAM
+				HLSLPROGRAM
 				#pragma vertex vert
 				#pragma fragment frag
-			// make fog work
-			#pragma multi_compile_fog
 
-			#include "UnityCG.cginc"
+			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
 			struct appdata
 			{
@@ -46,15 +46,14 @@ Shader "Unlit/MaimaiColorEffect"
 
 			struct v2f
 			{
-				UNITY_FOG_COORDS(1)
 				float4 vertex : SV_POSITION;
 				float2 uv : TEXCOORD0;
 			};
 
 			sampler2D _MainTex;
 			float4 _MainTex_ST;
-			fixed _Alpha;
-			fixed _Speed;
+			half _Alpha;
+			half _Speed;
 			float _Saturation;
 			float _Brightness;
 			float _InnerLB;
@@ -75,16 +74,15 @@ Shader "Unlit/MaimaiColorEffect"
 			v2f vert(appdata v)
 			{
 				v2f o;
-				o.vertex = UnityObjectToClipPos(v.vertex);
+				o.vertex = TransformObjectToHClip(v.vertex.xyz);
 				o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-				UNITY_TRANSFER_FOG(o,o.vertex);
 				return o;
 			}
 
-			fixed4 frag(v2f i) : SV_Target
+			half4 frag(v2f i) : SV_Target
 			{
 				// sample the texture
-				fixed4 col = tex2D(_MainTex, i.uv);
+				half4 col = tex2D(_MainTex, i.uv);
 
 				float x = i.uv.x - 0.5;
 				float y = i.uv.y - 0.5;
@@ -100,14 +98,12 @@ Shader "Unlit/MaimaiColorEffect"
 
 				float3 color = hsb2rgb(float3(hsb_h, _Saturation, _Brightness));
 
-				fixed3 albedo = col.rgb;
-				fixed3 diffues = color * albedo;
+				half3 albedo = col.rgb;
+				half3 diffues = color * albedo;
 
-				// apply fog
-				UNITY_APPLY_FOG(i.fogCoord, col);
-				return fixed4(diffues, col.a * alpha);
+				return half4(diffues, col.a * alpha);
 			}
-			ENDCG
+			ENDHLSL
 		}
 		}
 }

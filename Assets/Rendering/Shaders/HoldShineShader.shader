@@ -11,23 +11,25 @@ Shader "Custom/HoldShineShader"
 			{
 				"Queue" = "Transparent"
 				"RenderType" = "Transparent"
+				"RenderPipeline" = "UniversalPipeline"
 			}
 			Pass
 				{
+			Tags { "LightMode" = "SRPDefaultUnlit" }
 			ZTest Always
 			Cull Off
 			ZWrite Off
 			Blend SrcAlpha OneMinusSrcAlpha
-			CGPROGRAM
+			HLSLPROGRAM
 			sampler2D _MainTex;
 			half _Brightness;
 			half _Saturation;
 			half _Contrast;
 
-			//vertºÍfragº¯Êı
+			//vertå’Œfragå‡½æ•°
 			#pragma vertex vert
 			#pragma fragment frag
-			#include "Lighting.cginc"
+			#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
 
 			struct appdata_t
@@ -36,11 +38,11 @@ Shader "Custom/HoldShineShader"
 				half4 color : COLOR;
 				float2 texcoord : TEXCOORD0;
 			};
-			//´Óvertex shader´«Èëpixel shaderµÄ²ÎÊı
+			//ä»vertex shaderä¼ å…¥pixel shaderçš„å‚æ•°
 			struct v2f
 			{
-				float4 pos : SV_POSITION; //¶¥µãÎ»ÖÃ
-				half2  uv : TEXCOORD0;	  //UV×ø±ê
+				float4 pos : SV_POSITION; //é¡¶ç‚¹ä½ç½®
+				half2  uv : TEXCOORD0;	  //UVåæ ‡
 				half4 color : COLOR;
 			};
 
@@ -48,41 +50,41 @@ Shader "Custom/HoldShineShader"
 			v2f vert(appdata_t v)
 			{
 				v2f o;
-				//´Ó×ÔÉí¿Õ¼ä×ªÏòÍ¶Ó°¿Õ¼ä
-				o.pos = UnityObjectToClipPos(v.vertex);
+				//ä»è‡ªèº«ç©ºé—´è½¬å‘æŠ•å½±ç©ºé—´
+				o.pos = TransformObjectToHClip(v.vertex.xyz);
 				o.color = v.color;
-				//uv×ø±ê¸³Öµ¸øoutput
+				//uvåæ ‡èµ‹å€¼ç»™output
 				o.uv = v.texcoord;
 				return o;
 			}
 
 			//fragment shader
-			fixed4 frag(v2f i) : COLOR
+			half4 frag(v2f i) : COLOR
 			{
-				//´Ó_MainTexÖĞ¸ù¾İuv×ø±ê½øĞĞ²ÉÑù
-				fixed4 renderTex = tex2D(_MainTex, i.uv)*i.color;
+				//ä»_MainTexä¸­æ ¹æ®uvåæ ‡è¿›è¡Œé‡‡æ ·
+				half4 renderTex = tex2D(_MainTex, i.uv)*i.color;
 				float frames = _Time / 0.0008;
 				float brightness = 0.95 + max(abs(sin(frames * 0.2)) * 0.5, 0);
 				//float brightness = 1;
 				float contrast = 1;
 				float saturation = 1;
-				//brigtnessÁÁ¶ÈÖ±½Ó³ËÒÔÒ»¸öÏµÊı£¬Ò²¾ÍÊÇRGBÕûÌåËõ·Å£¬µ÷ÕûÁÁ¶È
-				fixed3 finalColor = renderTex * brightness;
-				//saturation±¥ºÍ¶È£ºÊ×ÏÈ¸ù¾İ¹«Ê½¼ÆËãÍ¬µÈÁÁ¶ÈÇé¿öÏÂ±¥ºÍ¶È×îµÍµÄÖµ£º
-				fixed gray = 0.2125 * renderTex.r + 0.7154 * renderTex.g + 0.0721 * renderTex.b;
-				fixed3 grayColor = fixed3(gray, gray, gray);
-				//¸ù¾İSaturationÔÚ±¥ºÍ¶È×îµÍµÄÍ¼ÏñºÍÔ­Í¼Ö®¼ä²îÖµ
+				//brigtnessäº®åº¦ç›´æ¥ä¹˜ä»¥ä¸€ä¸ªç³»æ•°ï¼Œä¹Ÿå°±æ˜¯RGBæ•´ä½“ç¼©æ”¾ï¼Œè°ƒæ•´äº®åº¦
+				half3 finalColor = renderTex * brightness;
+				//saturationé¥±å’Œåº¦ï¼šé¦–å…ˆæ ¹æ®å…¬å¼è®¡ç®—åŒç­‰äº®åº¦æƒ…å†µä¸‹é¥±å’Œåº¦æœ€ä½çš„å€¼ï¼š
+				half gray = 0.2125 * renderTex.r + 0.7154 * renderTex.g + 0.0721 * renderTex.b;
+				half3 grayColor = half3(gray, gray, gray);
+				//æ ¹æ®Saturationåœ¨é¥±å’Œåº¦æœ€ä½çš„å›¾åƒå’ŒåŸå›¾ä¹‹é—´å·®å€¼
 				finalColor = lerp(grayColor, finalColor, saturation);
-				//contrast¶Ô±È¶È£ºÊ×ÏÈ¼ÆËã¶Ô±È¶È×îµÍµÄÖµ
-				fixed3 avgColor = fixed3(0.5, 0.5, 0.5);
-				//¸ù¾İContrastÔÚ¶Ô±È¶È×îµÍµÄÍ¼ÏñºÍÔ­Í¼Ö®¼ä²îÖµ
+				//contrastå¯¹æ¯”åº¦ï¼šé¦–å…ˆè®¡ç®—å¯¹æ¯”åº¦æœ€ä½çš„å€¼
+				half3 avgColor = half3(0.5, 0.5, 0.5);
+				//æ ¹æ®Contraståœ¨å¯¹æ¯”åº¦æœ€ä½çš„å›¾åƒå’ŒåŸå›¾ä¹‹é—´å·®å€¼
 				finalColor = lerp(avgColor, finalColor, contrast);
-				//·µ»Ø½á¹û£¬alphaÍ¨µÀ²»±ä
-				return fixed4(finalColor, renderTex.a);
+				//è¿”å›ç»“æœï¼Œalphaé€šé“ä¸å˜
+				return half4(finalColor, renderTex.a);
 			}
-			ENDCG
+			ENDHLSL
 		}
 	}
-	//·ÀÖ¹shaderÊ§Ğ§µÄ±£ÕÏ´ëÊ©
+	//é˜²æ­¢shaderå¤±æ•ˆçš„ä¿éšœæªæ–½
 	FallBack Off
 }
