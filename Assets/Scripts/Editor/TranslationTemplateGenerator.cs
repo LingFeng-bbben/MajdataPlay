@@ -34,7 +34,8 @@ namespace MajdataPlay.Editor
             { "List", new string[]
                 {
                     "INPUT_HINT",
-                    "EMPTY_COLLECTION"
+                    "EMPTY_COLLECTION",
+                    "NO_PLAY_RECORD"
                 }
             }
         };
