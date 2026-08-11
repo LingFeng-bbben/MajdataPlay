@@ -19,11 +19,34 @@ namespace MajdataPlay.Drawing
 {
     public static class SpriteLoader
     {
+        static Sprite? _emptySprite;
+
         public static Sprite EmptySprite
         {
             get
             {
-                return Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
+                if (_emptySprite != null)
+                {
+                    return _emptySprite;
+                }
+
+                var texture = new Texture2D(1, 1, TextureFormat.RGBA32, false)
+                {
+                    name = "EmptySpriteTexture",
+                    hideFlags = HideFlags.HideAndDontSave
+                };
+                texture.SetPixel(0, 0, Color.clear);
+                texture.Apply();
+
+                _emptySprite = Sprite.Create(texture,
+                                             new Rect(0, 0, 1, 1),
+                                             new Vector2(0.5f, 0.5f),
+                                             100,
+                                             0,
+                                             SpriteMeshType.FullRect);
+                _emptySprite.name = "EmptySprite";
+                _emptySprite.hideFlags = HideFlags.HideAndDontSave;
+                return _emptySprite;
             }
         }
 
@@ -36,7 +59,7 @@ namespace MajdataPlay.Drawing
             var fileInfo = new FileInfo(filePath);
             if (!fileInfo.Exists)
             {
-                return Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
+                return EmptySprite;
             }
             try
             {
@@ -49,7 +72,7 @@ namespace MajdataPlay.Drawing
             catch (Exception e)
             {
                 Debug.LogError($"Failed to load sprite from file: {filePath}\nException: {e}");
-                return Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
+                return EmptySprite;
             }
         }
         public static Sprite LoadFromMemory(ReadOnlySpan<byte> data, bool markNonReadable = true)
@@ -70,7 +93,7 @@ namespace MajdataPlay.Drawing
             catch (Exception e)
             {
                 Debug.LogError($"Failed to load sprite from memory\nException: {e}");
-                return Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
+                return EmptySprite;
             }
         }
 
@@ -88,7 +111,7 @@ namespace MajdataPlay.Drawing
             if (!fileInfo.Exists)
             {
                 await UniTask.SwitchToMainThread();
-                return Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
+                return EmptySprite;
             }
             try
             {
@@ -106,7 +129,7 @@ namespace MajdataPlay.Drawing
             {
                 Debug.LogError($"Failed to load sprite from file: {filePath}\nException: {e}");
                 await UniTask.SwitchToMainThread();
-                return Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
+                return EmptySprite;
             }
         }
         public static Task<Sprite> LoadFromMemoryAsync(ReadOnlyMemory<byte> buffer, 
@@ -133,7 +156,7 @@ namespace MajdataPlay.Drawing
                 Debug.LogError($"Failed to load sprite from memory\nException: {e}");
                 await UniTask.SwitchToMainThread();
 
-                return Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
+                return EmptySprite;
             }
         }
 

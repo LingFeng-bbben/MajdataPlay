@@ -154,7 +154,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Skins
         public Sprite HoldEndPoint_Mine { get; private set; }
 
         public static readonly CustomSkin Empty;
-        static readonly Sprite _dummySprite = Sprite.Create(new Texture2D(0, 0), new Rect(0, 0, 0, 0), new Vector2(0.5f, 0.5f));
+        static readonly Sprite _dummySprite = SpriteLoader.EmptySprite;
 
         bool _canUnload = true;
         readonly string _path;

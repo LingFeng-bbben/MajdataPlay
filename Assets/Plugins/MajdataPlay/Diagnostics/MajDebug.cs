@@ -97,9 +97,15 @@ namespace MajdataPlay.Diagnostics
 
         [HideInCallstack]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static void Log<T>(T obj, LogLevel level)
+        static void Log<T>(string? tag, T obj, LogLevel level)
         {
             var sb = ZString.CreateStringBuilder();
+            if (!string.IsNullOrEmpty(tag))
+            {
+                sb.Append('[');
+                sb.Append(tag);
+                sb.Append(']');
+            }
             sb.Append(obj);
             if (obj is Exception)
             {
@@ -121,23 +127,45 @@ namespace MajdataPlay.Diagnostics
 
         [HideInCallstack]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void LogDebug<T>(T obj) => Log(obj, LogLevel.Debug);
+        public static void LogDebug<T>(T obj) => Log(null, obj, LogLevel.Debug);
 
         [HideInCallstack]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void LogInfo<T>(T obj) => Log(obj, LogLevel.Info);
+        public static void LogDebug<T>(string tag, T obj) => Log(tag, obj, LogLevel.Debug);
 
         [HideInCallstack]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void LogWarning<T>(T obj) => Log(obj, LogLevel.Warning);
+        public static void LogInfo<T>(T obj) => Log(null, obj, LogLevel.Info);
 
         [HideInCallstack]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void LogError<T>(T obj) => Log(obj, LogLevel.Error);
+        public static void LogInfo<T>(string tag, T obj) => Log(tag, obj, LogLevel.Info);
 
         [HideInCallstack]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void LogException<T>(T obj) where T : Exception => Log(obj, LogLevel.Error);
+        public static void LogWarning<T>(T obj) => Log(null, obj, LogLevel.Warning);
+
+        [HideInCallstack]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void LogWarning<T>(string tag, T obj) => Log(tag, obj, LogLevel.Warning);
+
+        [HideInCallstack]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void LogError<T>(T obj) => Log(null, obj, LogLevel.Error);
+
+        [HideInCallstack]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void LogError<T>(string tag, T obj) => Log(tag, obj, LogLevel.Error);
+
+        [HideInCallstack]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void LogException<T>(T obj) where T : Exception => Log(null, obj, LogLevel.Error);
+
+        [HideInCallstack]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void LogException<T>(string tag, T obj) where T : Exception
+            => Log(tag, obj, LogLevel.Error);
+
 
         static string GetStackTrack()
         {

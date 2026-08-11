@@ -74,16 +74,16 @@ namespace MajdataPlay.Scenes.Result.Components
                 return;
             }
             if(!_isAlreadyThumbUp && 
-                (InputManager.IsSensorClickedInThisFrame(SensorArea.E3) || 
-                InputManager.IsSensorClickedInThisFrame(SensorArea.B3))
+                (InputManager.IsSensorClickCompletedInThisFrame(SensorArea.E3) ||
+                InputManager.IsSensorClickCompletedInThisFrame(SensorArea.B3))
                 )
             {
                 _ = SendLikeAsync();
             }
             if (!_isScorePosted && !MajInstances.GameManager.Settings.Mod.IsAnyModActive() && 
-                (InputManager.IsSensorClickedInThisFrame(SensorArea.E4) || 
-                InputManager.IsSensorClickedInThisFrame(SensorArea.D4) || 
-                InputManager.IsSensorClickedInThisFrame(SensorArea.A3))
+                (InputManager.IsSensorClickCompletedInThisFrame(SensorArea.E4) ||
+                InputManager.IsSensorClickCompletedInThisFrame(SensorArea.D4) ||
+                InputManager.IsSensorClickCompletedInThisFrame(SensorArea.A3))
                 )
             {
                 _ = SendScoreAsync();

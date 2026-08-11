@@ -14,7 +14,7 @@ namespace MajdataPlay.Scenes.Test
 
 
         bool _exitFlag = false;
-        float _exitBtnPressTime = 0f;
+        bool _exitRequested = false;
         float _testBtnPressTime = 0f;
         TestPages _currentPage = TestPages.Sensor;
 
@@ -77,7 +77,7 @@ namespace MajdataPlay.Scenes.Test
             {
                 return;
             }
-            if (_exitBtnPressTime >= 5)
+            if (_exitRequested)
             {
                 _exitFlag = true;
                 MajInstances.SceneSwitcher.SwitchScene(NextScene);
@@ -130,13 +130,13 @@ namespace MajdataPlay.Scenes.Test
                         break;
                 }
             }
-            if(InputManager.IsButtonClickedInThisFrame(ButtonZone.Test))
+            if(InputManager.IsButtonClickCompletedInThisFrame(ButtonZone.Test))
             {
                 NextPage();
             }
-            if(InputManager.IsButtonClickedInThisFrame(ButtonZone.A5))
+            if(InputManager.IsButtonClickCompletedInThisFrame(ButtonZone.A5))
             {
-                _exitBtnPressTime = 5;
+                _exitRequested = true;
             }
         }
         void ButtonPageUpdate()
@@ -163,9 +163,9 @@ namespace MajdataPlay.Scenes.Test
                 var state = InputManager.GetButtonStatusInThisFrame(btns[i]) is SwitchStatus.On ? ON_STRING: OFF_STRING;
                 _btnStateTexts[i].text = state;
             }
-            if(_testBtnPressTime >= 5)
+            if(_testBtnPressTime >= 5f)
             {
-                _testBtnPressTime = 0;
+                _testBtnPressTime = 0f;
                 NextPage();
             }
             else if (InputManager.CheckButtonStatusInThisFrame(ButtonZone.Test, SwitchStatus.On))
@@ -174,7 +174,7 @@ namespace MajdataPlay.Scenes.Test
             }
             else
             {
-                _testBtnPressTime = 0;
+                _testBtnPressTime = 0f;
             }
         }
         void OnDestroy()

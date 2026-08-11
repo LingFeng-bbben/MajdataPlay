@@ -96,14 +96,14 @@ namespace MajdataPlay.Scenes.Login
             {
                 return;
             }
-            var isUsernameInputClicked = InputManager.IsSensorClickedUpInThisFrame(SensorArea.B2) ||
-                                         InputManager.IsSensorClickedUpInThisFrame(SensorArea.C) ||
-                                         InputManager.IsSensorClickedUpInThisFrame(SensorArea.E3);
-            var isPasswordInputClicked = InputManager.IsSensorClickedUpInThisFrame(SensorArea.B3) ||
-                                         InputManager.IsSensorClickedUpInThisFrame(SensorArea.B4) ||
-                                         InputManager.IsSensorClickedUpInThisFrame(SensorArea.E4);
-            var isUsernameClearBtnClicked = InputManager.IsSensorClickedUpInThisFrame(SensorArea.D3);
-            var isPasswordClearBtnClicked = InputManager.IsSensorClickedUpInThisFrame(SensorArea.A3);
+            var isUsernameInputClicked = InputManager.IsSensorClickCompletedInThisFrame(SensorArea.B2) ||
+                                         InputManager.IsSensorClickCompletedInThisFrame(SensorArea.C) ||
+                                         InputManager.IsSensorClickCompletedInThisFrame(SensorArea.E3);
+            var isPasswordInputClicked = InputManager.IsSensorClickCompletedInThisFrame(SensorArea.B3) ||
+                                         InputManager.IsSensorClickCompletedInThisFrame(SensorArea.B4) ||
+                                         InputManager.IsSensorClickCompletedInThisFrame(SensorArea.E4);
+            var isUsernameClearBtnClicked = InputManager.IsSensorClickCompletedInThisFrame(SensorArea.D3);
+            var isPasswordClearBtnClicked = InputManager.IsSensorClickCompletedInThisFrame(SensorArea.A3);
             if(isUsernameInputClicked)
             {
                 Focus(_usernameInput);
@@ -179,9 +179,9 @@ namespace MajdataPlay.Scenes.Login
                     _isReady = true;
                     _usernameInput.readOnly = false;
                     _passwordInput.readOnly = false;
-                    var isRefreshQRCodeRequested = InputManager.IsSensorClickedUpInThisFrame(SensorArea.A6) ||
-                                                   InputManager.IsSensorClickedUpInThisFrame(SensorArea.B6) ||
-                                                   InputManager.IsSensorClickedUpInThisFrame(SensorArea.E7);
+                    var isRefreshQRCodeRequested = InputManager.IsSensorClickCompletedInThisFrame(SensorArea.A6) ||
+                                                   InputManager.IsSensorClickCompletedInThisFrame(SensorArea.B6) ||
+                                                   InputManager.IsSensorClickCompletedInThisFrame(SensorArea.E7);
                     try
                     {
                         if (authProcessFlag == AUTH_FLAG_REQUESTING)
@@ -299,8 +299,8 @@ namespace MajdataPlay.Scenes.Login
                             authSessionTask = RegistryAuthSession(endpoint, cts.Token);
                         }
                         //cancel button
-                        if (InputManager.IsSensorClickedUpInThisFrame(SensorArea.A5) ||
-                            InputManager.IsButtonClickedInThisFrame(ButtonZone.A5))
+                        if (InputManager.IsSensorClickCompletedInThisFrame(SensorArea.A5) ||
+                            InputManager.IsButtonClickCompletedInThisFrame(ButtonZone.A5))
                         {
                             cts.Cancel();
                             if (!string.IsNullOrEmpty(authRequestId))
@@ -313,8 +313,8 @@ namespace MajdataPlay.Scenes.Login
                             break;
                         }
                         //login button
-                        else if (InputManager.IsSensorClickedUpInThisFrame(SensorArea.A4) ||
-                            InputManager.IsButtonClickedInThisFrame(ButtonZone.A4) ||
+                        else if (InputManager.IsSensorClickCompletedInThisFrame(SensorArea.A4) ||
+                            InputManager.IsButtonClickCompletedInThisFrame(ButtonZone.A4) ||
                             (endpoint.AutoLogin == true
                             && SceneSwitcher.LastScene == MajScenes.Title
                             && !string.IsNullOrEmpty(endpoint.Username)

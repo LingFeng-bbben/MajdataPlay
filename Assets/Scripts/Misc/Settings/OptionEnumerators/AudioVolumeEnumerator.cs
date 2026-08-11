@@ -6,7 +6,7 @@ public sealed class AudioVolumeEnumerator : DefaultNumberEnumerator, IOptionEnum
     decimal _lastValue = 0;
     AudioManager _audioManager;
 
-    public override void OnUpdate()
+    public override void Refresh()
     {
         if(_lastValue != CurrentValue)
         {

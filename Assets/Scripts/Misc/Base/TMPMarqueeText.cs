@@ -12,6 +12,7 @@ namespace MajdataPlay.Misc.Base
         public float StartDelay = 2f;
         public float ScrollSpeed = 48f;
         public float EndRatio = 0.25f;
+        public float RefreshRate = 30f;
 
         private TextMeshProUGUI? _sourceText;
         private TextMeshProUGUI? _mainText;
@@ -19,11 +20,13 @@ namespace MajdataPlay.Misc.Base
         private RectTransform? _viewportRect;
         private RectTransform? _mainRect;
         private RectTransform? _copyRect;
+        private RectMask2D? _mask;
         private string _lastText = "";
         private Vector2 _lastViewportSize;
         private float _loopDistance;
         private float _offset;
         private float _delayTimer;
+        private float _movementAccumulator;
         private bool _isScrolling;
         private bool _isDirty = true;
         private bool _sourcePrepared;
@@ -46,6 +49,7 @@ namespace MajdataPlay.Misc.Base
         {
             _isDirty = true;
             _delayTimer = StartDelay;
+            _movementAccumulator = 0f;
             Refresh(true);
         }
 
@@ -97,10 +101,19 @@ namespace MajdataPlay.Misc.Base
             if (_delayTimer > 0f)
             {
                 _delayTimer -= deltaTime;
+                _movementAccumulator = 0f;
                 return;
             }
 
-            _offset += Mathf.Max(1f, ScrollSpeed) * deltaTime;
+            _movementAccumulator += deltaTime;
+            var refreshInterval = 1f / Mathf.Max(1f, RefreshRate);
+            if (_movementAccumulator < refreshInterval)
+            {
+                return;
+            }
+
+            _offset += Mathf.Max(1f, ScrollSpeed) * _movementAccumulator;
+            _movementAccumulator = 0f;
             if (_offset >= _loopDistance)
             {
                 _offset = 0f;
@@ -136,12 +149,6 @@ namespace MajdataPlay.Misc.Base
                 return;
             }
 
-            EnsureMask();
-            EnsureMarqueeTexts();
-            PrepareSourceText();
-            SyncTextStyle(_mainText!);
-            SyncTextStyle(_copyText!);
-
             var preferredWidth = Mathf.Ceil(sourceText.GetPreferredValues(sourceText.text, Mathf.Infinity, Mathf.Infinity).x);
             _lastText = sourceText.text;
             _lastViewportSize = viewportSize;
@@ -152,17 +159,20 @@ namespace MajdataPlay.Misc.Base
             {
                 _offset = 0f;
                 _delayTimer = Mathf.Max(0f, StartDelay);
+                _movementAccumulator = 0f;
             }
 
             if (!_isScrolling)
             {
-                _mainText!.gameObject.SetActive(true);
-                _copyText!.gameObject.SetActive(false);
-                SetTextRect(_mainRect!, viewportWidth, viewportSize.y, 0f);
-                _mainText.text = _lastText;
-                _mainText.alignment = sourceText.alignment;
+                RestoreSourceText();
                 return;
             }
+
+            EnsureMask();
+            EnsureMarqueeTexts();
+            PrepareSourceText();
+            SyncTextStyle(_mainText!);
+            SyncTextStyle(_copyText!);
 
             _loopDistance = preferredWidth + viewportWidth * EndRatio;
             _mainText!.gameObject.SetActive(true);
@@ -190,10 +200,12 @@ namespace MajdataPlay.Misc.Base
                 return;
             }
 
-            if (_viewportRect.GetComponent<RectMask2D>() is null)
+            _mask ??= _viewportRect.GetComponent<RectMask2D>();
+            if (_mask is null)
             {
-                gameObject.AddComponent<RectMask2D>();
+                _mask = gameObject.AddComponent<RectMask2D>();
             }
+            _mask.enabled = true;
         }
 
         private void EnsureMarqueeTexts()
@@ -217,9 +229,6 @@ namespace MajdataPlay.Misc.Base
         {
             var textObj = new GameObject(objectName, typeof(RectTransform));
             textObj.transform.SetParent(transform, false);
-
-            var layoutElement = textObj.AddComponent<LayoutElement>();
-            layoutElement.ignoreLayout = true;
 
             var text = textObj.AddComponent<TextMeshProUGUI>();
             text.raycastTarget = false;
@@ -268,6 +277,10 @@ namespace MajdataPlay.Misc.Base
             if (_copyText is not null)
             {
                 _copyText.gameObject.SetActive(false);
+            }
+            if (_mask is not null)
+            {
+                _mask.enabled = false;
             }
         }
 

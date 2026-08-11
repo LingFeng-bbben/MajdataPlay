@@ -94,7 +94,6 @@ MonoBehaviour:
   _selectedBackground: {fileID: 857430918264730003}
   _titleDisplayer: {fileID: 6469573976835836268}
   _selectedTextColor: {r: 1, g: 1, b: 1, a: 1}
-  _selectedFontSizeMin: 18
   _selectedFontSizeMax: 32
 --- !u!1 &857430918264730000
 GameObject:

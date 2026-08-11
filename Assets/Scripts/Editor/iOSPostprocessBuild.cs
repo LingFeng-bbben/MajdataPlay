@@ -20,6 +20,7 @@ namespace MajdataPlay.Editor
 
         private const string SettingsBundleSourcePath = "Assets/Plugins/iOS/Settings.bundle";
         private const string SettingsBundleName = "Settings.bundle";
+        private const string ZlibLibrary = "libz.tbd";
         private const string ThermalSourceRelativePath = "Classes/UnityAppController+Thermal.mm";
         private const string ThermalFrameRateMethodSignature =
             "- (int)adjustFrameRateForThermalState:(int)targetFPS";
@@ -33,7 +34,7 @@ namespace MajdataPlay.Editor
             }
 
             DisableUnityThermalFrameRateOverride(path);
-            UpdateRunpathSearchPaths(path);
+            UpdateLinkSettings(path);
             UpdateInfoPlist(path);
             AddSettingsBundle(path);
         }
@@ -120,7 +121,7 @@ namespace MajdataPlay.Editor
             return -1;
         }
 
-        private static void UpdateRunpathSearchPaths(string path)
+        private static void UpdateLinkSettings(string path)
         {
             string projPath = PBXProject.GetPBXProjectPath(path);
             if (!File.Exists(projPath))
@@ -139,6 +140,7 @@ namespace MajdataPlay.Editor
             if (!string.IsNullOrEmpty(frameworkTarget))
             {
                 AddRunpathSearchPaths(proj, frameworkTarget);
+                proj.AddFrameworkToProject(frameworkTarget, ZlibLibrary, false);
             }
 
             File.WriteAllText(projPath, proj.WriteToString());

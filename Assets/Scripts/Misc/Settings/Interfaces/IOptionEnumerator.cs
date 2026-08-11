@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 #nullable enable
 namespace MajdataPlay.Settings
 {
@@ -19,6 +15,7 @@ namespace MajdataPlay.Settings
 
         bool MoveNext();
         bool MovePrevious();
-        void OnUpdate();
+        void Refresh();
+        void RefreshLocalization();
     }
 }

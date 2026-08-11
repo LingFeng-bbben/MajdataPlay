@@ -149,8 +149,8 @@ namespace MajdataPlay.Scenes.Calibrator
             {
                 return;
             }
-            var isExitRequested = InputManager.IsButtonClickedInThisFrame(ButtonZone.A5) ||
-                                  InputManager.IsSensorClickedInThisFrame(SensorArea.A5);
+            var isExitRequested = InputManager.IsButtonClickCompletedInThisFrame(ButtonZone.A5) ||
+                                  InputManager.IsSensorClickCompletedInThisFrame(SensorArea.A5);
             if (isExitRequested)
             {
                 _isExited = true;

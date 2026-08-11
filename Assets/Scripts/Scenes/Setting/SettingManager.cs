@@ -17,6 +17,8 @@ namespace MajdataPlay.Scenes.Setting
 {
     public class SettingManager : MonoBehaviour
     {
+        const float MENU_TITLE_VISIBLE_DISTANCE = 3.5f;
+
         public int Index { get; private set; } = 0;
         public GameSetting Setting => MajEnv.Settings;
 
@@ -45,16 +47,19 @@ namespace MajdataPlay.Scenes.Setting
         int _listCursorTarget = 0;
         MotionHandle _menuTitleDisplayerAnim;
 
-        HoldRepeatState _optionHold;
-        HoldRepeatState _categoryHold;
-
         bool _isExited = false;
         bool _isInited = false;
+        OffsetUnitOption _lastOffsetUnit;
+        InputRepeatState _categoryInput;
+        InputRepeatState _optionInput;
 
         readonly SettingConfig _settingConfig = MajEnv.RuntimeConfig?.Setting ?? new();
         void Awake()
         {
             InputManager.TouchButtonRingEdge = 4.8f;
+            _lastOffsetUnit = Setting.Debug.OffsetUnit;
+            EnsureNestedCanvas(_menuTitleDisplayerListRoot);
+            EnsureNestedCanvas(_descriptionTextDisplayer.gameObject);
         }
         void Start()
         {
@@ -71,6 +76,7 @@ namespace MajdataPlay.Scenes.Setting
                 var chartSetting = ChartSettingStorage.GetSetting(MajEnv.RuntimeConfig.List.SelectedSongHash);
                 var chartSettingType = chartSetting.GetType();
                 var menuObj = Instantiate(menuPrefab, listRoot);
+                menuObj.SetActive(false);
                 menuObj.name = chartSettingType.Name;
                 var menu = menuObj.GetComponent<Menu>();
                 menus[0] = menu;
@@ -93,19 +99,16 @@ namespace MajdataPlay.Scenes.Setting
                 }
 
                 var menuObj = Instantiate(menuPrefab, listRoot);
+                menuObj.SetActive(false);
                 menuObj.name = _property.Name;
                 var menu = menuObj.GetComponent<Menu>();
                 menus[i + offset] = menu;
                 menu.Instance = _property.GetValue(root);
                 menu.Name = _property.Name;
             }
-            foreach (var menu in menus)
-            {
-                menu.Init();
-                menu.gameObject.SetActive(true);
-            }
-
             RestoreSelectedMenu();
+            menus[Index].Init();
+            menus[Index].gameObject.SetActive(true);
 
             MajInstances.AudioManager.PlaySFX("settings.wav");
 
@@ -119,7 +122,7 @@ namespace MajdataPlay.Scenes.Setting
                 _menuTitleDisplayers[i] = displayer;
             }
             UpdateMenuTitleDisplayerPosition();
-            InitializeAllMenu().Forget();
+            InitializeCurrentMenu().Forget();
         }
         void Update()
         {
@@ -127,8 +130,8 @@ namespace MajdataPlay.Scenes.Setting
             {
                 return;
             }
-            var isCalibratorRequested = InputManager.IsButtonClickedInThisFrame(ButtonZone.A1) ||
-                                        InputManager.IsSensorClickedInThisFrame(SensorArea.A1);
+            var isCalibratorRequested = InputManager.IsButtonClickCompletedInThisFrame(ButtonZone.A1) ||
+                                        InputManager.IsSensorClickCompletedInThisFrame(SensorArea.A1);
             if (isCalibratorRequested)
             {
                 MajInstances.AudioManager.ReadVolumeFromSettings();
@@ -136,25 +139,8 @@ namespace MajdataPlay.Scenes.Setting
                 MajInstances.SceneSwitcher.SwitchScene("Calibrator");
                 return;
             }
-            if (UpdateHold(ref _categoryHold, ButtonZone.A2, ButtonZone.A7, out var categoryDirection))
-            {
-                if (categoryDirection != 0)
-                {
-                    SwitchCategory(categoryDirection);
-                }
-                return;
-            }
-            if (UpdateHold(ref _optionHold, ButtonZone.A3, ButtonZone.A6, out var optionDirection))
-            {
-                if (optionDirection != 0)
-                {
-                    SwitchOption(optionDirection);
-                }
-                return;
-            }
-
-            var isExitRequested = InputManager.IsButtonClickedInThisFrame(ButtonZone.A4) ||
-                                  InputManager.IsButtonClickedInThisFrame(ButtonZone.A5);
+            var isExitRequested = InputManager.IsButtonClickCompletedInThisFrame(ButtonZone.A4) ||
+                                  InputManager.IsButtonClickCompletedInThisFrame(ButtonZone.A5);
             if (isExitRequested)
             {
                 MajInstances.AudioManager.ReadVolumeFromSettings();
@@ -169,52 +155,48 @@ namespace MajdataPlay.Scenes.Setting
                 }
                 return;
             }
-            if(InputManager.IsButtonClickedInThisFrame(ButtonZone.A3))
+            var currentMenu = menus[Index];
+            currentMenu.HandleInput();
+            if (UpdateOffsetUnitIfNeeded())
             {
-                _optionHold.Begin(1);
-                SwitchOption(1);
+                currentMenu.RefreshVisibleEnumerators();
             }
-            else if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A6))
+            var nextCategoryPressed = InputManager.CheckButtonStatusInThisFrame(ButtonZone.A2, SwitchStatus.On);
+            var previousCategoryPressed = InputManager.CheckButtonStatusInThisFrame(ButtonZone.A7, SwitchStatus.On);
+            if (nextCategoryPressed || previousCategoryPressed)
             {
-                _optionHold.Begin(-1);
-                SwitchOption(-1);
+                if (_categoryInput.Update(
+                    nextCategoryPressed,
+                    previousCategoryPressed,
+                    MajTimeline.DeltaTime,
+                    0.7f,
+                    0.2f,
+                    out var direction))
+                {
+                    SwitchCategory(direction);
+                }
+                _optionInput.SuppressUntilRelease();
+                return;
             }
-            else if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A2))
-            {
-                _categoryHold.Begin(1);
-                SwitchCategory(1);
-            }
-            else if (InputManager.IsButtonClickedInThisFrame(ButtonZone.A7))
-            {
-                _categoryHold.Begin(-1);
-                SwitchCategory(-1);
-            }
-        }
+            _categoryInput.Reset();
 
-        bool UpdateHold(
-            ref HoldRepeatState hold,
-            ButtonZone positiveButton,
-            ButtonZone negativeButton,
-            out int repeatDirection)
-        {
-            repeatDirection = 0;
-            if (!hold.IsActive)
+            var nextOptionPressed = InputManager.CheckButtonStatusInThisFrame(ButtonZone.A3, SwitchStatus.On);
+            var previousOptionPressed = InputManager.CheckButtonStatusInThisFrame(ButtonZone.A6, SwitchStatus.On);
+            if (nextOptionPressed || previousOptionPressed)
             {
-                return false;
+                if (_optionInput.Update(
+                    nextOptionPressed,
+                    previousOptionPressed,
+                    MajTimeline.DeltaTime,
+                    0.7f,
+                    0.2f,
+                    out var direction))
+                {
+                    SwitchOption(direction);
+                }
+                return;
             }
-
-            var button = hold.Direction > 0 ? positiveButton : negativeButton;
-            if (InputManager.CheckButtonStatus(button, SwitchStatus.Off))
-            {
-                hold.Reset();
-                return false;
-            }
-
-            if (hold.Tick(Time.deltaTime))
-            {
-                repeatDirection = hold.Direction;
-            }
-            return true;
+            _optionInput.Reset();
         }
 
         void SwitchOption(int direction)
@@ -234,19 +216,14 @@ namespace MajdataPlay.Scenes.Setting
             }
         }
 
-        async UniTaskVoid InitializeAllMenu()
+        async UniTaskVoid InitializeCurrentMenu()
         {
-            foreach (var (i, menu) in menus.WithIndex())
-            {
-                if (i != Index)
-                {
-                    menu.gameObject.SetActive(false);
-                }
-            }
             await UniTask.DelayFrame(3);
             menus[Index].ToOption(_settingConfig.SelectedOption);
             MajInstances.SceneSwitcher.FadeOut();
             SetSettingLights();
+            _categoryInput.SuppressUntilRelease();
+            _optionInput.SuppressUntilRelease();
             _isInited = true;
         }
 
@@ -310,15 +287,17 @@ namespace MajdataPlay.Scenes.Setting
         }
         void UpdateMenu(int direction, bool animateTitle = true)
         {
+            var currentMenu = menus[Index];
+            currentMenu.Init();
             if (direction > 0)
             {
-                menus[Index].ToHead();
+                currentMenu.ToHead();
             }
             else
             {
-                menus[Index].ToTail();
+                currentMenu.ToTail();
             }
-            menus[Index].gameObject.SetActive(true);
+            currentMenu.gameObject.SetActive(true);
             foreach (var (i, menu) in menus.WithIndex())
             {
                 if (i != Index)
@@ -348,7 +327,12 @@ namespace MajdataPlay.Scenes.Setting
             {
                 var displayer = _menuTitleDisplayers[i];
                 var distance = i - _listCursorPos;
-                displayer.SetDistance(distance);
+                var isVisible = Mathf.Abs(distance) <= MENU_TITLE_VISIBLE_DISTANCE;
+                displayer.SetVisible(isVisible);
+                if (isVisible)
+                {
+                    displayer.SetDistance(distance);
+                }
             }
         }
         void NormalizeMenuTitleCursor()
@@ -357,54 +341,54 @@ namespace MajdataPlay.Scenes.Setting
             _listCursorTarget = Index;
             UpdateMenuTitleDisplayerPosition();
         }
+        bool UpdateOffsetUnitIfNeeded()
+        {
+            var currentOffsetUnit = Setting.Debug.OffsetUnit;
+            if (currentOffsetUnit == _lastOffsetUnit)
+            {
+                return false;
+            }
+
+            var convertToSecond = currentOffsetUnit == OffsetUnitOption.Second;
+            Setting.Game.SlideFadeInOffset = ConvertOffsetUnit(Setting.Game.SlideFadeInOffset, convertToSecond);
+            Setting.Judge.AudioOffset = ConvertOffsetUnit(Setting.Judge.AudioOffset, convertToSecond);
+            Setting.Judge.JudgeOffset = ConvertOffsetUnit(Setting.Judge.JudgeOffset, convertToSecond);
+            Setting.Judge.AnswerOffset = ConvertOffsetUnit(Setting.Judge.AnswerOffset, convertToSecond);
+            Setting.Judge.TouchPanelOffset = ConvertOffsetUnit(Setting.Judge.TouchPanelOffset, convertToSecond);
+            Setting.Debug.DisplayOffset = ConvertOffsetUnit(Setting.Debug.DisplayOffset, convertToSecond);
+
+            if (convertToSecond)
+            {
+                ChartSettingStorage.ConvertUnitToSecond();
+            }
+            else
+            {
+                ChartSettingStorage.ConvertUnitToFrame();
+            }
+            _lastOffsetUnit = currentOffsetUnit;
+            return true;
+        }
+        static float ConvertOffsetUnit(float value, bool convertToSecond)
+        {
+            var decimalValue = Convert.ToDecimal(value);
+            var convertedValue = convertToSecond
+                ? Math.Round((decimal)MajEnv.FRAME_LENGTH_SEC * decimalValue, 3)
+                : Math.Round(decimalValue / (decimal)MajEnv.FRAME_LENGTH_SEC, 1);
+            return Convert.ToSingle(convertedValue);
+        }
+        static void EnsureNestedCanvas(GameObject target)
+        {
+            if (!target.TryGetComponent<Canvas>(out _))
+            {
+                target.AddComponent<Canvas>();
+            }
+        }
         private void OnDestroy()
         {
             _isExited = true;
             _menuTitleDisplayerAnim.TryCancel();
             InputManager.TouchButtonRingEdge = 5.4f;
             GameManager.RequestSave(this);
-        }
-
-        struct HoldRepeatState
-        {
-            const float HOLD_DELAY = 0.7f;
-            const float REPEAT_INTERVAL = 0.2f;
-
-            public bool IsActive => Direction != 0;
-            public int Direction { get; private set; }
-
-            float _holdTime;
-            float _repeatWaitTime;
-
-            public void Begin(int direction)
-            {
-                Direction = direction;
-                _holdTime = 0;
-                _repeatWaitTime = 0;
-            }
-
-            public bool Tick(float deltaTime)
-            {
-                if (_holdTime < HOLD_DELAY)
-                {
-                    _holdTime += deltaTime;
-                    return false;
-                }
-
-                _repeatWaitTime += deltaTime;
-                if (_repeatWaitTime < REPEAT_INTERVAL)
-                {
-                    return false;
-                }
-
-                _repeatWaitTime -= REPEAT_INTERVAL;
-                return true;
-            }
-
-            public void Reset()
-            {
-                this = default;
-            }
         }
     }
 }

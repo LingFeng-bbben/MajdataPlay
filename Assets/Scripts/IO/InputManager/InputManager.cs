@@ -32,6 +32,8 @@ namespace MajdataPlay.IO
 {
     internal static unsafe partial class InputManager
     {
+        internal const float UI_CLICK_ANIMATION_DURATION_SEC = 0.1f;
+
         public static bool IsTouchPanelConnected
         {
             get
@@ -85,6 +87,24 @@ namespace MajdataPlay.IO
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _sensorStatusInPreviousFrame;
+        }
+        public static ref readonly InputControlState GetButtonState(ButtonZone zone)
+        {
+            ThrowIfButtonIndexOutOfRange(zone);
+            return ref _buttonControlStates[(int)zone];
+        }
+        public static ref readonly InputControlState GetSensorState(SensorArea area)
+        {
+            ThrowIfSensorIndexOutOfRange(area);
+            return ref _sensorControlStates[(int)area];
+        }
+        public static bool IsButtonClickCompletedInThisFrame(ButtonZone zone)
+        {
+            return GetButtonState(zone).ClickCompletedThisFrame;
+        }
+        public static bool IsSensorClickCompletedInThisFrame(SensorArea area)
+        {
+            return GetSensorState(area).ClickCompletedThisFrame;
         }
 #if UNITY_ANDROID || UNITY_IOS
         public static ReadOnlySpan<int> ButtonClickedCountInThisFrame
@@ -170,6 +190,7 @@ namespace MajdataPlay.IO
         readonly static TimeSpan[] _btnLastTriggerTimes = new TimeSpan[12];
         readonly static SwitchStatus[] _btnStatusInPreviousFrame = new SwitchStatus[12];
         readonly static SwitchStatus[] _btnStatusInThisFrame = new SwitchStatus[12];
+        readonly static InputControlState[] _buttonControlStates = new InputControlState[12];
 
         readonly static ReadOnlyMemory<Sensor> _sensors = new Sensor[33]
         {
@@ -311,6 +332,7 @@ namespace MajdataPlay.IO
         readonly static Memory<bool> _sensorStates = new bool[35];
         readonly static SwitchStatus[] _sensorStatusInPreviousFrame = new SwitchStatus[33];
         readonly static SwitchStatus[] _sensorStatusInThisFrame = new SwitchStatus[33];
+        readonly static InputControlState[] _sensorControlStates = new InputControlState[33];
 #if UNITY_ANDROID || UNITY_IOS
         readonly static int[] _btnClickedCountInThisFrame = new int[8];
         readonly static int[] _sensorClickedCountInThisFrame = new int[33];
@@ -514,7 +536,56 @@ namespace MajdataPlay.IO
                 _sensorStatusInPreviousFrame[i] = _sensorStatusInThisFrame[i];
                 _sensorStatusInThisFrame[i] = sen.State;
             }
+            UpdateControlStates(MajTimeline.UnscaledDeltaTime);
             Profiler.EndSample();
+        }
+        static void UpdateControlStates(float deltaTime)
+        {
+            for (var i = 0; i < _buttonControlStates.Length; i++)
+            {
+                UpdateControlState(
+                    ref _buttonControlStates[i],
+                    _btnStatusInPreviousFrame[i],
+                    _btnStatusInThisFrame[i],
+                    deltaTime);
+            }
+
+            for (var i = 0; i < _sensorControlStates.Length; i++)
+            {
+                UpdateControlState(
+                    ref _sensorControlStates[i],
+                    _sensorStatusInPreviousFrame[i],
+                    _sensorStatusInThisFrame[i],
+                    deltaTime);
+            }
+        }
+        internal static void ResetUIInputForSceneChange()
+        {
+            for (var i = 0; i < _buttonControlStates.Length; i++)
+            {
+                _buttonControlStates[i].ResetForSceneChange(
+                    _btnStatusInThisFrame[i] == SwitchStatus.On);
+            }
+
+            for (var i = 0; i < _sensorControlStates.Length; i++)
+            {
+                _sensorControlStates[i].ResetForSceneChange(
+                    _sensorStatusInThisFrame[i] == SwitchStatus.On);
+            }
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        static void UpdateControlState(
+            ref InputControlState state,
+            SwitchStatus previousStatus,
+            SwitchStatus currentStatus,
+            float deltaTime)
+        {
+            var isPressed = currentStatus == SwitchStatus.On;
+            state.Update(
+                isPressed,
+                previousStatus == SwitchStatus.Off && isPressed,
+                previousStatus == SwitchStatus.On && !isPressed,
+                deltaTime);
         }
         public static void BindAnyArea(EventHandler<InputEventArgs> checker) => OnAnyAreaTrigger += checker;
         public static void BindArea(EventHandler<InputEventArgs> checker, ButtonZone sType)

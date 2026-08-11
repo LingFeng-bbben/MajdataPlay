@@ -40,6 +40,7 @@ using UnityEngine.Networking;
 using MajdataPlay.Diagnostics;
 using SkiaSharp;
 using System.Text;
+using MajdataPlay.Net.Curl;
 
 #nullable enable
 namespace MajdataPlay
@@ -137,14 +138,22 @@ namespace MajdataPlay
         public static Thread MainThread { get; } = Thread.CurrentThread;
         public static Process GameProcess { get; } = Process.GetCurrentProcess();
 
-        readonly static HttpClientHandler _httpClientHandler = new HttpClientHandler()
+        //readonly static HttpClientHandler _httpClientHandler = new HttpClientHandler()
+        //{
+        //    AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+        //    Proxy = WebRequest.GetSystemWebProxy(),
+        //    UseProxy = true,
+        //    UseCookies = true,
+        //    CookieContainer = new CookieContainer(),
+        //    //MaxConnectionsPerServer = 64,
+        //};
+        readonly static CurlHttpMessageHandler _httpClientHandler = new CurlHttpMessageHandler()
         {
             AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
             Proxy = WebRequest.GetSystemWebProxy(),
             UseProxy = true,
-            UseCookies = true,
             CookieContainer = new CookieContainer(),
-            //MaxConnectionsPerServer = 64,
+            MaxConnectionsPerServer = 64,
         };
         readonly static UnityHttpMessageHandler _unityHttpHandler = new UnityHttpMessageHandler();
 
@@ -335,6 +344,7 @@ namespace MajdataPlay
             CreateDirectoryIfNotExists(ChartPath);
             CreateDirectoryIfNotExists(RecordOutputsPath);
             CreateDirectoryIfNotExists(LogsPath);
+            CreateDirectoryIfNotExists(Path.Combine(RootPath, "Runtime"));
         }
         static void InitLogger()
         {

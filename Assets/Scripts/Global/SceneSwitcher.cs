@@ -122,6 +122,7 @@ namespace MajdataPlay
         }
         void OnUnitySceneChanged(Scene current, Scene next)
         {
+            InputManager.ResetUIInputForSceneChange();
             //MajDebug.LogDebug(ZString.Format("Scene unloaded: {0}", current.name));
             MajDebug.LogDebug(ZString.Format("Scene loaded: {0}", next.name));
             //var currentScene = SceneManager.GetActiveScene();

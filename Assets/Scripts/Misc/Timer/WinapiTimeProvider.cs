@@ -24,7 +24,7 @@ namespace MajdataPlay.Timer
 
         public WinapiTimeProvider()
         {
-#if UNITY_STANDALONE_WIN
+#if UNITY_STANDALONE_WIN && !UNITY_EDITOR_OSX
             GetSystemTimePreciseAsFileTime(out long fileTime);
             //var now = new DateTime(1601, 1, 1, 0, 0, 0, DateTimeKind.Utc) + TimeSpan.FromTicks(fileTime);
 

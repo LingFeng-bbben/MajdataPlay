@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d95ec23aa5bf93047ba9173907ba06d3, type: 3}
+  m_Script: {fileID: 11500000, guid: dcea175246ea6954aac9dcfb5b213848, type: 3}
   m_Name: RuntimeDatabase
   m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.Assets.Runtime
   <LocalizedFonts>k__BackingField:
