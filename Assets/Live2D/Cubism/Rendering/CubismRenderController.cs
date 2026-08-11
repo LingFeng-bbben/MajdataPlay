@@ -909,6 +909,19 @@ namespace Live2D.Cubism.Rendering
             }
         }
 
+        private static int IndexOfDrawable(CubismRenderer[] renderers, int unmanagedIndex)
+        {
+            for (var i = 0; i < renderers.Length; i++)
+            {
+                if (renderers[i].Drawable.UnmanagedIndex == unmanagedIndex)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
         /// <summary>
         /// Called whenever new render data is available.
         /// </summary>
@@ -924,7 +937,7 @@ namespace Live2D.Cubism.Rendering
             // Handle render data changes.
             for (var dataIndex = 0; dataIndex < data.Length; ++dataIndex)
             {
-                var rendererIndex = Array.FindIndex(renderers, cubismRenderer => cubismRenderer.Drawable.UnmanagedIndex == dataIndex);
+                var rendererIndex = IndexOfDrawable(renderers, dataIndex);
 
                 // Skip if no renderer found.
                 if (rendererIndex < 0) {
@@ -1018,7 +1031,7 @@ namespace Live2D.Cubism.Rendering
 
             for (var dataIndex = 0; dataIndex < data.Length; ++dataIndex)
             {
-                var rendererIndex = Array.FindIndex(renderers, cubismRenderer => cubismRenderer.Drawable.UnmanagedIndex == dataIndex);
+                var rendererIndex = IndexOfDrawable(renderers, dataIndex);
 
                 // Skip if no renderer found.
                 if (rendererIndex < 0)
@@ -1041,7 +1054,7 @@ namespace Live2D.Cubism.Rendering
 
             for (var dataIndex = 0; dataIndex < data.Length; ++dataIndex)
             {
-                var rendererIndex = Array.FindIndex(renderers, cubismRenderer => cubismRenderer.Drawable.UnmanagedIndex == dataIndex);
+                var rendererIndex = IndexOfDrawable(renderers, dataIndex);
 
                 // Skip if no renderer found.
                 if (rendererIndex < 0)

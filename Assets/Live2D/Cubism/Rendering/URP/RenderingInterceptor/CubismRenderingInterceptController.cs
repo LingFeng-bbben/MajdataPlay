@@ -269,7 +269,15 @@ namespace Live2D.Cubism.Rendering.URP.RenderingInterceptor
             var currentCamera = args.PassData.CameraData.camera;
 
             // Find or create camera draw status.
-            var statusIndex = Array.FindIndex(_cameraDrawStatus, status => status.Camera == currentCamera);
+            var statusIndex = -1;
+            for (var i = 0; i < _cameraDrawStatus.Length; i++)
+            {
+                if (_cameraDrawStatus[i].Camera == currentCamera)
+                {
+                    statusIndex = i;
+                    break;
+                }
+            }
 
             // Create a new entry if not found.
             if (statusIndex < 0)
