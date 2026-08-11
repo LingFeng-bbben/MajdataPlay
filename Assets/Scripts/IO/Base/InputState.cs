@@ -44,26 +44,7 @@ namespace MajdataPlay.IO
             _completeReleaseNextFrame = false;
 
             var elapsed = deltaTime > 0f ? deltaTime : 0f;
-            if (pressedThisFrame)
-            {
-                _heldDuration = 0f;
-                _clickCompletionDelay = InputManager.UI_CLICK_ANIMATION_DURATION_SEC * 2f;
-                _isClickPending = true;
-                _isReleasePending = false;
-                ReleaseCompletedThisFrame = false;
-            }
-            if (isPressed)
-            {
-                _heldDuration += elapsed;
-            }
-            if (releasedThisFrame)
-            {
-                _pendingReleaseHeldDuration = _heldDuration;
-                _heldDuration = 0f;
-                _releaseCompletionDelay = InputManager.UI_CLICK_ANIMATION_DURATION_SEC;
-                _isReleasePending = true;
-            }
-            if (!pressedThisFrame && _isClickPending)
+            if (_isClickPending)
             {
                 _clickCompletionDelay -= elapsed;
                 if (_clickCompletionDelay <= 0f)
@@ -72,13 +53,37 @@ namespace MajdataPlay.IO
                     _completeClickNextFrame = true;
                 }
             }
-            if (!releasedThisFrame && _isReleasePending)
+            if (_isReleasePending)
             {
                 _releaseCompletionDelay -= elapsed;
                 if (_releaseCompletionDelay <= 0f)
                 {
                     _isReleasePending = false;
                     _completeReleaseNextFrame = true;
+                }
+            }
+            if (pressedThisFrame)
+            {
+                _heldDuration = 0f;
+                if (!_isClickPending && !_completeClickNextFrame && !ClickCompletedThisFrame)
+                {
+                    _clickCompletionDelay = InputManager.UI_CLICK_ANIMATION_DURATION_SEC * 2f;
+                    _isClickPending = true;
+                }
+            }
+            if (isPressed)
+            {
+                _heldDuration += elapsed;
+            }
+            if (releasedThisFrame)
+            {
+                var releasedHeldDuration = _heldDuration;
+                _heldDuration = 0f;
+                if (!_isReleasePending && !_completeReleaseNextFrame && !ReleaseCompletedThisFrame)
+                {
+                    _pendingReleaseHeldDuration = releasedHeldDuration;
+                    _releaseCompletionDelay = InputManager.UI_CLICK_ANIMATION_DURATION_SEC;
+                    _isReleasePending = true;
                 }
             }
 

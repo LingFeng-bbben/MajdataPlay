@@ -380,6 +380,28 @@ namespace MajdataPlay.Scenes.List
             _logoutTimer = a5State.IsPressed ? _logoutTimer + MajTimeline.DeltaTime : 0f;
             _refreshTimer = p1State.IsPressed ? _refreshTimer + MajTimeline.DeltaTime : 0f;
 
+            if (a4State.ReleaseCompletedThisFrame)
+            {
+                if (a4State.ReleaseHeldDuration > 1f && _coverListManager.SelectedSong is not null)
+                {
+                    EnterPractice();
+                }
+                else if (_collectionListManager.SelectedCollection.Type == ChartStorageType.Dan)
+                {
+                    EnterDan();
+                }
+                else if(_coverListManager.SelectedSong is not null)
+                {
+                    EnterGame();
+                }
+                return;
+            }
+            if (p1State.ReleaseCompletedThisFrame)
+            {
+                EnterSortAndFind();
+                return;
+            }
+
             if (a3State.IsPressed || a6State.IsPressed)
             {
                 if (_listSlideInput.Update(
@@ -416,22 +438,6 @@ namespace MajdataPlay.Scenes.List
                 _enterPracticeTimer += MajTimeline.DeltaTime;
                 return;
             }
-            else if (a4State.ReleaseCompletedThisFrame)
-            {
-                if (a4State.ReleaseHeldDuration > 1f && _coverListManager.SelectedSong is not null)
-                {
-                    EnterPractice();
-                }
-                else if (_collectionListManager.SelectedCollection.Type == ChartStorageType.Dan)
-                {
-                    EnterDan();
-                }
-                else if(_coverListManager.SelectedSong is not null)
-                {
-                    EnterGame();
-                }
-                return;
-            }
             else if (a5State.IsPressed)
             {
                 if (_isOnlineEnabled && _logoutTimer >= LOGOUT_TRIGGER_TIME_SEC)
@@ -445,15 +451,11 @@ namespace MajdataPlay.Scenes.List
                 _enterPracticeTimer = 0f;
             }
 
-            if (p1State.IsPressed || p1State.ReleaseCompletedThisFrame)
+            if (p1State.IsPressed)
             {
                 if(_refreshTimer >= 3f)
                 {
                     RefreshList();
-                }
-                else if(p1State.ReleaseCompletedThisFrame)
-                {
-                    EnterSortAndFind();
                 }
                 return;
             }
