@@ -18,14 +18,22 @@ namespace MajdataPlay.Platform.iOS
         {
             get
             {
+#if UNITY_IOS && !UNITY_EDITOR
                 return AppStatusPInvoke.IsAppInForeground();
+#else
+                return Application.isFocused;
+#endif
             }
         }
         public static bool IsAppFocused
         {
             get
             {
+#if UNITY_IOS && !UNITY_EDITOR
                 return AppStatusPInvoke.IsAppFocused();
+#else
+                return Application.isFocused;
+#endif
             }
         }
 
@@ -49,8 +57,10 @@ namespace MajdataPlay.Platform.iOS
             try
             {
                 IOSNativeSettings.Init();
+#if UNITY_IOS && !UNITY_EDITOR
                 MajDebug.LogInfo($"[{nameof(IOSRuntime)}] Register app status callbacks");
                 AppStatusPInvoke.RegisterAppStatusCallbacks(_onForegroundChanged, _onFocusChanged);
+#endif
                 MajDebug.LogInfo($"[{nameof(IOSRuntime)}] Init finished");
             }
             catch (Exception ex)
