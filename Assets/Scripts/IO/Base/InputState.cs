@@ -9,17 +9,21 @@ namespace MajdataPlay.IO
     internal struct InputControlState
     {
         float _heldDuration;
-        float _pendingClickHeldDuration;
+        float _pendingReleaseHeldDuration;
         float _clickCompletionDelay;
+        float _releaseCompletionDelay;
         bool _isClickPending;
+        bool _isReleasePending;
         bool _completeClickNextFrame;
+        bool _completeReleaseNextFrame;
         bool _suppressUntilRelease;
 
         public bool IsPressed { get; private set; }
         public bool PressedThisFrame { get; private set; }
         public bool ReleasedThisFrame { get; private set; }
         public bool ClickCompletedThisFrame { get; private set; }
-        public float ClickHeldDuration { get; private set; }
+        public bool ReleaseCompletedThisFrame { get; private set; }
+        public float ReleaseHeldDuration { get; private set; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void Update(bool isPressed, bool pressedThisFrame, bool releasedThisFrame, float deltaTime)
@@ -34,14 +38,19 @@ namespace MajdataPlay.IO
             }
 
             ClickCompletedThisFrame = _completeClickNextFrame;
-            ClickHeldDuration = ClickCompletedThisFrame ? _pendingClickHeldDuration : 0f;
+            ReleaseCompletedThisFrame = _completeReleaseNextFrame;
+            ReleaseHeldDuration = ReleaseCompletedThisFrame ? _pendingReleaseHeldDuration : 0f;
             _completeClickNextFrame = false;
+            _completeReleaseNextFrame = false;
 
             var elapsed = deltaTime > 0f ? deltaTime : 0f;
             if (pressedThisFrame)
             {
                 _heldDuration = 0f;
-                _isClickPending = false;
+                _clickCompletionDelay = InputManager.UI_CLICK_ANIMATION_DURATION_SEC * 2f;
+                _isClickPending = true;
+                _isReleasePending = false;
+                ReleaseCompletedThisFrame = false;
             }
             if (isPressed)
             {
@@ -49,18 +58,27 @@ namespace MajdataPlay.IO
             }
             if (releasedThisFrame)
             {
-                _pendingClickHeldDuration = _heldDuration;
+                _pendingReleaseHeldDuration = _heldDuration;
                 _heldDuration = 0f;
-                _clickCompletionDelay = InputManager.UI_CLICK_ANIMATION_DURATION_SEC;
-                _isClickPending = true;
+                _releaseCompletionDelay = InputManager.UI_CLICK_ANIMATION_DURATION_SEC;
+                _isReleasePending = true;
             }
-            else if (_isClickPending)
+            if (!pressedThisFrame && _isClickPending)
             {
                 _clickCompletionDelay -= elapsed;
                 if (_clickCompletionDelay <= 0f)
                 {
                     _isClickPending = false;
                     _completeClickNextFrame = true;
+                }
+            }
+            if (!releasedThisFrame && _isReleasePending)
+            {
+                _releaseCompletionDelay -= elapsed;
+                if (_releaseCompletionDelay <= 0f)
+                {
+                    _isReleasePending = false;
+                    _completeReleaseNextFrame = true;
                 }
             }
 

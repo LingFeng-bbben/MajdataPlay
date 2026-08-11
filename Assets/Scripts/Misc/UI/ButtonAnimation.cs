@@ -25,6 +25,7 @@ namespace MajdataPlay.UI
 
         private float _holdTimer = 0f;       // 按住计时器
         private MotionHandle _holdMotion;    // 圆环动画句柄
+        private MotionHandle _scaleMotion;
 
         void Start()
         {
@@ -68,8 +69,21 @@ namespace MajdataPlay.UI
             if (isDown)
             {
                 var pressedScale = new Vector3(PressedScale, PressedScale, PressedScale);
-                LMotion.Create(transform.localScale, pressedScale, AnimationDuration)
+                CancelScaleMotion();
+                _scaleMotion = LMotion.Create(transform.localScale, pressedScale, AnimationDuration)
                     .WithEase(EaseType)
+                    .WithOnComplete(() =>
+                    {
+                        if (HoldTriggerTime > 0f)
+                        {
+                            return;
+                        }
+
+                        var releasedScale = new Vector3(ReleasedScale, ReleasedScale, ReleasedScale);
+                        _scaleMotion = LMotion.Create(transform.localScale, releasedScale, AnimationDuration)
+                            .WithEase(EaseType)
+                            .BindToLocalScale(transform);
+                    })
                     .BindToLocalScale(transform);
                 if (HoldTriggerTime > 0f)
                     _holdTimer = 0f;
@@ -78,31 +92,29 @@ namespace MajdataPlay.UI
             // -------------------------
             // 松开缩放动画 + 圆环清零
             // -------------------------
-            if (isUp && !isPressed)
+            if (isUp && !isPressed && HoldTriggerTime > 0f)
             {
                 var releasedScale = new Vector3(ReleasedScale, ReleasedScale, ReleasedScale);
-                LMotion.Create(transform.localScale, releasedScale, AnimationDuration)
+                CancelScaleMotion();
+                _scaleMotion = LMotion.Create(transform.localScale, releasedScale, AnimationDuration)
                     .WithEase(EaseType)
                     .BindToLocalScale(transform);
 
-                if (HoldTriggerTime > 0f)
+                _holdTimer = 0f;
+
+                if (HoldCircle != null)
                 {
-                    _holdTimer = 0f;
+                    if (_holdMotion.IsPlaying() && _holdMotion.IsValid())
+                        _holdMotion.Cancel();
 
-                    if (HoldCircle != null)
-                    {
-                        if (_holdMotion.IsPlaying() && _holdMotion.IsValid())
-                            _holdMotion.Cancel();
-
-                        _holdMotion = LMotion
-                            .Create(HoldCircle.fillAmount, 0f, 0.15f)
-                            .WithEase(Ease.OutQuad)
-                            .Bind(value =>
-                            {
-                                HoldCircle.fillAmount = value;
-                                HoldCircle.color = Color.Lerp(StartColor, EndColor, value);
-                            });
-                    }
+                    _holdMotion = LMotion
+                        .Create(HoldCircle.fillAmount, 0f, 0.15f)
+                        .WithEase(Ease.OutQuad)
+                        .Bind(value =>
+                        {
+                            HoldCircle.fillAmount = value;
+                            HoldCircle.color = Color.Lerp(StartColor, EndColor, value);
+                        });
                 }
             }
 
@@ -131,9 +143,18 @@ namespace MajdataPlay.UI
             }
         }
 
+        void CancelScaleMotion()
+        {
+            if (_scaleMotion.IsValid() && _scaleMotion.IsPlaying())
+            {
+                _scaleMotion.Cancel();
+            }
+        }
+
         void OnDisable()
         {
             _holdTimer = 0f;
+            CancelScaleMotion();
             if (_holdMotion.IsValid() && _holdMotion.IsPlaying())
             {
                 _holdMotion.Cancel();

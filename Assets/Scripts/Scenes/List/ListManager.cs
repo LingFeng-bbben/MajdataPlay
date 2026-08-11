@@ -416,9 +416,9 @@ namespace MajdataPlay.Scenes.List
                 _enterPracticeTimer += MajTimeline.DeltaTime;
                 return;
             }
-            else if (a4State.ClickCompletedThisFrame)
+            else if (a4State.ReleaseCompletedThisFrame)
             {
-                if (a4State.ClickHeldDuration > 1f && _coverListManager.SelectedSong is not null)
+                if (a4State.ReleaseHeldDuration > 1f && _coverListManager.SelectedSong is not null)
                 {
                     EnterPractice();
                 }
@@ -445,13 +445,13 @@ namespace MajdataPlay.Scenes.List
                 _enterPracticeTimer = 0f;
             }
 
-            if (p1State.IsPressed || p1State.ClickCompletedThisFrame)
+            if (p1State.IsPressed || p1State.ReleaseCompletedThisFrame)
             {
                 if(_refreshTimer >= 3f)
                 {
                     RefreshList();
                 }
-                else if(p1State.ClickCompletedThisFrame)
+                else if(p1State.ReleaseCompletedThisFrame)
                 {
                     EnterSortAndFind();
                 }
