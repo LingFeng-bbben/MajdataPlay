@@ -1,0 +1,18 @@
+{
+  "name": "Live2D.Cubism.Editor",
+  "rootNamespace": "",
+  "references": [
+      "GUID:b2b60b59554a33b41b16ef821fecbac2"
+  ],
+  "includePlatforms": [
+      "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
