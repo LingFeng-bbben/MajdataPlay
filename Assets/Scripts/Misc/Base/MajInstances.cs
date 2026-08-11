@@ -45,6 +45,13 @@ namespace MajdataPlay
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => Majdata<SceneSwitcher>.Instance = value;
         }
+        public static BackgroundVideoController BackgroundVideo
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Majdata<BackgroundVideoController>.Instance!;
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            set => Majdata<BackgroundVideoController>.Instance = value;
+        }
         internal static GameUpdater GameUpdater
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

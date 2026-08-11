@@ -56,7 +56,7 @@ namespace MajdataPlay.Scenes.Test
                 _btnTexts[i] = child.GetComponent<TextMeshPro>();
                 _btnStateTexts[i] = stateChild.GetComponent<TextMeshPro>();
             }
-            MajInstances.SceneSwitcher.HideMV();
+            MajInstances.BackgroundVideo.Hide();
         }
         void Update()
         {
@@ -179,7 +179,7 @@ namespace MajdataPlay.Scenes.Test
         }
         void OnDestroy()
         {
-            MajInstances.SceneSwitcher.ShowMV();
+            MajInstances.BackgroundVideo.Show();
         }
         enum TestPages
         {
