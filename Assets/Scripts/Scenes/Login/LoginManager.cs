@@ -96,14 +96,14 @@ namespace MajdataPlay.Scenes.Login
             {
                 return;
             }
-            var isUsernameInputClicked = InputManager.IsSensorClickCompletedInThisFrame(SensorArea.B2) ||
-                                         InputManager.IsSensorClickCompletedInThisFrame(SensorArea.C) ||
-                                         InputManager.IsSensorClickCompletedInThisFrame(SensorArea.E3);
-            var isPasswordInputClicked = InputManager.IsSensorClickCompletedInThisFrame(SensorArea.B3) ||
-                                         InputManager.IsSensorClickCompletedInThisFrame(SensorArea.B4) ||
-                                         InputManager.IsSensorClickCompletedInThisFrame(SensorArea.E4);
-            var isUsernameClearBtnClicked = InputManager.IsSensorClickCompletedInThisFrame(SensorArea.D3);
-            var isPasswordClearBtnClicked = InputManager.IsSensorClickCompletedInThisFrame(SensorArea.A3);
+            var isUsernameInputClicked = InputManager.IsSensorPressedInThisFrame(SensorArea.B2) ||
+                                         InputManager.IsSensorPressedInThisFrame(SensorArea.C) ||
+                                         InputManager.IsSensorPressedInThisFrame(SensorArea.E3);
+            var isPasswordInputClicked = InputManager.IsSensorPressedInThisFrame(SensorArea.B3) ||
+                                         InputManager.IsSensorPressedInThisFrame(SensorArea.B4) ||
+                                         InputManager.IsSensorPressedInThisFrame(SensorArea.E4);
+            var isUsernameClearBtnClicked = InputManager.IsSensorPressedInThisFrame(SensorArea.D3);
+            var isPasswordClearBtnClicked = InputManager.IsSensorPressedInThisFrame(SensorArea.A3);
             if(isUsernameInputClicked)
             {
                 Focus(_usernameInput);
@@ -179,9 +179,9 @@ namespace MajdataPlay.Scenes.Login
                     _isReady = true;
                     _usernameInput.readOnly = false;
                     _passwordInput.readOnly = false;
-                    var isRefreshQRCodeRequested = InputManager.IsSensorClickCompletedInThisFrame(SensorArea.A6) ||
-                                                   InputManager.IsSensorClickCompletedInThisFrame(SensorArea.B6) ||
-                                                   InputManager.IsSensorClickCompletedInThisFrame(SensorArea.E7);
+                    var isRefreshQRCodeRequested = InputManager.IsSensorPressedInThisFrame(SensorArea.A6) ||
+                                                   InputManager.IsSensorPressedInThisFrame(SensorArea.B6) ||
+                                                   InputManager.IsSensorPressedInThisFrame(SensorArea.E7);
                     try
                     {
                         if (authProcessFlag == AUTH_FLAG_REQUESTING)

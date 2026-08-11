@@ -537,7 +537,7 @@ namespace MajdataPlay.Scenes.Result
             {
                 return;
             }
-            if(InputManager.IsButtonClickCompletedInThisFrame(ButtonZone.A5))
+            if(InputManager.IsButtonPressedInThisFrame(ButtonZone.A5))
             {
                 favoriteAdder.FavoratePressed();
             }

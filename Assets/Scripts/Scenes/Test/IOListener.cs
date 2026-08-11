@@ -130,7 +130,7 @@ namespace MajdataPlay.Scenes.Test
                         break;
                 }
             }
-            if(InputManager.IsButtonClickCompletedInThisFrame(ButtonZone.Test))
+            if(InputManager.IsButtonPressedInThisFrame(ButtonZone.Test))
             {
                 NextPage();
             }

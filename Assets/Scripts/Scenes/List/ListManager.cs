@@ -294,19 +294,19 @@ namespace MajdataPlay.Scenes.List
                 return;
             }
 
-            if (InputManager.IsSensorClickCompletedInThisFrame(SensorArea.B8))
+            if (InputManager.IsSensorPressedInThisFrame(SensorArea.B8))
             {
                 _collectionListManager.PreviousCollection();
                 return;
             }
-            else if(InputManager.IsSensorClickCompletedInThisFrame(SensorArea.B1))
+            else if(InputManager.IsSensorPressedInThisFrame(SensorArea.B1))
             {
                 _collectionListManager.NextCollection();
                 return;
             }
 
-            if (InputManager.IsSensorClickCompletedInThisFrame(SensorArea.D5) ||
-                InputManager.IsSensorClickCompletedInThisFrame(SensorArea.E5))
+            if (InputManager.IsSensorPressedInThisFrame(SensorArea.D5) ||
+                InputManager.IsSensorPressedInThisFrame(SensorArea.E5))
             {
                 var list = new string[]
                 {
@@ -469,13 +469,13 @@ namespace MajdataPlay.Scenes.List
                 return;
             }
 
-            if (a8State.ClickCompletedThisFrame)
+            if (a8State.PressedThisFrame)
             {
                 _collectionListManager.SlideDifficulty(-1);
                 var list = new string[] { "easy.wav", "basic.wav", "advanced.wav", "expert.wav", "master.wav", "remaster.wav", "original.wav" };
                 MajInstances.AudioManager.PlaySFX(list[(int)_listConfig.SelectedDiff]);
             }
-            else if (a1State.ClickCompletedThisFrame)
+            else if (a1State.PressedThisFrame)
             {
                 _collectionListManager.SlideDifficulty(1);
                 var list = new string[] { "easy.wav", "basic.wav", "advanced.wav", "expert.wav", "master.wav", "remaster.wav", "original.wav" };
