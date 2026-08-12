@@ -16,6 +16,11 @@ namespace MajdataPlay.Platform.Win32.PInvoke
             public const int ERROR_IO_PENDING = 997;
             public const int ERROR_OPERATION_ABORTED = 995;
 
+            public const uint MS_CTS_ON = 0x0010;
+            public const uint MS_DSR_ON = 0x0020;
+            public const uint MS_RING_ON = 0x0040;
+            public const uint MS_RLSD_ON = 0x0080; // CD (Carrier Detect)
+
             [StructLayout(LayoutKind.Sequential)]
             public struct OVERLAPPED
             {
@@ -89,6 +94,18 @@ namespace MajdataPlay.Platform.Win32.PInvoke
 
             [DllImport("kernel32.dll", SetLastError = true)]
             public static extern bool SetCommTimeouts(IntPtr hFile, ref COMMTIMEOUTS lpCommTimeouts);
+
+            [DllImport("kernel32.dll", SetLastError = true)]
+            public static extern bool GetCommModemStatus(IntPtr hFile, out uint lpModemStat);
+
+            [DllImport("kernel32.dll", SetLastError = true)]
+            public static extern bool SetCommBreak(IntPtr hFile);
+
+            [DllImport("kernel32.dll", SetLastError = true)]
+            public static extern bool ClearCommBreak(IntPtr hFile);
+
+            [DllImport("kernel32.dll", SetLastError = true)]
+            public static extern bool GetCommTimeouts(IntPtr hFile, out COMMTIMEOUTS lpCommTimeouts);
         }
     }
 }

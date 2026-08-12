@@ -8,9 +8,9 @@ namespace MajdataPlay.Platform.Win32.IO
 {
     public static class SerialPort
     {
-        void Test()
+        static void Test()
         {
-            System.IO.Ports.SerialPort
+            //System.IO.Ports.SerialPort
         }
 
         public static Stream Open(SerialPortOptions options)
@@ -19,6 +19,7 @@ namespace MajdataPlay.Platform.Win32.IO
             {
                 throw new ArgumentException(nameof(options.PortName));
             }
+            return default;
         }
     }
 }
