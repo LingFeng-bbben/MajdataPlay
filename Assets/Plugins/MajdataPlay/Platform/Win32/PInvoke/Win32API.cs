@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace MajdataPlay.Platform.Win32
+namespace MajdataPlay.Platform.Win32.PInvoke
 {
-    public static class Win32API
+    public static partial class Win32API
     {
         public static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
         public const uint SWP_NOMOVE = 0x0002;
