@@ -88,8 +88,7 @@ namespace MajdataPlay
 
             MaterialPropertyBlock _propBlock;
 
-            static readonly int ColorPropId = Shader.PropertyToID("_Color");            
-            //static readonly int ColorPropId = Shader.PropertyToID("_BaseColor");            
+            static readonly int ColorPropId = Shader.PropertyToID("_BaseColor");
 
             public SensorRenderer(int index, MeshFilter meshFilter, MeshRenderer meshRenderer, MeshCollider meshCollider, GameObject gameObject, Material sharedMaterial)
             {

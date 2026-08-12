@@ -93,16 +93,6 @@ namespace MajdataPlay
         [ReadOnlyField]
         Vector2 _baseReferenceResolution;
 
-        // 持久化 Canvas 同步
-        // SceneSwitcher 的 DontDestroyOnLoad Canvas 负责场景切换过渡动画，
-        // 必须与当前场景的 Canvas 保持相同的缩放和位置，否则过渡时画面会跳变
-        [SerializeField]
-        [ReadOnlyField]
-        CanvasScaler? _persistentCanvasScaler;
-        [SerializeField]
-        [ReadOnlyField]
-        RectTransform? _persistentMainDisplay;
-
         // 副屏遮罩（Sub_Cover）
         [SerializeField]
         [ReadOnlyField]
@@ -179,24 +169,6 @@ namespace MajdataPlay
                 _displayOptions.MainScreenCachedScreenCenterY = _cachedScreenCenterY;
             }
 
-            // 查找SceneSwitcher的持久化Canvas，用于同步过渡动画
-            foreach (var scaler in FindObjectsOfType<CanvasScaler>(true))
-            {
-                if (scaler is not null && scaler != _canvasScaler)
-                {
-                    var canvas = scaler.GetComponent<Canvas>();
-                    if (canvas is not null && canvas.isRootCanvas)
-                    {
-                        _persistentCanvasScaler = scaler;
-                        var mainDisplay = scaler.transform.Find("Main_Display");
-                        if (mainDisplay is not null)
-                        {
-                            _persistentMainDisplay = mainDisplay.GetComponent<RectTransform>();
-                        }
-                        break;
-                    }
-                }
-            }
             _basePosY = 810f;
             _rt.anchoredPosition = new Vector2(0, _basePosY);
 
@@ -237,15 +209,6 @@ namespace MajdataPlay
             }
             _rt.anchoredPosition = new Vector2(0, _originalPosY);
             _rt.localScale = Vector3.one;
-            // 同步恢复持久化Canvas
-            if (_persistentCanvasScaler != null)
-            {
-                _persistentCanvasScaler.referenceResolution = _baseReferenceResolution;
-            }
-            if (_persistentMainDisplay != null)
-            {
-                _persistentMainDisplay.anchoredPosition = new Vector2(0, _originalPosY);
-            }
             // 恢复Sub_Display位置
             if (_subDisplay != null)
             {
@@ -297,15 +260,6 @@ namespace MajdataPlay
                 float posY = _basePosY - (offset * 270f) + (_cachedScreenCenterY * ((1f / scale) - 1f));
                 _rt.anchoredPosition = new Vector2(0, posY);
                 _rt.localScale = Vector3.one;
-                // 同步持久化Canvas（SceneSwitcher过渡动画）
-                if (_persistentCanvasScaler != null)
-                {
-                    _persistentCanvasScaler.referenceResolution = newRef;
-                }
-                if (_persistentMainDisplay != null)
-                {
-                    _persistentMainDisplay.anchoredPosition = new Vector2(0, posY);
-                }
             }
             else
             {

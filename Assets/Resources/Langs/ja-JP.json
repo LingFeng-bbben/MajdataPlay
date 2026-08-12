@@ -311,6 +311,7 @@
     "MAJTEXT_SORTFIND_UseKeyboardHint": "キーボードを使ってください……",
     "MAJTEXT_LIST_INPUT_HINT": "SelectP1/セカンドスクリーンをタッチで曲を検索・並べ替え、長押しするとリフレッシュ。曲のジャケットをタッチしてランダム選曲。4番キーを長押しして練習モードを開始、5番キーでログアウト。Alt+Enterでフルスクリーンモードに切り替え。Alt+F4でゲームを終了。",
     "MAJTEXT_LIST_EMPTY_COLLECTION": "このコレクションは空か、条件に一致する譜面がありません",
+    "MAJTEXT_LIST_NO_PLAY_RECORD": "プレイ記録がありません",
     "MAJTEXT_LOADING_CHART": "譜面を読み込み中…",
     "MAJTEXT_WAITING_FOR_BACKGROUND_TASKS_SUSPEND": "バックグラウンド処理の完了を待っています",
     "MAJTEXT_LOGGING_OUT": "ログアウト中……",

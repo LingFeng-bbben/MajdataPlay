@@ -35,6 +35,7 @@ Shader "UI/CircleMaskWithOutlineShadow"
             "RenderType"="Transparent"
             "PreviewType"="Plane"
             "CanUseSpriteAtlas"="True"
+            "RenderPipeline"="UniversalPipeline"
         }
 
         Stencil
@@ -56,10 +57,11 @@ Shader "UI/CircleMaskWithOutlineShadow"
         Pass
         {
             Name "CircleUI"
-            CGPROGRAM
+            Tags { "LightMode"="SRPDefaultUnlit" }
+            HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            #include "UnityCG.cginc"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
             struct appdata
             {
@@ -90,7 +92,7 @@ Shader "UI/CircleMaskWithOutlineShadow"
             v2f vert (appdata v)
             {
                 v2f o;
-                o.vertex = UnityObjectToClipPos(v.vertex);
+                o.vertex = TransformObjectToHClip(v.vertex.xyz);
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
                 o.color = v.color * _Color;
                 return o;
@@ -103,12 +105,12 @@ Shader "UI/CircleMaskWithOutlineShadow"
                 return length(uv - center);
             }
 
-            fixed4 frag (v2f i) : SV_Target
+            half4 frag (v2f i) : SV_Target
             {
                 float2 uv = i.uv;
 
                 // 主纹理采样
-                fixed4 col = tex2D(_MainTex, uv) * i.color;
+                half4 col = tex2D(_MainTex, uv) * i.color;
 
                 // 圆形距离
                 float dist = circleDistance(uv);
@@ -122,7 +124,7 @@ Shader "UI/CircleMaskWithOutlineShadow"
                 float shadowEdge = _Radius;
                 float shadowAlpha = 1.0 - smoothstep(shadowEdge, shadowEdge + _ShadowSoftness, shadowDist);
 
-                fixed4 shadowCol = _ShadowColor;
+                half4 shadowCol = _ShadowColor;
                 shadowCol.a *= shadowAlpha;
 
                 // ---------- 圆形裁剪 ----------
@@ -138,12 +140,12 @@ Shader "UI/CircleMaskWithOutlineShadow"
                 float outlineMask = smoothstep(edgeInner, edgeInner + 0.001, dist) *
                                     (1.0 - smoothstep(edgeOuter, edgeOuter + 0.001, dist));
 
-                fixed4 outlineCol = _OutlineColor;
+                half4 outlineCol = _OutlineColor;
                 outlineCol.a *= outlineMask;
 
                 // ---------- 组合 ----------
                 // 先画阴影，再画主体和描边
-                fixed4 finalCol = 0;
+                half4 finalCol = 0;
 
                 // 阴影
                 finalCol.rgb += shadowCol.rgb * shadowCol.a;
@@ -164,7 +166,7 @@ Shader "UI/CircleMaskWithOutlineShadow"
 
                 return finalCol;
             }
-            ENDCG
+            ENDHLSL
         }
     }
 }

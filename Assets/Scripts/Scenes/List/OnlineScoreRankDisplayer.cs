@@ -1,5 +1,6 @@
 ﻿using LitMotion;
 using MajdataPlay.Diagnostics;
+using MajdataPlay.i18n;
 using MajdataPlay.Net;
 using MajdataPlay.Scenes.Game;
 using MajdataPlay.Utils;
@@ -47,6 +48,7 @@ namespace MajdataPlay.Scenes.List
         Color _fcColor = Color.white;
 
         RankerDisplayer[] _rankerDisplayers = Array.Empty<RankerDisplayer>();
+        TextMeshProUGUI _emptyMessageDisplayer = null!;
 
         float _loadTimer = 0f;
         float _loadDelayTimer = 0f;
@@ -60,14 +62,24 @@ namespace MajdataPlay.Scenes.List
 
         bool _isIn = false;
         MotionHandle _displayerAnim;
-        RectTransform _rectTransform;
+        CanvasGroup _canvasGroup = null!;
 
         const float LOAD_DEBOUNCE_INTERVAL_SEC = 0.4f;
         const float DISPLAYER_ANIM_DURATION_SEC = 0.3f;
+        const string EMPTY_MESSAGE_LOCALIZATION_KEY = "MAJTEXT_LIST_NO_PLAY_RECORD";
 
         void Awake()
         {
-            _rectTransform = GetComponent<RectTransform>();
+            if (!TryGetComponent(out _canvasGroup))
+            {
+                _canvasGroup = gameObject.AddComponent<CanvasGroup>();
+            }
+            _canvasGroup.alpha = 0f;
+
+            _emptyMessageDisplayer = _emptyIndicator.GetComponentInChildren<TextMeshProUGUI>(true);
+            UpdateEmptyMessage();
+            Localization.OnLanguageChanged += OnLanguageChanged;
+
             var rankerDisplayerListRoot = _rankerDisplayerListRoot.transform;
             var displayerCount = rankerDisplayerListRoot.childCount;
             _rankerDisplayers = new RankerDisplayer[displayerCount];
@@ -83,6 +95,18 @@ namespace MajdataPlay.Scenes.List
                     AccurateDisplayer = displayer.Find("Accurate").GetComponent<TextMeshProUGUI>()
                 };
             }
+        }
+        void OnDestroy()
+        {
+            Localization.OnLanguageChanged -= OnLanguageChanged;
+        }
+        void OnLanguageChanged(object? sender, Language language)
+        {
+            UpdateEmptyMessage();
+        }
+        void UpdateEmptyMessage()
+        {
+            _emptyMessageDisplayer.text = EMPTY_MESSAGE_LOCALIZATION_KEY.i18n();
         }
 
         void LateUpdate()
@@ -258,29 +282,9 @@ namespace MajdataPlay.Scenes.List
             {
                 _isIn = false;
                 _displayerAnim.TryCancel();
-                _displayerAnim = LMotion.Create(0f, 1f, DISPLAYER_ANIM_DURATION_SEC)
+                _displayerAnim = LMotion.Create(_canvasGroup.alpha, 0f, DISPLAYER_ANIM_DURATION_SEC)
                                         .WithEase(Ease.OutQuad)
-                                        .Bind(x =>
-                                        {
-                                            var subDisplayerScale = MajEnv.Settings.Display.SubDisplayScale;
-                                            if (subDisplayerScale == 0)
-                                            {
-                                                return;
-                                            }
-                                            const float START = 290f;
-                                            const float DISTANCE = 800f - START;
-                                            const float MAX_OFFSET = 80f;
-
-                                            var offset = MAX_OFFSET * ((1f / subDisplayerScale) - 1f);
-                                            var end = START + (DISTANCE / subDisplayerScale) + offset;
-
-                                            var pos = Vector2.Lerp(
-                                                                new Vector2(START, 75.053f),
-                                                                new Vector2(end, 75.053f),
-                                                                x);
-
-                                            _rectTransform.anchoredPosition = pos;
-                                        });
+                                        .Bind(alpha => _canvasGroup.alpha = alpha);
             }
         }
         public void Show()
@@ -289,29 +293,9 @@ namespace MajdataPlay.Scenes.List
             {
                 _isIn = true;
                 _displayerAnim.TryCancel();
-                _displayerAnim = LMotion.Create(1f, 0f, DISPLAYER_ANIM_DURATION_SEC)
+                _displayerAnim = LMotion.Create(_canvasGroup.alpha, 1f, DISPLAYER_ANIM_DURATION_SEC)
                                         .WithEase(Ease.OutQuad)
-                                        .Bind(x =>
-                                        {
-                                            var subDisplayerScale = MajEnv.Settings.Display.SubDisplayScale;
-                                            if (subDisplayerScale == 0)
-                                            {
-                                                return;
-                                            }
-                                            const float START = 290f;
-                                            const float DISTANCE = 800f - START;
-                                            const float MAX_OFFSET = 80f;
-
-                                            var offset = MAX_OFFSET * ((1f / subDisplayerScale) - 1f);
-                                            var end = START + (DISTANCE / subDisplayerScale) + offset;
-
-                                            var pos = Vector2.Lerp(
-                                                                new Vector2(START, 75.053f),
-                                                                new Vector2(end, 75.053f),
-                                                                x);
-
-                                            _rectTransform.anchoredPosition = pos;
-                                        });
+                                        .Bind(alpha => _canvasGroup.alpha = alpha);
             }
         }
 

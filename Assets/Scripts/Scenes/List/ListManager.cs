@@ -294,19 +294,19 @@ namespace MajdataPlay.Scenes.List
                 return;
             }
 
-            if (InputManager.IsSensorClickCompletedInThisFrame(SensorArea.B8))
+            if (InputManager.IsSensorPressedInThisFrame(SensorArea.B8))
             {
                 _collectionListManager.PreviousCollection();
                 return;
             }
-            else if(InputManager.IsSensorClickCompletedInThisFrame(SensorArea.B1))
+            else if(InputManager.IsSensorPressedInThisFrame(SensorArea.B1))
             {
                 _collectionListManager.NextCollection();
                 return;
             }
 
-            if (InputManager.IsSensorClickCompletedInThisFrame(SensorArea.D5) ||
-                InputManager.IsSensorClickCompletedInThisFrame(SensorArea.E5))
+            if (InputManager.IsSensorPressedInThisFrame(SensorArea.D5) ||
+                InputManager.IsSensorPressedInThisFrame(SensorArea.E5))
             {
                 var list = new string[]
                 {
@@ -380,6 +380,28 @@ namespace MajdataPlay.Scenes.List
             _logoutTimer = a5State.IsPressed ? _logoutTimer + MajTimeline.DeltaTime : 0f;
             _refreshTimer = p1State.IsPressed ? _refreshTimer + MajTimeline.DeltaTime : 0f;
 
+            if (a4State.ReleaseCompletedThisFrame)
+            {
+                if (a4State.ReleaseHeldDuration > 1f && _coverListManager.SelectedSong is not null)
+                {
+                    EnterPractice();
+                }
+                else if (_collectionListManager.SelectedCollection.Type == ChartStorageType.Dan)
+                {
+                    EnterDan();
+                }
+                else if(_coverListManager.SelectedSong is not null)
+                {
+                    EnterGame();
+                }
+                return;
+            }
+            if (p1State.ReleaseCompletedThisFrame)
+            {
+                EnterSortAndFind();
+                return;
+            }
+
             if (a3State.IsPressed || a6State.IsPressed)
             {
                 if (_listSlideInput.Update(
@@ -416,22 +438,6 @@ namespace MajdataPlay.Scenes.List
                 _enterPracticeTimer += MajTimeline.DeltaTime;
                 return;
             }
-            else if (a4State.ClickCompletedThisFrame)
-            {
-                if (a4State.ClickHeldDuration > 1f && _coverListManager.SelectedSong is not null)
-                {
-                    EnterPractice();
-                }
-                else if (_collectionListManager.SelectedCollection.Type == ChartStorageType.Dan)
-                {
-                    EnterDan();
-                }
-                else if(_coverListManager.SelectedSong is not null)
-                {
-                    EnterGame();
-                }
-                return;
-            }
             else if (a5State.IsPressed)
             {
                 if (_isOnlineEnabled && _logoutTimer >= LOGOUT_TRIGGER_TIME_SEC)
@@ -445,15 +451,11 @@ namespace MajdataPlay.Scenes.List
                 _enterPracticeTimer = 0f;
             }
 
-            if (p1State.IsPressed || p1State.ClickCompletedThisFrame)
+            if (p1State.IsPressed)
             {
                 if(_refreshTimer >= 3f)
                 {
                     RefreshList();
-                }
-                else if(p1State.ClickCompletedThisFrame)
-                {
-                    EnterSortAndFind();
                 }
                 return;
             }
@@ -469,13 +471,13 @@ namespace MajdataPlay.Scenes.List
                 return;
             }
 
-            if (a8State.ClickCompletedThisFrame)
+            if (a8State.PressedThisFrame)
             {
                 _collectionListManager.SlideDifficulty(-1);
                 var list = new string[] { "easy.wav", "basic.wav", "advanced.wav", "expert.wav", "master.wav", "remaster.wav", "original.wav" };
                 MajInstances.AudioManager.PlaySFX(list[(int)_listConfig.SelectedDiff]);
             }
-            else if (a1State.ClickCompletedThisFrame)
+            else if (a1State.PressedThisFrame)
             {
                 _collectionListManager.SlideDifficulty(1);
                 var list = new string[] { "easy.wav", "basic.wav", "advanced.wav", "expert.wav", "master.wav", "remaster.wav", "original.wav" };

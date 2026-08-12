@@ -311,6 +311,7 @@
     "MAJTEXT_SORTFIND_UseKeyboardHint": "用键盘输入关键词搜索…",
     "MAJTEXT_LIST_INPUT_HINT": "长按Select/副屏刷新歌单，长按4键练习模式，Alt+Enter全屏，5键登出，Alt+F4退出",
     "MAJTEXT_LIST_EMPTY_COLLECTION": "该分类为空，或没有符合筛选条件的谱面",
+    "MAJTEXT_LIST_NO_PLAY_RECORD": "暂无游玩记录",
     "MAJTEXT_LOADING_CHART": "正在吃绝赞",
     "MAJTEXT_WAITING_FOR_BACKGROUND_TASKS_SUSPEND": "正在等待所有后台任务完成",
     "MAJTEXT_LOGGING_OUT": "登出中...",

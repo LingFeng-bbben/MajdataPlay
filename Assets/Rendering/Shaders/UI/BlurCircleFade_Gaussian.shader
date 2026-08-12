@@ -24,6 +24,7 @@ Shader "UI/BlurCircleFade_Gaussian_Fixed"
             "IgnoreProjector"="True"
             "RenderType"="Transparent"
             "CanUseSpriteAtlas"="True"
+            "RenderPipeline"="UniversalPipeline"
         }
 
         Cull Off
@@ -32,10 +33,11 @@ Shader "UI/BlurCircleFade_Gaussian_Fixed"
 
         Pass
         {
-            CGPROGRAM
+            Tags { "LightMode"="SRPDefaultUnlit" }
+            HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            #include "UnityCG.cginc"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
             struct appdata
             {
@@ -64,18 +66,18 @@ Shader "UI/BlurCircleFade_Gaussian_Fixed"
             float _FadeStartY;
             float _FadeEndY;
 
-            fixed4 _Color;
+            half4 _Color;
 
             v2f vert (appdata v)
             {
                 v2f o;
-                o.vertex = UnityObjectToClipPos(v.vertex);
+                o.vertex = TransformObjectToHClip(v.vertex.xyz);
                 o.uv = v.uv;
                 o.color = v.color * _Color;
                 return o;
             }
 
-            fixed4 frag (v2f i) : SV_Target
+            half4 frag (v2f i) : SV_Target
             {
                 float2 uv = i.uv;
 
@@ -94,7 +96,7 @@ Shader "UI/BlurCircleFade_Gaussian_Fixed"
                 float w21 = 0.09 / 0.72;
                 float w22 = 0.05 / 0.72;
 
-                fixed4 sum = 0;
+                half4 sum = 0;
 
                 sum += tex2D(_MainTex, uv + texel * float2(-1, -1)) * w00;
                 sum += tex2D(_MainTex, uv + texel * float2( 0, -1)) * w01;
@@ -108,8 +110,8 @@ Shader "UI/BlurCircleFade_Gaussian_Fixed"
                 sum += tex2D(_MainTex, uv + texel * float2( 0,  1)) * w21;
                 sum += tex2D(_MainTex, uv + texel * float2( 1,  1)) * w22;
 
-                fixed4 baseCol = tex2D(_MainTex, uv);
-                fixed4 blurCol = lerp(baseCol, sum, _BlurStrength);
+                half4 baseCol = tex2D(_MainTex, uv);
+                half4 blurCol = lerp(baseCol, sum, _BlurStrength);
 
                 // circle mask
                 float dist = distance(uv, _CircleCenter.xy);
@@ -120,13 +122,13 @@ Shader "UI/BlurCircleFade_Gaussian_Fixed"
 
                 float finalMask = circleMask * fadeMask;
 
-                fixed4 col = blurCol * i.color;
+                half4 col = blurCol * i.color;
                 col.rgb *= finalMask;
                 col.a *= finalMask;
 
                 return col;
             }
-            ENDCG
+            ENDHLSL
         }
     }
 }

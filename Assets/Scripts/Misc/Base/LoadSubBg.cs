@@ -22,7 +22,7 @@ namespace MajdataPlay
         }
         async UniTask WaitSkinLoadedAsync()
         {
-            while (!MajInstances.SkinManager.IsInited)
+            while (MajInstances.SkinManager?.IsInited != true)
             {
                 await UniTask.Yield();
             }

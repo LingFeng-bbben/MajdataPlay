@@ -14,7 +14,6 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Scripting;
 using UnityEngine.UI;
-using UnityEngine.Video;
 #nullable enable
 namespace MajdataPlay
 {
@@ -54,18 +53,15 @@ namespace MajdataPlay
         [SerializeField, Range(0f, 180f)]
         float _triangleSpinDegrees = 90f;
 
-        [SerializeField]
-        VideoPlayer _videoPlayer;
-        [SerializeField]
-        SpriteRenderer _mvRenderer;
-        GameObject _bgObject;
-
         MotionHandle _maskMotion;
         MotionHandle _subImageMotion;
         MotionHandle _mainImageMotion;
         MotionHandle _loadingTextMotion;
         Image? _mainMaskImage;
         Mask? _mainMask;
+        [Header("Transition Rendering")]
+        [SerializeField]
+        Canvas _transitionOverlayCanvas = null!;
         Graphic[] _maskDecorations = Array.Empty<Graphic>();
         float _maskProgress;
         bool _isClosingTransition;
@@ -97,6 +93,7 @@ namespace MajdataPlay
                 CurrentScene = Enum.Parse<MajScenes>(SCENE_NAMES[index]);
             }
             _canvas = GetComponent<Canvas>();
+            BindTransitionOverlay();
             if (ResolveTransitionReferences())
             {
                 // The game boots fully open. Init -> Title has no transition;
@@ -112,14 +109,18 @@ namespace MajdataPlay
             }
             SetGraphicAlpha(loadingText, 0f);
             loadingText.gameObject.SetActive(false);
-            _bgObject = _videoPlayer.gameObject;
         }
         protected override void OnDestroy()
         {
             SceneManager.activeSceneChanged -= OnUnitySceneChanged;
             CancelTransitionMotions();
+            if (_transitionOverlayCanvas != null)
+            {
+                Destroy(_transitionOverlayCanvas.gameObject);
+            }
             base.OnDestroy();
         }
+
         void OnUnitySceneChanged(Scene current, Scene next)
         {
             InputManager.ResetUIInputForSceneChange();
@@ -148,32 +149,6 @@ namespace MajdataPlay
         public UniTask SwitchSceneAsync(string sceneName, bool autoFadeOut = true)
         {
             return SwitchSceneInternal(sceneName, autoFadeOut);
-        }
-        public void PauseMV()
-        {
-            _videoPlayer.Pause();
-        }
-        public void PlayMV()
-        {
-            _videoPlayer.Play();
-        }
-        public void StopMV()
-        {
-            _videoPlayer.Stop();
-        }
-        public void HideMV()
-        {
-            PauseMV();
-            //_videoPlayer.enabled = false;
-            //_mvRenderer.enabled = false;
-            _bgObject.layer = MajEnv.HIDDEN_LAYER;
-        }
-        public void ShowMV()
-        {
-            //_mvRenderer.enabled = true;
-            //_videoPlayer.enabled = true;
-            _bgObject.layer = MajEnv.DEFAULT_LAYER;
-            PlayMV();
         }
         public void FadeOut()
         {
@@ -267,6 +242,21 @@ namespace MajdataPlay
                 && SubImage != null
                 && loadingText != null;
         }
+
+        void BindTransitionOverlay()
+        {
+            if (!ResolveTransitionReferences() || _transitionOverlayCanvas == null)
+            {
+                MajDebug.LogError("Scene transition overlay is not configured.");
+                return;
+            }
+
+            if (_mainMaskRect.GetComponentInParent<Canvas>() != _transitionOverlayCanvas)
+            {
+                MajDebug.LogError("Scene transition UI is not serialized under the configured overlay canvas.");
+            }
+        }
+
         void CancelTransitionMotions()
         {
             _maskMotion.TryCancel();

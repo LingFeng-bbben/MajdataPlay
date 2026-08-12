@@ -22,6 +22,7 @@ Shader "UI/Majdata Triangle Grid Transition"
             "IgnoreProjector"="True"
             "RenderType"="Transparent"
             "PreviewType"="Plane"
+            "RenderPipeline"="UniversalPipeline"
         }
 
         Stencil
@@ -43,14 +44,15 @@ Shader "UI/Majdata Triangle Grid Transition"
         Pass
         {
             Name "TriangleGridTransition"
+            Tags { "LightMode"="SRPDefaultUnlit" }
 
-            CGPROGRAM
+            HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
             #pragma target 3.0
             #pragma multi_compile_local _ UNITY_UI_ALPHACLIP
 
-            #include "UnityCG.cginc"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
             struct appdata_t
             {
@@ -62,13 +64,13 @@ Shader "UI/Majdata Triangle Grid Transition"
             struct v2f
             {
                 float4 vertex : SV_POSITION;
-                fixed4 color : COLOR;
+                half4 color : COLOR;
                 float2 texcoord : TEXCOORD0;
             };
 
             sampler2D _MainTex;
-            fixed4 _Color;
-            fixed4 _TextureSampleAdd;
+            half4 _Color;
+            half4 _TextureSampleAdd;
 
             // Unity UI creates stencil-material copies for masked children. Keeping
             // layout values global makes every copy update together in edit preview.
@@ -84,7 +86,7 @@ Shader "UI/Majdata Triangle Grid Transition"
             v2f vert(appdata_t input)
             {
                 v2f output;
-                output.vertex = UnityObjectToClipPos(input.vertex);
+                output.vertex = TransformObjectToHClip(input.vertex.xyz);
                 output.color = input.color * _Color;
                 output.texcoord = input.texcoord;
                 return output;
@@ -100,7 +102,7 @@ Shader "UI/Majdata Triangle Grid Transition"
                     sine * value.x + cosine * value.y);
             }
 
-            fixed4 frag(v2f input) : SV_Target
+            half4 frag(v2f input) : SV_Target
             {
                 float coverage = saturate(_MajSceneTransitionProgress);
                 float columns = max(3.0, round(_MajSceneTriangleColumns));
@@ -110,11 +112,11 @@ Shader "UI/Majdata Triangle Grid Transition"
                 // material previews and interrupted terminal frames inexpensive.
                 if (coverage <= 0.00001)
                 {
-                    return fixed4(0.0, 0.0, 0.0, 0.0);
+                    return half4(0.0, 0.0, 0.0, 0.0);
                 }
                 if (coverage >= 0.99999)
                 {
-                    fixed4 fullColor = tex2D(_MainTex, input.texcoord) + _TextureSampleAdd;
+                    half4 fullColor = tex2D(_MainTex, input.texcoord) + _TextureSampleAdd;
                     fullColor.rgb *= input.color.rgb;
                     fullColor.a *= input.color.a;
 
@@ -234,9 +236,9 @@ Shader "UI/Majdata Triangle Grid Transition"
                     / (antialiasWidth * 4.5))) * 0.24;
                 tileAlpha *= foldShape;
 
-                fixed4 color = tex2D(_MainTex, foldedTextureUv) + _TextureSampleAdd;
+                half4 color = tex2D(_MainTex, foldedTextureUv) + _TextureSampleAdd;
                 color.rgb *= input.color.rgb;
-                color.rgb = lerp(color.rgb, fixed3(1.0, 1.0, 1.0), foldHighlight);
+                color.rgb = lerp(color.rgb, half3(1.0, 1.0, 1.0), foldHighlight);
                 // The original HEAD UI Mask performs the circular clipping. Keeping
                 // that single authority ensures the blue loading image fills the
                 // entire 1080 circle when coverage reaches 1.
@@ -248,7 +250,7 @@ Shader "UI/Majdata Triangle Grid Transition"
 
                 return color;
             }
-            ENDCG
+            ENDHLSL
         }
     }
 }

@@ -98,6 +98,14 @@ namespace MajdataPlay.IO
             ThrowIfSensorIndexOutOfRange(area);
             return ref _sensorControlStates[(int)area];
         }
+        public static bool IsButtonPressedInThisFrame(ButtonZone zone)
+        {
+            return GetButtonState(zone).PressedThisFrame;
+        }
+        public static bool IsSensorPressedInThisFrame(SensorArea area)
+        {
+            return GetSensorState(area).PressedThisFrame;
+        }
         public static bool IsButtonClickCompletedInThisFrame(ButtonZone zone)
         {
             return GetButtonState(zone).ClickCompletedThisFrame;

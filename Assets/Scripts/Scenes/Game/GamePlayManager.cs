@@ -289,7 +289,7 @@ namespace MajdataPlay.Scenes.Game
             InputManager.Override_TouchDAreaExtraRadius = default;
             InputManager.Override_TouchEAreaExtraRadius = default;
 
-            MajInstances.SceneSwitcher.HideMV();
+            MajInstances.BackgroundVideo.Hide();
 
             _chartInfoDisplayer.SetMetadata(_songDetail, _gameInfo.CurrentLevel);
         }
@@ -1868,7 +1868,7 @@ namespace MajdataPlay.Scenes.Game
                 InputManager.Override_TouchDAreaExtraRadius = 0f;
                 InputManager.Override_TouchEAreaExtraRadius = 0f;
 
-                MajInstances.SceneSwitcher.ShowMV();
+                MajInstances.BackgroundVideo.Show();
             }
         }
         #endregion

@@ -25,6 +25,7 @@ Shader "UI/Rect Mask"
             "IgnoreProjector"="True"
             "RenderType"="Transparent"
             "CanUseSpriteAtlas"="True"
+            "RenderPipeline"="UniversalPipeline"
         }
 
 
@@ -37,13 +38,14 @@ Shader "UI/Rect Mask"
 
         Pass
         {
-            CGPROGRAM
+            Tags { "LightMode"="SRPDefaultUnlit" }
+            HLSLPROGRAM
 
             #pragma vertex vert
             #pragma fragment frag
 
 
-            #include "UnityCG.cginc"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
 
 
@@ -92,7 +94,7 @@ Shader "UI/Rect Mask"
 
 
                 o.vertex =
-                    UnityObjectToClipPos(v.vertex);
+                    TransformObjectToHClip(v.vertex.xyz);
 
 
                 o.uv =
@@ -103,7 +105,7 @@ Shader "UI/Rect Mask"
                     v.color * _Color;
 
 
-                // 这里就是RectTransform本地坐标
+                // 杩欓噷灏辨槸RectTransform鏈湴鍧愭爣
                 o.localPos =
                     v.vertex.xy;
 
@@ -170,11 +172,11 @@ Shader "UI/Rect Mask"
 
 
 
-            fixed4 frag(v2f i)
+            half4 frag(v2f i)
                 :SV_Target
             {
 
-                fixed4 col =
+                half4 col =
                     tex2D(
                         _MainTex,
                         i.uv
@@ -211,7 +213,7 @@ Shader "UI/Rect Mask"
             }
 
 
-            ENDCG
+            ENDHLSL
         }
     }
 }

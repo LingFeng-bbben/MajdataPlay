@@ -41,6 +41,7 @@
     "MAJSETTING_GENERAL_OPTION_Inner_Only": "僅內部",
     "MAJTEXT_LIST_INPUT_HINT": "按Select（或觸摸副螢幕）搜尋和排序歌曲，長按刷新歌單。觸摸歌曲封面隨機選曲。長按4號鍵開啟練習模式。按Alt+Enter切換全螢幕模式。長按5號鍵登出。按Alt+F4退出遊戲。",
     "MAJTEXT_LIST_EMPTY_COLLECTION": "此分類為空，或沒有符合篩選條件的譜面",
+    "MAJTEXT_LIST_NO_PLAY_RECORD": "暫無遊玩記錄",
     "MAJTEXT_LOADING_CHART": "正在吃您的BK...",
     "MAJSETTING_CATEGORY_Audio": "音訊設定",
     "MAJSETTING_CATEGORY_ChartSetting": "譜面設定",

@@ -126,8 +126,6 @@ MonoBehaviour:
   _cachedScreenCenterY: 0
   _canvasScaler: {fileID: 0}
   _baseReferenceResolution: {x: 0, y: 0}
-  _persistentCanvasScaler: {fileID: 0}
-  _persistentMainDisplay: {fileID: 0}
   _subCover: {fileID: 0}
   _subCoverTransform: {fileID: 0}
   _subCoverRectTransform: {fileID: 0}
