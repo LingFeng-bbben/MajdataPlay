@@ -8,7 +8,7 @@ using MajdataPlay.Settings;
 using MajdataPlay.Timer;
 using ShimSkiaSharp;
 #if UNITY_STANDALONE_WIN
-using MajdataPlay.Platform.Win32;
+using MajdataPlay.Platform.Win32.PInvoke;
 #elif UNITY_STANDALONE_OSX
 using MajdataPlay.Platform.MacOS;
 #elif UNITY_IOS

@@ -1,6 +1,8 @@
 ﻿using System;
 #if UNITY_STANDALONE_WIN
 using MajdataPlay.Platform.Win32;
+using MajdataPlay.Platform.Win32.PInvoke;
+
 #elif UNITY_IOS || UNITY_EDITOR_OSX
 using MajdataPlay.Platform.iOS;
 #endif

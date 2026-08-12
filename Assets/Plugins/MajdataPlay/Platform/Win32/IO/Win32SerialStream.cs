@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace MajdataPlay.Platform.Win32.IO
 {
-    public class Win32SerialStream : Stream
+    internal class Win32SerialStream : Stream
     {
         private readonly IntPtr _handle;
         private readonly ManualResetEvent _readEvent;
@@ -220,8 +220,95 @@ namespace MajdataPlay.Platform.Win32.IO
         }
 
         // -- 以下为 Stream 基类的同步抽象，强制包装为异步 --
-        public override int Read(byte[] buffer, int offset, int count) => ReadAsync(buffer, offset, count).GetAwaiter().GetResult();
-        public override void Write(byte[] buffer, int offset, int count) => WriteAsync(buffer, offset, count).GetAwaiter().GetResult();
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            if (buffer == null) throw new ArgumentNullException(nameof(buffer));
+            if (offset < 0 || count < 0 || offset + count > buffer.Length)
+                throw new ArgumentOutOfRangeException();
+
+            GCHandle gcBuffer = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+            IntPtr pBuffer = gcBuffer.AddrOfPinnedObject() + offset;
+            IntPtr pOverlapped = Marshal.AllocHGlobal(Marshal.SizeOf<Win32API.IO.OVERLAPPED>());
+
+            try
+            {
+                var overlapped = new Win32API.IO.OVERLAPPED
+                {
+                    hEvent = _readEvent.SafeWaitHandle.DangerousGetHandle()
+                };
+                Marshal.StructureToPtr(overlapped, pOverlapped, false);
+                _readEvent.Reset();
+
+                // 1. 发起读操作
+                if (Win32API.IO.ReadFile(_handle, pBuffer, (uint)count, out uint bytesRead, pOverlapped))
+                {
+                    return (int)bytesRead; // 立即读取完成
+                }
+
+                int error = Marshal.GetLastWin32Error();
+                if (error == Win32API.IO.ERROR_IO_PENDING)
+                {
+                    // 2. bWait 参数传 true：原生阻塞当前线程，直到底层串口读取完毕或超时
+                    if (Win32API.IO.GetOverlappedResult(_handle, pOverlapped, out bytesRead, true))
+                    {
+                        return (int)bytesRead;
+                    }
+                    error = Marshal.GetLastWin32Error();
+                }
+
+                throw new IOException($"Synchronous ReadFile failed. Win32 Error: {error}");
+            }
+            finally
+            {
+                if (gcBuffer.IsAllocated) gcBuffer.Free();
+                if (pOverlapped != IntPtr.Zero) Marshal.FreeHGlobal(pOverlapped);
+            }
+        }
+
+        public override void Write(byte[] buffer, int offset, int count)
+        {
+            if (buffer == null) throw new ArgumentNullException(nameof(buffer));
+            if (offset < 0 || count < 0 || offset + count > buffer.Length)
+                throw new ArgumentOutOfRangeException();
+
+            GCHandle gcBuffer = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+            IntPtr pBuffer = gcBuffer.AddrOfPinnedObject() + offset;
+            IntPtr pOverlapped = Marshal.AllocHGlobal(Marshal.SizeOf<Win32API.IO.OVERLAPPED>());
+
+            try
+            {
+                var overlapped = new Win32API.IO.OVERLAPPED
+                {
+                    hEvent = _writeEvent.SafeWaitHandle.DangerousGetHandle()
+                };
+                Marshal.StructureToPtr(overlapped, pOverlapped, false);
+                _writeEvent.Reset();
+
+                // 1. 发起写操作
+                if (Win32API.IO.WriteFile(_handle, pBuffer, (uint)count, out uint bytesWritten, pOverlapped))
+                {
+                    return; // 立即写入完成
+                }
+
+                int error = Marshal.GetLastWin32Error();
+                if (error == Win32API.IO.ERROR_IO_PENDING)
+                {
+                    // 2. 阻塞当前线程，等待写操作完成
+                    if (Win32API.IO.GetOverlappedResult(_handle, pOverlapped, out bytesWritten, true))
+                    {
+                        return;
+                    }
+                    error = Marshal.GetLastWin32Error();
+                }
+
+                throw new IOException($"Synchronous WriteFile failed. Win32 Error: {error}");
+            }
+            finally
+            {
+                if (gcBuffer.IsAllocated) gcBuffer.Free();
+                if (pOverlapped != IntPtr.Zero) Marshal.FreeHGlobal(pOverlapped);
+            }
+        }
         public override void Flush() { /* Serial port relies on OS buffers */ }
         public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
         public override void SetLength(long value) => throw new NotSupportedException();
