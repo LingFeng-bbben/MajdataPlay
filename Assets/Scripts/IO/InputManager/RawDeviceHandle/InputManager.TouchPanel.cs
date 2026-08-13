@@ -719,6 +719,8 @@ namespace MajdataPlay.IO
 #if UNITY_STANDALONE_LINUX
                     Thread.Sleep(4000);
 #elif UNITY_STANDALONE_WIN
+                    // Calling Thread.Sleep on Windows causes the driver to hang
+                    // So we read the first 10 bytes returned by the device to determine whether the reset is complete
                     try
                     {
                         var buffer = (stackalloc byte[10]);
