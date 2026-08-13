@@ -656,175 +656,101 @@ namespace MajdataPlay.IO
             }
 #endif
         }
-        static void GenerateMixingMatrix(int chCount)
+        const int INPUT_CHANNELS = 2;   // Game output channel count, aka backend input channel count
+
+        static bool TryGetUserMatrix(int outputChCount, out float[,] userMatrix)
         {
-            //        var matrix = new float[8, 2]
-            //        {
-            //// Input      L   R
-            //            { 1f, 0f }, // LF
-            //            { 0f, 1f }, // RF
-            //            { 0f, 0f }, // Center
-            //            { 0f, 0f }, // LFE
-            //            { 0f, 0f }, // LR
-            //            { 0f, 0f }, // RR
-            //            { 0f, 0f }, // LR Center
-            //            { 0f, 0f }, // RR Center
-            //        };
-            // 3 channels      left - front, right - front, center.
-            // 4 channels      left - front, right - front, left - rear / side, right - rear / side.
-            // 6 channels(5.1) left - front, right - front, center, LFE, left - rear / side, right - rear / side.
-            // 8 channels(7.1) left - front, right - front, center, LFE, left - rear / side, right - rear / side, left - rear center, right - rear center.
+            var config = MajEnv.Settings.Audio.MixingMatrix.ByChannelCount;
+            string? key = outputChCount.ToString();
+            return config.TryGetValue(key, out userMatrix) || config.TryGetValue("*", out userMatrix);
+        }
 
-            // LFE = left
-            // Center = right
-
-            float[,] matrix;
-
-            var isForceMono = MajEnv.Settings.Audio.ForceMono;
-#if UNITY_ANDROID || UNITY_IOS
-            var volumeSettings = new
+        static bool ValidateMixingMatrix(float[,] matrix, int expectedOutputCh)
+        {
+            int matrixInputCh = matrix.GetLength(1);
+            int matrixOutputCh = matrix.GetLength(0);
+            if (matrixOutputCh == 0 || matrixInputCh != INPUT_CHANNELS || matrixOutputCh > expectedOutputCh)
             {
-                FrontVolume = 1f,
-                CenterAndLFEVolume = 1f,
-                SideVolume = 1f,
-                RearVolume = 1f
-            };
-#else
-            var volumeSettings = MajEnv.Settings.Audio.Channel;
-#endif
+                MajDebug.LogWarning($"[Audio] Mixing matrix shape: [{matrix.GetLength(0)}, {matrix.GetLength(1)}], expecting [{expectedOutputCh}, {INPUT_CHANNELS}]. Using fallback.");
+                return false;
+            }
+
+            for (int i = 0; i < matrixOutputCh; i++)
+            {
+                bool allZero = true;
+                for (int j = 0; j < INPUT_CHANNELS; j++)
+                {
+                    if (Math.Abs(matrix[i, j]) > 0.001f)
+                    {
+                        allZero = false;
+                        break;
+                    }
+                }
+                if (allZero)
+                {
+                    MajDebug.LogWarning($"[Audio] Output channel {i} is used but muted.");
+                }
+            }
+
+            return true;
+        }
+
+        static float[,] ExpandMatrix(float[,] matrix, int targetOutputCh)
+        {
+            int rows = matrix.GetLength(0);
+            if (rows >= targetOutputCh)
+            {
+                return matrix;
+            }
+
+            var expanded = new float[targetOutputCh, INPUT_CHANNELS];
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < INPUT_CHANNELS; j++)
+                {
+                    expanded[i, j] = matrix[i, j];
+                }
+            }
+            return expanded;
+        }
+
+        static float[,] GetDefaultMatrix(int outputChCount, bool isForceMono)
+        {
             if (isForceMono)
             {
-                switch (chCount)
+                var matrix = new float[outputChCount, INPUT_CHANNELS];
+                for (int i = 0; i < outputChCount; i++)
                 {
-                    case 1:// Mono
-                        matrix = new float[1, 2]
-                        {
-                            { 0.5f, 0.5f }
-                        };
-                        break;
-                    case 2: // 2.0
-                        matrix = new float[2, 2]
-                        {
-                            { 0.5f, 0.5f },
-                            { 0.5f, 0.5f }
-                        };
-                        break;
-                    case 3: // 3.0
-                        matrix = new float[3, 2]
-                        {
-                            { 0.5f, 0.5f },
-                            { 0.5f, 0.5f },
-                            { 0.5f, 0.5f },
-                        };
-                        break;
-                    case 4: // 4.0
-                        matrix = new float[4, 2]
-                        {
-                            { 0.5f, 0.5f },
-                            { 0.5f, 0.5f },
-                            { 0.5f, 0.5f },
-                            { 0.5f, 0.5f },
-                        };
-                        break;
-                    case 6: // 5.1
-                        matrix = new float[6, 2]
-                        {
-                            { 0.5f, 0.5f },
-                            { 0.5f, 0.5f },
-                            { 0.5f, 0.5f },
-                            { 0.5f, 0.5f },
-                            { 0.5f, 0.5f },
-                            { 0.5f, 0.5f },
-                        };
-                        break;
-                    case 8: // 7.1
-                        matrix = new float[8, 2]
-                        {
-                            { 0.5f, 0.5f },
-                            { 0.5f, 0.5f },
-                            { 0.5f, 0.5f },
-                            { 0.5f, 0.5f },
-                            { 0.5f, 0.5f },
-                            { 0.5f, 0.5f },
-                            { 0.5f, 0.5f },
-                            { 0.5f, 0.5f },
-                        };
-                        break;
-                    default:
-                        matrix = new float[1, 2]
-                        {
-                            { 0.5f, 0.5f }
-                        };
-                        break;
+                    matrix[i, 0] = 0.5f;
+                    matrix[i, 1] = 0.5f;
                 }
+                return matrix;
+            }
+
+            return outputChCount switch
+            {
+                // [output_ch, input_ch]: row i = [L_weight, R_weight] for output channel i
+                1 => new float[1, 2] { { 0.5f, 0.5f } },
+                4 => new float[4, 2] { { 1f, 0f }, { 0f, 1f }, { 0.5f, 0.5f }, { 0.5f, 0.5f } },
+                6 => new float[6, 2] { { 1f, 0f }, { 0f, 1f }, { 0.5f, 0.5f }, { 0.5f, 0.5f }, { 0f, 0f }, { 0f, 0f } },
+                8 => new float[8, 2] { { 1f, 0f }, { 0f, 1f }, { 0.5f, 0.5f }, { 0.5f, 0.5f }, { 0f, 0f }, { 0f, 0f }, { 0f, 0f }, { 0f, 0f } },
+                _ => new float[2, 2] { { 1f, 0f }, { 0f, 1f } }
+            };
+        }
+
+        static void GenerateMixingMatrix(int outputChCount)
+        {
+            float[,] matrix;
+
+            if (TryGetUserMatrix(outputChCount, out var userMatrix) && ValidateMixingMatrix(userMatrix, outputChCount))
+            {
+                matrix = ExpandMatrix(userMatrix, outputChCount);
             }
             else
             {
-                switch (chCount)
-                {
-                    case 1:// Mono
-                        matrix = new float[1, 2]
-                        {
-                            { 0.5f, 0.5f }
-                        };
-                        break;
-                    case 2: // 2.0
-                        matrix = new float[2, 2]
-                        {
-                            { volumeSettings.FrontVolume, 0f },
-                            { 0f, volumeSettings.FrontVolume }
-                        };
-                        break;
-                    case 3: // 3.0
-                        matrix = new float[3, 2]
-                        {
-                            { volumeSettings.FrontVolume, 0f },
-                            { volumeSettings.CenterAndLFEVolume/2f, volumeSettings.CenterAndLFEVolume/2f },
-                            { 0f, volumeSettings.FrontVolume },
-                        };
-                        break;
-                    case 4: // 4.0
-                        matrix = new float[4, 2]
-                        {
-                            { volumeSettings.FrontVolume, 0f },
-                            { 0f, volumeSettings.FrontVolume },
-                            { volumeSettings.RearVolume, 0f },
-                            { 0f, volumeSettings.RearVolume },
-                        };
-                        break;
-                    case 6: // 5.1
-                        matrix = new float[6, 2]
-                        {
-                            { volumeSettings.FrontVolume, 0f },
-                            { 0f, volumeSettings.FrontVolume },
-                            { volumeSettings.CenterAndLFEVolume, 0f },
-                            { 0f, volumeSettings.CenterAndLFEVolume },
-                            { volumeSettings.SideVolume, 0f },
-                            { 0f, volumeSettings.SideVolume }
-                        };
-                        break;
-                    case 8: // 7.1
-                        matrix = new float[8, 2]
-                        {
-                            { volumeSettings.FrontVolume, 0f },
-                            { 0f, volumeSettings.FrontVolume },
-                            { volumeSettings.CenterAndLFEVolume, 0f },
-                            { 0f, volumeSettings.CenterAndLFEVolume },
-                            { volumeSettings.SideVolume, 0f },
-                            { 0f, volumeSettings.SideVolume },
-                            { volumeSettings.RearVolume, 0f },
-                            { 0f, volumeSettings.RearVolume },
-                        };
-                        break;
-                    default:
-                        matrix = new float[1, 2]
-                        {
-                            { 0.5f, 0.5f }
-                        };
-                        break;
-                }
+                MajDebug.LogWarning($"[Audio] Using default matrix.");
+                matrix = GetDefaultMatrix(outputChCount, MajEnv.Settings.Audio.ForceMono);
             }
-
 
             MixingMatrix = matrix;
         }

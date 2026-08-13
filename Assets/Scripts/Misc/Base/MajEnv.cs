@@ -9,6 +9,7 @@ using LibVLCSharp;
 using MajdataPlay.Buffers;
 using MajdataPlay.Collections;
 using MajdataPlay.Extensions;
+using MajdataPlay.Json;
 using MajdataPlay.Net;
 using MajdataPlay.Numerics;
 using MajdataPlay.Settings;
@@ -192,7 +193,8 @@ namespace MajdataPlay
             ObjectCreationHandling = ObjectCreationHandling.Replace,
             Converters =
             {
-                new StringEnumConverter()
+                new StringEnumConverter(),
+                new MixingMatrixConfigConverter()
             }
         };
 
