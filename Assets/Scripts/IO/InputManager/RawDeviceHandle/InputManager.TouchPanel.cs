@@ -6,7 +6,6 @@ using LibUsbDotNet;
 using LibUsbDotNet.Main;
 using MajdataPlay.Diagnostics;
 using MajdataPlay.Numerics;
-using MajdataPlay.Platform.Win32.IO;
 using MajdataPlay.Settings;
 using MajdataPlay.Utils;
 using System;
@@ -367,22 +366,23 @@ namespace MajdataPlay.IO
                     {
                         if(isReconnecting)
                         {
-                            MajDebug.LogError($"[TouchPanel]{comPort} was lost, waiting for serial device to reconnect");
+                            MajDebug.LogError(nameof(TouchPanel), $"{comPort} was lost, waiting for serial device to reconnect");
                             Thread.Sleep(RECONNECT_INTERVAL);
                             goto SERIAL_START;
                         }
                         else
                         {
-                            MajDebug.LogWarning($"[TouchPanel]{comPort} not found, using Mouse as fallback.");
+                            MajDebug.LogWarning(nameof(TouchPanel), $"{comPort} not found, using Mouse as fallback.");
                             return;
                         }                        
                     }
                     else
                     {
-                        MajDebug.LogInfo("TouchPanel", $"Trying to open serial port \"{comPort}\" with {serialPortOptions.BaudRate} baud rate...");
+                        MajDebug.LogInfo(nameof(TouchPanel),  $"Trying to open serial port \"{comPort}\" with {serialPortOptions.BaudRate} baud rate...");
                         if (serialDevice.TryOpen(out serialStream))
                         {
-                            MajDebug.LogInfo("TouchPanel", $"\"{comPort}\" is opened");                            
+                            MajDebug.LogInfo(nameof(TouchPanel),  $"\"{comPort}\" is opened"); 
+                            serialStream.BaudRate =  serialPortOptions.BaudRate;
                             serialStream.DataBits = 8;
                             serialStream.Parity = SerialParity.None;
                             serialStream.StopBits = 1;
@@ -392,11 +392,11 @@ namespace MajdataPlay.IO
                             serialStream.WriteTimeout = 2000;
                             if (InitTouchPanel(serialStream))
                             {
-                                MajDebug.LogInfo("TouchPanel", "Connected");
+                                MajDebug.LogInfo(nameof(TouchPanel),  "Connected");
                             }
                             else
                             {
-                                MajDebug.LogError("TouchPanel", "Failed to initialize the touch panel.");
+                                MajDebug.LogError(nameof(TouchPanel),  "Failed to initialize the touch panel.");
                                 if (isReconnecting)
                                 {
                                     Thread.Sleep(RECONNECT_INTERVAL);
@@ -412,22 +412,21 @@ namespace MajdataPlay.IO
                         {
                             if(isReconnecting)
                             {
-                                MajDebug.LogError("TouchPanel", $"Cannot open {comPort}");
+                                MajDebug.LogError(nameof(TouchPanel),  $"Cannot open {comPort}");
                                 Thread.Sleep(RECONNECT_INTERVAL);
                                 goto SERIAL_START;
                             }
                             else
                             {
-                                MajDebug.LogError("TouchPanel", $"Cannot open {comPort}, using Mouse as fallback.");
+                                MajDebug.LogError(nameof(TouchPanel),  $"Cannot open {comPort}, using Mouse as fallback.");
                                 return;
                             }                            
                         }
                     }
                     IsConnected = true;
                     isReconnecting = true;
-                    while (true)
+                    while (!token.IsCancellationRequested)
                     {
-                        token.ThrowIfCancellationRequested();
                         try
                         {
                             ReadFromSerialStream(serialStream, _sensorRealTimeStates, ref readBuffer);
@@ -458,20 +457,20 @@ namespace MajdataPlay.IO
                         catch (IOException e)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"[TouchPanel]\n{e}");
-                            MajDebug.LogInfo($"[TouchPanel]Trying to reconnect to {comPort}");
+                            MajDebug.LogError(nameof(TouchPanel), e);
+                            MajDebug.LogInfo(nameof(TouchPanel), $"Trying to reconnect to {comPort}");
                             Thread.Sleep(RECONNECT_INTERVAL);
                             goto SERIAL_START;
                         }
                         catch (TimeoutException)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"[TouchPanel]Read timeout");
+                            MajDebug.LogError(nameof(TouchPanel), "Read timeout");
                         }
                         catch (Exception e)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"[TouchPanel]\n{e}");
+                            MajDebug.LogError(nameof(TouchPanel), e);
                         }
                         finally
                         {
@@ -492,7 +491,9 @@ namespace MajdataPlay.IO
                 {
                     _useDummy = true;
                     IsConnected = false;
+                    serialStream?.Close();
                     serialStream?.Dispose();
+                    MajDebug.LogWarning(nameof(TouchPanel), "Thread has exited");
                 }
             }
             static void UsbUpdateLoop()
@@ -706,14 +707,18 @@ namespace MajdataPlay.IO
             {
                 try
                 {
-                    MajDebug.LogInfo("TouchPanel", $"Starting to initialize the touch panel...");
+                    MajDebug.LogInfo(nameof(TouchPanel),  $"Starting to initialize the touch panel...");
                     var sensConfig = MajEnv.Settings.IO.InputDevice.TouchPanel.Sensitivities;
                     var index = IODetector.PlayerIndex == 1 ? 'L' : 'R';
                     var sens = (sensConfig.A, sensConfig.B, sensConfig.C, sensConfig.D, sensConfig.E);
-                    MajDebug.LogInfo("TouchPanel", $"Sensitivities:\nA:{sens.A}\nB:{sens.B}\nC:{sens.C}\nD:{sens.D}\nE:{sens.E}");
+                    MajDebug.LogInfo(nameof(TouchPanel),  $"Sensitivities:\nA:{sens.A}\nB:{sens.B}\nC:{sens.C}\nD:{sens.D}\nE:{sens.E}");
                     //see also https://github.com/Sucareto/Mai2Touch/tree/main/Mai2Touch
                     serialStream.Write("{RSET}");
-                    MajDebug.LogDebug("TouchPanel", $"Sent: {{REST}}");
+                    MajDebug.LogDebug(nameof(TouchPanel), $"Sent: {{REST}}");
+                    MajDebug.LogInfo(nameof(TouchPanel), "Waiting for TouchPanel reset");
+#if UNITY_STANDALONE_LINUX
+                    Thread.Sleep(4000);
+#elif UNITY_STANDALONE_WIN
                     try
                     {
                         var buffer = (stackalloc byte[10]);
@@ -723,21 +728,23 @@ namespace MajdataPlay.IO
                             var read = serialStream.Read(buffer.Slice(offset, 10 - offset));
                             offset += read;
                         }
-                        MajDebug.LogDebug("TouchPanel", $"Recv: {Encoding.UTF8.GetString(buffer)}");
+                        MajDebug.LogDebug(nameof(TouchPanel), $"Recv: {Encoding.UTF8.GetString(buffer)}");
                     }
                     catch (TimeoutException)
                     {
-                        MajDebug.LogWarning("TouchPanel", "RSET read response timeout");
+                        MajDebug.LogWarning(nameof(TouchPanel), "RSET read response timeout");
                     }
+#endif
+                    MajDebug.LogInfo(nameof(TouchPanel), "TouchPanel has been reset");
 
                     serialStream.Write("{HALT}");
-                    MajDebug.LogDebug("TouchPanel", $"Sent: {{HALT}}");
+                    MajDebug.LogDebug(nameof(TouchPanel), $"Sent: {{HALT}}");
                     //send ratio
                     for (byte a = 0x41; a <= 0x62; a++)
                     {
                         var cmd = $"{{{index}{(char)a}r2}}";
                         serialStream.Write(cmd);
-                        MajDebug.LogDebug("TouchPanel", $"Sent: {cmd}");
+                        MajDebug.LogDebug(nameof(TouchPanel),  $"Sent: {cmd}");
                     }
                     try
                     {
@@ -746,21 +753,21 @@ namespace MajdataPlay.IO
                             var value = GetSensitivityValue(a, sens);
                             var cmd = $"{{{index}{(char)a}k{(char)value}}}";
                             serialStream.Write(cmd);
-                            MajDebug.LogDebug("TouchPanel", $"Sent: {cmd}");
+                            MajDebug.LogDebug(nameof(TouchPanel),  $"Sent: {cmd}");
                         }
                     }
                     catch (TimeoutException)
                     {
-                        MajDebug.LogWarning("TouchPanel", $"TouchPanel does not support sensitivity override: Write timeout");
+                        MajDebug.LogWarning(nameof(TouchPanel),  $"TouchPanel does not support sensitivity override: Write timeout");
                     }
                     catch (Exception e)
                     {
-                        MajDebug.LogError("TouchPanel", $"Failed to override sensitivity: \n{e}");
+                        MajDebug.LogError(nameof(TouchPanel),  $"Failed to override sensitivity: \n{e}");
                         return false;
                     }
                     serialStream.Write("{STAT}");
-                    MajDebug.LogDebug("TouchPanel", $"Sent: {{STAT}}");
-                    MajDebug.LogInfo("TouchPanel", "Initialization complete.");
+                    MajDebug.LogDebug(nameof(TouchPanel),  $"Sent: {{STAT}}");
+                    MajDebug.LogInfo(nameof(TouchPanel),  "Initialization complete.");
                     return true;
                 }
                 catch (Exception e)
