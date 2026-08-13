@@ -241,9 +241,9 @@ namespace MajdataPlay.Settings
         public AsioOptions Asio { get; set; } = new();
         
         public ChannelOptions Channel { get; set; } = new();
-#else
-        public MobileAudioOptions Mobile { get; set; } = new();
 #endif
+        public BassAudioOptions Bass { get; set; } = new();
+
         
         public SoundBackendOption Backend { get; set; } = DEFAULT_SOUND_BACKEND;
     }
@@ -685,13 +685,13 @@ namespace MajdataPlay.Settings
         public float Period { get; set; } = 0.005f;
     }
 #endif
-    public class MobileAudioOptions
+    public class BassAudioOptions
     {
 #if UNITY_ANDROID // Android Only (AAudio)
         public bool EnableAAudio { get; set; } = true;
 #endif
-        public int BufferLengthMs { get; set; } = 128;
-        public int UpdatePeriodMs { get; set; } = 16;
+        public int BufferLengthMs { get; set; } = 500;
+        public int UpdatePeriodMs { get; set; } = 100;
         public int DeviceBufferLengthMs { get; set; } = 32;
         public int DeviceUpdatePeriodMs { get; set; } = 4;
     }
