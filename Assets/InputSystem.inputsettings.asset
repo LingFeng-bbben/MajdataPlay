@@ -17,7 +17,7 @@ MonoBehaviour:
   - Keyboard
   - Touchscreen
   - Mouse
-  m_UpdateMode: 1
+  m_UpdateMode: 3
   m_ScrollDeltaBehavior: 0
   m_MaxEventBytesPerUpdate: 5242880
   m_MaxQueuedEventsPerUpdate: 1000

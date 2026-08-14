@@ -21,6 +21,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Policy;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.EnhancedTouch;
 using UnityEngine.Profiling;
 //using Microsoft.Win32;
@@ -459,6 +460,7 @@ namespace MajdataPlay.IO
                 Array.Fill(_btnClickedCountInThisFrame, 0);
                 Array.Fill(_sensorClickedCountInThisFrame, 0);
 #endif
+                InputSystem.Update();
 #if UNITY_STANDALONE || UNITY_ANDROID || UNITY_IOS
                 ButtonRing.OnPreUpdate();
 #endif
