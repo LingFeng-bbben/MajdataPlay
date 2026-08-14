@@ -1,4 +1,5 @@
-﻿using LibUsbDotNet;
+﻿using HidSharp;
+using LibUsbDotNet;
 using LibUsbDotNet.Main;
 using MajdataPlay.Diagnostics;
 using MajdataPlay.Settings;
@@ -55,7 +56,7 @@ namespace MajdataPlay.IO
 #if ENABLE_IL2CPP
             var serialPorts = "NotSupported";
 #else
-            var serialPorts = SerialPort.GetPortNames();
+            var serialPorts = DeviceList.Local.GetSerialDevices();
 #endif
 
             var ioSettings = MajEnv.Settings.IO;

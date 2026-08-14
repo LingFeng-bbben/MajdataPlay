@@ -345,7 +345,6 @@ namespace MajdataPlay.IO
                 var comPort = serialPortOptions.PortName;
                 var stopwatch = new Stopwatch();
                 var t1 = stopwatch.Elapsed;
-                var isReconnecting = false;
 
                 var buffer = (stackalloc byte[8192]);
                 var readBuffer = new Buffer(buffer);
@@ -356,135 +355,148 @@ namespace MajdataPlay.IO
                 stopwatch.Start();
 
 
-            SERIAL_START:
-                readBuffer.Clear();
-                var serialDevice = DeviceList.Local.GetSerialDeviceOrNull(comPort);
+                var serialDevice = default(SerialDevice?);
                 var serialStream = default(SerialStream?);
+                var isReconnecting = false;
                 try
                 {
-                    if (serialDevice is null)
+                    while (!token.IsCancellationRequested)
                     {
-                        if(isReconnecting)
+                        Thread.Sleep(RECONNECT_INTERVAL);
+                        readBuffer.Clear();
+                        serialDevice = DeviceList.Local.GetSerialDeviceOrNull(comPort);
+                        serialStream = default(SerialStream?);
+                        if (serialDevice is null)
                         {
-                            MajDebug.LogError(nameof(TouchPanel), $"{comPort} was lost, waiting for serial device to reconnect");
-                            Thread.Sleep(RECONNECT_INTERVAL);
-                            goto SERIAL_START;
-                        }
-                        else
-                        {
-                            MajDebug.LogWarning(nameof(TouchPanel), $"{comPort} not found, using Mouse as fallback.");
-                            return;
-                        }                        
-                    }
-                    else
-                    {
-                        MajDebug.LogInfo(nameof(TouchPanel),  $"Trying to open serial port \"{comPort}\" with {serialPortOptions.BaudRate} baud rate...");
-                        if (serialDevice.TryOpen(out serialStream))
-                        {
-                            MajDebug.LogInfo(nameof(TouchPanel),  $"\"{comPort}\" is opened"); 
-                            serialStream.BaudRate =  serialPortOptions.BaudRate;
-                            serialStream.DataBits = 8;
-                            serialStream.Parity = SerialParity.None;
-                            serialStream.StopBits = 1;
-                            serialStream.DtrEnable = true;
-                            serialStream.RtsEnable = true;
-                            serialStream.ReadTimeout = 2000;
-                            serialStream.WriteTimeout = 2000;
-                            if (InitTouchPanel(serialStream))
+                            if (isReconnecting)
                             {
-                                MajDebug.LogInfo(nameof(TouchPanel),  "Connected");
+                                MajDebug.LogError(nameof(TouchPanel), $"{comPort} was lost, waiting for serial device to reconnect");
+                                continue;
                             }
                             else
                             {
-                                MajDebug.LogError(nameof(TouchPanel),  "Failed to initialize the touch panel.");
-                                if (isReconnecting)
+                                MajDebug.LogWarning(nameof(TouchPanel), $"{comPort} not found, using Mouse as fallback");
+                                return;
+                            }
+                        }
+                        else
+                        {
+                            MajDebug.LogInfo(nameof(TouchPanel), $"Trying to open serial port \"{comPort}\" with {serialPortOptions.BaudRate} baud rate...");
+                            if (serialDevice.TryOpen(out serialStream))
+                            {
+                                MajDebug.LogInfo(nameof(TouchPanel), $"\"{comPort}\" is opened");
+                                serialStream.BaudRate = serialPortOptions.BaudRate;
+                                serialStream.DataBits = 8;
+                                serialStream.Parity = SerialParity.None;
+                                serialStream.StopBits = 1;
+                                serialStream.DtrEnable = true;
+                                serialStream.RtsEnable = true;
+                                serialStream.ReadTimeout = 2000;
+                                serialStream.WriteTimeout = 2000;
+                                if (InitTouchPanel(serialStream))
                                 {
-                                    Thread.Sleep(RECONNECT_INTERVAL);
-                                    goto SERIAL_START;
+                                    MajDebug.LogInfo(nameof(TouchPanel), "Connected");
                                 }
                                 else
                                 {
-                                    return;
-                                }                                
-                            }
-                        }
-                        else
-                        {
-                            if(isReconnecting)
-                            {
-                                MajDebug.LogError(nameof(TouchPanel),  $"Cannot open {comPort}");
-                                Thread.Sleep(RECONNECT_INTERVAL);
-                                goto SERIAL_START;
+                                    MajDebug.LogError(nameof(TouchPanel), "Failed to initialize the touch panel.");
+                                    if (isReconnecting)
+                                    {
+                                        serialStream?.Close();
+                                        serialStream?.Dispose();
+                                        serialStream = default;
+                                        serialDevice = default;
+                                        MajDebug.LogInfo(nameof(TouchPanel), $"Disconnected");
+                                        continue;
+                                    }
+                                    else
+                                    {
+                                        return;
+                                    }
+                                }
                             }
                             else
                             {
-                                MajDebug.LogError(nameof(TouchPanel),  $"Cannot open {comPort}, using Mouse as fallback.");
-                                return;
-                            }                            
+                                if (isReconnecting)
+                                {
+                                    MajDebug.LogError(nameof(TouchPanel), $"Cannot open {comPort}");
+                                    continue;
+                                }
+                                else
+                                {
+                                    MajDebug.LogError(nameof(TouchPanel), $"Cannot open {comPort}, using Mouse as fallback.");
+                                    return;
+                                }
+                            }
                         }
-                    }
-                    IsConnected = true;
-                    isReconnecting = true;
-                    while (!token.IsCancellationRequested)
-                    {
-                        try
+                        IsConnected = true;
+                        isReconnecting = true;
+                        #region Polling
+                        while (!token.IsCancellationRequested)
                         {
-                            ReadFromSerialStream(serialStream, _sensorRealTimeStates, ref readBuffer);
-                            IsConnected = true;
-                            var isLocked = false;
                             try
                             {
-                                @lock.Enter(ref isLocked);
-                                var sensorRealTimeStates = _sensorRealTimeStates.AsSpan();
-                                var isSensorHadOnInternal = _isSensorHadOnInternal.AsSpan();
-                                var isSensorHadOffInternal = _isSensorHadOffInternal.AsSpan();
-
-                                for (var i = 0; i < 35; i++)
+                                ReadFromSerialStream(serialStream, _sensorRealTimeStates, ref readBuffer);
+                                IsConnected = true;
+                                var isLocked = false;
+                                try
                                 {
-                                    var state = sensorRealTimeStates[i];
-                                    isSensorHadOnInternal[i] |= state;
-                                    isSensorHadOffInternal[i] |= !state;
+                                    @lock.Enter(ref isLocked);
+                                    var sensorRealTimeStates = _sensorRealTimeStates.AsSpan();
+                                    var isSensorHadOnInternal = _isSensorHadOnInternal.AsSpan();
+                                    var isSensorHadOffInternal = _isSensorHadOffInternal.AsSpan();
+
+                                    for (var i = 0; i < 35; i++)
+                                    {
+                                        var state = sensorRealTimeStates[i];
+                                        isSensorHadOnInternal[i] |= state;
+                                        isSensorHadOffInternal[i] |= !state;
+                                    }
                                 }
+                                finally
+                                {
+                                    if (isLocked)
+                                    {
+                                        @lock.Exit();
+                                    }
+                                }
+                            }
+                            catch (IOException e)
+                            {
+                                IsConnected = false;
+                                MajDebug.LogError(nameof(TouchPanel), e);
+                                serialStream?.Close();
+                                serialStream?.Dispose();
+                                serialStream = default;
+                                serialDevice = default;
+                                MajDebug.LogInfo(nameof(TouchPanel), $"Disconnected");
+                                break;
+                            }
+                            catch (TimeoutException)
+                            {
+                                IsConnected = false;
+                                MajDebug.LogError(nameof(TouchPanel), "Read timeout");
+                            }
+                            catch (Exception e)
+                            {
+                                IsConnected = false;
+                                MajDebug.LogError(nameof(TouchPanel), e);
                             }
                             finally
                             {
-                                if (isLocked)
+                                if (pollingRate.TotalMilliseconds > 0)
                                 {
-                                    @lock.Exit();
+                                    var t2 = stopwatch.Elapsed;
+                                    var elapsed = t2 - t1;
+                                    t1 = t2;
+                                    if (elapsed < pollingRate)
+                                    {
+                                        Thread.Sleep(pollingRate - elapsed);
+                                    }
                                 }
                             }
                         }
-                        catch (IOException e)
-                        {
-                            IsConnected = false;
-                            MajDebug.LogError(nameof(TouchPanel), e);
-                            MajDebug.LogInfo(nameof(TouchPanel), $"Trying to reconnect to {comPort}");
-                            Thread.Sleep(RECONNECT_INTERVAL);
-                            goto SERIAL_START;
-                        }
-                        catch (TimeoutException)
-                        {
-                            IsConnected = false;
-                            MajDebug.LogError(nameof(TouchPanel), "Read timeout");
-                        }
-                        catch (Exception e)
-                        {
-                            IsConnected = false;
-                            MajDebug.LogError(nameof(TouchPanel), e);
-                        }
-                        finally
-                        {
-                            if (pollingRate.TotalMilliseconds > 0)
-                            {
-                                var t2 = stopwatch.Elapsed;
-                                var elapsed = t2 - t1;
-                                t1 = t2;
-                                if (elapsed < pollingRate)
-                                {
-                                    Thread.Sleep(pollingRate - elapsed);
-                                }
-                            }
-                        }
+                        #endregion
                     }
                 }
                 finally
