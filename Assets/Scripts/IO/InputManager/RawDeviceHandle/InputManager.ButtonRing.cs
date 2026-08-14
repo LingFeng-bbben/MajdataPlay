@@ -592,7 +592,7 @@ namespace MajdataPlay.IO
                         Thread.Sleep(MajEnv.IO_DEVICE_RECONNECT_INTERVAL_MSEC);
                         hidDevice = default;
                         hidStream = default;
-                        if (!HidManager.TryGetAndOpenDevice(nameof(ButtonRing), 
+                        if (!HidHelper.TryGetAndOpenDevice(nameof(ButtonRing), 
                             filter, hidConfig, out hidDevice, out hidStream, isReconnecting))
                         {
                             continue;

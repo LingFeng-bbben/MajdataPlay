@@ -16,7 +16,7 @@ using MajdataPlay.Diagnostics;
 namespace MajdataPlay.IO
 {
 
-    internal static class HidManager
+    internal static class HidHelper
     {
         public static IEnumerable<HidDevice> Devices
         {
@@ -27,7 +27,7 @@ namespace MajdataPlay.IO
         }
         static IEnumerable<HidDevice> _hidDevices = Array.Empty<HidDevice>();
         readonly static List<HidDevice> _cacheList = new(); 
-        static HidManager()
+        static HidHelper()
         {
             var manufacturer = MajEnv.Settings.IO.Manufacturer;
             var buttonRingOptions = MajEnv.Settings.IO.InputDevice.ButtonRing;
@@ -96,7 +96,7 @@ namespace MajdataPlay.IO
         {
             hidDevice = default;
             hidStream = default;
-            if (!HidManager.TryGetDevices(filter, out var devices))
+            if (!HidHelper.TryGetDevices(filter, out var devices))
             {
                 if (isReconnecting)
                 {

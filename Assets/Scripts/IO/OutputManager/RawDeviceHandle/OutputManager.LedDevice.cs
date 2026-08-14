@@ -356,7 +356,7 @@ namespace MajdataPlay.IO
                         Thread.Sleep(MajEnv.IO_DEVICE_RECONNECT_INTERVAL_MSEC);
                         hidDevice = default;
                         hidStream = default;
-                        if (!HidManager.TryGetAndOpenDevice(nameof(LedDevice),
+                        if (!HidHelper.TryGetAndOpenDevice(nameof(LedDevice),
                             filter, hidConfig, out hidDevice, out hidStream, isReconnecting))
                         {
                             continue;

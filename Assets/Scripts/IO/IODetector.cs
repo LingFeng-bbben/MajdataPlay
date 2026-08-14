@@ -47,7 +47,7 @@ namespace MajdataPlay.IO
             {
                 return;
             }
-            var hidDevices = HidManager.Devices;
+            var hidDevices = HidHelper.Devices;
 #if UNITY_STANDALONE_WIN
             var usbDevices = UsbDevice.AllDevices;
 #else
