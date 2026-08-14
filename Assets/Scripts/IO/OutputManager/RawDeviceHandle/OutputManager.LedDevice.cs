@@ -23,6 +23,7 @@ namespace MajdataPlay.IO
     {
         static class LedDevice
         {
+            const string DAEMON_THREAD_NAME = "IO/Led Thread";
             public static bool IsConnected
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -102,7 +103,7 @@ namespace MajdataPlay.IO
 
                 serial.WriteTimeout = 2000;
                 serial.WriteBufferSize = 16;
-                currentThread.Name = "IO/L Thread";
+                currentThread.Name = DAEMON_THREAD_NAME;
                 currentThread.IsBackground = true;
                 currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
 
@@ -339,7 +340,7 @@ namespace MajdataPlay.IO
 
                 hidConfig.SetOption(OpenOption.Exclusive, hidOptions.Exclusice);
                 hidConfig.SetOption(OpenOption.Priority, (OpenPriority)hidOptions.OpenPriority);
-                currentThread.Name = "IO/L Thread";
+                currentThread.Name = DAEMON_THREAD_NAME;
                 currentThread.IsBackground = true;
                 currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
 

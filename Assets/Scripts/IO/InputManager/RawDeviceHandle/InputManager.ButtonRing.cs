@@ -19,6 +19,8 @@ using MajdataPlay.Platform.Android.IO;
 
 #if UNITY_IOS || UNITY_EDITOR
 using MajdataPlay.Platform.iOS;
+using MajdataPlay.Runtime;
+
 #endif
 
 #if UNITY_STANDALONE
@@ -36,6 +38,7 @@ namespace MajdataPlay.IO
     {
         static class ButtonRing
         {
+            const string DAEMON_THREAD_NAME = "IO/ButtonRing Thread";
             public static bool IsConnected { get; private set; } = false;
 
             static int _isInited = 0;
@@ -59,12 +62,12 @@ namespace MajdataPlay.IO
                 {
                     return;
                 }
-                MajDebug.LogInfo("[ButtonRing]Start initialization");
+                MajDebug.LogInfo(nameof(ButtonRing), "Start initialization");
 #if UNITY_STANDALONE
                 _isEnabled = MajEnv.Settings.IO.InputDevice.ButtonRing.Enable;
                 if (!_isEnabled)
                 {
-                    MajDebug.LogInfo("[ButtonRing]Disabled");
+                    MajDebug.LogInfo(nameof(ButtonRing), "Disabled");
                     return;
                 }
                 else if (!_buttonRingUpdateLoop.IsCompleted)
@@ -84,7 +87,7 @@ namespace MajdataPlay.IO
                             _buttonRingUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
                             break;
                         default:
-                            MajDebug.LogWarning($"[ButtonRing]Not supported button ring device: {buttonRingDevice}");
+                            MajDebug.LogWarning(nameof(ButtonRing), $"Not supported button ring device: {buttonRingDevice}");
                             break;
                     }
                 }
@@ -102,12 +105,12 @@ namespace MajdataPlay.IO
                 }
                 else
                 {
-                    MajDebug.LogWarning($"[ButtonRing]Not supported button ring manufacturer: {manufacturer}");
+                    MajDebug.LogWarning(nameof(ButtonRing), $"Not supported button ring manufacturer: {manufacturer}");
                 }
 #elif UNITY_ANDROID || UNITY_IOS
                 _mobileExternalbuttonRingOption = MajEnv.Settings.IO.InputDevice.ExternalButtonRing;
 #endif
-                MajDebug.LogInfo("[ButtonRing]Initialization completed");
+                MajDebug.LogInfo(nameof(ButtonRing), "Initialization completed");
             }
             /// <summary>
             /// Update the button ring state of the this frame
@@ -375,11 +378,11 @@ namespace MajdataPlay.IO
                                     continue;
                                 }
                                 IsConnected = false;
-                                MajDebug.LogError($"[ButtonRing]Failed to initialize NativeKeyboard: {@return}");
+                                MajDebug.LogError(nameof(ButtonRing), $"Failed to initialize NativeKeyboard: {@return}");
                                 return;
                             default:
                                 IsConnected = false;
-                                MajDebug.LogError($"[ButtonRing]Error occurred while reading key states from NativeKeyboard: {@return}");
+                                MajDebug.LogError(nameof(ButtonRing), $"Error occurred while reading key states from NativeKeyboard: {@return}");
                                 break;
                         }
                     }
@@ -466,15 +469,18 @@ namespace MajdataPlay.IO
                 var fnBuffer = _buttonRealTimeStates.AsSpan(8);
                 ref var @lock = ref _syncLock;
 
-                currentThread.Name = "IO/B Thread";
+                currentThread.Name = DAEMON_THREAD_NAME;
                 currentThread.IsBackground = true;
                 currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
+
+                MajDebug.LogInfo(nameof(ButtonRing), $"Managed thread id: {currentThread.ManagedThreadId}");
+                MajDebug.LogInfo(nameof(ButtonRing), $"OS thread id: {PlatformInfo.GetCurrentOSThreadId()}");
+
                 stopwatch.Start();
                 try
                 {
-                    while (true)
+                    while (!token.IsCancellationRequested)
                     {
-                        token.ThrowIfCancellationRequested();
                         try
                         {
                             var now = MajTimeline.UnscaledTime;
@@ -516,7 +522,7 @@ namespace MajdataPlay.IO
                         catch (Exception e)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"[ButtonRing]From Keyboard listener: \n{e}");
+                            MajDebug.LogError(nameof(ButtonRing), $"From Keyboard listener: \n{e}");
                         }
                         finally
                         {
@@ -536,6 +542,7 @@ namespace MajdataPlay.IO
                 finally
                 {
                     IsConnected = false;
+                    MajDebug.LogWarning(nameof(ButtonRing), "Thread has exited");
                 }
             }
             static void HIDUpdateLoop()
@@ -564,16 +571,19 @@ namespace MajdataPlay.IO
 
                 hidConfig.SetOption(OpenOption.Exclusive, hidOptions.Exclusice);
                 hidConfig.SetOption(OpenOption.Priority, (OpenPriority)hidOptions.OpenPriority);
-                currentThread.Name = "IO/B Thread";
+                currentThread.Name = DAEMON_THREAD_NAME;
                 currentThread.IsBackground = true;
                 currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
+
+                MajDebug.LogInfo(nameof(ButtonRing), $"Managed thread id: {currentThread.ManagedThreadId}");
+                MajDebug.LogInfo(nameof(ButtonRing), $"OS thread id: {PlatformInfo.GetCurrentOSThreadId()}");
 
                 HidDevice? device = null;
                 HidStream? hidStream = null;
 
                 if (!HidManager.TryGetDevices(filter, out var devices))
                 {
-                    MajDebug.LogWarning("[ButtonRing]hid device not found");
+                    MajDebug.LogWarning(nameof(ButtonRing), "hid device not found");
                     return;
                 }
                 foreach(var d in devices)
@@ -586,7 +596,7 @@ namespace MajdataPlay.IO
                 }
                 if(hidStream is null || device is null)
                 {
-                    MajDebug.LogError($"[ButtonRing]cannot open hid devices:\n{string.Join('\n', devices)}");
+                    MajDebug.LogError(nameof(ButtonRing), $"cannot open hid devices:\n{string.Join('\n', devices)}");
                     return;
                 }
 
@@ -597,11 +607,10 @@ namespace MajdataPlay.IO
                     _ioThreadSync.SignalReadReady();
                     Span<byte> buffer = memory.Span;
                     IsConnected = true;
-                    MajDebug.LogInfo($"[ButtonRing]Connected\nDevice: {device}");
+                    MajDebug.LogInfo(nameof(ButtonRing), $"Connected\nDevice: {device}");
                     stopwatch.Start();
-                    while (true)
+                    while (!token.IsCancellationRequested)
                     {
-                        token.ThrowIfCancellationRequested();
                         try
                         {
                             var now = MajTimeline.UnscaledTime;
@@ -652,11 +661,11 @@ namespace MajdataPlay.IO
                         catch(IOException ioE)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"[ButtonRing]{ioE}");
+                            MajDebug.LogError(nameof(ButtonRing), $"{ioE}");
                         }
                         catch (Exception e)
                         {
-                            MajDebug.LogError($"[ButtonRing]{e}");
+                            MajDebug.LogError(nameof(ButtonRing), $"{e}");
                         }
                         finally
                         {
@@ -678,6 +687,7 @@ namespace MajdataPlay.IO
                 {
                     hidStream.Dispose();
                     IsConnected = false;
+                    MajDebug.LogWarning(nameof(ButtonRing), "Thread has exited");
                 }
             }
             static void PipeUpdateLoop()
@@ -696,14 +706,14 @@ namespace MajdataPlay.IO
                     {
                         try
                         {
-                            MajDebug.LogInfo($"[ButtonRing]Attempting connect to pipe \"{pipeName}\"...");
+                            MajDebug.LogInfo(nameof(ButtonRing), $"Attempting connect to pipe \"{pipeName}\"...");
                             pipeClientStream.Connect(2000);
-                            MajDebug.LogInfo("[ButtonRing]Connected");
+                            MajDebug.LogInfo(nameof(ButtonRing), "Connected");
                             break;
                         }
                         catch (Exception e)
                         {
-                            MajDebug.LogError($"[ButtonRing]Failed to connect to pipe\n{e}");
+                            MajDebug.LogError(nameof(ButtonRing), $"Failed to connect to pipe\n{e}");
                         }
                     }
                     Memory<byte> memory = new byte[64];
@@ -757,11 +767,11 @@ namespace MajdataPlay.IO
                         catch (IOException ioE)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"[ButtonRing]{ioE}");
+                            MajDebug.LogError(nameof(ButtonRing), $"{ioE}");
                         }
                         catch (Exception e)
                         {
-                            MajDebug.LogError($"[ButtonRing]{e}");
+                            MajDebug.LogError(nameof(ButtonRing), $"{e}");
                         }
                         finally
                         {

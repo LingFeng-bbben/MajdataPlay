@@ -6,6 +6,7 @@ using LibUsbDotNet;
 using LibUsbDotNet.Main;
 using MajdataPlay.Diagnostics;
 using MajdataPlay.Numerics;
+using MajdataPlay.Runtime;
 using MajdataPlay.Settings;
 using MajdataPlay.Utils;
 using System;
@@ -32,6 +33,7 @@ namespace MajdataPlay.IO
 #if UNITY_STANDALONE
         static class TouchPanel
         {
+            const string DAEMON_THREAD_NAME = "IO/TouchPanel Thread";
             public static bool IsConnected { get; private set; } = false;
 
             static int _isInited = 0;
@@ -349,11 +351,13 @@ namespace MajdataPlay.IO
                 var buffer = (stackalloc byte[8192]);
                 var readBuffer = new Buffer(buffer);
 
-                currentThread.Name = "IO/T Thread";
+                currentThread.Name = DAEMON_THREAD_NAME;
                 currentThread.IsBackground = true;
                 currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
                 stopwatch.Start();
 
+                MajDebug.LogInfo(nameof(TouchPanel), $"Managed thread id: {currentThread.ManagedThreadId}");
+                MajDebug.LogInfo(nameof(TouchPanel), $"OS thread id: {PlatformInfo.GetCurrentOSThreadId()}");
 
                 var serialDevice = default(SerialDevice?);
                 var serialStream = default(SerialStream?);
@@ -528,7 +532,7 @@ namespace MajdataPlay.IO
                 var deviceFinder = new UsbDeviceFinder(vid, pid);
                 var usbDevice = UsbDevice.OpenUsbDevice(deviceFinder);
 
-                currentThread.Name = "IO/T Thread";
+                currentThread.Name = DAEMON_THREAD_NAME;
                 currentThread.IsBackground = true;
                 currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
 
@@ -636,7 +640,7 @@ namespace MajdataPlay.IO
                 var token = MajEnv.GlobalCT;
                 var manufacturer = IODetector.DeviceManufacturer;
 
-                currentThread.Name = "IO/T Thread";
+                currentThread.Name = DAEMON_THREAD_NAME;
                 currentThread.IsBackground = true;
                 currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
 
