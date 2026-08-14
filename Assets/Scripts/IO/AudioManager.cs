@@ -115,7 +115,7 @@ namespace MajdataPlay.IO
 
                 var backend = MajEnv.Settings.Audio.Backend;
                 var isBass = backend is (SoundBackendOption.BassSimple or SoundBackendOption.Asio or SoundBackendOption.Wasapi);
-#if UNITY_STANDALONE
+#if UNITY_STANDALONE_WIN
                 var wasapiOptions = MajEnv.Settings.Audio.Wasapi;
                 var asioOptions = MajEnv.Settings.Audio.Asio;
                 var isExclusiveRequest = wasapiOptions.Exclusive;
