@@ -122,7 +122,7 @@ namespace MajdataPlay.IO
                 var deviceIndex = asioOptions.DeviceIndex;
                 var isRawMode = wasapiOptions.RawMode;
 #endif
-#if !UNITY_EDITOR && UNITY_STANDALONE
+#if !UNITY_EDITOR && UNITY_STANDALONE_WIN
                 if (MajEnv.Mode == RunningMode.View)
                 {
                     backend = SoundBackendOption.Wasapi;
