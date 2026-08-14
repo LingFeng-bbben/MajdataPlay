@@ -337,8 +337,6 @@ namespace MajdataPlay.IO
 
             static void SerialPortUpdateLoop()
             {
-                const int RECONNECT_INTERVAL = 1000;
-
                 ref var @lock = ref _syncLock;
                 var serialPortOptions = IODetector.TouchPanelSerialConnInfo;
                 var currentThread = Thread.CurrentThread;
@@ -354,7 +352,6 @@ namespace MajdataPlay.IO
                 currentThread.Name = DAEMON_THREAD_NAME;
                 currentThread.IsBackground = true;
                 currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
-                stopwatch.Start();
 
                 MajDebug.LogInfo(nameof(TouchPanel), $"Managed thread id: {currentThread.ManagedThreadId}");
                 MajDebug.LogInfo(nameof(TouchPanel), $"OS thread id: {PlatformInfo.GetCurrentOSThreadId()}");
@@ -362,11 +359,12 @@ namespace MajdataPlay.IO
                 var serialDevice = default(SerialDevice?);
                 var serialStream = default(SerialStream?);
                 var isReconnecting = false;
+                stopwatch.Start();
                 try
                 {
                     while (!token.IsCancellationRequested)
                     {
-                        Thread.Sleep(RECONNECT_INTERVAL);
+                        Thread.Sleep(MajEnv.IO_DEVICE_RECONNECT_INTERVAL_MSEC);
                         readBuffer.Clear();
                         serialDevice = DeviceList.Local.GetSerialDeviceOrNull(comPort);
                         serialStream = default(SerialStream?);
@@ -435,6 +433,7 @@ namespace MajdataPlay.IO
                         }
                         IsConnected = true;
                         isReconnecting = true;
+                        t1 = stopwatch.Elapsed;
                         #region Polling
                         while (!token.IsCancellationRequested)
                         {

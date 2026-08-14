@@ -20,6 +20,8 @@ using MajdataPlay.Platform.Android.IO;
 #if UNITY_IOS || UNITY_EDITOR
 using MajdataPlay.Platform.iOS;
 using MajdataPlay.Runtime;
+using MajdataPlay.Platform.Win32.IO;
+
 
 #endif
 
@@ -578,115 +580,132 @@ namespace MajdataPlay.IO
                 MajDebug.LogInfo(nameof(ButtonRing), $"Managed thread id: {currentThread.ManagedThreadId}");
                 MajDebug.LogInfo(nameof(ButtonRing), $"OS thread id: {PlatformInfo.GetCurrentOSThreadId()}");
 
-                HidDevice? device = null;
-                HidStream? hidStream = null;
-
-                if (!HidManager.TryGetDevices(filter, out var devices))
-                {
-                    MajDebug.LogWarning(nameof(ButtonRing), "hid device not found");
-                    return;
-                }
-                foreach(var d in devices)
-                {
-                    if (d.TryOpen(hidConfig, out hidStream))
-                    {
-                        device = d;
-                        break;
-                    }
-                }
-                if(hidStream is null || device is null)
-                {
-                    MajDebug.LogError(nameof(ButtonRing), $"cannot open hid devices:\n{string.Join('\n', devices)}");
-                    return;
-                }
+                var hidDevice = default(HidDevice?);
+                var hidStream = default(HidStream?);
+                var isReconnecting = false;
 
                 try
                 {
-                    Memory<byte> memory = new byte[device.GetMaxInputReportLength()];
-                    _ioThreadSync.ReadBufferMemory = memory;
-                    _ioThreadSync.SignalReadReady();
-                    Span<byte> buffer = memory.Span;
-                    IsConnected = true;
-                    MajDebug.LogInfo(nameof(ButtonRing), $"Connected\nDevice: {device}");
-                    stopwatch.Start();
-                    while (!token.IsCancellationRequested)
+                    Memory<byte> memory = Array.Empty<byte>();
+                    while(!token.IsCancellationRequested)
                     {
-                        try
+                        Thread.Sleep(MajEnv.IO_DEVICE_RECONNECT_INTERVAL_MSEC);
+                        hidDevice = default;
+                        hidStream = default;
+                        if (!HidManager.TryGetAndOpenDevice(nameof(ButtonRing), 
+                            filter, hidConfig, out hidDevice, out hidStream, isReconnecting))
                         {
-                            var now = MajTimeline.UnscaledTime;
-                            hidStream.Read(buffer);
-                            switch(manufacturer)
+                            continue;
+                        }
+                        MajDebug.LogInfo(nameof(ButtonRing), $"Opened\nDevice: {hidDevice}");
+                        // HID device has been opened
+                        var deviceReportBufferLength = hidDevice.GetMaxInputReportLength();
+                        if (deviceReportBufferLength > memory.Length)
+                        {
+                            memory = new byte[deviceReportBufferLength];
+                        }
+                        else
+                        {
+                            if (memory.IsEmpty)
                             {
-                                case DeviceManufacturerOption.General:
-                                    GeneralHIDDevice.Parse(buffer, _buttonRealTimeStates);
-                                    break;
-                                case DeviceManufacturerOption.Yuan:
-                                    AdxHIDDevice.Parse(buffer, _buttonRealTimeStates);
-                                    break;
-                                case DeviceManufacturerOption.Dao:
-                                    _ioThreadSync.SignalReadReady();
-                                    DaoHIDDevice.Parse(buffer, _buttonRealTimeStates);
-                                    _ioThreadSync.WaitReadConsumed();
-                                    break;
+                                memory = new byte[Math.Min(4096, deviceReportBufferLength)];
                             }
-                            UpdateKeyboardFn(fnButtons, fnBuffer);
-                            IsConnected = true;
-                            var isLocked = false;
+                        }
+                        _ioThreadSync.ReadBufferMemory = memory;
+                        _ioThreadSync.SignalReadReady();
+                        Span<byte> buffer = memory.Span;
+                        IsConnected = true;
+                        MajDebug.LogInfo(nameof(ButtonRing), $"Connected");
+                        stopwatch.Start();
+                        t1 = stopwatch.Elapsed;
+                        IsConnected = true;
+                        isReconnecting = true;
+                        #region Polling
+                        while (!token.IsCancellationRequested)
+                        {
                             try
                             {
-                                @lock.Enter(ref isLocked);
-                                var states = _buttonRealTimeStates.AsSpan();
-                                var hadOn = _isBtnHadOnInternal.AsSpan();
-                                var hadOff = _isBtnHadOffInternal.AsSpan();
-
-                                for (int i = 0; i < 12; i++)
+                                var now = MajTimeline.UnscaledTime;
+                                hidStream.Read(buffer);
+                                switch (manufacturer)
                                 {
-                                    var state = states[i];
-                                    hadOn[i] |= state;
-                                    hadOff[i] |= !state;
+                                    case DeviceManufacturerOption.General:
+                                        GeneralHIDDevice.Parse(buffer, _buttonRealTimeStates);
+                                        break;
+                                    case DeviceManufacturerOption.Yuan:
+                                        AdxHIDDevice.Parse(buffer, _buttonRealTimeStates);
+                                        break;
+                                    case DeviceManufacturerOption.Dao:
+                                        _ioThreadSync.SignalReadReady();
+                                        DaoHIDDevice.Parse(buffer, _buttonRealTimeStates);
+                                        _ioThreadSync.WaitReadConsumed();
+                                        break;
                                 }
+                                UpdateKeyboardFn(fnButtons, fnBuffer);
+                                IsConnected = true;
+                                var isLocked = false;
+                                try
+                                {
+                                    @lock.Enter(ref isLocked);
+                                    var states = _buttonRealTimeStates.AsSpan();
+                                    var hadOn = _isBtnHadOnInternal.AsSpan();
+                                    var hadOff = _isBtnHadOffInternal.AsSpan();
+
+                                    for (int i = 0; i < 12; i++)
+                                    {
+                                        var state = states[i];
+                                        hadOn[i] |= state;
+                                        hadOff[i] |= !state;
+                                    }
+                                }
+                                finally
+                                {
+                                    if (isLocked)
+                                    {
+                                        @lock.Exit();
+                                    }
+                                }
+                            }
+                            catch (OperationCanceledException)
+                            {
+                                break;
+                            }
+                            catch (IOException ioE)
+                            {
+                                IsConnected = false;
+                                MajDebug.LogError(nameof(ButtonRing), $"{ioE}");
+                                hidStream.Close();
+                                hidStream.Dispose();
+                                MajDebug.LogInfo(nameof(ButtonRing), $"Disconnected");
+                                break;
+                            }
+                            catch (Exception e)
+                            {
+                                MajDebug.LogError(nameof(ButtonRing), $"{e}");
                             }
                             finally
                             {
-                                if (isLocked)
+                                buffer.Clear();
+                                if (pollingRate.TotalMilliseconds > 0)
                                 {
-                                    @lock.Exit();
+                                    var t2 = stopwatch.Elapsed;
+                                    var elapsed = t2 - t1;
+                                    t1 = t2;
+                                    if (elapsed < pollingRate)
+                                    {
+                                        Thread.Sleep(pollingRate - elapsed);
+                                    }
                                 }
                             }
                         }
-                        catch (OperationCanceledException)
-                        {
-                            break;
-                        }
-                        catch(IOException ioE)
-                        {
-                            IsConnected = false;
-                            MajDebug.LogError(nameof(ButtonRing), $"{ioE}");
-                        }
-                        catch (Exception e)
-                        {
-                            MajDebug.LogError(nameof(ButtonRing), $"{e}");
-                        }
-                        finally
-                        {
-                            buffer.Clear();
-                            if (pollingRate.TotalMilliseconds > 0)
-                            {
-                                var t2 = stopwatch.Elapsed;
-                                var elapsed = t2 - t1;
-                                t1 = t2;
-                                if (elapsed < pollingRate)
-                                {
-                                    Thread.Sleep(pollingRate - elapsed);
-                                }
-                            }
-                        }
+                        #endregion
                     }
                 }
                 finally
                 {
-                    hidStream.Dispose();
                     IsConnected = false;
+                    hidStream?.Close();
+                    hidStream?.Dispose();
                     MajDebug.LogWarning(nameof(ButtonRing), "Thread has exited");
                 }
             }

@@ -99,10 +99,7 @@ namespace MajdataPlay.IO
                 var t1 = stopwatch.Elapsed;
                 var ledRingColors = _ledRingColors.AsSpan();
                 var updatePacket = GeneralSerialLedDevice.BuildUpdatePacket();
-                using var serial = new SerialPort(serialPortOptions.PortName, serialPortOptions.BaudRate);
 
-                serial.WriteTimeout = 2000;
-                serial.WriteBufferSize = 16;
                 currentThread.Name = DAEMON_THREAD_NAME;
                 currentThread.IsBackground = true;
                 currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
@@ -164,7 +161,7 @@ namespace MajdataPlay.IO
                 {
                     while (!token.IsCancellationRequested)
                     {
-                        Thread.Sleep(1000); // Reconnect interval
+                        Thread.Sleep(MajEnv.IO_DEVICE_RECONNECT_INTERVAL_MSEC); // Reconnect interval
                         serialDevice = DeviceList.Local.GetSerialDeviceOrNull(comPort);
                         serialStream = default(SerialStream?);
                         if (serialDevice is null)
@@ -231,11 +228,11 @@ namespace MajdataPlay.IO
                                         Color = color,
                                     };
                                     needUpdate = true;
-                                    serial.Write(packet);
+                                    serialStream.Write(packet);
                                 }
                                 if (needUpdate)
                                 {
-                                    serial.Write(updatePacket);
+                                    serialStream.Write(updatePacket);
                                 }
                             }
                             catch (IOException e)
@@ -347,106 +344,123 @@ namespace MajdataPlay.IO
                 MajDebug.LogInfo(nameof(LedDevice), $"Managed thread id: {currentThread.ManagedThreadId}");
                 MajDebug.LogInfo(nameof(LedDevice), $"OS thread id: {PlatformInfo.GetCurrentOSThreadId()}");
 
-                HidDevice? device = null;
-                HidStream? hidStream = null;
-
-                if (!HidManager.TryGetDevices(filter, out var devices))
-                {
-                    MajDebug.LogWarning(nameof(LedDevice), "hid device not found");
-                    return;
-                }
-                foreach (var d in devices)
-                {
-                    if (d.TryOpen(hidConfig, out hidStream))
-                    {
-                        device = d;
-                        break;
-                    }
-                }
-                if (hidStream is null || device is null)
-                {
-                    MajDebug.LogError(nameof(LedDevice), $"cannot open hid devices:\n{string.Join('\n', devices)}");
-                    return;
-                }
+                var hidDevice = default(HidDevice?);
+                var hidStream = default(HidStream?);
+                var isReconnecting = false;
+                var buffer = Span<byte>.Empty;
+                stopwatch.Start();
                 try
                 {
-                    var outputReportId = device.GetReportDescriptor()
+                    while (!token.IsCancellationRequested)
+                    {
+                        Thread.Sleep(MajEnv.IO_DEVICE_RECONNECT_INTERVAL_MSEC);
+                        hidDevice = default;
+                        hidStream = default;
+                        if (!HidManager.TryGetAndOpenDevice(nameof(LedDevice),
+                            filter, hidConfig, out hidDevice, out hidStream, isReconnecting))
+                        {
+                            continue;
+                        }
+                        MajDebug.LogInfo(nameof(LedDevice), $"Opened\nDevice: {hidDevice}");
+                        // HID device has been opened
+                        var outputReportId = hidDevice.GetReportDescriptor()
                                                .OutputReports
                                                .FirstOrDefault()
                                                ?.ReportID ?? 0;
-                    var latestCabinetLightBrightness = byte.MaxValue;
-                    Span<byte> buffer = stackalloc byte[device.GetMaxOutputReportLength()];
-                    buffer[0] = outputReportId;
-                    IsConnected = true;
-                    MajDebug.LogInfo(nameof(LedDevice), $"Connected\nDevice: {device}");
-                    stopwatch.Start();
-                    while (true)
-                    {
-                        token.ThrowIfCancellationRequested();
-                        try
+                        var latestCabinetLightBrightness = byte.MaxValue;
+                        var deviceReportBufferLength = hidDevice.GetMaxInputReportLength();
+                        if (deviceReportBufferLength > buffer.Length)
                         {
-                            var needUpdate = false;
-                            for (var i = 0; i < 8; i++)
+                            buffer = new byte[deviceReportBufferLength];
+                        }
+                        else
+                        {
+                            if (buffer.IsEmpty)
                             {
-                                var color = ledRingColors[i];
-                                ref var latestReport = ref latestReports[i];
-                                if (latestReport.Color == color && _isThrottlerEnabled)
+                                buffer = new byte[Math.Min(4096, deviceReportBufferLength)];
+                            }
+                        }
+                        buffer[0] = outputReportId;
+                        IsConnected = true;
+                        isReconnecting = true;
+                        MajDebug.LogInfo(nameof(LedDevice), $"Connected\nDevice: {hidDevice}");
+                        t1 = stopwatch.Elapsed;
+                        #region Polling
+                        while (!token.IsCancellationRequested)
+                        {
+                            try
+                            {
+                                var needUpdate = false;
+                                for (var i = 0; i < 8; i++)
                                 {
-                                    continue;
+                                    var color = ledRingColors[i];
+                                    ref var latestReport = ref latestReports[i];
+                                    if (latestReport.Color == color && _isThrottlerEnabled)
+                                    {
+                                        continue;
+                                    }
+                                    latestReport = new()
+                                    {
+                                        Index = i,
+                                        Color = color,
+                                    };
+                                    needUpdate = true;
                                 }
-                                latestReport = new()
+                                var cabinetLightBrightness = _cabinetLightBrightness;
+                                if (latestCabinetLightBrightness != cabinetLightBrightness)
                                 {
-                                    Index = i,
-                                    Color = color,
-                                };
-                                needUpdate = true;
-                            }
-                            var cabinetLightBrightness = _cabinetLightBrightness;
-                            if (latestCabinetLightBrightness != cabinetLightBrightness)
-                            {
-                                latestCabinetLightBrightness = cabinetLightBrightness;
-                                needUpdate = true;
-                            }
-                            if (needUpdate)
-                            {
-                                var reportBuffer = DaoHIDLedDevice.BuildUpdatePacket(buffer, ledRingColors, cabinetLightBrightness);
-                                hidStream.Write(reportBuffer);
-                            }
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            break;
-                        }
-                        catch (IOException ioE)
-                        {
-                            IsConnected = false;
-                            MajDebug.LogError(nameof(LedDevice), $"\n{ioE}");
-                        }
-                        catch (Exception e)
-                        {
-                            MajDebug.LogError(nameof(LedDevice), $"\n{e}");
-                        }
-                        finally
-                        {
-                            buffer.Clear();
-                            buffer[0] = outputReportId;
-                            if (refreshRate.TotalMilliseconds > 0)
-                            {
-                                var t2 = stopwatch.Elapsed;
-                                var elapsed = t2 - t1;
-                                t1 = t2;
-                                if (elapsed < refreshRate)
+                                    latestCabinetLightBrightness = cabinetLightBrightness;
+                                    needUpdate = true;
+                                }
+                                if (needUpdate)
                                 {
-                                    Thread.Sleep(refreshRate - elapsed);
+                                    var reportBuffer = DaoHIDLedDevice.BuildUpdatePacket(buffer, ledRingColors, cabinetLightBrightness);
+                                    hidStream.Write(reportBuffer);
                                 }
                             }
+                            catch (OperationCanceledException)
+                            {
+                                break;
+                            }
+                            catch (IOException ioE)
+                            {
+                                IsConnected = false;
+                                MajDebug.LogError(nameof(LedDevice), $"\n{ioE}");
+                                hidStream.Close();
+                                hidStream.Dispose();
+                                MajDebug.LogInfo(nameof(LedDevice), $"Disconnected");
+                                break;
+                            }
+                            catch (Exception e)
+                            {
+                                MajDebug.LogError(nameof(LedDevice), $"\n{e}");
+                            }
+                            finally
+                            {
+                                buffer.Clear();
+                                buffer[0] = outputReportId;
+                                if (refreshRate.TotalMilliseconds > 0)
+                                {
+                                    var t2 = stopwatch.Elapsed;
+                                    var elapsed = t2 - t1;
+                                    t1 = t2;
+                                    if (elapsed < refreshRate)
+                                    {
+                                        Thread.Sleep(refreshRate - elapsed);
+                                    }
+                                }
+                            }
                         }
+                        #endregion
                     }
                 }
                 finally
                 {
-                    hidStream.Dispose();
                     IsConnected = false;
+                    hidStream?.Close();
+                    hidStream?.Dispose();                    
+                    MajDebug.LogWarning(nameof(LedDevice), "Thread has exited");
+
                 }
             }
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
