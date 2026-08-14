@@ -13,13 +13,15 @@ using UnityEngine.InputSystem;
 using UnityEngine.Profiling;
 using System.IO.Pipes;
 using MajdataPlay.Diagnostics;
+#if UNITY_STANDALONE_WIN
+using MajdataPlay.Platform.Win32.IO;
+#endif
 #if UNITY_ANDROID || UNITY_EDITOR
 using MajdataPlay.Platform.Android;
 using MajdataPlay.Platform.Android.IO;
 #endif
 #if UNITY_IOS || UNITY_EDITOR
 using MajdataPlay.Platform.iOS;
-using MajdataPlay.Platform.Win32.IO;
 #endif
 
 #if UNITY_STANDALONE

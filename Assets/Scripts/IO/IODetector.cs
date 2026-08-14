@@ -1,5 +1,4 @@
-﻿using HidSharp;
-using LibUsbDotNet;
+﻿using LibUsbDotNet;
 using LibUsbDotNet.Main;
 using MajdataPlay.Diagnostics;
 using MajdataPlay.Settings;
@@ -9,6 +8,9 @@ using System.Diagnostics;
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
+#if UNITY_STANDALONE
+using HidSharp;
+#endif
 
 namespace MajdataPlay.IO
 {
