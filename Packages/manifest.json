@@ -17,6 +17,7 @@
     "com.unity.test-framework": "1.6.0",
     "com.unity.timeline": "1.8.12",
     "com.unity.toolchain.linux-x86_64-linux": "1.1.0",
+    "com.unity.toolchain.win-x86_64-linux": "1.1.0",
     "com.unity.ugui": "2.0.0",
     "com.unity.vectorgraphics": "3.0.0-preview.7",
     "com.unity.visualscripting": "1.9.11",
