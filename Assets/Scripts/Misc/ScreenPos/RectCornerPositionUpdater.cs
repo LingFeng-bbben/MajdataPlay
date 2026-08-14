@@ -52,18 +52,22 @@ namespace MajdataPlay
                 _frameCount++;
                 return;
             }
-            else if (_frameCount == FRAME_DELAY)
+            var displayOptions = _displayOptions ??= MajEnv.Settings?.Display;
+            if (displayOptions is null)
+            {
+                return;
+            }
+            if (_frameCount == FRAME_DELAY)
             {
                 _frameCount++;
-                _displayOptions = MajEnv.Settings?.Display;
                 RefreshCornersPosition();
                 return;
             }
-            var transformDisplay = _displayOptions!.MainScreenTransform;
-            var subDisplayOffset = _displayOptions.SubDisplayOffset;
-            var subDisplayScale = _displayOptions.SubDisplayScale;
-            var screenOffset = _displayOptions.MainScreenOffset;
-            var screenScale = _displayOptions.MainScreenScale;
+            var transformDisplay = displayOptions.MainScreenTransform;
+            var subDisplayOffset = displayOptions.SubDisplayOffset;
+            var subDisplayScale = displayOptions.SubDisplayScale;
+            var screenOffset = displayOptions.MainScreenOffset;
+            var screenScale = displayOptions.MainScreenScale;
             var subChanged = subDisplayOffset != _lastSubDisplayOffset || subDisplayScale != _lastSubDisplayScale;
             var mainChanged = screenOffset != _lastMainDisplayOffset || screenScale != _lastMainDisplayScale;
             var isAnyUpdated = transformDisplay != _lastTransformDisplay || subChanged || mainChanged;
