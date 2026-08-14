@@ -3,7 +3,8 @@
     "rootNamespace": "MajdataPlay.Platform.Win32",
     "references": [
         "GUID:8545470905e4bf241a27188012585d36",
-        "GUID:c434e2e9e08edd14c9c86968a2336590"
+        "GUID:c434e2e9e08edd14c9c86968a2336590",
+        "GUID:c9d8ccb8c8c7ca74ebe3db3e772d6e94"
     ],
     "includePlatforms": [
         "Editor",

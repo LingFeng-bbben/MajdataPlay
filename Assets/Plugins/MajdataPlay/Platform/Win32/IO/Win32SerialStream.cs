@@ -1,5 +1,5 @@
 ﻿using MajdataPlay.IO.Ports;
-using MajdataPlay.Platform.Win32.PInvoke;
+using MajdataPlay.Syscall.Win32;
 using System;
 using System.Buffers;
 using System.IO;

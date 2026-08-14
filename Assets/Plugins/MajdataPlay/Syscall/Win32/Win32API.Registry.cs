@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace MajdataPlay.Platform.Win32.PInvoke
+namespace MajdataPlay.Syscall.Win32
 {
     public static partial class Win32API
     {

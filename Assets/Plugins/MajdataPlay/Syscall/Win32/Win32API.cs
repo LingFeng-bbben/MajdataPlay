@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace MajdataPlay.Platform.Win32.PInvoke
+namespace MajdataPlay.Syscall.Win32
 {
     public static partial class Win32API
     {
