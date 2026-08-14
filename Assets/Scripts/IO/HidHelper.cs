@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MajdataPlay.Settings;
 using MajdataPlay.Diagnostics;
+using MajdataPlay.Buffers;
 
 #nullable enable
 namespace MajdataPlay.IO
@@ -22,69 +23,54 @@ namespace MajdataPlay.IO
         {
             get
             {
-                return _hidDevices;
+                return DeviceList.Local.GetHidDevices();
             }
-        }
-        static IEnumerable<HidDevice> _hidDevices = Array.Empty<HidDevice>();
-        readonly static List<HidDevice> _cacheList = new(); 
-        static HidHelper()
-        {
-            var manufacturer = MajEnv.Settings.IO.Manufacturer;
-            var buttonRingOptions = MajEnv.Settings.IO.InputDevice.ButtonRing;
-
-            _hidDevices = DeviceList.Local.GetHidDevices();
-            DeviceList.Local.Changed += OnDeviceListChanged;
         }
         public static bool TryGetDevices(DeviceFilter filter, [NotNullWhen(true)] out IEnumerable<HidDevice> devices)
         {
-            lock (_hidDevices)
+            try
             {
-                try
-                {
-                    var pid = filter.ProductId;
-                    var vid = filter.VendorId;
-                    var deviceName = filter.DeviceName;
+                var pid = filter.ProductId;
+                var vid = filter.VendorId;
+                var deviceName = filter.DeviceName;
+                var result = new RentedList<HidDevice>();
 
-                    foreach(var d in _hidDevices)
+                foreach (var d in Devices)
+                {
+                    if (pid == d.ProductID && vid == d.VendorID)
                     {
-                        if(pid == d.ProductID && vid == d.VendorID)
+                        var isMatch = false;
+                        if (!string.IsNullOrEmpty(deviceName))
                         {
-                            var isMatch = false;
-                            if (!string.IsNullOrEmpty(deviceName))
-                            {
-                                if ($"{d.GetManufacturer()} {d.GetProductName()}" == deviceName)
-                                {
-                                    isMatch = true;
-                                }
-                            }
-                            else
+                            if ($"{d.GetManufacturer()} {d.GetProductName()}" == deviceName)
                             {
                                 isMatch = true;
                             }
-                            if(isMatch)
-                            {
-                                _cacheList.Add(d);
-                            }
+                        }
+                        else
+                        {
+                            isMatch = true;
+                        }
+                        if (isMatch)
+                        {
+                            result.Add(d);
                         }
                     }
-                    if(_cacheList.Count != 0)
-                    {
-                        devices = _cacheList.ToArray()
-                                            .OrderBy(x => x.GetInterfaceIndex());
-                        return true;
-                    }
                 }
-                catch (Exception e)
+                if (result.Count != 0)
                 {
-                    MajDebug.LogException(e);
+                    devices = result.ToArray()
+                                    .OrderBy(x => x.GetInterfaceIndex());
+                    return true;
                 }
-                finally
-                {
-                    _cacheList.Clear();
-                }
-                devices = Array.Empty<HidDevice>();
-                return false;
             }
+            catch (Exception e)
+            {
+                MajDebug.LogException(e);
+            }
+
+            devices = Array.Empty<HidDevice>();
+            return false;
         }
         public static bool TryGetAndOpenDevice(
             string tag,
@@ -137,13 +123,6 @@ namespace MajdataPlay.IO
                 }
             }
             return true;
-        }
-        static void OnDeviceListChanged(object? sender,EventArgs e)
-        {
-            lock(_hidDevices)
-            {
-                _hidDevices = DeviceList.Local.GetHidDevices();
-            }
         }
     }
 }
