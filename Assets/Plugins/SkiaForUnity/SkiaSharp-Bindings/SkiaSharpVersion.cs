@@ -37,6 +37,7 @@ namespace SkiaSharp
 
 		internal static bool CheckNativeLibraryCompatible (Version minSupported, Version current, bool throwIfIncompatible = false)
 		{
+#pragma warning disable CS0162 // Compatibility checking is intentionally bypassed for the bundled native library.
 			minSupported ??= Zero;
 			current ??= Zero;
 			return true;
@@ -65,6 +66,7 @@ namespace SkiaSharp
 					$"Supported versions of the native libSkiaSharp library are in the range [{minSupported.ToString (2)}, {maxSupported.ToString (2)}).");
 
 			return !isIncompatible;
+#pragma warning restore CS0162
 		}
 	}
 }

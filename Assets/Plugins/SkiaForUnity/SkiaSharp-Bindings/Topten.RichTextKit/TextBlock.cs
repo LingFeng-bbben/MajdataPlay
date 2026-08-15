@@ -627,7 +627,7 @@ namespace Topten.RichTextKit
                     _topOverhang = topOverhang;
                     _bottomOverhang = bottomOverhang;
                 }
-                return new SKRect(_leftOverhang.Value, _topOverhang.Value, _rightOverhang.Value, _bottomOverhang.Value);
+                return new SKRect(_leftOverhang.GetValueOrDefault(), _topOverhang.GetValueOrDefault(), _rightOverhang.GetValueOrDefault(), _bottomOverhang.GetValueOrDefault());
             }
         }
 

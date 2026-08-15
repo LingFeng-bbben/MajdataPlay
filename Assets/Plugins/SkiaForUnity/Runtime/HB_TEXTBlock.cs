@@ -748,6 +748,7 @@ namespace SkiaSharp.Unity.HB {
 
 		
 		public virtual float minWidth { get; }
+		float ILayoutElement.maxWidth => maxWidth;
 		public virtual float preferredWidth {
 			get {
 				widthPreferred = true;
@@ -759,6 +760,7 @@ namespace SkiaSharp.Unity.HB {
 		}
 		public virtual float flexibleWidth { get; }
 		public virtual float minHeight { get; }
+		float ILayoutElement.maxHeight => maxHeight;
 		protected TextBlock temp = new TextBlock();
 		
 		public virtual float preferredHeight {

@@ -73,9 +73,11 @@ namespace SkiaSharp.Unity {
     public void CalculateLayoutInputVertical() { }
 
     public float minWidth { get; }
+    public float maxWidth => -1;
     public float preferredWidth => rawImage.GetComponent<RectTransform>().rect.width;
     public float flexibleWidth { get; }
     public float minHeight { get; }
+    public float maxHeight => -1;
     public float preferredHeight => rawImage.GetComponent<RectTransform>().rect.height;
     public float flexibleHeight { get; }
     public int layoutPriority { get; }

@@ -700,8 +700,10 @@ namespace SkiaSharp
 		public SKFont ToFont () =>
 			SKFont.GetObject (SkiaApi.sk_compatpaint_make_font (Handle));
 
+#pragma warning disable CS0612
 		internal SKFont GetFont () =>
 			font ??= OwnedBy (SKFont.GetObject (SkiaApi.sk_compatpaint_get_font (Handle), false), this);
+#pragma warning restore CS0612
 
 		//
 

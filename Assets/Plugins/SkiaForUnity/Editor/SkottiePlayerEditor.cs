@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+#pragma warning disable CS0618 // This inspector intentionally supports the legacy SkottiePlayer component.
 using System.Reflection;
 using SkiaSharp.Unity;
 using UnityEditor;

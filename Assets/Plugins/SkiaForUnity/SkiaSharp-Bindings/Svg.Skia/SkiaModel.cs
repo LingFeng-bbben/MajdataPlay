@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#pragma warning disable CS0618 // Compatibility calls for the bundled SkiaSharp API.
+using System.Collections.Generic;
 using ShimSkiaSharp;
 using SkiaSharp;
 using SKBlendMode = ShimSkiaSharp.SKBlendMode;
