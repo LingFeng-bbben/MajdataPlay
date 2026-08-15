@@ -1,0 +1,14 @@
+{
+    "ErrorExceptions":
+    [
+        {
+             "ValidationTest": "Xmldoc Validation",
+             "PackageVersion": "1.9.11"
+        },
+        {
+            "ValidationTest": "API Validation",
+            "ExceptionMessage": "New assembly \"Unity.VisualScripting.DocCodeExamples\" may only be added in a new minor or major version.",
+            "PackageVersion": "1.9.11"
+        }
+    ]
+}

@@ -18,7 +18,7 @@
     "com.unity.toolchain.win-x86_64-linux": "1.1.0",
     "com.unity.ugui": "2.7.0",
     "com.unity.vectorgraphics": "3.0.0-preview.7",
-    "com.unity.visualscripting": "1.9.11",
+    "com.unity.visualscripting": "file:com.unity.visualscripting",
     "unity-missing-scripts-finder": "https://github.com/RimuruDev/Unity-MissingScriptsFinder.git",
     "com.unity.modules.accessibility": "1.0.0",
     "com.unity.modules.adaptiveperformance": "1.0.0",

@@ -1,0 +1,27 @@
+{
+  "name": "com.unity.visualscripting",
+  "displayName": "Visual Scripting",
+  "version": "1.9.12",
+  "unity": "6000.0",
+  "description": "Visual scripting is a workflow that uses visual, node-based graphs to design behaviors rather than write lines of C# script.\n\nEnabling artists, designers and programmers alike, visual scripting can be used to design final logic, quickly create prototypes, iterate on gameplay and create custom nodes to help streamline collaboration.\n\nVisual scripting is compatible with third-party APIs, including most packages, assets and custom libraries.",
+  "dependencies": {
+    "com.unity.ugui": "2.0.0",
+    "com.unity.modules.jsonserialize": "1.0.0"
+  },
+  "relatedPackages": {
+    "com.unity.visualscripting.tests": "1.9.12"
+  },
+  "_upm": {
+    "changelog": "### Changed\n- Added resets for static variables via `[RuntimeInitializeOnLoadMethod]` to support Fast Enter Play Mode.\n### Fixed\n- Fixed a bug where changes to graph connections in Play Mode were not being listened to by the graph. [UUM-130106](https://issuetracker.unity3d.com/product/unity/issues/guid/UUM-130106)\n- Fixed an OverflowException thrown when regenerating nodes for methods whose `ulong` parameters have default values exceeding `Int64.MaxValue`. [UUM-130107](https://issuetracker.unity3d.com/product/unity/issues/guid/UUM-130107)"
+  },
+  "upmCi": {
+    "footprint": "cb423e062e2a2bf4a0417080eed1ce5692bd3049"
+  },
+  "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.visualscripting@1.9/manual/index.html",
+  "repository": {
+    "url": "https://github.cds.internal.unity3d.com/unity/com.unity.visualscripting.git",
+    "type": "git",
+    "revision": "c48fbffda45c8651be75bab8fb3e25a835e12ef2"
+  },
+  "_fingerprint": "4edfcc09512f786fe1a7f50476d320b36dab9676"
+}

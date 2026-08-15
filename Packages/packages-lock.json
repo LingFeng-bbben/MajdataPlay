@@ -383,14 +383,13 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.visualscripting": {
-      "version": "1.9.11",
+      "version": "file:com.unity.visualscripting",
       "depth": 0,
-      "source": "registry",
+      "source": "embedded",
       "dependencies": {
-        "com.unity.ugui": "1.0.0",
+        "com.unity.ugui": "2.0.0",
         "com.unity.modules.jsonserialize": "1.0.0"
-      },
-      "url": "https://packages.unity.com"
+      }
     },
     "unity-missing-scripts-finder": {
       "version": "https://github.com/RimuruDev/Unity-MissingScriptsFinder.git",
