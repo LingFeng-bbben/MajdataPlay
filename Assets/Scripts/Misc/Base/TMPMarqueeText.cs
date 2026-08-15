@@ -32,7 +32,7 @@ namespace MajdataPlay.Misc.Base
         private bool _sourcePrepared;
         private bool _sourceWasEnabled;
         private bool _sourceWasAutoSizing;
-        private bool _sourceWasWordWrapping;
+        private TextWrappingModes _sourceWrappingMode;
         private TextOverflowModes _sourceOverflowMode;
 
         private void Awake()
@@ -247,14 +247,14 @@ namespace MajdataPlay.Misc.Base
             {
                 _sourceWasEnabled = _sourceText.enabled;
                 _sourceWasAutoSizing = _sourceText.enableAutoSizing;
-                _sourceWasWordWrapping = _sourceText.enableWordWrapping;
+                _sourceWrappingMode = _sourceText.textWrappingMode;
                 _sourceOverflowMode = _sourceText.overflowMode;
                 _sourcePrepared = true;
             }
 
             _sourceText.enabled = false;
             _sourceText.enableAutoSizing = false;
-            _sourceText.enableWordWrapping = false;
+            _sourceText.textWrappingMode = TextWrappingModes.NoWrap;
             _sourceText.overflowMode = TextOverflowModes.Overflow;
         }
 
@@ -264,7 +264,7 @@ namespace MajdataPlay.Misc.Base
             {
                 _sourceText.enabled = _sourceWasEnabled;
                 _sourceText.enableAutoSizing = _sourceWasAutoSizing;
-                _sourceText.enableWordWrapping = _sourceWasWordWrapping;
+                _sourceText.textWrappingMode = _sourceWrappingMode;
                 _sourceText.overflowMode = _sourceOverflowMode;
                 _sourcePrepared = false;
             }
@@ -314,7 +314,7 @@ namespace MajdataPlay.Misc.Base
 
         private static void PrepareText(TMP_Text text)
         {
-            text.enableWordWrapping = false;
+            text.textWrappingMode = TextWrappingModes.NoWrap;
             text.overflowMode = TextOverflowModes.Overflow;
         }
 
