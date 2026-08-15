@@ -157,7 +157,7 @@ Shader "Unlit/BlendMode/OffscreenBlend"
                 // Mask
 #if defined(CUBISM_MASK_ON) || defined(CUBISM_INVERT_ON)
                 float clippingMask = 1.0;
-                clippingMask = tex2D(cubism_MaskTexture , IN.texcoord);
+                clippingMask = tex2D(cubism_MaskTexture , IN.texcoord).r;
                 clippingMask = abs(cubism_InvertOn - clippingMask);
                 As *= clippingMask;
 #endif

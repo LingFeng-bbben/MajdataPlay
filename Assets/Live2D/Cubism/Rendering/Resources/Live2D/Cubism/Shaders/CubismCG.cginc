@@ -80,12 +80,12 @@ inline float CubismSampleMaskTexture(sampler2D tex, float4 channel, float2 coord
     float4 cubism_MaskTransform;
 
 
-#define CUBISM_TO_MASK_CLIP_POS(IN, OUT) OUT.vertex = CubismToMaskClipPos(IN.vertex, cubism_MaskTile, cubism_MaskTransform);
+#define CUBISM_TO_MASK_CLIP_POS(IN, OUT) OUT.vertex = CubismToMaskClipPos(IN.vertex.xy, cubism_MaskTile, cubism_MaskTransform);
 #define CUBISM_MASK_CHANNEL CubismGetMaskChannel(cubism_MaskTile)
 
 
 #define CUBISM_VERTEX_OUTPUT float2 cubism_MaskCoordinates : TEXCOORD3;
-#define CUBISM_INITIALIZE_VERTEX_OUTPUT(IN, OUT) OUT.cubism_MaskCoordinates = CubismToMaskCoordinates(IN.vertex, cubism_MaskTile, cubism_MaskTransform);
+#define CUBISM_INITIALIZE_VERTEX_OUTPUT(IN, OUT) OUT.cubism_MaskCoordinates = CubismToMaskCoordinates(IN.vertex.xy, cubism_MaskTile, cubism_MaskTransform);
 
 
 #if defined(CUBISM_INVERT_ON)
