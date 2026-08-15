@@ -25,11 +25,10 @@ namespace MajdataPlay.Net.Curl.Utils
 
         public static void ApplySystemCA(CurlEasy curlEasy)
         {
-            var returnCode = default(CurlCode?);
 #if UNITY_ANDROID
             if(File.Exists(_androidCAPath))
             {
-                returnCode = LibCurl.Easy.SetOption(curlEasy.Handle, CurlOption.CaInfo, _androidCAPath);
+                var returnCode = LibCurl.Easy.SetOption(curlEasy.Handle, CurlOption.CaInfo, _androidCAPath);
                 if (returnCode is CurlCode code && code != CurlCode.Ok)
                 {
                     MajDebug.LogWarning(
@@ -43,7 +42,7 @@ namespace MajdataPlay.Net.Curl.Utils
                 MajDebug.LogWarning($"[libcurl]CA certificate bundle not found");
             }
 #elif UNITY_STANDALONE_WIN || UNITY_WSA
-            returnCode = LibCurl.Easy.SetOption(curlEasy.Handle, CurlOption.SslOptions, CurlSslOption.NativeCa);
+            var returnCode = LibCurl.Easy.SetOption(curlEasy.Handle, CurlOption.SslOptions, CurlSslOption.NativeCa);
             if (returnCode is CurlCode code && code != CurlCode.Ok)
             {
                 MajDebug.LogWarning(

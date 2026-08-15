@@ -20,7 +20,6 @@ namespace MajdataPlay.Net.Curl.Core
         public CurlHttpConfig Config { get; }
         internal CurlRequest Request { get; }
 
-        int _disposeFlag = 0;
         long _currentHeadersLength = 0;
 
         readonly Action _onResume;

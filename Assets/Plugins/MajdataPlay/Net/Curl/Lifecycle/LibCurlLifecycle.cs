@@ -80,7 +80,7 @@ namespace MajdataPlay.Net.Curl.Lifecycle
                     s_isGlobalInited = false;
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
 
             }

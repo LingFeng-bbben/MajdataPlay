@@ -16,7 +16,7 @@ namespace MajdataPlay.Net.Curl
 {
     public class CurlHttpMessageHandler : HttpMessageHandler
     {
-        public SslProtocols SslProtocols { get; set; } = SslProtocols.Tls12 | SslProtocols.Tls13;
+        public SslProtocols SslProtocols { get; set; } = SslProtocols.Tls12 | SslProtocolsCompat.Tls13;
         public IWebProxy? Proxy { get; set; }
         public bool PreAuthenticate { get; set; }
         public int MaxResponseHeadersLength { get; set; } = 64 * 1024; // 64KB

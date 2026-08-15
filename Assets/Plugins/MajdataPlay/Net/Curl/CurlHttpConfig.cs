@@ -12,6 +12,13 @@ using MajdataPlay.Net.Curl.Utils;
 #nullable enable
 namespace MajdataPlay.Net.Curl
 {
+    internal static class SslProtocolsCompat
+    {
+        // Unity's reference assemblies do not expose SslProtocols.Tls13 yet.
+        // Keep the value defined by System.Security.Authentication for CoreCLR.
+        internal const SslProtocols Tls13 = (SslProtocols)12288;
+    }
+
     public readonly struct CurlHttpConfig
     {
         public SslProtocols SslProtocols { get; init; }
@@ -148,7 +155,7 @@ namespace MajdataPlay.Net.Curl
         readonly long MapSslProtocols(SslProtocols protocols)
         {
             // CURL_SSLVERSION_TLSv1_2 = 6, CURL_SSLVERSION_TLSv1_3 = 7
-            if (protocols.HasFlag(SslProtocols.Tls13))
+            if (protocols.HasFlag(SslProtocolsCompat.Tls13))
             {
                 return 7;
             }

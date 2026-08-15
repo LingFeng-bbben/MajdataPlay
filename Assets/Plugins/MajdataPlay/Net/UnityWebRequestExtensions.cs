@@ -45,7 +45,7 @@ namespace MajdataPlay.Net
                         throw new HttpException(request.url, HttpErrorCode.Unsuccessful, rspCode);
                     }
             }
-            if (!((int)rspCode).InRange(200, 299))
+            if (rspCode is not HttpStatusCode statusCode || !((int)statusCode).InRange(200, 299))
             {
                 throw new HttpException(request.url, HttpErrorCode.Unsuccessful, rspCode);
             }
