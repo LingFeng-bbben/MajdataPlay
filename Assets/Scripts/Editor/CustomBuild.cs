@@ -86,9 +86,6 @@ namespace MajdataPlay.Editor
 
                         break;
                     }
-                case BuildTarget.StandaloneOSX:
-                    PlayerSettings.SetScriptingBackend(BuildTargetGroup.Standalone, ScriptingImplementation.Mono2x);
-                    break;
             }
 
             // Determine subtarget
