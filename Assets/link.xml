@@ -5,6 +5,9 @@
 	<assembly fullname="UnityEngine.CoreModule">
 		<type fullname="UnityEngine.Ray2D" preserve="all"/>
 	</assembly>
+	<assembly fullname="Unity.RenderPipelines.GPUDriven.Runtime">
+		<type fullname="UnityEngine.Rendering.DebugDisplayGPUResidentDrawer" preserve="all"/>
+	</assembly>
 	<assembly fullname="mscorlib">
 		<type fullname="System.Collections.Generic.HashSet`1" preserve="all"/>
 	</assembly>
