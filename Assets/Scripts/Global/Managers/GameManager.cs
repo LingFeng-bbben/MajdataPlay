@@ -23,7 +23,6 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -176,16 +175,10 @@ namespace MajdataPlay
                 }  
             }
 
-            var envType = typeof(MajEnv);
-
-            envType.GetField("<EmptySongCover>k__BackingField", BindingFlags.Static | BindingFlags.NonPublic)
-                .SetValue(null, _emptySongCover);
-            envType.GetField("<BreakMaterial>k__BackingField", BindingFlags.Static | BindingFlags.NonPublic)
-                .SetValue(null, _breakMaterial);
-            envType.GetField("<DefaultMaterial>k__BackingField", BindingFlags.Static | BindingFlags.NonPublic)
-                .SetValue(null, _defaultMaterial);
-            envType.GetField("<HoldShineMaterial>k__BackingField", BindingFlags.Static | BindingFlags.NonPublic)
-                .SetValue(null, _holdShineMaterial);
+            MajEnv.EmptySongCover = _emptySongCover;
+            MajEnv.BreakMaterial = _breakMaterial;
+            MajEnv.DefaultMaterial = _defaultMaterial;
+            MajEnv.HoldShineMaterial = _holdShineMaterial;
             QualitySettings.SetQualityLevel((int)Settings.Display.RenderQuality, true);
 #if !(UNITY_ANDROID || UNITY_IOS)
             QualitySettings.vSyncCount = Settings.Display.VSync ? 1 : 0;
@@ -238,10 +231,7 @@ namespace MajdataPlay
                 encoder = HardwareEncoder.None;
             }
 
-            var envType = typeof(MajEnv);
-
-            envType.GetField("<HWEncoder>k__BackingField", BindingFlags.Static | BindingFlags.NonPublic)
-                .SetValue(null, encoder);
+            MajEnv.HWEncoder = encoder;
         }
 #if (!UNITY_EDITOR && UNITY_STANDALONE_WIN)
         void SetWindowTopmost()
