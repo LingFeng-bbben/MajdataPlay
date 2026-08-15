@@ -66,6 +66,10 @@ namespace MajdataPlay.IO
 #endif
 #endif
         }
+        void Awake()
+        {
+            Majdata<AudioManager>.SetAsSingleton(this);
+        }
         internal void Init()
         {
             if (_isInited)
