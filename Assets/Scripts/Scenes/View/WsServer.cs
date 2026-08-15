@@ -22,7 +22,6 @@ namespace MajdataPlay.Scenes.View
     internal class WsServer: MajComponent
     {
         WebSocketServer _webSocket;
-        int _httpPort = 8013;
         readonly CancellationTokenSource _cts = new();
         ViewManager _viewManager;
         protected override void Awake()
