@@ -24,6 +24,7 @@ using MajdataPlay.Settings;
 using Nito.AsyncEx;
 using MajdataPlay.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using MajdataPlay.Databases;
 
 #nullable enable
 namespace MajdataPlay
@@ -542,13 +543,13 @@ namespace MajdataPlay
                             await DownloadFile(options, token);
                             if (!loadIntoMemory)
                             {
-                                return MajEnv.EmptySongCover;
+                                return Majdata<GameRuntime>.Instance!.Sprite.EmptySongCover;
                             }
                         }
                         catch (HttpException e)
                         {
                             MajDebug.LogException(e);
-                            return MajEnv.EmptySongCover;
+                            return Majdata<GameRuntime>.Instance!.Sprite.EmptySongCover;
                         }
                         finally
                         {
@@ -602,13 +603,13 @@ namespace MajdataPlay
                         await DownloadFile(options, token);
                         if (!loadIntoMemory)
                         {
-                            return MajEnv.EmptySongCover;
+                            return Majdata<GameRuntime>.Instance!.Sprite.EmptySongCover;
                         }
                     }
                     catch (HttpException e)
                     {
                         MajDebug.LogException(e);
-                        return MajEnv.EmptySongCover;
+                        return Majdata<GameRuntime>.Instance!.Sprite.EmptySongCover;
                     }
                     finally
                     {

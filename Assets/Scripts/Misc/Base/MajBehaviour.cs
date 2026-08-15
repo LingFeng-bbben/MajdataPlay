@@ -16,7 +16,7 @@ namespace MajdataPlay
 
         protected virtual void Awake()
         {
-            RuntimeDatabase = Resources.Load<GameRuntime>("Databases/RuntimeDatabase");
+            RuntimeDatabase = GameRuntime.Instance;
         }
     }
 }

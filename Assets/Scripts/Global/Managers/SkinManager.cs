@@ -1,4 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using MajdataPlay.Collections;
 using MajdataPlay.Diagnostics;
 using MajdataPlay.Scenes.Game.Notes.Skins;
@@ -412,3 +412,4 @@ namespace MajdataPlay
         }
     }
 }
+

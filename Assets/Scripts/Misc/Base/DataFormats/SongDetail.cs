@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using MajdataPlay.Databases;
 using MajdataPlay.Drawing;
 using MajdataPlay.IO;
 using MajdataPlay.Net;
@@ -153,7 +154,7 @@ namespace MajdataPlay
             ThrowIfDisposed();
             if(_isEmptyCover)
             {
-                return MajEnv.EmptySongCover;
+                return Majdata<GameRuntime>.Instance!.Sprite.EmptySongCover;
             }
             if (_coverRef.TryGetTarget(out var cover) && await cover.IsNativeAliveAsync())
             {

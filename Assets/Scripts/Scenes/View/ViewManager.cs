@@ -57,9 +57,9 @@ namespace MajdataPlay.Scenes.View
         public GameModInfo ModInfo { get; private set; }
         public AutoplayModeOption AutoplayMode => MajEnv.Settings.Mod.AutoPlay;
         public JudgeGrade AutoplayGrade { get; private set; } = JudgeGrade.Perfect;
-        public Material BreakMaterial { get; } = MajEnv.BreakMaterial;
-        public Material DefaultMaterial { get; } = MajEnv.DefaultMaterial;
-        public Material HoldShineMaterial { get; } = MajEnv.HoldShineMaterial;
+        public Material BreakMaterial { get; private set; }
+        public Material DefaultMaterial { get; private set; }
+        public Material HoldShineMaterial { get; private set; }
         public float ThisFrameSec => _thisFrameSec;
         public float ThisFixedUpdateSec => _thisFrameSec;
         public float AudioTimeNoOffset => _audioTimeNoOffset;
@@ -108,6 +108,9 @@ namespace MajdataPlay.Scenes.View
             Majdata<INoteController>.Instance = this;
             Majdata<INoteTimeProvider>.Instance = this;
             ModInfo = MajEnv.Settings.Mod;
+            DefaultMaterial = RuntimeDatabase.Note.DefaultMaterial;
+            BreakMaterial = RuntimeDatabase.Note.BreakMaterial;
+            HoldShineMaterial = RuntimeDatabase.Note.HoldShineMaterial;
             //PlayerSettings.resizableWindow = true;
             //Screen.SetResolution(1920, 1080, false);
         }

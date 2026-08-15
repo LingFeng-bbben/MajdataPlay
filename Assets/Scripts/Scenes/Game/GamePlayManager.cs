@@ -228,9 +228,9 @@ namespace MajdataPlay.Scenes.Game
             _isFastRetryAvailable = _gameSettings.Game.FastRetry;
             _isFastPracticeAvailable = _gameSettings.Game.FastPractice;
             _isManualStartGame = _gameSettings.Game.ManualStartGame;
-            BreakMaterial = MajEnv.BreakMaterial;
-            DefaultMaterial = MajEnv.DefaultMaterial;
-            HoldShineMaterial = MajEnv.HoldShineMaterial;
+            DefaultMaterial = RuntimeDatabase.Note.DefaultMaterial;
+            BreakMaterial = RuntimeDatabase.Note.BreakMaterial;
+            HoldShineMaterial = RuntimeDatabase.Note.HoldShineMaterial;
             if (_gameInfo is null || _gameInfo.Current is null)
             {
                 throw new ArgumentNullException(nameof(_gameInfo));
