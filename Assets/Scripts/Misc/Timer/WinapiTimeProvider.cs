@@ -19,7 +19,9 @@ namespace MajdataPlay.Timer
             }
         }
 
+#if UNITY_STANDALONE_WIN
         long _startAt = 0;
+#endif
         long _ticks = 0;
 
         public WinapiTimeProvider()
