@@ -7,7 +7,6 @@ using System.Threading;
 
 namespace MajdataPlay
 {
-    internal unsafe static class Majdata<T>
     internal unsafe static class Majdata<T> where T : class
     {
         public static T? Instance
@@ -27,7 +26,7 @@ namespace MajdataPlay
                     if (currentState == 1)
                     {
                         throw new InvalidOperationException();
-        }
+                    }
 
                     if (currentState == 0 && Interlocked.CompareExchange(ref _state, 2, 0) == 0)
                     {
