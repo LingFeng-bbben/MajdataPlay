@@ -87,7 +87,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             base.Awake();
             _noteAppearRate = MajEnv.Settings.Debug.NoteAppearRate;
             _isStarRotation = Settings.Game.StarRotation;
-            _notePoolManager = FindObjectOfType<NotePoolManager>();
+            _notePoolManager = FindAnyObjectByType<NotePoolManager>();
             _thisRenderer = GetComponent<SpriteRenderer>();
 
             _exObject = Transform.GetChild(0).gameObject;

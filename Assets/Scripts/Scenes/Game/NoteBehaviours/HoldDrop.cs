@@ -103,7 +103,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         protected override void Awake()
         {
             base.Awake();
-            _poolManager = FindObjectOfType<NotePoolManager>();
+            _poolManager = FindAnyObjectByType<NotePoolManager>();
             var notes = NoteManager.gameObject.transform;
 
             _tapLineObject = Instantiate(_tapLinePrefab, notes.GetChild(7));
