@@ -47,7 +47,6 @@ namespace MajdataPlay.Scenes.Other
             {
                 MaxConnectionsPerServer = 64
             };
-            UnityHttpMessageHandler _unityHttpHandler = new UnityHttpMessageHandler();
             _httpClient = new HttpClient();
             _curl = new(chm);
 
