@@ -81,7 +81,7 @@ SubShader {
 
 	Pass {
 		CGPROGRAM
-		#pragma enable_d3d11_debug_symbols
+		#pragma enable_debug_symbols
 		#pragma vertex VertShader
 		#pragma fragment PixShader
 		#pragma shader_feature __ OUTLINE_ON
