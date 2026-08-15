@@ -57,7 +57,7 @@ namespace MajdataPlay.Editor
 
         public static void Generate(BuildTarget platform, bool generateDiff)
         {
-            Debug.LogWarning($"Generating resource manifest for {platform}.");
+            Debug.Log($"Generating resource manifest for {platform}.");
 
             var streamingAssetPaths = GetStreamingAssetPaths();
             var v2Hashes = new SortedDictionary<string, string>(StringComparer.Ordinal);

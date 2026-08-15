@@ -12,7 +12,7 @@ namespace MajdataPlay.Editor
         static AndroidSdkVersions? _originSdkVersion;
         public void OnPreprocessBuild(BuildReport report)
         {
-            Debug.LogWarning("OnPreprocessBuild");
+            Debug.Log("OnPreprocessBuild");
 
             if (report.summary.platform == BuildTarget.Android && EditorUserBuildSettings.exportAsGoogleAndroidProject)
             {
@@ -27,7 +27,7 @@ namespace MajdataPlay.Editor
 
         public void OnPostprocessBuild(BuildReport report)
         {
-            Debug.LogWarning("OnPostprocessBuild");
+            Debug.Log("OnPostprocessBuild");
 
             if (_originSdkVersion is AndroidSdkVersions originSdkVersion)
             {
