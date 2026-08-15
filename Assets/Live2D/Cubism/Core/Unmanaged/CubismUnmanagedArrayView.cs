@@ -40,7 +40,7 @@ namespace Live2D.Cubism.Core.Unmanaged
                 var pointer = UnmanagedFixedAddress;
 
 
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
+#if UNITY_ENABLE_CHECKS || UNITY_EDITOR
                 {
                     // Assert instance is valid.
                     if (!IsValid)
@@ -64,7 +64,7 @@ namespace Live2D.Cubism.Core.Unmanaged
                 var pointer = UnmanagedFixedAddress;
 
 
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
+#if UNITY_ENABLE_CHECKS || UNITY_EDITOR
                 {
                     // Assert instance is valid.
                     if (!IsValid)
@@ -126,7 +126,7 @@ namespace Live2D.Cubism.Core.Unmanaged
             var destinationLength = buffer.Length;
 
 
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
+#if UNITY_ENABLE_CHECKS || UNITY_EDITOR
             {
                 // Assert buffer.Length >= Length
                 if (destinationLength < Length)
@@ -163,7 +163,7 @@ namespace Live2D.Cubism.Core.Unmanaged
             var destinationAddress = UnmanagedFixedAddress;
 
 
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
+#if UNITY_ENABLE_CHECKS || UNITY_EDITOR
             {
                 // Assert both length.
                 if (sourceLength > Length)
@@ -218,7 +218,7 @@ namespace Live2D.Cubism.Core.Unmanaged
                 var pointer = UnmanagedFixedAddress;
 
 
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
+#if UNITY_ENABLE_CHECKS || UNITY_EDITOR
                 {
                     // Assert instance is valid.
                     if (!IsValid)
@@ -242,7 +242,7 @@ namespace Live2D.Cubism.Core.Unmanaged
                 var pointer = UnmanagedFixedAddress;
 
 
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
+#if UNITY_ENABLE_CHECKS || UNITY_EDITOR
                 {
                     // Assert instance is valid.
                     if (!IsValid)
@@ -304,7 +304,7 @@ namespace Live2D.Cubism.Core.Unmanaged
             var destinationLength = buffer.Length;
 
 
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
+#if UNITY_ENABLE_CHECKS || UNITY_EDITOR
             {
                 // Assert buffer.Length >= Length
                 if (destinationLength < Length)
@@ -341,7 +341,7 @@ namespace Live2D.Cubism.Core.Unmanaged
             var destinationAddress = UnmanagedFixedAddress;
 
 
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
+#if UNITY_ENABLE_CHECKS || UNITY_EDITOR
             {
                 // Assert both length.
                 if (sourceLength > Length)
@@ -396,7 +396,7 @@ namespace Live2D.Cubism.Core.Unmanaged
                 var pointer = UnmanagedFixedAddress;
 
 
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
+#if UNITY_ENABLE_CHECKS || UNITY_EDITOR
                 {
                     // Assert instance is valid.
                     if (!IsValid)
@@ -420,7 +420,7 @@ namespace Live2D.Cubism.Core.Unmanaged
                 var pointer = UnmanagedFixedAddress;
 
 
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
+#if UNITY_ENABLE_CHECKS || UNITY_EDITOR
                 {
                     // Assert instance is valid.
                     if (!IsValid)
@@ -482,7 +482,7 @@ namespace Live2D.Cubism.Core.Unmanaged
             var destinationLength = buffer.Length;
 
 
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
+#if UNITY_ENABLE_CHECKS || UNITY_EDITOR
             {
                 // Assert buffer.Length >= Length
                 if (destinationLength < Length)
@@ -519,7 +519,7 @@ namespace Live2D.Cubism.Core.Unmanaged
             var destinationAddress = UnmanagedFixedAddress;
 
 
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
+#if UNITY_ENABLE_CHECKS || UNITY_EDITOR
             {
                 // Assert both length.
                 if (sourceLength > Length)
@@ -574,7 +574,7 @@ namespace Live2D.Cubism.Core.Unmanaged
                 var pointer = UnmanagedFixedAddress;
 
 
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
+#if UNITY_ENABLE_CHECKS || UNITY_EDITOR
                 {
                     // Assert instance is valid.
                     if (!IsValid)
@@ -598,7 +598,7 @@ namespace Live2D.Cubism.Core.Unmanaged
                 var pointer = UnmanagedFixedAddress;
 
 
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
+#if UNITY_ENABLE_CHECKS || UNITY_EDITOR
                 {
                     // Assert instance is valid.
                     if (!IsValid)
@@ -660,7 +660,7 @@ namespace Live2D.Cubism.Core.Unmanaged
             var destinationLength = buffer.Length;
 
 
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
+#if UNITY_ENABLE_CHECKS || UNITY_EDITOR
             {
                 // Assert buffer.Length >= Length
                 if (destinationLength < Length)
@@ -697,7 +697,7 @@ namespace Live2D.Cubism.Core.Unmanaged
             var destinationAddress = UnmanagedFixedAddress;
 
 
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
+#if UNITY_ENABLE_CHECKS || UNITY_EDITOR
             {
                 // Assert both length.
                 if (sourceLength > Length)
