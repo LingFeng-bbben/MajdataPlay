@@ -12,16 +12,18 @@ using MajdataPlay.Settings;
 using MajdataPlay.Numerics;
 using UnityEngine;
 using MajdataPlay.Diagnostics;
+using MajdataPlay.Runtime;
 
 #if UNITY_STANDALONE
 using HidSharp;
-
+#nullable enable
 namespace MajdataPlay.IO
 {
     public static partial class OutputManager
     {
         static class LedDevice
         {
+            const string DAEMON_THREAD_NAME = "IO/Led Thread";
             public static bool IsConnected
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -43,14 +45,14 @@ namespace MajdataPlay.IO
                 {
                     return;
                 }
-                MajDebug.LogInfo("[Led]Start initialization");
+                MajDebug.LogInfo(nameof(LedDevice), "Start initialization");
                 _isEnabled = MajEnv.Settings.IO.OutputDevice.Led.Enable;
                 _isThrottlerEnabled = MajEnv.Settings.IO.OutputDevice.Led.Throttler;
                 _refreshRateMs = MajEnv.Settings.IO.OutputDevice.Led.RefreshRateMs;
                 _brightness = MajEnv.Settings.IO.OutputDevice.Led.Brightness.Clamp(0, 1f);
                 if (!_isEnabled)
                 {
-                    MajDebug.LogInfo("[Led]Disabled");
+                    MajDebug.LogInfo(nameof(LedDevice), "Disabled");
                     return;
                 }
                 else if (!_ledDeviceUpdateLoop.IsCompleted)
@@ -75,7 +77,7 @@ namespace MajdataPlay.IO
                             _ledDeviceUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
                             break;
                         default:
-                            MajDebug.LogWarning($"[Led]Not supported led device manufacturer: {manufacturer}");
+                            MajDebug.LogWarning(nameof(LedDevice), $"Not supported led device manufacturer: {manufacturer}");
                             break;
                     }
                 }
@@ -84,25 +86,27 @@ namespace MajdataPlay.IO
                     //MajDebug.LogWarning($"Cannot open {comPortStr}, using dummy lights");
                     IsConnected = false;
                 }
-                MajDebug.LogInfo("[Led]Initialization completed");
+                MajDebug.LogInfo(nameof(LedDevice), "Initialization completed");
             }
             static void SerialPortUpdateLoop()
             {
                 var currentThread = Thread.CurrentThread;
                 var serialPortOptions = IODetector.LedDeviceSerialConnInfo;
                 var token = MajEnv.GlobalCT;
+                var comPort = serialPortOptions.PortName;
                 var refreshRate = TimeSpan.FromMilliseconds(MajEnv.Settings.IO.OutputDevice.Led.RefreshRateMs);
                 var stopwatch = new Stopwatch();
                 var t1 = stopwatch.Elapsed;
                 var ledRingColors = _ledRingColors.AsSpan();
                 var updatePacket = GeneralSerialLedDevice.BuildUpdatePacket();
-                using var serial = new SerialPort(serialPortOptions.PortName, serialPortOptions.BaudRate);
 
-                serial.WriteTimeout = 2000;
-                serial.WriteBufferSize = 16;
-                currentThread.Name = "IO/L Thread";
+                currentThread.Name = DAEMON_THREAD_NAME;
                 currentThread.IsBackground = true;
                 currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
+
+                MajDebug.LogInfo(nameof(LedDevice), $"Managed thread id: {currentThread.ManagedThreadId}");
+                MajDebug.LogInfo(nameof(LedDevice), $"OS thread id: {PlatformInfo.GetCurrentOSThreadId()}");
+
                 Span<byte> buffer = stackalloc byte[10];
                 Span<LedReport> latestReports = stackalloc LedReport[8]
                 {
@@ -149,55 +153,122 @@ namespace MajdataPlay.IO
                 };
 
                 stopwatch.Start();
+                var serialDevice = default(SerialDevice?);
+                var serialStream = default(SerialStream?);
+                var isReconnecting = false;
 
-                if (!EnsureSerialPortIsOpen(serial))
+                try
                 {
-                    MajDebug.LogWarning($"[Led]Cannot open {serialPortOptions.PortName}, using dummy lights");
-                    return;
-                }
-                while (true)
-                {
-                    token.ThrowIfCancellationRequested();
-                    try
+                    while (!token.IsCancellationRequested)
                     {
-                        var needUpdate = false;
-                        EnsureSerialPortIsOpen(serial);
-                        for (var i = 0; i < 8; i++)
+                        Thread.Sleep(MajEnv.IO_DEVICE_RECONNECT_INTERVAL_MSEC); // Reconnect interval
+                        serialDevice = DeviceList.Local.GetSerialDeviceOrNull(comPort);
+                        serialStream = default(SerialStream?);
+                        if (serialDevice is null)
                         {
-                            var color = ledRingColors[i];
-                            ref var latestReport = ref latestReports[i];
-                            if (latestReport.Color == color && _isThrottlerEnabled)
+                            if (isReconnecting)
                             {
+                                MajDebug.LogWarning(nameof(LedDevice), $"{comPort} was lost, waiting for serial device to reconnect");
                                 continue;
                             }
-                            var packet = GeneralSerialLedDevice.BuildSetColorPacket(buffer, i, color);
-                            latestReport = new()
+                            else
                             {
-                                Index = i,
-                                Color = color,
-                            };
-                            needUpdate = true;
-                            serial.Write(packet);
+                                MajDebug.LogWarning(nameof(LedDevice), $"{comPort} not found, using dummy led device as fallback");
+                                return;
+                            }
                         }
-                        if (needUpdate)
+                        else
                         {
-                            serial.Write(updatePacket);
+                            MajDebug.LogInfo(nameof(LedDevice), $"Trying to open serial port \"{comPort}\" with {serialPortOptions.BaudRate} baud rate...");
+                            if (serialDevice.TryOpen(out serialStream))
+                            {
+                                MajDebug.LogInfo(nameof(LedDevice), $"\"{comPort}\" is opened");
+                                serialStream.BaudRate = serialPortOptions.BaudRate;
+                                serialStream.DataBits = 8;
+                                serialStream.Parity = SerialParity.None;
+                                serialStream.StopBits = 1;
+                                serialStream.DtrEnable = true;
+                                serialStream.RtsEnable = true;
+                                serialStream.ReadTimeout = 2000;
+                                serialStream.WriteTimeout = 2000;
+
+                                MajDebug.LogInfo(nameof(LedDevice), "Connected");
+                            }
+                            else if (isReconnecting)
+                            {
+                                MajDebug.LogError(nameof(LedDevice), $"Cannot open {comPort}");
+                                continue;
+                            }
+                            else
+                            {
+                                MajDebug.LogError(nameof(LedDevice), $"Cannot open {comPort}, using dummy led device as fallback");
+                                return;
+                            }
                         }
-                    }
-                    catch (Exception e)
-                    {
-                        MajDebug.LogError($"[Led]\n{e}");
-                    }
-                    finally
-                    {
-                        var t2 = stopwatch.Elapsed;
-                        var elapsed = t2 - t1;
-                        t1 = t2;
-                        if (elapsed < refreshRate)
+                        #region Polling
+                        IsConnected = true;
+                        isReconnecting = true;
+                        while (!token.IsCancellationRequested)
                         {
-                            Thread.Sleep(refreshRate - elapsed);
+                            try
+                            {
+                                var needUpdate = false;
+                                for (var i = 0; i < 8; i++)
+                                {
+                                    var color = ledRingColors[i];
+                                    ref var latestReport = ref latestReports[i];
+                                    if (latestReport.Color == color && _isThrottlerEnabled)
+                                    {
+                                        continue;
+                                    }
+                                    var packet = GeneralSerialLedDevice.BuildSetColorPacket(buffer, i, color);
+                                    latestReport = new()
+                                    {
+                                        Index = i,
+                                        Color = color,
+                                    };
+                                    needUpdate = true;
+                                    serialStream.Write(packet);
+                                }
+                                if (needUpdate)
+                                {
+                                    serialStream.Write(updatePacket);
+                                }
+                            }
+                            catch (IOException e)
+                            {
+                                IsConnected = false;
+                                MajDebug.LogError(nameof(LedDevice), e);
+                                serialStream?.Close();
+                                serialStream?.Dispose();
+                                serialDevice = default;
+                                MajDebug.LogInfo(nameof(LedDevice), $"Disconnected");
+                                break;
+                            }
+                            catch (Exception e)
+                            {
+                                MajDebug.LogError(nameof(LedDevice), $"\n{e}");
+                            }
+                            finally
+                            {
+                                var t2 = stopwatch.Elapsed;
+                                var elapsed = t2 - t1;
+                                t1 = t2;
+                                if (elapsed < refreshRate)
+                                {
+                                    Thread.Sleep(refreshRate - elapsed);
+                                }
+                            }
                         }
+                        #endregion
                     }
+                }
+                finally
+                {
+                    IsConnected = false;
+                    serialStream?.Close();
+                    serialStream?.Dispose();
+                    MajDebug.LogWarning(nameof(LedDevice), "Thread has exited");
                 }
             }
             static void HIDUpdateLoop()
@@ -266,110 +337,130 @@ namespace MajdataPlay.IO
 
                 hidConfig.SetOption(OpenOption.Exclusive, hidOptions.Exclusice);
                 hidConfig.SetOption(OpenOption.Priority, (OpenPriority)hidOptions.OpenPriority);
-                currentThread.Name = "IO/L Thread";
+                currentThread.Name = DAEMON_THREAD_NAME;
                 currentThread.IsBackground = true;
                 currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
 
-                HidDevice? device = null;
-                HidStream? hidStream = null;
+                MajDebug.LogInfo(nameof(LedDevice), $"Managed thread id: {currentThread.ManagedThreadId}");
+                MajDebug.LogInfo(nameof(LedDevice), $"OS thread id: {PlatformInfo.GetCurrentOSThreadId()}");
 
-                if (!HidManager.TryGetDevices(filter, out var devices))
-                {
-                    MajDebug.LogWarning("[Led]hid device not found");
-                    return;
-                }
-                foreach (var d in devices)
-                {
-                    if (d.TryOpen(hidConfig, out hidStream))
-                    {
-                        device = d;
-                        break;
-                    }
-                }
-                if (hidStream is null || device is null)
-                {
-                    MajDebug.LogError($"[Led]cannot open hid devices:\n{string.Join('\n', devices)}");
-                    return;
-                }
+                var hidDevice = default(HidDevice?);
+                var hidStream = default(HidStream?);
+                var isReconnecting = false;
+                var buffer = Span<byte>.Empty;
+                stopwatch.Start();
                 try
                 {
-                    var outputReportId = device.GetReportDescriptor()
+                    while (!token.IsCancellationRequested)
+                    {
+                        Thread.Sleep(MajEnv.IO_DEVICE_RECONNECT_INTERVAL_MSEC);
+                        hidDevice = default;
+                        hidStream = default;
+                        if (!HidHelper.TryGetAndOpenDevice(nameof(LedDevice),
+                            filter, hidConfig, out hidDevice, out hidStream, isReconnecting))
+                        {
+                            continue;
+                        }
+                        MajDebug.LogInfo(nameof(LedDevice), $"Opened\nDevice: {hidDevice}");
+                        // HID device has been opened
+                        var outputReportId = hidDevice.GetReportDescriptor()
                                                .OutputReports
                                                .FirstOrDefault()
                                                ?.ReportID ?? 0;
-                    var latestCabinetLightBrightness = byte.MaxValue;
-                    Span<byte> buffer = stackalloc byte[device.GetMaxOutputReportLength()];
-                    buffer[0] = outputReportId;
-                    IsConnected = true;
-                    MajDebug.LogInfo($"[Led]Connected\nDevice: {device}");
-                    stopwatch.Start();
-                    while (true)
-                    {
-                        token.ThrowIfCancellationRequested();
-                        try
+                        var latestCabinetLightBrightness = byte.MaxValue;
+                        var deviceReportBufferLength = hidDevice.GetMaxInputReportLength();
+                        if (deviceReportBufferLength > buffer.Length)
                         {
-                            var needUpdate = false;
-                            for (var i = 0; i < 8; i++)
+                            buffer = new byte[deviceReportBufferLength];
+                        }
+                        else
+                        {
+                            if (buffer.IsEmpty)
                             {
-                                var color = ledRingColors[i];
-                                ref var latestReport = ref latestReports[i];
-                                if (latestReport.Color == color && _isThrottlerEnabled)
+                                buffer = new byte[Math.Min(4096, deviceReportBufferLength)];
+                            }
+                        }
+                        buffer[0] = outputReportId;
+                        IsConnected = true;
+                        isReconnecting = true;
+                        MajDebug.LogInfo(nameof(LedDevice), $"Connected\nDevice: {hidDevice}");
+                        t1 = stopwatch.Elapsed;
+                        #region Polling
+                        while (!token.IsCancellationRequested)
+                        {
+                            try
+                            {
+                                var needUpdate = false;
+                                for (var i = 0; i < 8; i++)
                                 {
-                                    continue;
+                                    var color = ledRingColors[i];
+                                    ref var latestReport = ref latestReports[i];
+                                    if (latestReport.Color == color && _isThrottlerEnabled)
+                                    {
+                                        continue;
+                                    }
+                                    latestReport = new()
+                                    {
+                                        Index = i,
+                                        Color = color,
+                                    };
+                                    needUpdate = true;
                                 }
-                                latestReport = new()
+                                var cabinetLightBrightness = _cabinetLightBrightness;
+                                if (latestCabinetLightBrightness != cabinetLightBrightness)
                                 {
-                                    Index = i,
-                                    Color = color,
-                                };
-                                needUpdate = true;
-                            }
-                            var cabinetLightBrightness = _cabinetLightBrightness;
-                            if (latestCabinetLightBrightness != cabinetLightBrightness)
-                            {
-                                latestCabinetLightBrightness = cabinetLightBrightness;
-                                needUpdate = true;
-                            }
-                            if (needUpdate)
-                            {
-                                var reportBuffer = DaoHIDLedDevice.BuildUpdatePacket(buffer, ledRingColors, cabinetLightBrightness);
-                                hidStream.Write(reportBuffer);
-                            }
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            break;
-                        }
-                        catch (IOException ioE)
-                        {
-                            IsConnected = false;
-                            MajDebug.LogError($"[Led]\n{ioE}");
-                        }
-                        catch (Exception e)
-                        {
-                            MajDebug.LogError($"[Led]\n{e}");
-                        }
-                        finally
-                        {
-                            buffer.Clear();
-                            buffer[0] = outputReportId;
-                            if (refreshRate.TotalMilliseconds > 0)
-                            {
-                                var t2 = stopwatch.Elapsed;
-                                var elapsed = t2 - t1;
-                                t1 = t2;
-                                if (elapsed < refreshRate)
+                                    latestCabinetLightBrightness = cabinetLightBrightness;
+                                    needUpdate = true;
+                                }
+                                if (needUpdate)
                                 {
-                                    Thread.Sleep(refreshRate - elapsed);
+                                    var reportBuffer = DaoHIDLedDevice.BuildUpdatePacket(buffer, ledRingColors, cabinetLightBrightness);
+                                    hidStream.Write(reportBuffer);
                                 }
                             }
+                            catch (OperationCanceledException)
+                            {
+                                break;
+                            }
+                            catch (IOException ioE)
+                            {
+                                IsConnected = false;
+                                MajDebug.LogError(nameof(LedDevice), $"\n{ioE}");
+                                hidStream.Close();
+                                hidStream.Dispose();
+                                MajDebug.LogInfo(nameof(LedDevice), $"Disconnected");
+                                break;
+                            }
+                            catch (Exception e)
+                            {
+                                MajDebug.LogError(nameof(LedDevice), $"\n{e}");
+                            }
+                            finally
+                            {
+                                buffer.Clear();
+                                buffer[0] = outputReportId;
+                                if (refreshRate.TotalMilliseconds > 0)
+                                {
+                                    var t2 = stopwatch.Elapsed;
+                                    var elapsed = t2 - t1;
+                                    t1 = t2;
+                                    if (elapsed < refreshRate)
+                                    {
+                                        Thread.Sleep(refreshRate - elapsed);
+                                    }
+                                }
+                            }
                         }
+                        #endregion
                     }
                 }
                 finally
                 {
-                    hidStream.Dispose();
                     IsConnected = false;
+                    hidStream?.Close();
+                    hidStream?.Dispose();                    
+                    MajDebug.LogWarning(nameof(LedDevice), "Thread has exited");
+
                 }
             }
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

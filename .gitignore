@@ -98,3 +98,5 @@ out.log
 *.slnx
 /machine_description.json
 /ExtStreamingAssets
+
+/.idea/*

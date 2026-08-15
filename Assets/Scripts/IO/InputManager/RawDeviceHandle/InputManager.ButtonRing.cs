@@ -2,6 +2,7 @@
 using MajdataPlay.Numerics;
 using MajdataPlay.Settings;
 using MajdataPlay.Utils;
+using MajdataPlay.Runtime;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -12,11 +13,13 @@ using UnityEngine.InputSystem;
 using UnityEngine.Profiling;
 using System.IO.Pipes;
 using MajdataPlay.Diagnostics;
+#if UNITY_STANDALONE_WIN
+using MajdataPlay.Platform.Win32.IO;
+#endif
 #if UNITY_ANDROID || UNITY_EDITOR
 using MajdataPlay.Platform.Android;
 using MajdataPlay.Platform.Android.IO;
 #endif
-
 #if UNITY_IOS || UNITY_EDITOR
 using MajdataPlay.Platform.iOS;
 #endif
@@ -36,6 +39,7 @@ namespace MajdataPlay.IO
     {
         static class ButtonRing
         {
+            const string DAEMON_THREAD_NAME = "IO/ButtonRing Thread";
             public static bool IsConnected { get; private set; } = false;
 
             static int _isInited = 0;
@@ -59,12 +63,12 @@ namespace MajdataPlay.IO
                 {
                     return;
                 }
-                MajDebug.LogInfo("[ButtonRing]Start initialization");
+                MajDebug.LogInfo(nameof(ButtonRing), "Start initialization");
 #if UNITY_STANDALONE
                 _isEnabled = MajEnv.Settings.IO.InputDevice.ButtonRing.Enable;
                 if (!_isEnabled)
                 {
-                    MajDebug.LogInfo("[ButtonRing]Disabled");
+                    MajDebug.LogInfo(nameof(ButtonRing), "Disabled");
                     return;
                 }
                 else if (!_buttonRingUpdateLoop.IsCompleted)
@@ -84,7 +88,7 @@ namespace MajdataPlay.IO
                             _buttonRingUpdateLoop = Task.Factory.StartNew(HIDUpdateLoop, TaskCreationOptions.LongRunning);
                             break;
                         default:
-                            MajDebug.LogWarning($"[ButtonRing]Not supported button ring device: {buttonRingDevice}");
+                            MajDebug.LogWarning(nameof(ButtonRing), $"Not supported button ring device: {buttonRingDevice}");
                             break;
                     }
                 }
@@ -102,12 +106,12 @@ namespace MajdataPlay.IO
                 }
                 else
                 {
-                    MajDebug.LogWarning($"[ButtonRing]Not supported button ring manufacturer: {manufacturer}");
+                    MajDebug.LogWarning(nameof(ButtonRing), $"Not supported button ring manufacturer: {manufacturer}");
                 }
 #elif UNITY_ANDROID || UNITY_IOS
                 _mobileExternalbuttonRingOption = MajEnv.Settings.IO.InputDevice.ExternalButtonRing;
 #endif
-                MajDebug.LogInfo("[ButtonRing]Initialization completed");
+                MajDebug.LogInfo(nameof(ButtonRing), "Initialization completed");
             }
             /// <summary>
             /// Update the button ring state of the this frame
@@ -375,11 +379,11 @@ namespace MajdataPlay.IO
                                     continue;
                                 }
                                 IsConnected = false;
-                                MajDebug.LogError($"[ButtonRing]Failed to initialize NativeKeyboard: {@return}");
+                                MajDebug.LogError(nameof(ButtonRing), $"Failed to initialize NativeKeyboard: {@return}");
                                 return;
                             default:
                                 IsConnected = false;
-                                MajDebug.LogError($"[ButtonRing]Error occurred while reading key states from NativeKeyboard: {@return}");
+                                MajDebug.LogError(nameof(ButtonRing), $"Error occurred while reading key states from NativeKeyboard: {@return}");
                                 break;
                         }
                     }
@@ -466,15 +470,18 @@ namespace MajdataPlay.IO
                 var fnBuffer = _buttonRealTimeStates.AsSpan(8);
                 ref var @lock = ref _syncLock;
 
-                currentThread.Name = "IO/B Thread";
+                currentThread.Name = DAEMON_THREAD_NAME;
                 currentThread.IsBackground = true;
                 currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
+
+                MajDebug.LogInfo(nameof(ButtonRing), $"Managed thread id: {currentThread.ManagedThreadId}");
+                MajDebug.LogInfo(nameof(ButtonRing), $"OS thread id: {PlatformInfo.GetCurrentOSThreadId()}");
+
                 stopwatch.Start();
                 try
                 {
-                    while (true)
+                    while (!token.IsCancellationRequested)
                     {
-                        token.ThrowIfCancellationRequested();
                         try
                         {
                             var now = MajTimeline.UnscaledTime;
@@ -516,7 +523,7 @@ namespace MajdataPlay.IO
                         catch (Exception e)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"[ButtonRing]From Keyboard listener: \n{e}");
+                            MajDebug.LogError(nameof(ButtonRing), $"From Keyboard listener: \n{e}");
                         }
                         finally
                         {
@@ -536,6 +543,7 @@ namespace MajdataPlay.IO
                 finally
                 {
                     IsConnected = false;
+                    MajDebug.LogWarning(nameof(ButtonRing), "Thread has exited");
                 }
             }
             static void HIDUpdateLoop()
@@ -564,120 +572,140 @@ namespace MajdataPlay.IO
 
                 hidConfig.SetOption(OpenOption.Exclusive, hidOptions.Exclusice);
                 hidConfig.SetOption(OpenOption.Priority, (OpenPriority)hidOptions.OpenPriority);
-                currentThread.Name = "IO/B Thread";
+                currentThread.Name = DAEMON_THREAD_NAME;
                 currentThread.IsBackground = true;
                 currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
 
-                HidDevice? device = null;
-                HidStream? hidStream = null;
+                MajDebug.LogInfo(nameof(ButtonRing), $"Managed thread id: {currentThread.ManagedThreadId}");
+                MajDebug.LogInfo(nameof(ButtonRing), $"OS thread id: {PlatformInfo.GetCurrentOSThreadId()}");
 
-                if (!HidManager.TryGetDevices(filter, out var devices))
-                {
-                    MajDebug.LogWarning("[ButtonRing]hid device not found");
-                    return;
-                }
-                foreach(var d in devices)
-                {
-                    if (d.TryOpen(hidConfig, out hidStream))
-                    {
-                        device = d;
-                        break;
-                    }
-                }
-                if(hidStream is null || device is null)
-                {
-                    MajDebug.LogError($"[ButtonRing]cannot open hid devices:\n{string.Join('\n', devices)}");
-                    return;
-                }
+                var hidDevice = default(HidDevice?);
+                var hidStream = default(HidStream?);
+                var isReconnecting = false;
 
                 try
                 {
-                    Memory<byte> memory = new byte[device.GetMaxInputReportLength()];
-                    _ioThreadSync.ReadBufferMemory = memory;
-                    _ioThreadSync.SignalReadReady();
-                    Span<byte> buffer = memory.Span;
-                    IsConnected = true;
-                    MajDebug.LogInfo($"[ButtonRing]Connected\nDevice: {device}");
-                    stopwatch.Start();
-                    while (true)
+                    Memory<byte> memory = Array.Empty<byte>();
+                    while(!token.IsCancellationRequested)
                     {
-                        token.ThrowIfCancellationRequested();
-                        try
+                        Thread.Sleep(MajEnv.IO_DEVICE_RECONNECT_INTERVAL_MSEC);
+                        hidDevice = default;
+                        hidStream = default;
+                        if (!HidHelper.TryGetAndOpenDevice(nameof(ButtonRing), 
+                            filter, hidConfig, out hidDevice, out hidStream, isReconnecting))
                         {
-                            var now = MajTimeline.UnscaledTime;
-                            hidStream.Read(buffer);
-                            switch(manufacturer)
+                            continue;
+                        }
+                        MajDebug.LogInfo(nameof(ButtonRing), $"Opened\nDevice: {hidDevice}");
+                        // HID device has been opened
+                        var deviceReportBufferLength = hidDevice.GetMaxInputReportLength();
+                        if (deviceReportBufferLength > memory.Length)
+                        {
+                            memory = new byte[deviceReportBufferLength];
+                        }
+                        else
+                        {
+                            if (memory.IsEmpty)
                             {
-                                case DeviceManufacturerOption.General:
-                                    GeneralHIDDevice.Parse(buffer, _buttonRealTimeStates);
-                                    break;
-                                case DeviceManufacturerOption.Yuan:
-                                    AdxHIDDevice.Parse(buffer, _buttonRealTimeStates);
-                                    break;
-                                case DeviceManufacturerOption.Dao:
-                                    _ioThreadSync.SignalReadReady();
-                                    DaoHIDDevice.Parse(buffer, _buttonRealTimeStates);
-                                    _ioThreadSync.WaitReadConsumed();
-                                    break;
+                                memory = new byte[Math.Min(4096, deviceReportBufferLength)];
                             }
-                            UpdateKeyboardFn(fnButtons, fnBuffer);
-                            IsConnected = true;
-                            var isLocked = false;
+                        }
+                        _ioThreadSync.ReadBufferMemory = memory;
+                        _ioThreadSync.SignalReadReady();
+                        Span<byte> buffer = memory.Span;
+                        IsConnected = true;
+                        MajDebug.LogInfo(nameof(ButtonRing), $"Connected");
+                        stopwatch.Start();
+                        t1 = stopwatch.Elapsed;
+                        IsConnected = true;
+                        isReconnecting = true;
+                        #region Polling
+                        while (!token.IsCancellationRequested)
+                        {
                             try
                             {
-                                @lock.Enter(ref isLocked);
-                                var states = _buttonRealTimeStates.AsSpan();
-                                var hadOn = _isBtnHadOnInternal.AsSpan();
-                                var hadOff = _isBtnHadOffInternal.AsSpan();
-
-                                for (int i = 0; i < 12; i++)
+                                var now = MajTimeline.UnscaledTime;
+                                hidStream.Read(buffer);
+                                switch (manufacturer)
                                 {
-                                    var state = states[i];
-                                    hadOn[i] |= state;
-                                    hadOff[i] |= !state;
+                                    case DeviceManufacturerOption.General:
+                                        GeneralHIDDevice.Parse(buffer, _buttonRealTimeStates);
+                                        break;
+                                    case DeviceManufacturerOption.Yuan:
+                                        AdxHIDDevice.Parse(buffer, _buttonRealTimeStates);
+                                        break;
+                                    case DeviceManufacturerOption.Dao:
+                                        _ioThreadSync.SignalReadReady();
+                                        DaoHIDDevice.Parse(buffer, _buttonRealTimeStates);
+                                        _ioThreadSync.WaitReadConsumed();
+                                        break;
                                 }
+                                UpdateKeyboardFn(fnButtons, fnBuffer);
+                                IsConnected = true;
+                                var isLocked = false;
+                                try
+                                {
+                                    @lock.Enter(ref isLocked);
+                                    var states = _buttonRealTimeStates.AsSpan();
+                                    var hadOn = _isBtnHadOnInternal.AsSpan();
+                                    var hadOff = _isBtnHadOffInternal.AsSpan();
+
+                                    for (int i = 0; i < 12; i++)
+                                    {
+                                        var state = states[i];
+                                        hadOn[i] |= state;
+                                        hadOff[i] |= !state;
+                                    }
+                                }
+                                finally
+                                {
+                                    if (isLocked)
+                                    {
+                                        @lock.Exit();
+                                    }
+                                }
+                            }
+                            catch (OperationCanceledException)
+                            {
+                                break;
+                            }
+                            catch (IOException ioE)
+                            {
+                                IsConnected = false;
+                                MajDebug.LogError(nameof(ButtonRing), $"{ioE}");
+                                hidStream.Close();
+                                hidStream.Dispose();
+                                MajDebug.LogInfo(nameof(ButtonRing), $"Disconnected");
+                                break;
+                            }
+                            catch (Exception e)
+                            {
+                                MajDebug.LogError(nameof(ButtonRing), $"{e}");
                             }
                             finally
                             {
-                                if (isLocked)
+                                buffer.Clear();
+                                if (pollingRate.TotalMilliseconds > 0)
                                 {
-                                    @lock.Exit();
+                                    var t2 = stopwatch.Elapsed;
+                                    var elapsed = t2 - t1;
+                                    t1 = t2;
+                                    if (elapsed < pollingRate)
+                                    {
+                                        Thread.Sleep(pollingRate - elapsed);
+                                    }
                                 }
                             }
                         }
-                        catch (OperationCanceledException)
-                        {
-                            break;
-                        }
-                        catch(IOException ioE)
-                        {
-                            IsConnected = false;
-                            MajDebug.LogError($"[ButtonRing]{ioE}");
-                        }
-                        catch (Exception e)
-                        {
-                            MajDebug.LogError($"[ButtonRing]{e}");
-                        }
-                        finally
-                        {
-                            buffer.Clear();
-                            if (pollingRate.TotalMilliseconds > 0)
-                            {
-                                var t2 = stopwatch.Elapsed;
-                                var elapsed = t2 - t1;
-                                t1 = t2;
-                                if (elapsed < pollingRate)
-                                {
-                                    Thread.Sleep(pollingRate - elapsed);
-                                }
-                            }
-                        }
+                        #endregion
                     }
                 }
                 finally
                 {
-                    hidStream.Dispose();
                     IsConnected = false;
+                    hidStream?.Close();
+                    hidStream?.Dispose();
+                    MajDebug.LogWarning(nameof(ButtonRing), "Thread has exited");
                 }
             }
             static void PipeUpdateLoop()
@@ -696,14 +724,14 @@ namespace MajdataPlay.IO
                     {
                         try
                         {
-                            MajDebug.LogInfo($"[ButtonRing]Attempting connect to pipe \"{pipeName}\"...");
+                            MajDebug.LogInfo(nameof(ButtonRing), $"Attempting connect to pipe \"{pipeName}\"...");
                             pipeClientStream.Connect(2000);
-                            MajDebug.LogInfo("[ButtonRing]Connected");
+                            MajDebug.LogInfo(nameof(ButtonRing), "Connected");
                             break;
                         }
                         catch (Exception e)
                         {
-                            MajDebug.LogError($"[ButtonRing]Failed to connect to pipe\n{e}");
+                            MajDebug.LogError(nameof(ButtonRing), $"Failed to connect to pipe\n{e}");
                         }
                     }
                     Memory<byte> memory = new byte[64];
@@ -757,11 +785,11 @@ namespace MajdataPlay.IO
                         catch (IOException ioE)
                         {
                             IsConnected = false;
-                            MajDebug.LogError($"[ButtonRing]{ioE}");
+                            MajDebug.LogError(nameof(ButtonRing), $"{ioE}");
                         }
                         catch (Exception e)
                         {
-                            MajDebug.LogError($"[ButtonRing]{e}");
+                            MajDebug.LogError(nameof(ButtonRing), $"{e}");
                         }
                         finally
                         {

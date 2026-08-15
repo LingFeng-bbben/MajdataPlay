@@ -234,16 +234,16 @@ namespace MajdataPlay.Settings
         public bool ForceMono { get; set; } = false;
         
         public SFXVolume Volume { get; set; } = new();
-#if !(UNITY_ANDROID || UNITY_IOS)
-        
+#if UNITY_STANDALONE
+#if UNITY_STANDALONE_WIN
         public WasapiOptions Wasapi { get; set; } = new();
         
         public AsioOptions Asio { get; set; } = new();
-        
-        public ChannelOptions Channel { get; set; } = new();
-#else
-        public MobileAudioOptions Mobile { get; set; } = new();
 #endif
+        public ChannelOptions Channel { get; set; } = new();
+#endif
+        public BassAudioOptions Bass { get; set; } = new();
+
         
         public SoundBackendOption Backend { get; set; } = DEFAULT_SOUND_BACKEND;
     }
@@ -685,14 +685,23 @@ namespace MajdataPlay.Settings
         public float Period { get; set; } = 0.005f;
     }
 #endif
-    public class MobileAudioOptions
+    public class BassAudioOptions
     {
+        const int DEFAULT_BufferLengthMs = 1000;
+        const int DEFAULT_UpdatePeriodMs = 200;
+#if UNITY_ANDROID || UNITY_IOS
+        const int DEFAULT_DeviceBufferLengthMs = 32;
+        const int DEFAULT_DeviceUpdatePeriodMs = 8;
+#else
+        const int DEFAULT_DeviceBufferLengthMs = 64;
+        const int DEFAULT_DeviceUpdatePeriodMs = 16;
+#endif
 #if UNITY_ANDROID // Android Only (AAudio)
         public bool EnableAAudio { get; set; } = true;
 #endif
-        public int BufferLengthMs { get; set; } = 128;
-        public int UpdatePeriodMs { get; set; } = 16;
-        public int DeviceBufferLengthMs { get; set; } = 32;
-        public int DeviceUpdatePeriodMs { get; set; } = 4;
+        public int BufferLengthMs { get; set; } = DEFAULT_BufferLengthMs;
+        public int UpdatePeriodMs { get; set; } = DEFAULT_UpdatePeriodMs;
+        public int DeviceBufferLengthMs { get; set; } = DEFAULT_DeviceBufferLengthMs;
+        public int DeviceUpdatePeriodMs { get; set; } = DEFAULT_DeviceUpdatePeriodMs;
     }
 }

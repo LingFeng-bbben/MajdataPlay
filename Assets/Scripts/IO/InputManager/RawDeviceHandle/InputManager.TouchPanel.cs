@@ -6,6 +6,7 @@ using LibUsbDotNet;
 using LibUsbDotNet.Main;
 using MajdataPlay.Diagnostics;
 using MajdataPlay.Numerics;
+using MajdataPlay.Runtime;
 using MajdataPlay.Settings;
 using MajdataPlay.Utils;
 using System;
@@ -32,6 +33,7 @@ namespace MajdataPlay.IO
 #if UNITY_STANDALONE
         static class TouchPanel
         {
+            const string DAEMON_THREAD_NAME = "IO/TouchPanel Thread";
             public static bool IsConnected { get; private set; } = false;
 
             static int _isInited = 0;
@@ -335,8 +337,6 @@ namespace MajdataPlay.IO
 
             static void SerialPortUpdateLoop()
             {
-                const int RECONNECT_INTERVAL = 1000;
-
                 ref var @lock = ref _syncLock;
                 var serialPortOptions = IODetector.TouchPanelSerialConnInfo;
                 var currentThread = Thread.CurrentThread;
@@ -345,108 +345,170 @@ namespace MajdataPlay.IO
                 var comPort = serialPortOptions.PortName;
                 var stopwatch = new Stopwatch();
                 var t1 = stopwatch.Elapsed;
-                var isReconnecting = false;
 
-                currentThread.Name = "IO/T Thread";
+                var buffer = (stackalloc byte[8192]);
+                var readBuffer = new Buffer(buffer);
+
+                currentThread.Name = DAEMON_THREAD_NAME;
                 currentThread.IsBackground = true;
                 currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
-                stopwatch.Start();
 
-                var serial = new SerialPort(comPort, serialPortOptions.BaudRate);
-                serial.ReadTimeout = 2000;
-                serial.WriteTimeout = 2000;
-            SERIAL_START:
+                MajDebug.LogInfo(nameof(TouchPanel), $"Managed thread id: {currentThread.ManagedThreadId}");
+                MajDebug.LogInfo(nameof(TouchPanel), $"OS thread id: {PlatformInfo.GetCurrentOSThreadId()}");
+
+                var serialDevice = default(SerialDevice?);
+                var serialStream = default(SerialStream?);
+                var isReconnecting = false;
+                stopwatch.Start();
                 try
                 {
-                    if (!EnsureSerialStreamIsOpen(serial))
+                    while (!token.IsCancellationRequested)
                     {
-                        if (!isReconnecting)
+                        Thread.Sleep(MajEnv.IO_DEVICE_RECONNECT_INTERVAL_MSEC);
+                        readBuffer.Clear();
+                        serialDevice = DeviceList.Local.GetSerialDeviceOrNull(comPort);
+                        serialStream = default(SerialStream?);
+                        if (serialDevice is null)
                         {
-                            MajDebug.LogWarning($"[TouchPanel]Cannot open {comPort}, using Mouse as fallback.");
-                            return;
+                            if (isReconnecting)
+                            {
+                                MajDebug.LogError(nameof(TouchPanel), $"{comPort} was lost, waiting for serial device to reconnect");
+                                continue;
+                            }
+                            else
+                            {
+                                MajDebug.LogWarning(nameof(TouchPanel), $"{comPort} not found, using Mouse as fallback");
+                                return;
+                            }
                         }
                         else
                         {
-                            MajDebug.LogError($"[TouchPanel]Cannot open {comPort}");
-                            Thread.Sleep(RECONNECT_INTERVAL);
-                            goto SERIAL_START;
-                        }
-                    }
-                    IsConnected = true;
-                    isReconnecting = true;
-                    while (true)
-                    {
-                        token.ThrowIfCancellationRequested();
-                        try
-                        {
-                            if (!EnsureSerialStreamIsOpen(serial))
+                            MajDebug.LogInfo(nameof(TouchPanel), $"Trying to open serial port \"{comPort}\" with {serialPortOptions.BaudRate} baud rate...");
+                            if (serialDevice.TryOpen(out serialStream))
                             {
-                                IsConnected = false;
-                                continue;
+                                MajDebug.LogInfo(nameof(TouchPanel), $"\"{comPort}\" is opened");
+                                serialStream.BaudRate = serialPortOptions.BaudRate;
+                                serialStream.DataBits = 8;
+                                serialStream.Parity = SerialParity.None;
+                                serialStream.StopBits = 1;
+                                serialStream.DtrEnable = true;
+                                serialStream.RtsEnable = true;
+                                serialStream.ReadTimeout = 2000;
+                                serialStream.WriteTimeout = 2000;
+                                if (InitTouchPanel(serialStream))
+                                {
+                                    MajDebug.LogInfo(nameof(TouchPanel), "Connected");
+                                }
+                                else
+                                {
+                                    MajDebug.LogError(nameof(TouchPanel), "Failed to initialize the touch panel.");
+                                    if (isReconnecting)
+                                    {
+                                        serialStream?.Close();
+                                        serialStream?.Dispose();
+                                        serialStream = default;
+                                        serialDevice = default;
+                                        MajDebug.LogInfo(nameof(TouchPanel), $"Disconnected");
+                                        continue;
+                                    }
+                                    else
+                                    {
+                                        return;
+                                    }
+                                }
                             }
-                            ReadFromSerialPort(serial, _sensorRealTimeStates);
-                            IsConnected = true;
-                            var isLocked = false;
+                            else
+                            {
+                                if (isReconnecting)
+                                {
+                                    MajDebug.LogError(nameof(TouchPanel), $"Cannot open {comPort}");
+                                    continue;
+                                }
+                                else
+                                {
+                                    MajDebug.LogError(nameof(TouchPanel), $"Cannot open {comPort}, using Mouse as fallback.");
+                                    return;
+                                }
+                            }
+                        }
+                        IsConnected = true;
+                        isReconnecting = true;
+                        t1 = stopwatch.Elapsed;
+                        #region Polling
+                        while (!token.IsCancellationRequested)
+                        {
                             try
                             {
-                                @lock.Enter(ref isLocked);
-                                var sensorRealTimeStates = _sensorRealTimeStates.AsSpan();
-                                var isSensorHadOnInternal = _isSensorHadOnInternal.AsSpan();
-                                var isSensorHadOffInternal = _isSensorHadOffInternal.AsSpan();
-
-                                for (var i = 0; i < 35; i++)
+                                ReadFromSerialStream(serialStream, _sensorRealTimeStates, ref readBuffer);
+                                IsConnected = true;
+                                var isLocked = false;
+                                try
                                 {
-                                    var state = sensorRealTimeStates[i];
-                                    isSensorHadOnInternal[i] |= state;
-                                    isSensorHadOffInternal[i] |= !state;
+                                    @lock.Enter(ref isLocked);
+                                    var sensorRealTimeStates = _sensorRealTimeStates.AsSpan();
+                                    var isSensorHadOnInternal = _isSensorHadOnInternal.AsSpan();
+                                    var isSensorHadOffInternal = _isSensorHadOffInternal.AsSpan();
+
+                                    for (var i = 0; i < 35; i++)
+                                    {
+                                        var state = sensorRealTimeStates[i];
+                                        isSensorHadOnInternal[i] |= state;
+                                        isSensorHadOffInternal[i] |= !state;
+                                    }
                                 }
+                                finally
+                                {
+                                    if (isLocked)
+                                    {
+                                        @lock.Exit();
+                                    }
+                                }
+                            }
+                            catch (IOException e)
+                            {
+                                IsConnected = false;
+                                MajDebug.LogError(nameof(TouchPanel), e);
+                                serialStream?.Close();
+                                serialStream?.Dispose();
+                                serialStream = default;
+                                serialDevice = default;
+                                MajDebug.LogInfo(nameof(TouchPanel), $"Disconnected");
+                                break;
+                            }
+                            catch (TimeoutException)
+                            {
+                                IsConnected = false;
+                                MajDebug.LogError(nameof(TouchPanel), "Read timeout");
+                            }
+                            catch (Exception e)
+                            {
+                                IsConnected = false;
+                                MajDebug.LogError(nameof(TouchPanel), e);
                             }
                             finally
                             {
-                                if (isLocked)
+                                if (pollingRate.TotalMilliseconds > 0)
                                 {
-                                    @lock.Exit();
+                                    var t2 = stopwatch.Elapsed;
+                                    var elapsed = t2 - t1;
+                                    t1 = t2;
+                                    if (elapsed < pollingRate)
+                                    {
+                                        Thread.Sleep(pollingRate - elapsed);
+                                    }
                                 }
                             }
                         }
-                        catch (IOException e)
-                        {
-                            IsConnected = false;
-                            MajDebug.LogError($"[TouchPanel]\n{e}");
-                            MajDebug.LogInfo($"[TouchPanel]Trying to reconnect to {comPort}");
-                            Thread.Sleep(RECONNECT_INTERVAL);
-                            goto SERIAL_START;
-                        }
-                        catch (TimeoutException)
-                        {
-                            IsConnected = false;
-                            MajDebug.LogError($"[TouchPanel]Read timeout");
-                        }
-                        catch (Exception e)
-                        {
-                            IsConnected = false;
-                            MajDebug.LogError($"[TouchPanel]\n{e}");
-                        }
-                        finally
-                        {
-                            if (pollingRate.TotalMilliseconds > 0)
-                            {
-                                var t2 = stopwatch.Elapsed;
-                                var elapsed = t2 - t1;
-                                t1 = t2;
-                                if (elapsed < pollingRate)
-                                {
-                                    Thread.Sleep(pollingRate - elapsed);
-                                }
-                            }
-                        }
+                        #endregion
                     }
                 }
                 finally
                 {
                     _useDummy = true;
                     IsConnected = false;
-                    serial.Dispose();
+                    serialStream?.Close();
+                    serialStream?.Dispose();
+                    MajDebug.LogWarning(nameof(TouchPanel), "Thread has exited");
                 }
             }
             static void UsbUpdateLoop()
@@ -469,7 +531,7 @@ namespace MajdataPlay.IO
                 var deviceFinder = new UsbDeviceFinder(vid, pid);
                 var usbDevice = UsbDevice.OpenUsbDevice(deviceFinder);
 
-                currentThread.Name = "IO/T Thread";
+                currentThread.Name = DAEMON_THREAD_NAME;
                 currentThread.IsBackground = true;
                 currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
 
@@ -570,131 +632,6 @@ namespace MajdataPlay.IO
                     IsConnected = false;
                 }
             }
-            //static void HIDUpdateLoop()
-            //{
-            //    ref var @lock = ref _syncLock;
-            //    var touchPanelOptions = MajEnv.Settings.IO.InputDevice.TouchPanel;
-            //    var hidOptions = _touchPanelHidConnInfo;
-            //    var currentThread = Thread.CurrentThread;
-            //    var token = MajEnv.GlobalCT;
-            //    var pollingRate = _sensorPollingRateMs;
-            //    var stopwatch = new Stopwatch();
-            //    var t1 = stopwatch.Elapsed;
-            //    var pid = hidOptions.ProductId;
-            //    var vid = hidOptions.VendorId;
-            //    var manufacturer = _deviceManufacturer;
-            //    var deviceName = string.IsNullOrEmpty(hidOptions.DeviceName) ? GetHIDDeviceName(manufacturer) : hidOptions.DeviceName;
-            //    var hidConfig = new OpenConfiguration();
-            //    var filter = new DeviceFilter()
-            //    {
-            //        DeviceName = deviceName,
-            //        ProductId = pid,
-            //        VendorId = vid,
-            //    };
-
-
-            //    currentThread.Name = "IO/T Thread";
-            //    currentThread.IsBackground = true;
-            //    currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
-
-            //    hidConfig.SetOption(OpenOption.Exclusive, hidOptions.Exclusice);
-            //    hidConfig.SetOption(OpenOption.Priority, hidOptions.OpenPriority);
-            //    HidDevice? device = null;
-            //    HidStream? hidStream = null;
-
-
-            //    if (!HidManager.TryGetDevices(filter, out var devices))
-            //    {
-            //        MajDebug.LogWarning("[TouchPanel]hid device not found");
-            //        return;
-            //    }
-            //    foreach (var d in devices)
-            //    {
-            //        if (d.TryOpen(hidConfig, out hidStream))
-            //        {
-            //            device = d;
-            //            break;
-            //        }
-            //    }
-            //    if (hidStream is null || device is null)
-            //    {
-            //        MajDebug.LogError($"[TouchPanel]cannot open hid devices:\n{string.Join('\n', devices)}");
-            //        return;
-            //    }
-
-            //    try
-            //    {
-            //        Span<byte> buffer = stackalloc byte[device.GetMaxInputReportLength()];
-            //        IsConnected = true;
-            //        MajDebug.LogInfo($"TouchPanel connected\nDevice: {device}");
-            //        stopwatch.Start();
-            //        while (true)
-            //        {
-            //            token.ThrowIfCancellationRequested();
-            //            try
-            //            {
-            //                var now = MajTimeline.UnscaledTime;
-            //                hidStream.Read(buffer);
-            //                NovHIDTouchPanel.Parse(buffer, _sensorRealTimeStates);
-            //                IsConnected = true;
-            //                var isLocked = false;
-            //                try
-            //                {
-            //                    @lock.Enter(ref isLocked);
-            //                    var sensorRealTimeStates = _sensorRealTimeStates.AsSpan();
-            //                    var isSensorHadOnInternal = _isSensorHadOnInternal.AsSpan();
-            //                    var isSensorHadOffInternal = _isSensorHadOffInternal.AsSpan();
-
-            //                    for (var i = 0; i < 35; i++)
-            //                    {
-            //                        var state = sensorRealTimeStates[i];
-            //                        isSensorHadOnInternal[i] |= state;
-            //                        isSensorHadOffInternal[i] |= !state;
-            //                    }
-            //                }
-            //                finally
-            //                {
-            //                    if (isLocked)
-            //                    {
-            //                        @lock.Exit();
-            //                    }
-            //                }
-            //            }
-            //            catch (OperationCanceledException)
-            //            {
-            //                break;
-            //            }
-            //            catch (IOException ioE)
-            //            {
-            //                IsConnected = false;
-            //                MajDebug.LogError($"[TouchPanel]from HID listener: \n{ioE}");
-            //            }
-            //            catch (Exception e)
-            //            {
-            //                MajDebug.LogError($"[TouchPanel]from HID listener: \n{e}");
-            //            }
-            //            finally
-            //            {
-            //                buffer.Clear();
-            //                if (pollingRate.TotalMilliseconds > 0)
-            //                {
-            //                    var t2 = stopwatch.Elapsed;
-            //                    var elapsed = t2 - t1;
-            //                    t1 = t2;
-            //                    if (elapsed < pollingRate)
-            //                    {
-            //                        Thread.Sleep(pollingRate - elapsed);
-            //                    }
-            //                }
-            //            }
-            //        }
-            //    }
-            //    finally
-            //    {
-            //        hidStream.Dispose();
-            //        IsConnected = false;
-            //    }
-            //}
             static void SlaveThreadUpdateLoop()
             {
                 ref var @lock = ref _syncLock;
@@ -702,7 +639,7 @@ namespace MajdataPlay.IO
                 var token = MajEnv.GlobalCT;
                 var manufacturer = IODetector.DeviceManufacturer;
 
-                currentThread.Name = "IO/T Thread";
+                currentThread.Name = DAEMON_THREAD_NAME;
                 currentThread.IsBackground = true;
                 currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
 
@@ -773,87 +710,82 @@ namespace MajdataPlay.IO
                 }
             }
             [MethodImpl(MethodImplOptions.NoInlining)]
-            static void ReadFromSerialPort(SerialPort serial, Span<bool> buffer)
+            static void ReadFromSerialStream(SerialStream serial, Span<bool> buffer, ref Buffer readBuffer)
             {
-                var bytes2Read = serial.BytesToRead;
-                if (bytes2Read == 0)
-                    return;
-                Span<byte> dataBuffer = stackalloc byte[bytes2Read];
+                var tmpReadBuffer = (stackalloc byte[1024]);
                 //the SerialPort.BaseStream will be eaten by serialport's own buffer so we dont do that
-                var read = serial.Read(dataBuffer);
-                GeneralSerialTouchPanel.Parse(dataBuffer, buffer);
+                var read = serial.Read(tmpReadBuffer);
+                readBuffer.Write(tmpReadBuffer.Slice(0, read));
+                GeneralSerialTouchPanel.Parse(ref readBuffer, buffer);
             }
-            static bool EnsureSerialStreamIsOpen(SerialPort serialSession)
+            static bool InitTouchPanel(SerialStream serialStream)
             {
                 try
                 {
-                    if (serialSession.IsOpen)
+                    MajDebug.LogInfo(nameof(TouchPanel),  $"Starting to initialize the touch panel...");
+                    var sensConfig = MajEnv.Settings.IO.InputDevice.TouchPanel.Sensitivities;
+                    var index = IODetector.PlayerIndex == 1 ? 'L' : 'R';
+                    var sens = (sensConfig.A, sensConfig.B, sensConfig.C, sensConfig.D, sensConfig.E);
+                    MajDebug.LogInfo(nameof(TouchPanel),  $"Sensitivities:\nA:{sens.A}\nB:{sens.B}\nC:{sens.C}\nD:{sens.D}\nE:{sens.E}");
+                    //see also https://github.com/Sucareto/Mai2Touch/tree/main/Mai2Touch
+                    serialStream.Write("{RSET}");
+                    MajDebug.LogDebug(nameof(TouchPanel), $"Sent: {{REST}}");
+                    MajDebug.LogInfo(nameof(TouchPanel), "Waiting for TouchPanel reset");
+#if UNITY_STANDALONE_LINUX
+                    Thread.Sleep(4000);
+#elif UNITY_STANDALONE_WIN
+                    // Calling Thread.Sleep on Windows causes the driver to hang
+                    // So we read the first 10 bytes returned by the device to determine whether the reset is complete
+                    try
                     {
-                        return true;
+                        var buffer = (stackalloc byte[10]);
+                        var offset = 0;
+                        while (offset < 10)
+                        {
+                            var read = serialStream.Read(buffer.Slice(offset, 10 - offset));
+                            offset += read;
+                        }
+                        MajDebug.LogDebug(nameof(TouchPanel), $"Recv: {Encoding.UTF8.GetString(buffer)}");
                     }
-                    else
+                    catch (TimeoutException)
                     {
-                        MajDebug.LogInfo($"[TouchPanel]Trying to connect to TouchPannel via {serialSession.PortName}...");
-                        serialSession.Open();
-                        var encoding = Encoding.ASCII;
-                        var sensConfig = MajEnv.Settings.IO.InputDevice.TouchPanel.Sensitivities;
-                        var index = IODetector.PlayerIndex == 1 ? 'L' : 'R';
-                        //see also https://github.com/Sucareto/Mai2Touch/tree/main/Mai2Touch
+                        MajDebug.LogWarning(nameof(TouchPanel), "RSET read response timeout");
+                    }
+#endif
+                    MajDebug.LogInfo(nameof(TouchPanel), "TouchPanel has been reset");
 
-                        serialSession.DiscardInBuffer();
-                        serialSession.Write(encoding.GetBytes("{RSET}"));
-                        serialSession.BaseStream.Flush();
-                        try
-                        {
-                            byte[] buffer = new byte[10];
-                            int offset = 0;
-                            while (offset < 10)
-                            {
-                                // 每次尝试读取剩余的字节数
-                                int read = serialSession.Read(buffer, offset, 10 - offset);
-                                offset += read;
-                            }
-                            MajDebug.LogInfo($"[TouchPanel] RSET read first 10 byte: {BitConverter.ToString(buffer)}");
-                        }
-                        catch (TimeoutException)
-                        {
-                            MajDebug.LogInfo("[TouchPanel] RSET read response timeout");
-                        }
-
-                        serialSession.Write(encoding.GetBytes("{HALT}"));
-
-                        //send ratio
+                    serialStream.Write("{HALT}");
+                    MajDebug.LogDebug(nameof(TouchPanel), $"Sent: {{HALT}}");
+                    //send ratio
+                    for (byte a = 0x41; a <= 0x62; a++)
+                    {
+                        var cmd = $"{{{index}{(char)a}r2}}";
+                        serialStream.Write(cmd);
+                        MajDebug.LogDebug(nameof(TouchPanel),  $"Sent: {cmd}");
+                    }
+                    try
+                    {
                         for (byte a = 0x41; a <= 0x62; a++)
                         {
-                            serialSession.Write(encoding.GetBytes($"{{{index}{(char)a}r2}}"));
+                            var value = GetSensitivityValue(a, sens);
+                            var cmd = $"{{{index}{(char)a}k{(char)value}}}";
+                            serialStream.Write(cmd);
+                            MajDebug.LogDebug(nameof(TouchPanel),  $"Sent: {cmd}");
                         }
-                        try
-                        {
-                            var sens = (sensConfig.A, sensConfig.B, sensConfig.C, sensConfig.D, sensConfig.E);
-                            MajDebug.LogInfo($"[TouchPanel]Sensitivities:\nA:{sens.A}\nB:{sens.B}\nC:{sens.C}\nD:{sens.D}\nE:{sens.E}");
-                            for (byte a = 0x41; a <= 0x62; a++)
-                            {
-                                var value = GetSensitivityValue(a, sens);
-
-                                serialSession.Write(encoding.GetBytes($"{{{index}{(char)a}k{(char)value}}}"));
-                            }
-                        }
-                        catch (TimeoutException)
-                        {
-                            MajDebug.LogWarning($"[TouchPanel]TouchPanel does not support sensitivity override: Write timeout");
-                            return false;
-                        }
-                        catch (Exception e)
-                        {
-                            MajDebug.LogError($"[TouchPanel]Failed to override sensitivity: \n{e}");
-                            return false;
-                        }
-                        serialSession.Write(encoding.GetBytes("{STAT}"));
-                        serialSession.DiscardInBuffer();
-
-                        MajDebug.LogInfo("[TouchPanel]Connected");
-                        return true;
                     }
+                    catch (TimeoutException)
+                    {
+                        MajDebug.LogWarning(nameof(TouchPanel),  $"TouchPanel does not support sensitivity override: Write timeout");
+                    }
+                    catch (Exception e)
+                    {
+                        MajDebug.LogError(nameof(TouchPanel),  $"Failed to override sensitivity: \n{e}");
+                        return false;
+                    }
+                    serialStream.Write("{STAT}");
+                    MajDebug.LogDebug(nameof(TouchPanel),  $"Sent: {{STAT}}");
+                    MajDebug.LogInfo(nameof(TouchPanel),  "Initialization complete.");
+                    return true;
                 }
                 catch (Exception e)
                 {
@@ -1001,68 +933,60 @@ namespace MajdataPlay.IO
             }
             static class GeneralSerialTouchPanel
             {
+                const int PACKET_LENGTH = 9; // '(' + body(7) + ')' = 9
+
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                public static void Parse(ReadOnlySpan<byte> packet, Span<bool> buffer)
+                public static void Parse(ref Buffer packet, Span<bool> buffer)
                 {
-                    if (packet.IsEmpty)
-                        return;
-                    var now = MajTimeline.UnscaledTime;
-                    Span<int> startIndexs = stackalloc int[packet.Length];
-                    int x = -1;
-                    for (var y = 0; y < packet.Length; y++)
+                    if (packet.IsEmpty || buffer.Length < 35)
                     {
-                        var @byte = packet[y];
-                        if (@byte == '(')
-                        {
-                            startIndexs[++x] = y;
-                        }
+                        return;
                     }
-                    if (x == -1)
-                        return;
 
-                    startIndexs = startIndexs.Slice(0, x + 1);
-                    foreach (var startIndex in startIndexs)
+                    while (true)
                     {
-                        var packetBody = GetPacketBody(packet, startIndex);
+                        var data = packet.Data;
+                        var headIndex = data.IndexOf((byte)'(');
 
-                        if (packetBody.IsEmpty)
-                            continue;
-                        else if (packetBody.Length != 7)
-                            continue;
-
-                        int k = 0;
-                        for (int i = 0; i < 7; i++)
+                        if (headIndex == -1)
                         {
-                            for (int j = 0; j < 5; j++)
+                            packet.Clear();
+                            return;
+                        }
+
+                        if (headIndex > 0)
+                        {
+                            packet.Skip(headIndex);
+                            data = packet.Data;
+                        }
+
+                        if (data.Length < PACKET_LENGTH)
+                        {
+                            return;
+                        }
+
+                        if (data[PACKET_LENGTH - 1] == ')')
+                        {
+                            var body = data.Slice(1, 7);
+                            var k = 0;
+
+                            for (var i = 0; i < 7; i++)
                             {
-                                var rawState = packetBody[i] & 1UL << j;
-                                var state = rawState > 0;
-                                buffer[k] = state;
-                                k++;
+                                var b = body[i];
+                                for (var j = 0; j < 5; j++)
+                                {
+                                    buffer[k++] = (b & (1 << j)) != 0;
+                                }
                             }
-                        }
-                    }
-                }
-                [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                static ReadOnlySpan<byte> GetPacketBody(ReadOnlySpan<byte> packet, int start)
-                {
-                    var endIndex = -1;
-                    for (var i = start; i < packet.Length; i++)
-                    {
-                        var @byte = packet[i];
-                        if (@byte == ')')
-                        {
-                            endIndex = i;
-                            break;
-                        }
-                    }
-                    if (endIndex == -1)
-                    {
-                        return ReadOnlySpan<byte>.Empty;
-                    }
-                    return packet[(start + 1)..endIndex];
-                }
 
+                            packet.Skip(PACKET_LENGTH);
+                        }
+                        else
+                        {
+                            packet.Skip(1);
+                        }
+                    }
+                }
             }
             static class PipeTouchPanel
             {
@@ -1554,6 +1478,66 @@ namespace MajdataPlay.IO
                             E = config.E;
                         }
                     }
+                }
+            }
+
+            ref struct Buffer
+            {
+                public ReadOnlySpan<byte> Data
+                {
+                    get => _buffer.Slice(0, _writeIndex);
+                }
+                public bool IsEmpty
+                {
+                    get => _writeIndex == 0;
+                }
+
+
+                private int _writeIndex;
+                private readonly Span<byte> _buffer;
+
+                public Buffer(Span<byte> buffer)
+                {
+                    _buffer = buffer;
+                    _writeIndex = 0;
+                }
+
+                public int Write(scoped ReadOnlySpan<byte> data)
+                {
+                    if(data.IsEmpty)
+                    {
+                        return 0;
+                    }
+                    if(data.Length + _writeIndex > _buffer.Length)
+                    {
+                        data = data.Slice(0, _buffer.Length - _writeIndex);
+                    }
+                    data.CopyTo(_buffer.Slice(_writeIndex));
+                    _writeIndex += data.Length;
+
+                    return data.Length;
+                }
+
+                public void Skip(int count)
+                {
+                    if (count <= 0)
+                    {
+                        return;
+                    }
+                    else if (count >= _writeIndex)
+                    {
+                        Clear();
+                        return;
+                    }
+
+                    var b2 = _buffer.Slice(count, _writeIndex - count);
+                    b2.CopyTo(_buffer);
+                    _writeIndex -= count;
+                }
+
+                public void Clear()
+                {
+                    _writeIndex = 0;
                 }
             }
         }

@@ -8,6 +8,9 @@ using System.Diagnostics;
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
+#if UNITY_STANDALONE
+using HidSharp;
+#endif
 
 namespace MajdataPlay.IO
 {
@@ -46,7 +49,7 @@ namespace MajdataPlay.IO
             {
                 return;
             }
-            var hidDevices = HidManager.Devices;
+            var hidDevices = HidHelper.Devices;
 #if UNITY_STANDALONE_WIN
             var usbDevices = UsbDevice.AllDevices;
 #else
@@ -55,7 +58,7 @@ namespace MajdataPlay.IO
 #if ENABLE_IL2CPP
             var serialPorts = "NotSupported";
 #else
-            var serialPorts = SerialPort.GetPortNames();
+            var serialPorts = DeviceList.Local.GetSerialDevices();
 #endif
 
             var ioSettings = MajEnv.Settings.IO;

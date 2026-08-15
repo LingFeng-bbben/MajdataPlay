@@ -18,7 +18,11 @@ namespace MajdataPlay
         }
         void OnDestroy()
         {
-            MajInstances.SkinManager.OnSkinChanged -= OnSkinChanged;
+            var skinManager = MajInstances.SkinManager;
+            if (skinManager is not null)
+            {
+                skinManager.OnSkinChanged -= OnSkinChanged;
+            }
         }
         async UniTask WaitSkinLoadedAsync()
         {
