@@ -31,7 +31,6 @@ namespace MajdataPlay
         {
             base.Awake();
             Majdata<GameUpdater>.SetAsSingleton(this);
-            MajInstances.GameUpdater = this;
         }
         void Start()
         {

@@ -48,7 +48,6 @@ namespace MajdataPlay.IO
         public bool PlayDebug;
 
         static bool _isInited = false;
-        readonly static object _initLock = new();
 
         unsafe static AudioManager()
         {
@@ -67,35 +66,13 @@ namespace MajdataPlay.IO
 #endif
 #endif
         }
-        void Awake()
-        {
-            if (_isInited)
-            {
-                return;
-            }
-            lock (_initLock)
-            {
-                if (_isInited)
-                {
-                    return;
-                }
-                MajInstances.AudioManager = this;
-            }
-        }
         internal void Init()
         {
             if (_isInited)
             {
                 return;
             }
-            lock (_initLock)
-            {
-                if (_isInited)
-                {
-                    return;
-                }
-                _isInited = true;
-            }
+            _isInited = true;
             try
             {
                 SFXFilePath = Path.Combine(MajEnv.AssetsPath, "SFX/");

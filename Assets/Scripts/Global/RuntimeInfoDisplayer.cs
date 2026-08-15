@@ -26,14 +26,7 @@ namespace MajdataPlay
         protected override void Awake()
         {
             base.Awake();
-            if (Majdata<RuntimeInfoDisplayer>.Instance is not null)
-            {
-                throw new TypeInitializationException(
-                    typeof(RuntimeInfoDisplayer).FullName,
-                    new InvalidOperationException("A singleton of the current type already exists"));
-            }
-
-            MajInstances.RuntimeInfoDisplayer = this;
+            Majdata<RuntimeInfoDisplayer>.SetAsSingleton(this);
             _fpsMonitor = GetComponent<FPSMonitor>();
             _textDisplayer = GetComponent<TextMeshPro>();
             _textDisplayer.enabled = false;
