@@ -14,6 +14,7 @@ namespace MajdataPlay
         protected override void Awake()
         {
             base.Awake();
+            DontDestroyOnLoad(gameObject);
             Majdata<BackgroundVideoController>.SetAsSingleton(this);
             if (_videoPlayer == null || _videoRenderer == null)
             {
