@@ -527,7 +527,7 @@ namespace MajdataPlay.IO
             var ishit = Physics.Raycast(ray, out var hitInfom);
             if (ishit)
             {
-                var id = hitInfom.colliderInstanceID;
+                var id = hitInfom.colliderEntityId;
                 if (_instanceID2SensorIndexMappingTable.TryGetValue(id, out var index))
                 {
                     newP |= 1UL << (index + 12);
@@ -542,7 +542,7 @@ namespace MajdataPlay.IO
             var ishit = Physics.Raycast(ray, out var hitInfom);
             if (ishit)
             {
-                var id = hitInfom.colliderInstanceID;
+                var id = hitInfom.colliderEntityId;
                 if (_instanceID2SensorIndexMappingTable.TryGetValue(id, out var index))
                 {
                     newP |= 1UL << (index + 12);

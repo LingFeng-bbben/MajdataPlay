@@ -16,14 +16,14 @@ namespace MajdataPlay
         /// <para>it will not modify the activeSelf property of GameObject</para>
         /// </summary>
         public bool Active { get; protected set; } = false;
-        public int InstanceID
+        public EntityId InstanceID
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                if (_instanceID == -1)
+                if (_instanceID == EntityId.None)
                 {
-                    _instanceID = GetInstanceID();
+                    _instanceID = GetEntityId();
                 }
                 return _instanceID;
             }
@@ -62,7 +62,7 @@ namespace MajdataPlay
             }
         }
 
-        int _instanceID = -1;
+        EntityId _instanceID = EntityId.None;
         string _tag = string.Empty;
         GameObject _gameObject;
         Transform _transform;
@@ -73,7 +73,7 @@ namespace MajdataPlay
             _gameObject = gameObject;
             _transform = transform;
             _tag = _gameObject.tag;
-            _instanceID = GetInstanceID();
+            _instanceID = GetEntityId();
         }
         /// <summary>
         /// Sets whether the camera renders this GameObject

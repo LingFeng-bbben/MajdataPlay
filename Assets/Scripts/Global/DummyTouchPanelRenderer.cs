@@ -14,7 +14,7 @@ namespace MajdataPlay
 {
     internal sealed class DummyTouchPanelRenderer : MajSingleton
     {
-        public IReadOnlyDictionary<int, int> InstanceID2SensorIndexMappingTable
+        public IReadOnlyDictionary<EntityId, int> InstanceID2SensorIndexMappingTable
         {
             get
             {
@@ -26,7 +26,7 @@ namespace MajdataPlay
         [FormerlySerializedAs("sharedInstancedMaterial")]
         Material _sharedInstancedMaterial;
 
-        readonly Dictionary<int, int> _instanceID2SensorIndexMappingTable = new();
+        readonly Dictionary<EntityId, int> _instanceID2SensorIndexMappingTable = new();
         readonly SensorRenderer[] _sensorRenderers = new SensorRenderer[34];        
 
         protected override void Awake()
@@ -43,7 +43,7 @@ namespace MajdataPlay
                 renderer.sortingOrder = short.MaxValue;
 
                 _sensorRenderers[index] = new SensorRenderer(index, filter, renderer, collider, child.gameObject, _sharedInstancedMaterial);
-                _instanceID2SensorIndexMappingTable[collider.GetInstanceID()] = index;
+                _instanceID2SensorIndexMappingTable[collider.GetEntityId()] = index;
             }
         }
 

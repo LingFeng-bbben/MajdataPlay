@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
+using UnityEngine;
 
 namespace MajdataPlay.Scenes.Game.Notes.Touch;
 public sealed class TouchHoldGroup
@@ -35,18 +36,18 @@ public sealed class TouchHoldGroup
     }
 
     object[] _members = Array.Empty<IStatefulNote>();
-    HashSet<int> _triggeredMembers = new();
+    HashSet<EntityId> _triggeredMembers = new();
     int _triggeredCount = 0;
     int _memberCount = 0;
 
-    public void RegisterTrigger(int instanceID)
+    public void RegisterTrigger(EntityId instanceID)
     {
         if(_triggeredMembers.Add(instanceID))
         {
             _triggeredCount++;
         }
     }
-    public void UnregisterTrigger(int instanceID)
+    public void UnregisterTrigger(EntityId instanceID)
     {
         if(_triggeredMembers.Remove(instanceID))
         {

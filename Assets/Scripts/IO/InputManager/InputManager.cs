@@ -351,12 +351,12 @@ namespace MajdataPlay.IO
         static bool _isSensorDebounceEnabled = false;
         static bool _isSensorRendererEnabled = false;
 
-        static IReadOnlyDictionary<int, int> _instanceID2SensorIndexMappingTable = new Dictionary<int, int>();
+        static IReadOnlyDictionary<EntityId, int> _instanceID2SensorIndexMappingTable = new Dictionary<EntityId, int>();
 
 #if UNITY_STANDALONE
         readonly static IOThreadSynchronization _ioThreadSync = new IOThreadSynchronization();     
 #endif
-        internal static void Init(IReadOnlyDictionary<int, int> instanceID2SensorIndexMappingTable)
+        internal static void Init(IReadOnlyDictionary<EntityId, int> instanceID2SensorIndexMappingTable)
         {
             if(_isInited)
             {
@@ -422,7 +422,7 @@ namespace MajdataPlay.IO
                     ref var posData = ref _posData[((x + 540) * 1280) + y + 540];
                     if (ishit)
                     {
-                        var id = hitInfom.colliderInstanceID;
+                        var id = hitInfom.colliderEntityId;
                         if (_instanceID2SensorIndexMappingTable.TryGetValue(id, out var index))
                         {
                             posData |= 1UL << (index + 12);
@@ -766,7 +766,7 @@ namespace MajdataPlay.IO
 
             return _sensorStatusInPreviousFrame[index];
         }
-        public static SensorArea GetSensorAreaFromInstanceID(int instanceID)
+        public static SensorArea GetSensorAreaFromInstanceID(EntityId instanceID)
         {
             if(_instanceID2SensorIndexMappingTable.TryGetValue(instanceID,out var index))
             {
