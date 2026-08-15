@@ -396,7 +396,7 @@ namespace Live2D.Cubism.Framework.Motion
                     _playingMotions[i] = playingMotion;
                     if (playingMotion.InstanceId.HasValue)
                     {
-                        var instanceId = _playingMotions[i].InstanceId.Value;
+                        var instanceId = playingMotion.InstanceId.Value;
                         AnimationEndHandler?.Invoke(_layerIndex, instanceId);
                     }
                 }

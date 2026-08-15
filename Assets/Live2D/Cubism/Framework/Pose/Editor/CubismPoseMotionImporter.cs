@@ -115,7 +115,7 @@ namespace Live2D.Cubism.Editor.Importers
                 // Add animation event
                 if (animationClip != null)
                 {
-                    var instanceId = animationClip.GetInstanceID();
+                    var instanceId = animationClip.GetEntityId().GetHashCode();
 
                     var sourceAnimationEvents = AnimationUtility.GetAnimationEvents(animationClip);
                     var index = -1;
@@ -236,7 +236,7 @@ namespace Live2D.Cubism.Editor.Importers
 
                     if (!isExistInstanceId)
                     {
-                        instanceId = animationClip.GetInstanceID();
+                        instanceId = animationClip.GetEntityId().GetHashCode();
                     }
 
                     fadeMotions.MotionInstanceIds[motionIndex] = instanceId;
@@ -244,7 +244,7 @@ namespace Live2D.Cubism.Editor.Importers
                 }
                 else
                 {
-                    var instanceId = animationClip.GetInstanceID();
+                    var instanceId = animationClip.GetEntityId().GetHashCode();
                     motionIndex = fadeMotions.MotionInstanceIds.Length;
 
                     Array.Resize(ref fadeMotions.MotionInstanceIds, motionIndex + 1);

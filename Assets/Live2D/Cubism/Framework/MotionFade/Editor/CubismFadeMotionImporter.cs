@@ -170,7 +170,7 @@ namespace Live2D.Cubism.Framework.MotionFade
 
                 if (!isExistInstanceId)
                 {
-                    instanceId = animationClip.GetInstanceID();
+                    instanceId = animationClip.GetEntityId().GetHashCode();
                 }
 
                 var motionName = Path.GetFileName(motions[i].File);
@@ -229,7 +229,7 @@ namespace Live2D.Cubism.Framework.MotionFade
 
             if (!isExistInstanceId)
             {
-                instanceId = animationClip.GetInstanceID();
+                instanceId = animationClip.GetEntityId().GetHashCode();
             }
 
 

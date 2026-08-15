@@ -7,6 +7,7 @@
 
 
 using System.Linq;
+#pragma warning disable CS0618 // Keep selecting legacy simulator slices while Unity still exposes them.
 using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEditor.Build;

@@ -15,7 +15,7 @@ namespace Live2D.Cubism.Editor
             var activeObject = Selection.activeObject;
             var currentDirectoryPath = ((activeObject == null)
                 ? "Assets"
-                : AssetDatabase.GetAssetPath(activeObject.GetInstanceID()));
+                : AssetDatabase.GetAssetPath(activeObject.GetEntityId()));
 
             if (string.IsNullOrEmpty(currentDirectoryPath))
             {
