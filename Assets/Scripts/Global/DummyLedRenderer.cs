@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace MajdataPlay
 {
-    internal sealed class DummyLedRenderer: MajSingleton
+    internal sealed class DummyLedRenderer: MajComponent
     {
         SpriteRenderer[] _dummyLights = Array.Empty<SpriteRenderer>();
 
@@ -16,6 +16,7 @@ namespace MajdataPlay
         protected override void Awake()
         {
             base.Awake();
+            Majdata<DummyLedRenderer>.SetAsSingleton(this);
             _dummyLights = GameObject.GetComponentsInChildren<SpriteRenderer>();
         }
         public static void SetLedRingColorData(ReadOnlySpan<Color> colors)

@@ -17,9 +17,8 @@ using MajdataPlay.Diagnostics;
 #nullable enable
 namespace MajdataPlay
 {
-    internal class GameUpdater : MajSingleton
+    internal class GameUpdater :  MajComponent
     {
-        readonly ReadOnlyRef<GamePlayManager?> _gpManagerRef = new(ref Majdata<GamePlayManager>.Instance);
         DummyTouchPanelRenderer _dummyTouchPanelRenderer;
         DummyLedRenderer _dummyLedRenderer;
 
@@ -31,6 +30,7 @@ namespace MajdataPlay
         protected override void Awake()
         {
             base.Awake();
+            Majdata<GameUpdater>.SetAsSingleton(this);
             MajInstances.GameUpdater = this;
         }
         void Start()
@@ -83,7 +83,7 @@ namespace MajdataPlay
                 switch (SceneSwitcher.CurrentScene)
                 {
                     case MajScenes.Game:
-                        _gpManagerRef.Target?.OnPreUpdate();
+                        Majdata<GamePlayManager>.Instance?.OnPreUpdate();
                         break;
                 }
             }
@@ -123,7 +123,7 @@ namespace MajdataPlay
                 switch (SceneSwitcher.CurrentScene)
                 {
                     case MajScenes.Game:
-                        _gpManagerRef.Target?.OnUpdate();
+                        Majdata<GamePlayManager>.Instance?.OnUpdate();
                         break;
                 }
             }
@@ -140,7 +140,7 @@ namespace MajdataPlay
                 switch (SceneSwitcher.CurrentScene)
                 {
                     case MajScenes.Game:
-                        _gpManagerRef.Target?.OnLateUpdate();
+                        Majdata<GamePlayManager>.Instance?.OnLateUpdate();
                         break;
                 }
                 CabinetLed.OnLateUpdate();

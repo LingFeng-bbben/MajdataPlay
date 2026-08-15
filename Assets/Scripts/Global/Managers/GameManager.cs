@@ -34,7 +34,7 @@ using MajdataPlay.Diagnostics; // DO NOT REMOVE IT !!!
 namespace MajdataPlay
 {
 #nullable enable
-    public sealed class GameManager : MajSingleton
+    public sealed class GameManager : MajComponent
     {
         public static bool IsAppOnFocus { get; private set; } = true;
         public static event EventHandler<EventArgs?>? OnAppQuit;
@@ -62,6 +62,7 @@ namespace MajdataPlay
         protected override void Awake()
         {
             base.Awake();
+            Majdata<GameManager>.SetAsSingleton(this);
         }
         void Start()
         {
@@ -396,10 +397,6 @@ namespace MajdataPlay
             }
         }
         #region Events
-        protected override void OnDestroy()
-        {
-            base.OnDestroy();
-        }
         void OnApplicationQuit()
         {
             Screen.sleepTimeout = SleepTimeout.SystemSetting;

@@ -17,7 +17,7 @@ using UnityEngine.UI;
 #nullable enable
 namespace MajdataPlay
 {
-    public sealed partial class SceneSwitcher : MajSingleton
+    public sealed partial class SceneSwitcher : MajComponent
     {
         public static Camera MainCamera
         {
@@ -84,6 +84,7 @@ namespace MajdataPlay
         protected override void Awake()
         {
             base.Awake();
+            Majdata<SceneSwitcher>.SetAsSingleton(this);
             SceneManager.activeSceneChanged += OnUnitySceneChanged;
             MainCamera = Camera.main;
             var currentScene = SceneManager.GetActiveScene();
@@ -110,7 +111,7 @@ namespace MajdataPlay
             SetGraphicAlpha(loadingText, 0f);
             loadingText.gameObject.SetActive(false);
         }
-        protected override void OnDestroy()
+        void OnDestroy()
         {
             SceneManager.activeSceneChanged -= OnUnitySceneChanged;
             CancelTransitionMotions();
@@ -118,7 +119,6 @@ namespace MajdataPlay
             {
                 Destroy(_transitionOverlayCanvas.gameObject);
             }
-            base.OnDestroy();
         }
 
         void OnUnitySceneChanged(Scene current, Scene next)
@@ -411,7 +411,7 @@ namespace MajdataPlay
             graphic.color = color;
         }
     }
-    public sealed partial class SceneSwitcher : MajSingleton
+    public sealed partial class SceneSwitcher
     {
         // Task
         async UniTask SwitchSceneInternalAsync(string sceneName, Task taskToRun)

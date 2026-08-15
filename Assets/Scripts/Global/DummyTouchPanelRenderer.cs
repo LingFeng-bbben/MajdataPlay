@@ -12,7 +12,7 @@ using UnityEngine.Serialization;
 
 namespace MajdataPlay
 {
-    internal sealed class DummyTouchPanelRenderer : MajSingleton
+    internal sealed class DummyTouchPanelRenderer : MajComponent
     {
         public IReadOnlyDictionary<int, int> InstanceID2SensorIndexMappingTable
         {
@@ -32,7 +32,7 @@ namespace MajdataPlay
         protected override void Awake()
         {
             base.Awake();
-
+            Majdata<DummyTouchPanelRenderer>.SetAsSingleton(this);
             foreach (var (index, child) in Transform.ToEnumerable().WithIndex())
             {
                 var collider = child.GetComponent<MeshCollider>();
