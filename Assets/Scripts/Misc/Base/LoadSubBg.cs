@@ -10,6 +10,7 @@ namespace MajdataPlay
     public class LoadSubBg : MajBehaviour
     {
         Image _img;
+        SkinManager _skinManager;
         protected override void Awake()
         {
             base.Awake();
@@ -18,25 +19,33 @@ namespace MajdataPlay
         }
         void OnDestroy()
         {
-            var skinManager = MajInstances.SkinManager;
-            if (skinManager is not null)
+            if (_skinManager is not null)
             {
-                skinManager.OnSkinChanged -= OnSkinChanged;
+                _skinManager.OnSkinChanged -= OnSkinChanged;
             }
         }
         async UniTask WaitSkinLoadedAsync()
         {
+            var cancellationToken = destroyCancellationToken;
             while (MajInstances.SkinManager?.IsInited != true)
             {
-                await UniTask.Yield();
+                if (await UniTask.Yield(cancellationToken).SuppressCancellationThrow())
+                {
+                    return;
+                }
             }
-            _img.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
+            _skinManager = MajInstances.SkinManager;
+            if (_skinManager is null)
+            {
+                return;
+            }
+            _img.sprite = _skinManager.SelectedSkin.SubDisplay;
             _img.color = Color.white;
-            MajInstances.SkinManager.OnSkinChanged += OnSkinChanged;
+            _skinManager.OnSkinChanged += OnSkinChanged;
         }
         void OnSkinChanged(SkinManager sender, CustomSkin newSkin)
         {
-            _img.sprite = MajInstances.SkinManager.SelectedSkin.SubDisplay;
+            _img.sprite = sender.SelectedSkin.SubDisplay;
             _img.color = Color.white;
         }
     }
