@@ -1,0 +1,39 @@
+{
+  "name": "com.unity.2d.psdimporter",
+  "version": "15.0.0",
+  "unity": "6000.6",
+  "unityRelease": "0a7",
+  "displayName": "2D PSD Importer",
+  "description": "A ScriptedImporter for importing Adobe Photoshop PSB (Photoshop Big) file format. The ScriptedImporter is currently targeted for users who wants to create multi Sprite character animation using Unity 2D Animation Package.",
+  "keywords": [
+    "2d",
+    "psdimporter",
+    "assetimporter"
+  ],
+  "category": "2D",
+  "dependencies": {
+    "com.unity.2d.common": "15.0.0",
+    "com.unity.2d.sprite": "1.0.0",
+    "com.unity.2d.tilemap": "1.0.0"
+  },
+  "relatedPackages": {
+    "com.unity.2d.psdimporter.tests": "15.0.0"
+  },
+  "samples": [
+    {
+      "displayName": "PSD Importer",
+      "description": "Samples for using PSD Importer.",
+      "path": "Samples~/PSDImporterSamples"
+    }
+  ],
+  "repository": {
+    "revision": "95ca1e06e087c19485fddeea307c483cc0e137da",
+    "type": "git",
+    "url": "https://github.cds.internal.unity3d.com/unity/2d.git"
+  },
+  "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.2d.psdimporter@15.0/manual/index.html",
+  "_upm": {
+    "changelog": "### Fixed\n- Package Manager Samples section title now displays \"PSD Importer\" consistently. (UUM-135396)\n\n### Changed\n- Pin hosted package documentation links to com.unity.2d.psdimporter@15.0 and align Unity Manual and Script Reference links to Unity 6000.6."
+  },
+  "_fingerprint": "3ef8178676f64c7ff48e20cbd2fb707a71f0e0cf"
+}

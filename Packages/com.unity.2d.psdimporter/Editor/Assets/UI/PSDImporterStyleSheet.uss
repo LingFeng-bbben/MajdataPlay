@@ -1,0 +1,254 @@
+:root
+{
+    --collapse-icon-width : 18px;
+    --collapse-icon-height : 18px;
+    --warning-icon: resource("Icons/console.warnicon.png");
+}
+
+.psdimporter-editor-dark:root
+{
+    --layer-separated-icon: resource("Packages/com.unity.2d.psdimporter/Editor/Assets/Icons/Dark/Layers Separated@16x.png");
+    --layer-collapsed-icon: resource("Packages/com.unity.2d.psdimporter/Editor/Assets/Icons/Dark/Layers Collapsed@16x.png");
+    --layer-mixed-icon: resource("Packages/com.unity.2d.psdimporter/Editor/Assets/Icons/Dark/Layers Mixed@16x.png");
+    --checkmark-icon: resource("UIPackageResources/Images/d_checkmark.png");
+}
+
+.psdimporter-editor-light:root
+{
+    --layer-separated-icon: resource("Packages/com.unity.2d.psdimporter/Editor/Assets/Icons/Light/Layers Separated@16x.png");
+    --layer-collapsed-icon: resource("Packages/com.unity.2d.psdimporter/Editor/Assets/Icons/Light/Layers Collapsed@16x.png");
+    --layer-mixed-icon: resource("Packages/com.unity.2d.psdimporter/Editor/Assets/Icons/Light/Layers Mixed@16x.png");
+    --checkmark-icon: resource("UIPackageResources/Images/checkmark.png");
+}
+
+#Root {
+    margin-left : -15px
+}
+
+PSDImporterLayerManagementMultiColumnTreeView
+{
+    min-height : 500px;
+    height : 500px;
+}
+
+#Toolbar {
+    
+    margin-top: 15px;
+    padding-bottom : 15px;
+    align-content: center;
+}
+
+#LayerManagementTreeView
+{}
+
+#LayerManagementSettings
+{}
+
+
+#LayerManagementTreeView
+{}
+
+#MultiSupportForLayerManagementNotSupported
+{
+    flex-grow: 1;
+    align-self: center;
+    margin-top: 20px;
+    height:40px;
+}
+#LayerManagementApplyRevertGUI
+{}
+
+EditorToolbarDropdownToggle
+{
+    width : 48px;
+    height: 32px;
+}
+
+#ImportColumnHeaderToggleCheckmarkBackground
+{
+    background-color: var(--unity-colors-button-background);
+    align-self: center;
+    margin-right: 0px;
+    margin-left: 2px;
+    padding-right:3px;
+    border-radius: 2px 0px 0px 2px;
+}
+
+#ImportColumnHeaderToggleCheckmark
+{
+    margin-left: 2px;
+    margin-top: 3px;
+    margin-bottom: 3px;
+    align-self: center;
+}
+
+#ImportColumnHeaderDropdown
+{
+    margin-left: 0px;
+    border-left-width: 1px;
+}
+
+UICellElement
+{
+    flex-grow: 1;
+}
+
+UICellImportElement
+{
+    flex-direction: row;
+    flex-grow: 1;
+}
+
+UICellLabelElement
+{
+    flex-direction: row;
+    flex-grow: 1;
+    align-items: center;
+}
+
+#UICellImportToggle
+{
+    margin-left: 7px;    
+}
+
+#WarningIcon
+{
+    background-image: var(--warning-icon);
+    width: 12px;
+    height: 12px;
+    align-self: center;
+    margin-left:5px;
+}
+
+#UICellCollapseToggle .unity-toggle__checkmark
+{
+    background-image: none;
+}
+
+#UICellCollapseToggle
+{
+    align-items: center;
+    margin-left: 10px;
+    width: var(--collapse-icon-width);
+    height: var(--collapse-icon-height);
+}
+
+#UICellCollapseToggle .unity-toggle__input:checked
+{
+    background-image: var(--layer-separated-icon);
+    width: var(--collapse-icon-width);
+    height: var(--collapse-icon-height);
+    align-items: center;
+}
+
+#UICellCollapseToggle .unity-toggle__input:hover
+{
+    background-image: var(--layer-separated-icon);
+    width: var(--collapse-icon-width);
+    height: var(--collapse-icon-height);
+    align-items: center;
+}
+
+#UICellCollapseToggle:active .unity-toggle__input
+{
+    background-image: var(--layer-separated-icon);
+    width: var(--collapse-icon-width);
+    height: var(--collapse-icon-height);
+}
+
+#UICellCollapseToggle:active .unity-toggle__input:checked
+{
+    background-image: var(--layer-collapsed-icon);
+    width: var(--collapse-icon-width);
+    height: var(--collapse-icon-height);
+}
+
+#UICellCollapseToggle .unity-base-field__label--mixed-value:hover
+{
+    background-image: none;
+}
+
+#UICellCollapseToggle .unity-toggle__mixed-values
+{
+    background-image: var(--layer-mixed-icon);
+    width: var(--collapse-icon-width);
+    height: var(--collapse-icon-height);
+    min-width : var(--collapse-icon-width);
+    align-items: center;
+}
+
+#UICellCollapseToggle .unity-toggle__input:hover:checked 
+{
+    background-image: var(--layer-collapsed-icon);
+    width: var(--collapse-icon-width);
+    height: var(--collapse-icon-height);
+}
+
+#UILayerNameColumnHeader
+{
+    align-self: flex-start;
+    margin-left: 5px;
+    flex-grow: 1;
+    -unity-text-align: middle-left;
+}
+
+.unity-dropdown-toggle__dropdown {
+    justify-content: center;
+    width: 14px;
+    border-radius: 0 2px 2px 0;
+}
+
+.unity-dropdown-toggle__dropdown .unity-icon-arrow {
+    margin-top: 3px;
+    margin-bottom: 3px;
+    margin-left: 0;
+}
+.unity-icon-arrow 
+{
+    background-image: resource("StyleSheets/Northstar/Images/d_dropdown.png");
+    width: 12px;
+    height: 12px;
+    align-self: center;
+}
+
+ImportColumnHeaderToggle
+{
+    flex-grow: 0;
+    align-self: flex-start;
+    margin-left: 1px;
+    flex-direction: row;
+}
+
+ImportColumnHeaderToggle Toggle
+{
+    margin-bottom: 0;
+    margin-left: 0;
+    padding-left: 3px;
+    padding-right: 3px;
+}
+
+#ImportHeaderToggle
+{
+    flex-direction: row;
+}
+
+#CollapseHeader
+{
+ 
+}
+
+#CollapseHeaderIcon
+{
+    align-self: center;
+    background-image: var(--layer-mixed-icon);
+    width:var(--collapse-icon-width);
+    height:var(--collapse-icon-width);
+    margin: 2px 0px 3px 2px;
+    padding:  0px 0px 0px 0px;
+}
+
+#UICellFolderElement
+{
+    width:16px;
+    height:16px;
+}

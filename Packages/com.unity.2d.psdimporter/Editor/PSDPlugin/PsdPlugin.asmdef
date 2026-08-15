@@ -1,0 +1,12 @@
+{
+    "name": "PsdPlugin",
+    "references": [
+        "Unity.Burst"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true
+}
