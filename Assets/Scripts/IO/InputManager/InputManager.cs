@@ -18,7 +18,6 @@ using System.IO.Pipes;
 using System.IO.Ports;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Security.Policy;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.InputSystem;

@@ -1,6 +1,5 @@
 ﻿using MajdataPlay.Utils;
 using System;
-using System.Security.Policy;
 using UnityEngine.XR;
 #nullable enable
 namespace MajdataPlay.IO

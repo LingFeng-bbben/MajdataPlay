@@ -10,7 +10,6 @@ using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Security.Policy;
 using Unity.IL2CPP.CompilerServices;
 using Unity.VisualScripting;
 using UnityEngine;
