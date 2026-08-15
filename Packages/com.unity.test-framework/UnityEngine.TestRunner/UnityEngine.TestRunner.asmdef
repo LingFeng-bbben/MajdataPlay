@@ -1,0 +1,28 @@
+{
+    "name": "UnityEngine.TestRunner",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_TESTS_FRAMEWORK"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.test-framework",
+            "expression": "",
+            "define": "UNITY_TESTS_FRAMEWORK"
+        },
+        {
+            "name": "com.unity.modules.imgui",
+            "expression": "",
+            "define": "UNITY_MODULE_IMGUI"
+        }
+    ],
+    "noEngineReferences": false
+}
