@@ -90,21 +90,21 @@ namespace MajdataPlay
         CustomSkin _selectedSkin;
         public Texture2D test;
 
-        readonly static Sprite[] _tapLines = new Sprite[3];
-        readonly static Sprite[] _starLines = new Sprite[3];
-        readonly static Sprite[] _holdEnds = new Sprite[3];
-        readonly static Sprite[] _touchHoldFans = new Sprite[4];
-        readonly static Sprite[] _touchHoldBreakFans = new Sprite[4];
-        readonly static Sprite[] _touchHoldMineFans = new Sprite[4];
-        readonly static Sprite[] _touchHoldBreakMineFans = new Sprite[4];
+        static Sprite[] _tapLines = new Sprite[3];
+        static Sprite[] _starLines = new Sprite[3];
+        static Sprite[] _holdEnds = new Sprite[3];
+        static Sprite[] _touchHoldFans = new Sprite[4];
+        static Sprite[] _touchHoldBreakFans = new Sprite[4];
+        static Sprite[] _touchHoldMineFans = new Sprite[4];
+        static Sprite[] _touchHoldBreakMineFans = new Sprite[4];
 
-        readonly static ReadOnlyMemory<Color> _tapAndHoldExEffects = new Color[3]
+        static ReadOnlyMemory<Color> _tapAndHoldExEffects = new Color[3]
         {
             new Color(255 / 255f,172 / 255f,225 / 255f), // Pink
             new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
             new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
         };
-        readonly static ReadOnlyMemory<Color> _starExEffects = new Color[3]
+        static ReadOnlyMemory<Color> _starExEffects = new Color[3]
         {
             new Color(1f,1f,1f), // Pink
             new Color(255 / 255f,254 / 255f,119 / 255f), // Yellow
