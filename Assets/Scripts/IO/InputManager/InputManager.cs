@@ -346,7 +346,6 @@ namespace MajdataPlay.IO
         readonly static int[] _sensorClickedCountInThisFrame = new int[33];
 #endif
         static bool _isInited = false;
-        static bool _useDummy = false;
         static bool _isBtnDebounceEnabled = false;
         static bool _isSensorDebounceEnabled = false;
         static bool _isSensorRendererEnabled = false;

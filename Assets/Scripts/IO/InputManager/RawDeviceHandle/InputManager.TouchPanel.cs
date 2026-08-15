@@ -504,7 +504,6 @@ namespace MajdataPlay.IO
                 }
                 finally
                 {
-                    _useDummy = true;
                     IsConnected = false;
                     serialStream?.Close();
                     serialStream?.Dispose();

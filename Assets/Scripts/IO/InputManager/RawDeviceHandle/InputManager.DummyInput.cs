@@ -352,10 +352,7 @@ namespace MajdataPlay.IO
             ref ulong rawPositionData,
             ref bool isSensorOnly)
         {
-            const ulong BUTTON_BIT_MASK = 0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_1111_1111_1111;
             const ulong SENSOR_BIT_MASK = 0b0000_0000_0000_0000_0011_1111_1111_1111_1111_1111_1111_1111_1111_0000_0000_0000;
-            const ulong VERSION_BIT_MASK = 0b0011_1111_1111_1111_1100_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000;
-            const ulong FLAG_BIT_MASK = 0b1100_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000;
 
             var x = (int)position.x;
             var y = (int)position.y;

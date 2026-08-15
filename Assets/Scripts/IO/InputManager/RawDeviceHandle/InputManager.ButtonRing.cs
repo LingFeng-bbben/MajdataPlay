@@ -719,7 +719,6 @@ namespace MajdataPlay.IO
 
                 using (var pipeClientStream = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut))
                 {
-                RE_CONNECT:
                     while (!token.IsCancellationRequested)
                     {
                         try
