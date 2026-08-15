@@ -1,6 +1,6 @@
 ﻿namespace MajdataPlay
 {
-    public readonly struct Accurate
+    public readonly struct Accurate : System.IEquatable<Accurate>
     {
         public double DX { get; init; }
         public double Classic { get; init; }
@@ -34,5 +34,9 @@
         }
         public static bool operator <(Accurate left, Accurate right) => !(left > right);
         public static bool operator !=(Accurate left, Accurate right) => !(left == right);
+
+        public bool Equals(Accurate other) => this == other;
+        public override bool Equals(object obj) => obj is Accurate other && Equals(other);
+        public override int GetHashCode() => System.HashCode.Combine(DX, Classic);
     }
 }
