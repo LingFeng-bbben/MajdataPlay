@@ -79,7 +79,7 @@ namespace MajdataPlay
 #else
         public static string HTTP_USER_AGENT { get; } = $"MajdataPlay/{MajInstances.GameVersion.ToString()}";
 #endif
-        internal static HardwareEncoder HWEncoder { get; } = HardwareEncoder.None;
+        internal static HardwareEncoder HWEncoder { get; set; } = HardwareEncoder.None;
         internal static RunningMode Mode { get; set; } = RunningMode.Play;
 #if UNITY_EDITOR
         public static bool IsEditor { get; } = true;
@@ -116,10 +116,10 @@ namespace MajdataPlay
         public static string FavoriteDBPath { get; private set; } = string.Empty;
         public static string LogPath { get; private set; } = string.Empty;
         public static string RecordOutputsPath { get; private set; } = string.Empty;
-        [Preserve] public static Sprite EmptySongCover { get; }
-        [Preserve] public static Material BreakMaterial { get; }
-        [Preserve] public static Material DefaultMaterial { get; }
-        [Preserve] public static Material HoldShineMaterial { get; }
+        [Preserve] public static Sprite EmptySongCover { get; internal set; }
+        [Preserve] public static Material BreakMaterial { get; internal set; }
+        [Preserve] public static Material DefaultMaterial { get; internal set; }
+        [Preserve] public static Material HoldShineMaterial { get; internal set; }
         public static bool IsLowMemoryDevice { get; private set; }
         public static MachineInfo MachineInfo { get; private set; } = new()
         {
