@@ -13,7 +13,6 @@ using MajdataPlay.Utils;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO.Pipes;
 using System.IO.Ports;
 using System.Linq;
