@@ -67,7 +67,7 @@ Shader "Custom/ColorAdjustEffect"
 				//从_MainTex中根据uv坐标进行采样
 				half4 renderTex = tex2D(_MainTex, i.uv)*i.color;
 			//brigtness亮度直接乘以一个系数，也就是RGB整体缩放，调整亮度
-			half3 finalColor = renderTex * _Brightness;
+			half3 finalColor = renderTex.rgb * _Brightness;
 			//saturation饱和度：首先根据公式计算同等亮度情况下饱和度最低的值：
 			half gray = 0.2125 * renderTex.r + 0.7154 * renderTex.g + 0.0721 * renderTex.b;
 			half3 grayColor = half3(gray, gray, gray);

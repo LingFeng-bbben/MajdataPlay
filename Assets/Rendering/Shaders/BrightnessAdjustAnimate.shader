@@ -63,12 +63,12 @@ Shader "Custom/BrightnessAdjustAnimate"
 			{
 				//从_MainTex中根据uv坐标进行采样
 				half4 renderTex = tex2D(_MainTex, i.uv)*i.color;
-				float frames = _Time / 0.0008;
+				float frames = _Time.x / 0.0008;
 				float brightness = 0.95 + max(sin(frames * 0.2) * 0.65, 0);
 				float contrast = 1 + min(sin(frames * 0.2) * -0.55, 0);
 				float saturation = 1;
 				//brigtness亮度直接乘以一个系数，也就是RGB整体缩放，调整亮度
-				half3 finalColor = renderTex * brightness;
+				half3 finalColor = renderTex.rgb * brightness;
 				//saturation饱和度：首先根据公式计算同等亮度情况下饱和度最低的值：
 				half gray = 0.2125 * renderTex.r + 0.7154 * renderTex.g + 0.0721 * renderTex.b;
 				half3 grayColor = half3(gray, gray, gray);
