@@ -33,9 +33,6 @@ namespace MajdataPlay.Scenes.List
         }
         public static List<Task> AllBackgroundTasks { get; } = new(8192);
 
-        float _pressTime = 0;
-        bool _isPressed = false;
-
         // Update control
         bool _isInited = false;
         bool _isExited = false;
@@ -500,7 +497,6 @@ namespace MajdataPlay.Scenes.List
             };
             var info = new GameInfo(GameMode.Normal, charts, levels);
             Majdata<GameInfo>.Instance = info;
-            _pressTime = 0;
             _isExited = true;
             MajInstances.SceneSwitcher.SwitchScene("Game", false);
         }
@@ -523,7 +519,6 @@ namespace MajdataPlay.Scenes.List
             }
 
             Majdata<GameInfo>.Instance = info;
-            _pressTime = 0;
             _isExited = true;
             MajInstances.SceneSwitcher.SwitchScene("Practice", false);
         }
@@ -537,7 +532,6 @@ namespace MajdataPlay.Scenes.List
         {
             _cts.Cancel();
             MajInstances.AudioManager.StopSFX("bgm_select.mp3");
-            _pressTime = 0;
             _isExited = true;
             RefreshListBackgroundAsync();
         }
@@ -626,7 +620,6 @@ namespace MajdataPlay.Scenes.List
         void EnterLogin()
         {
             _cts.Cancel();
-            _pressTime = 0;
             _isExited = true;
             MajInstances.AudioManager.StopSFX("bgm_select.mp3");
             ScoreManager.UnloadOnlineScores();

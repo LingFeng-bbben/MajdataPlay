@@ -56,9 +56,6 @@ namespace MajdataPlay.Scenes.List
         GameObject _emptyCollectionNotice;
 
         [SerializeField, ReadOnlyField]
-        int _selectedDifficulty = 0;
-
-        [SerializeField, ReadOnlyField]
         int _songCount = 0;
 
         // List cursor position and desired position
@@ -69,7 +66,6 @@ namespace MajdataPlay.Scenes.List
         float _listCursorPos = 0;
 
         float _preloadCooldownTimer = 0.5f;
-        bool _isNeedPreload = false;
         bool _isEmptyCollection = true;
         int _scrollMotionVersion = 0;
 
