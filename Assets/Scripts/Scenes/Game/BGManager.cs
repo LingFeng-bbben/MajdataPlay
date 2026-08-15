@@ -20,7 +20,7 @@ using MajdataPlay.Diagnostics;
 #nullable enable
 namespace MajdataPlay.Scenes.Game
 {
-    public class BGManager : MonoBehaviour
+    public class BGManager : MajBehaviour
     {
         public float CurrentSec
         {
@@ -50,7 +50,7 @@ namespace MajdataPlay.Scenes.Game
         [SerializeField]
         RawImage _videoRenderer;
         [SerializeField]
-        Sprite _defaultSprite = MajEnv.EmptySongCover;
+        Sprite _defaultSprite;
         // This is the texture libVLC writes to directly. It's private.
         Texture2D? _vlcTexture = null;
         // We copy it into this texture which we actually use in unity.
@@ -79,9 +79,14 @@ namespace MajdataPlay.Scenes.Game
         GameplayScreenRotationAngleOption _screenRotationAngle = GameplayScreenRotationAngleOption.Zero;
 
 
-        void Awake()
+        protected override void Awake()
         {
+            base.Awake();
             Majdata<BGManager>.Instance = this;
+            if(_defaultSprite == null)
+            {
+                _defaultSprite = RuntimeDatabase.Sprite.EmptySongCover;
+            }
 #if UNITY_STANDALONE_WIN
             _videoPlayer = new MediaPlayer(MajEnv.VLCLibrary)
             {

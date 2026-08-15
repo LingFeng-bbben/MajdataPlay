@@ -28,7 +28,8 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Scripting;
-using MajdataPlay.Diagnostics; // DO NOT REMOVE IT !!!
+using MajdataPlay.Diagnostics;
+using MajdataPlay.Databases; // DO NOT REMOVE IT !!!
 
 namespace MajdataPlay
 {
@@ -47,10 +48,6 @@ namespace MajdataPlay
         }
 
         [SerializeField] BuiltInTimeProvider _timer = BuiltInTimeProvider.Winapi;
-        [SerializeField] Sprite _emptySongCover;
-        [SerializeField] Material _holdShineMaterial;
-        [SerializeField] Material _breakMaterial;
-        [SerializeField] Material _defaultMaterial;
 
         [SerializeField] bool _isEnterView = false;
         [SerializeField] bool _isEnterTest = false;
@@ -62,6 +59,7 @@ namespace MajdataPlay
         {
             base.Awake();
             Majdata<GameManager>.SetAsSingleton(this);
+            GameRuntime.Init();
         }
         void Start()
         {
@@ -175,10 +173,6 @@ namespace MajdataPlay
                 }  
             }
 
-            MajEnv.EmptySongCover = _emptySongCover;
-            MajEnv.BreakMaterial = _breakMaterial;
-            MajEnv.DefaultMaterial = _defaultMaterial;
-            MajEnv.HoldShineMaterial = _holdShineMaterial;
             QualitySettings.SetQualityLevel((int)Settings.Display.RenderQuality, true);
 #if !(UNITY_ANDROID || UNITY_IOS)
             QualitySettings.vSyncCount = Settings.Display.VSync ? 1 : 0;

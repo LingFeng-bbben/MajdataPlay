@@ -15,21 +15,43 @@ namespace MajdataPlay.Databases
     /// <para>This asset is created and managed as a ScriptableObject.</para>
     /// </summary>
     [CreateAssetMenu(fileName = "RuntimeDatabase")]
-    public sealed class GameRuntime : ScriptableObject
+    public sealed partial class GameRuntime : ScriptableObject
     {
+        public static GameRuntime Instance
+        {
+            get => Majdata<GameRuntime>.Instance!;
+        }
         /// <summary>
         /// Colors assigned to each difficulty level.
         /// <para>The array index represents the difficulty identifier.</para>
         /// </summary>
         public ReadOnlySpan<Color> DifficultyColors { get => _difficultyColors; }
+
         [field: SerializeField]
         public FontAssets LocalizedFonts { get; private set; }
+
+        [field: SerializeField]
+        public NoteAssets Note { get; private set; }
+
+        [field: SerializeField]
+        public SpriteAssets Sprite { get; private set; }
 
 
         [SerializeField]
         [FormerlySerializedAs("difficultyColors")]
         Color[] _difficultyColors;
 
+        public static void Init()
+        {
+            if (!Majdata<GameRuntime>.IsNull)
+            {
+                return;
+            }
+            Majdata<GameRuntime>.SetAsSingleton(Resources.Load<GameRuntime>("Databases/RuntimeDatabase"));
+        }
+    }
+    partial class GameRuntime
+    {
         [Serializable]
         public class FontAssets
         {
@@ -48,6 +70,22 @@ namespace MajdataPlay.Databases
             [FontLCID("")]
             [field: SerializeField]
             public TMP_FontAsset Default { get; private set; }
+        }
+        [Serializable]
+        public class SpriteAssets
+        {
+            [field: SerializeField]
+            public Sprite EmptySongCover { get; private set; }
+        }
+        [Serializable]
+        public class NoteAssets
+        {
+            [field: SerializeField]
+            public Material DefaultMaterial { get; private set; }
+            [field: SerializeField]
+            public Material BreakMaterial { get; private set; }
+            [field: SerializeField]
+            public Material HoldShineMaterial { get; private set; }
         }
     }
 }
