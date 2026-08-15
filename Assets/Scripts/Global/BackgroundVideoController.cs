@@ -4,7 +4,7 @@ using UnityEngine.Video;
 #nullable enable
 namespace MajdataPlay
 {
-    public sealed class BackgroundVideoController : MajSingleton
+    public sealed class BackgroundVideoController : MajComponent
     {
         [SerializeField]
         VideoPlayer _videoPlayer = null!;
@@ -14,6 +14,7 @@ namespace MajdataPlay
         protected override void Awake()
         {
             base.Awake();
+            Majdata<BackgroundVideoController>.SetAsSingleton(this);
             if (_videoPlayer == null || _videoRenderer == null)
             {
                 MajDebug.LogError("Global background video references are not configured.");

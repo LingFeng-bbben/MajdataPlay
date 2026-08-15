@@ -112,6 +112,7 @@ namespace MajdataPlay
         protected override void Awake()
         {
             base.Awake();
+            Majdata<SkinManager>.SetAsSingleton(this);
         }
         internal async Task InitAsync()
         {
