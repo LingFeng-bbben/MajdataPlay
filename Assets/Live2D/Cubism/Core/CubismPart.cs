@@ -371,7 +371,6 @@ namespace Live2D.Cubism.Core
         /// <summary>
         /// <see cref="PartInfo"/>'s backing field.
         /// </summary>
-        [SerializeField, HideInInspector]
         private CubismModelTypes.PartInfo? _partInfo;
 
         /// <summary>

@@ -992,7 +992,7 @@ namespace Live2D.Cubism.Framework.Json
             /// <summary>
             /// Motion groups.
             /// </summary>
-            [SerializeField]
+            [NonSerialized]
             public SerializableMotion[][] Motions;
         }
 

@@ -99,7 +99,7 @@ namespace Live2D.Cubism.Framework.Json
         /// <summary>
         /// Array of Groups.
         /// </summary>
-        [SerializeField]
+        [NonSerialized]
         public SerializablePoseGroup[][] Groups;
 
         #endregion
