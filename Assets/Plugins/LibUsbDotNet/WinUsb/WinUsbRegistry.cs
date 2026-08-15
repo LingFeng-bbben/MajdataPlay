@@ -8,7 +8,6 @@ using System.Text.RegularExpressions;
 using LibUsbDotNet.Internal;
 using LibUsbDotNet.Internal.UsbRegex;
 using LibUsbDotNet.Main;
-using Microsoft.Win32;
 
 namespace LibUsbDotNet.WinUsb
 {
@@ -267,7 +266,7 @@ namespace LibUsbDotNet.WinUsb
 		{
 			List<WinUsbRegistry> list = (List<WinUsbRegistry>)classEnumeratorCallbackParam1;
 			byte[] array = new byte[256];
-			RegistryValueKind PropertyRegDataType;
+			int PropertyRegDataType;
 			int RequiredSize;
 			bool flag = SetupApi.SetupDiGetCustomDeviceProperty(deviceInfoSet, ref deviceInfoData, "DeviceInterfaceGuids", SetupApi.DICUSTOMDEVPROP.NONE, out PropertyRegDataType, array, array.Length, out RequiredSize);
 			if (!flag)

@@ -1,4 +1,5 @@
 using System;
+#pragma warning disable CS0618 // Legacy native API accepts differently shaped output buffers.
 using System.Runtime.InteropServices;
 using System.Security;
 using LibUsbDotNet.Descriptors;

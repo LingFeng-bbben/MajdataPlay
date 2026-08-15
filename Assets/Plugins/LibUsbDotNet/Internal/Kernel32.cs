@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
 using Microsoft.Win32.SafeHandles;
+#pragma warning disable CS0618 // Legacy Win32 interop signatures require UnmanagedType.AsAny.
 
 namespace LibUsbDotNet.Internal
 {

@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using LibUsbDotNet.Main;
+#pragma warning disable CS0618 // Legacy marshaling helper is retained for driver request compatibility.
 
 namespace LibUsbDotNet.Internal.LibUsb
 {

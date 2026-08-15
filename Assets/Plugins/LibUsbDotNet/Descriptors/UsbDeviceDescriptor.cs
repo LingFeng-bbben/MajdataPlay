@@ -74,7 +74,7 @@ namespace LibUsbDotNet.Descriptors
 			{
 				return false;
 			}
-			if ((object)this == other)
+			if (ReferenceEquals(this, other))
 			{
 				return true;
 			}
@@ -91,7 +91,7 @@ namespace LibUsbDotNet.Descriptors
 			{
 				return false;
 			}
-			if (this == obj)
+			if (ReferenceEquals(this, obj))
 			{
 				return true;
 			}

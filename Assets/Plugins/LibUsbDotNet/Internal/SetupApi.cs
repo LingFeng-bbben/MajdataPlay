@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 using LibUsbDotNet.Main;
-using Microsoft.Win32;
+#pragma warning disable CS0618 // Legacy Win32 interop signatures require UnmanagedType.AsAny.
 
 namespace LibUsbDotNet.Internal
 {
@@ -243,7 +243,7 @@ namespace LibUsbDotNet.Internal
 		public static extern IntPtr SetupDiGetClassDevs(int ClassGuid, string Enumerator, IntPtr hwndParent, DICFG Flags);
 
 		[DllImport("setupapi.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-		public static extern bool SetupDiGetCustomDeviceProperty(IntPtr DeviceInfoSet, ref SP_DEVINFO_DATA DeviceInfoData, string CustomPropertyName, DICUSTOMDEVPROP Flags, out RegistryValueKind PropertyRegDataType, byte[] PropertyBuffer, int PropertyBufferSize, out int RequiredSize);
+		public static extern bool SetupDiGetCustomDeviceProperty(IntPtr DeviceInfoSet, ref SP_DEVINFO_DATA DeviceInfoData, string CustomPropertyName, DICUSTOMDEVPROP Flags, out int PropertyRegDataType, byte[] PropertyBuffer, int PropertyBufferSize, out int RequiredSize);
 
 		[DllImport("setupapi.dll", CharSet = CharSet.Ansi, EntryPoint = "SetupDiGetDeviceInstanceIdA", SetLastError = true)]
 		public static extern bool SetupDiGetDeviceInstanceId(IntPtr DeviceInfoSet, ref SP_DEVINFO_DATA DeviceInfoData, StringBuilder DeviceInstanceId, int DeviceInstanceIdSize, out int RequiredSize);
@@ -258,19 +258,19 @@ namespace LibUsbDotNet.Internal
 		public static extern bool SetupDiGetDeviceInterfacePropertyKeys(IntPtr DeviceInfoSet, ref SP_DEVICE_INTERFACE_DATA DeviceInterfaceData, byte[] propKeyBuffer, int propKeyBufferElements, out int RequiredPropertyKeyCount, int Flags);
 
 		[DllImport("setupapi.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-		public static extern bool SetupDiGetDeviceRegistryProperty(IntPtr DeviceInfoSet, ref SP_DEVINFO_DATA DeviceInfoData, SPDRP Property, out RegistryValueKind PropertyRegDataType, byte[] PropertyBuffer, int PropertyBufferSize, out int RequiredSize);
+		public static extern bool SetupDiGetDeviceRegistryProperty(IntPtr DeviceInfoSet, ref SP_DEVINFO_DATA DeviceInfoData, SPDRP Property, out int PropertyRegDataType, byte[] PropertyBuffer, int PropertyBufferSize, out int RequiredSize);
 
 		[DllImport("setupapi.dll", CharSet = CharSet.Unicode)]
 		public static extern CR CM_Get_Device_ID(uint dnDevInst, StringBuilder Buffer, int BufferLen, int ulFlags);
 
 		[DllImport("Setupapi", CharSet = CharSet.Unicode, SetLastError = true)]
-		public static extern IntPtr SetupDiOpenDevRegKey(IntPtr hDeviceInfoSet, ref SP_DEVINFO_DATA deviceInfoData, int scope, int hwProfile, DevKeyType keyType, RegistryKeyPermissionCheck samDesired);
+		public static extern IntPtr SetupDiOpenDevRegKey(IntPtr hDeviceInfoSet, ref SP_DEVINFO_DATA deviceInfoData, int scope, int hwProfile, DevKeyType keyType, int samDesired);
 
 		[DllImport("advapi32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-		public static extern int RegEnumValue(IntPtr hKey, int index, StringBuilder lpValueName, ref int lpcValueName, IntPtr lpReserved, out RegistryValueKind lpType, byte[] data, ref int dataLength);
+		public static extern int RegEnumValue(IntPtr hKey, int index, StringBuilder lpValueName, ref int lpcValueName, IntPtr lpReserved, out int lpType, byte[] data, ref int dataLength);
 
 		[DllImport("advapi32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-		public static extern int RegEnumValue(IntPtr hKey, int index, StringBuilder lpValueName, ref int lpcValueName, IntPtr lpReserved, out RegistryValueKind lpType, StringBuilder data, ref int dataLength);
+		public static extern int RegEnumValue(IntPtr hKey, int index, StringBuilder lpValueName, ref int lpcValueName, IntPtr lpReserved, out int lpType, StringBuilder data, ref int dataLength);
 
 		[DllImport("advapi32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
 		public static extern int RegCloseKey(IntPtr hKey);

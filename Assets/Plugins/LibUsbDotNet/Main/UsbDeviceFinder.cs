@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
+using System.Text;
 
 namespace LibUsbDotNet.Main
 {
 	public class UsbDeviceFinder : ISerializable
 	{
+		private const int SerializationMagic = 0x55444631; // "UDF1"
+
 		public const int NO_PID = int.MaxValue;
 
 		public const int NO_REV = int.MaxValue;
@@ -159,12 +161,48 @@ namespace LibUsbDotNet.Main
 
 		public static UsbDeviceFinder Load(Stream deviceFinderStream)
 		{
-			return new BinaryFormatter().Deserialize(deviceFinderStream) as UsbDeviceFinder;
+			if (deviceFinderStream == null)
+			{
+				throw new ArgumentNullException(nameof(deviceFinderStream));
+			}
+
+			using var reader = new BinaryReader(deviceFinderStream, Encoding.UTF8, true);
+			if (reader.ReadInt32() != SerializationMagic)
+			{
+				throw new SerializationException("Unsupported UsbDeviceFinder stream format.");
+			}
+
+			var vid = reader.ReadInt32();
+			var pid = reader.ReadInt32();
+			var revision = reader.ReadInt32();
+			var serialNumber = reader.ReadBoolean() ? reader.ReadString() : null;
+			var deviceInterfaceGuid = new Guid(reader.ReadBytes(16));
+			return new UsbDeviceFinder(vid, pid, revision, serialNumber, deviceInterfaceGuid);
 		}
 
 		public static void Save(UsbDeviceFinder usbDeviceFinder, Stream outStream)
 		{
-			new BinaryFormatter().Serialize(outStream, usbDeviceFinder);
+			if (usbDeviceFinder == null)
+			{
+				throw new ArgumentNullException(nameof(usbDeviceFinder));
+			}
+			if (outStream == null)
+			{
+				throw new ArgumentNullException(nameof(outStream));
+			}
+
+			using var writer = new BinaryWriter(outStream, Encoding.UTF8, true);
+			writer.Write(SerializationMagic);
+			writer.Write(usbDeviceFinder.mVid);
+			writer.Write(usbDeviceFinder.mPid);
+			writer.Write(usbDeviceFinder.mRevision);
+			writer.Write(usbDeviceFinder.mSerialNumber != null);
+			if (usbDeviceFinder.mSerialNumber != null)
+			{
+				writer.Write(usbDeviceFinder.mSerialNumber);
+			}
+			writer.Write(usbDeviceFinder.mDeviceInterfaceGuid.ToByteArray());
+			writer.Flush();
 		}
 
 		public virtual bool Check(UsbRegistry usbRegistry)
