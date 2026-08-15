@@ -4,11 +4,12 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using Unity.Scripting.LifecycleManagement;
 
 namespace MajdataPlay
 {
-    internal unsafe static class Majdata<T>
-    internal unsafe static class Majdata<T> where T : class
+    [AutoStaticsCleanup]
+    internal unsafe static partial class Majdata<T> where T : class
     {
         public static T? Instance
         {
@@ -27,7 +28,7 @@ namespace MajdataPlay
                     if (currentState == 1)
                     {
                         throw new InvalidOperationException();
-        }
+                    }
 
                     if (currentState == 0 && Interlocked.CompareExchange(ref _state, 2, 0) == 0)
                     {
@@ -68,7 +69,7 @@ namespace MajdataPlay
                 if (currentState == 1)
                 {
                     throw new InvalidOperationException();
-        }
+                }
 
                 if (currentState == 0 && Interlocked.CompareExchange(ref _state, 1, 0) == 0)
                 {

@@ -9,11 +9,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Unity.Scripting.LifecycleManagement;
 using UnityEngine;
 
 namespace MajdataPlay
 {
-    internal sealed class SkinManager : MajSingleton
+    [AutoStaticsCleanup]
+    internal sealed partial class SkinManager : MajComponent
     {
         public delegate void OnSkinChangedCallback(SkinManager sender, CustomSkin newSkin);
         public event OnSkinChangedCallback OnSkinChanged;
