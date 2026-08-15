@@ -118,7 +118,6 @@ namespace MajdataPlay.Scenes.Game
         Sprite _maskSpriteB;
         [SerializeField]
         Animator _bgInfoHeaderAnim;
-        [SerializeField]
         GameSetting _gameSettings;
         [SerializeField]
         GameObject _skipBtn;
