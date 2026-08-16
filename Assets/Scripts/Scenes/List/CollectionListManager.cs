@@ -125,7 +125,17 @@ namespace MajdataPlay.Scenes.List
                     throw new InvalidOperationException($"Child {child.name} does not have a CollectionDisplayer component.");
                 }
                 _collectionDisplayers[i] = displayer;
-                displayer.gameObject.SetActive(false);
+            }
+        }
+        void Start()
+        {
+            for (int i = 0; i < _collectionDisplayers.Length; i++)
+            {
+                var displayer = _collectionDisplayers[i];
+                if (displayer is not null)
+                {
+                    displayer.gameObject.SetActive(false);
+                }
             }
         }
         void OnDestroy()
