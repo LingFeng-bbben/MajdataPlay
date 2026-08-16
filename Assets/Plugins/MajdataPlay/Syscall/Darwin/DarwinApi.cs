@@ -11,7 +11,7 @@ namespace MajdataPlay.Syscall.Darwin
 #else
         const string DLL_NAME = "libSystem.B.dylib";
 #endif
-        [DllImport(DLL_NAME)]
-        public static extern int pthread_threadid_np(IntPtr thread, out ulong threadId);
+        [DllImport(DLL_NAME, EntryPoint = "pthread_threadid_np")]
+        public static extern int pthread_threadid_np_(IntPtr thread, out ulong threadId);
     }
 }
