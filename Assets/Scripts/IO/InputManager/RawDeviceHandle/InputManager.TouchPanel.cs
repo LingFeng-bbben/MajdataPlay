@@ -12,6 +12,7 @@ using MajdataPlay.Utils;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Pipes;
 using System.IO.Ports;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -74,12 +75,14 @@ namespace MajdataPlay.IO
                     case DeviceManufacturerOption.General:
                         _touchPanelUpdateLoop = Task.Factory.StartNew(SerialPortUpdateLoop, TaskCreationOptions.LongRunning);
                         break;
-                    case DeviceManufacturerOption.Pipe:
                     case DeviceManufacturerOption.Dao:
                         _touchPanelUpdateLoop = Task.Factory.StartNew(SlaveThreadUpdateLoop, TaskCreationOptions.LongRunning);
                         break;
                     case DeviceManufacturerOption.Nov:
                         _touchPanelUpdateLoop = Task.Factory.StartNew(UsbUpdateLoop, TaskCreationOptions.LongRunning);
+                        break;
+                    case DeviceManufacturerOption.Pipe:
+                        _touchPanelUpdateLoop = Task.Factory.StartNew(PipeUpdateLoop, TaskCreationOptions.LongRunning);
                         break;
                     default:
                         MajDebug.LogWarning($"Not supported touch panel manufacturer: {MajEnv.Settings.IO.Manufacturer}");
@@ -707,6 +710,123 @@ namespace MajdataPlay.IO
                 finally
                 {
                     IsConnected = false;
+                }
+            }
+            static void PipeUpdateLoop()
+            {
+                /// Package structure
+                /// |<-  Reserved bit  ->||<-          Device states           ->| | Flag |                           
+                /// 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+                /// Flag define
+                const byte FLAG_REPORT_PAKCET = 0b0000_0001;
+                const byte FLAG_HEARTBEAT_PAKCET = 0b1000_0000;
+
+                ref var @lock = ref _syncLock;
+                var pipeName = $"MajdataPlay.IO.TouchPanel.{IODetector.PlayerIndex}P";
+                var token = MajEnv.GlobalCT;
+                var pollingRate = _btnPollingRateMs;
+                var stopwatch = new Stopwatch();
+                var t1 = stopwatch.Elapsed;
+
+                while (!token.IsCancellationRequested)
+                {
+                    Thread.Sleep(MajEnv.IO_DEVICE_RECONNECT_INTERVAL_MSEC);
+                    var pipeClientStream = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous)
+                    {
+                        ReadTimeout = 2000,
+                        WriteTimeout = 2000
+                    };
+                    try
+                    {
+                        try
+                        {
+                            MajDebug.LogInfo(nameof(TouchPanel), $"Attempting connect to pipe \"{pipeName}\"...");
+                            pipeClientStream.Connect(2000);
+                            MajDebug.LogInfo(nameof(TouchPanel), "Connected");
+                        }
+                        catch (Exception e)
+                        {
+                            MajDebug.LogError(nameof(TouchPanel), $"Failed to connect to pipe\n{e}");
+                            continue;
+                        }
+                        IsConnected = true;
+                        var buffer = (stackalloc byte[sizeof(ulong) / sizeof(byte)]);
+                        stopwatch.Start();
+                        while (true)
+                        {
+                            token.ThrowIfCancellationRequested();
+                            try
+                            {
+                                var now = MajTimeline.UnscaledTime;
+                                var read = pipeClientStream.Read(buffer);
+                                var isLocked = false;
+                                if (read < buffer.Length)
+                                {
+                                    MajDebug.LogWarning(nameof(TouchPanel), "");
+                                    continue;
+                                }
+                                var data = BitConverter.ToUInt64(buffer);
+                                if ((data & FLAG_REPORT_PAKCET) == 0)
+                                {
+                                    continue;
+                                }
+                                try
+                                {
+                                    @lock.Enter(ref isLocked);
+                                    var states = _sensorRealTimeStates.AsSpan();
+                                    var hadOn = _isSensorHadOnInternal.AsSpan();
+                                    var hadOff = _isSensorHadOffInternal.AsSpan();
+
+                                    for (int i = 0; i < 35; i++)
+                                    {
+                                        ref var state = ref states[i];
+                                        state = (data & (1UL << (i + 8))) != 0;
+                                        hadOn[i] |= state;
+                                        hadOff[i] |= !state;
+                                    }
+                                }
+                                finally
+                                {
+                                    if (isLocked)
+                                    {
+                                        @lock.Exit();
+                                    }
+                                }
+                            }
+                            catch (OperationCanceledException)
+                            {
+                                break;
+                            }
+                            catch (IOException ioE)
+                            {
+                                IsConnected = false;
+                                MajDebug.LogError(nameof(TouchPanel), $"{ioE}");
+                                break;
+                            }
+                            catch (Exception e)
+                            {
+                                MajDebug.LogError(nameof(TouchPanel), $"{e}");
+                            }
+                            finally
+                            {
+                                buffer.Clear();
+                                if (pollingRate.TotalMilliseconds > 0)
+                                {
+                                    var t2 = stopwatch.Elapsed;
+                                    var elapsed = t2 - t1;
+                                    t1 = t2;
+                                    if (elapsed < pollingRate)
+                                    {
+                                        Thread.Sleep(pollingRate - elapsed);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        pipeClientStream.Dispose();
+                    }
                 }
             }
             [MethodImpl(MethodImplOptions.NoInlining)]

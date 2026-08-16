@@ -710,101 +710,118 @@ namespace MajdataPlay.IO
             }
             static void PipeUpdateLoop()
             {
+                /// Package structure
+                /// |<-             Reserved bit             ->| | Device states | | Flag |                           
+                /// 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
+                /// Flag define
+                const byte FLAG_REPORT_PAKCET = 0b0000_0001;
+                const byte FLAG_HEARTBEAT_PAKCET = 0b1000_0000;
+
                 ref var @lock = ref _syncLock;
-                var pipeName = $"majdataplay_{IODetector.PlayerIndex}p";
+                var pipeName = $"MajdataPlay.IO.ButtonRing.{IODetector.PlayerIndex}P";
                 var token = MajEnv.GlobalCT;
                 var pollingRate = _btnPollingRateMs;
                 var stopwatch = new Stopwatch();
                 var t1 = stopwatch.Elapsed;
 
-                using (var pipeClientStream = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut))
+                while (!token.IsCancellationRequested)
                 {
-                RE_CONNECT:
-                    while (!token.IsCancellationRequested)
+                    Thread.Sleep(MajEnv.IO_DEVICE_RECONNECT_INTERVAL_MSEC);
+                    var pipeClientStream = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous)
+                    {
+                        ReadTimeout = 2000,
+                        WriteTimeout = 2000
+                    };
+                    try
                     {
                         try
                         {
                             MajDebug.LogInfo(nameof(ButtonRing), $"Attempting connect to pipe \"{pipeName}\"...");
                             pipeClientStream.Connect(2000);
                             MajDebug.LogInfo(nameof(ButtonRing), "Connected");
-                            break;
                         }
                         catch (Exception e)
                         {
                             MajDebug.LogError(nameof(ButtonRing), $"Failed to connect to pipe\n{e}");
+                            continue;
                         }
-                    }
-                    Memory<byte> memory = new byte[64];
-                    _ioThreadSync.ReadBufferMemory = memory;
-                    _ioThreadSync.PipeClientStream = pipeClientStream;
-                    _ioThreadSync.SignalReadReady();
-                    var buffer = memory.Span;
-                    stopwatch.Start();
-                    while (true)
-                    {
-                        token.ThrowIfCancellationRequested();
-                        try
+                        IsConnected = true;
+                        var buffer = (stackalloc byte[sizeof(ulong) / sizeof(byte)]);
+                        stopwatch.Start();
+                        while (true)
                         {
-                            var now = MajTimeline.UnscaledTime;
-                            var read = pipeClientStream.Read(buffer);
-                            IsConnected = true;
-                            var isLocked = false;
-                            if(read < 8)
-                            {
-                                continue;
-                            }
-                            _ioThreadSync.SignalReadReady();
-                            var data = BitConverter.ToUInt64(buffer);
+                            token.ThrowIfCancellationRequested();
                             try
                             {
-                                @lock.Enter(ref isLocked);
-                                var states = _buttonRealTimeStates.AsSpan();
-                                var hadOn = _isBtnHadOnInternal.AsSpan();
-                                var hadOff = _isBtnHadOffInternal.AsSpan();
-
-                                for (int i = 0; i < 12; i++)
+                                var now = MajTimeline.UnscaledTime;
+                                var read = pipeClientStream.Read(buffer);
+                                var isLocked = false;
+                                if (read < buffer.Length)
                                 {
-                                    ref var state = ref states[i];
-                                    state = (data & (1UL << i)) != 0;
-                                    hadOn[i] |= state;
-                                    hadOff[i] |= !state;
+                                    MajDebug.LogWarning(nameof(ButtonRing), "");
+                                    continue;
                                 }
+                                var data = BitConverter.ToUInt64(buffer);
+                                if ((data & FLAG_REPORT_PAKCET) == 0)
+                                {
+                                    continue;
+                                }
+                                try
+                                {
+                                    @lock.Enter(ref isLocked);
+                                    var states = _buttonRealTimeStates.AsSpan();
+                                    var hadOn = _isBtnHadOnInternal.AsSpan();
+                                    var hadOff = _isBtnHadOffInternal.AsSpan();
+
+                                    for (int i = 0; i < 12; i++)
+                                    {
+                                        ref var state = ref states[i];
+                                        state = (data & (1UL << (i + 8))) != 0;
+                                        hadOn[i] |= state;
+                                        hadOff[i] |= !state;
+                                    }
+                                }
+                                finally
+                                {
+                                    if (isLocked)
+                                    {
+                                        @lock.Exit();
+                                    }
+                                }
+                            }
+                            catch (OperationCanceledException)
+                            {
+                                break;
+                            }
+                            catch (IOException ioE)
+                            {
+                                IsConnected = false;
+                                MajDebug.LogError(nameof(ButtonRing), $"{ioE}");
+                                break;
+                            }
+                            catch (Exception e)
+                            {
+                                MajDebug.LogError(nameof(ButtonRing), $"{e}");
                             }
                             finally
                             {
-                                if (isLocked)
+                                buffer.Clear();
+                                if (pollingRate.TotalMilliseconds > 0)
                                 {
-                                    @lock.Exit();
+                                    var t2 = stopwatch.Elapsed;
+                                    var elapsed = t2 - t1;
+                                    t1 = t2;
+                                    if (elapsed < pollingRate)
+                                    {
+                                        Thread.Sleep(pollingRate - elapsed);
+                                    }
                                 }
                             }
                         }
-                        catch (OperationCanceledException)
-                        {
-                            break;
-                        }
-                        catch (IOException ioE)
-                        {
-                            IsConnected = false;
-                            MajDebug.LogError(nameof(ButtonRing), $"{ioE}");
-                        }
-                        catch (Exception e)
-                        {
-                            MajDebug.LogError(nameof(ButtonRing), $"{e}");
-                        }
-                        finally
-                        {
-                            buffer.Clear();
-                            if (pollingRate.TotalMilliseconds > 0)
-                            {
-                                var t2 = stopwatch.Elapsed;
-                                var elapsed = t2 - t1;
-                                t1 = t2;
-                                if (elapsed < pollingRate)
-                                {
-                                    Thread.Sleep(pollingRate - elapsed);
-                                }
-                            }
-                        }
+                    }
+                    finally
+                    {
+                        pipeClientStream.Dispose();
                     }
                 }
             }
