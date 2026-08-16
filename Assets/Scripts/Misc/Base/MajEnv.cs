@@ -41,6 +41,9 @@ using MajdataPlay.Diagnostics;
 using SkiaSharp;
 using System.Text;
 using MajdataPlay.Net.Curl;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 using UnityHttpMessageHandler = MajdataPlay.Net.Handlers.UnityHttpMessageHandler;
 
 #nullable enable
@@ -208,6 +211,16 @@ namespace MajdataPlay
             SynchronizationContext.SetSynchronizationContext(new UniTaskSynchronizationContext());
 #endif
         }
+#if UNITY_EDITOR
+        [InitializeOnLoadMethod]
+        static void RegisterEditorShutdownHandlers()
+        {
+            AssemblyReloadEvents.beforeAssemblyReload -= StopBackgroundServices;
+            AssemblyReloadEvents.beforeAssemblyReload += StopBackgroundServices;
+            EditorApplication.quitting -= StopBackgroundServices;
+            EditorApplication.quitting += StopBackgroundServices;
+        }
+#endif
         #region Init core
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
         static void Init()
@@ -726,6 +739,7 @@ namespace MajdataPlay
         {
             GameManager.OnAppQuit -= OnApplicationQuit;
             GameManager.OnSave -= OnSave;
+            StopBackgroundServices();
             SharedHttpClient.CancelPendingRequests();
             SharedHttpClient.Dispose();
 #if UNITY_STANDALONE_WIN
@@ -734,11 +748,14 @@ namespace MajdataPlay
                 VLCLibrary.Dispose();
             }
 #endif
+        }
+        static void StopBackgroundServices()
+        {
             _globalCTS.Cancel();
 #if UNITY_STANDALONE_WIN
-                WinHidManager.QuitThisBs();
+            WinHidManager.QuitThisBs();
 #elif UNITY_STANDALONE_OSX
-                MacHidManager.QuitThisBs();
+            MacHidManager.QuitThisBs();
 #endif
         }
         static void OnSave(object? sender, EventArgs? e)
