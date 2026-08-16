@@ -67,7 +67,7 @@ namespace MajdataPlay
         GameObject _gameObject;
         Transform _transform;
 
-        protected virtual void Awake()
+        protected override void Awake()
         {
             base.Awake();
             _gameObject = gameObject;
