@@ -21,7 +21,7 @@ namespace MajdataPlay.Scenes.List
         float _pressTimer = 0f;
         bool _isInFav = false;
 
-        void Start()
+        void Awake()
         {
             _image = GetComponent<Image>();
         }
