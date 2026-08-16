@@ -15,6 +15,7 @@ using UnityEngine;
 namespace MajdataPlay
 {
     [AutoStaticsCleanup]
+    [DontDestroyOnLoad]
     internal sealed partial class SkinManager : MajComponent
     {
         public delegate void OnSkinChangedCallback(SkinManager sender, CustomSkin newSkin);
@@ -412,4 +413,5 @@ namespace MajdataPlay
         }
     }
 }
+
 

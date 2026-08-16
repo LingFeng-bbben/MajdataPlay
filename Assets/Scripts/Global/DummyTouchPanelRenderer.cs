@@ -12,6 +12,7 @@ using UnityEngine.Serialization;
 
 namespace MajdataPlay
 {
+    [DontDestroyOnLoad]
     internal sealed class DummyTouchPanelRenderer : MajComponent
     {
         public IReadOnlyDictionary<EntityId, int> InstanceID2SensorIndexMappingTable

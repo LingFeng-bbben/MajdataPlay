@@ -3,6 +3,7 @@ using MajdataPlay.Editor;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -17,6 +18,12 @@ namespace MajdataPlay
         protected virtual void Awake()
         {
             RuntimeDatabase = GameRuntime.Instance;
+
+            var type = GetType();
+            if(type.GetCustomAttribute<DontDestroyOnLoadAttribute>() is not null)
+            {
+                DontDestroyOnLoad(this);
+            }
         }
     }
 }

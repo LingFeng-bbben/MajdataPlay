@@ -4,6 +4,7 @@ using UnityEngine.Video;
 #nullable enable
 namespace MajdataPlay
 {
+    [DontDestroyOnLoad]
     public sealed class BackgroundVideoController : MajComponent
     {
         [SerializeField]
