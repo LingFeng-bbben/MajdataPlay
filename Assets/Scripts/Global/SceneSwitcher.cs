@@ -84,6 +84,7 @@ namespace MajdataPlay
         protected override void Awake()
         {
             base.Awake();
+            DontDestroyOnLoad(gameObject);
             Majdata<SceneSwitcher>.SetAsSingleton(this);
             SceneManager.activeSceneChanged += OnUnitySceneChanged;
             MainCamera = Camera.main;
