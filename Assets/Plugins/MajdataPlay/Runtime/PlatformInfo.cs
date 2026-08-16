@@ -18,7 +18,7 @@ namespace MajdataPlay.Runtime
 #elif UNITY_ANDROID
             return (ulong)Bionic.gettid();
 #elif UNITY_IOS || UNITY_STANDALONE_OSX
-            DarwinApi.pthread_threadid_np_(IntPtr.Zero, out var tid);
+            DarwinApi.pthread_threadid_np(IntPtr.Zero, out var tid);
             return tid;
 #endif
         }
