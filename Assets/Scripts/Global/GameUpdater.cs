@@ -17,6 +17,7 @@ using MajdataPlay.Diagnostics;
 #nullable enable
 namespace MajdataPlay
 {
+    [DontDestroyOnLoad]
     internal class GameUpdater :  MajComponent
     {
         DummyTouchPanelRenderer _dummyTouchPanelRenderer;

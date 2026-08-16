@@ -17,6 +17,7 @@ using UnityEngine.UI;
 #nullable enable
 namespace MajdataPlay
 {
+    [DontDestroyOnLoad]
     public sealed partial class SceneSwitcher : MajComponent
     {
         public static Camera MainCamera

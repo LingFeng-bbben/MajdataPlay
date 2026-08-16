@@ -8,6 +8,7 @@ using UnityEngine;
 
 namespace MajdataPlay
 {
+    [DontDestroyOnLoad]
     internal sealed class DummyLedRenderer: MajComponent
     {
         SpriteRenderer[] _dummyLights = Array.Empty<SpriteRenderer>();

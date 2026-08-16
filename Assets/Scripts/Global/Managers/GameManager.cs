@@ -34,6 +34,7 @@ using MajdataPlay.Databases; // DO NOT REMOVE IT !!!
 namespace MajdataPlay
 {
 #nullable enable
+    [DontDestroyOnLoad]
     public sealed class GameManager : MajComponent
     {
         public static bool IsAppOnFocus { get; private set; } = true;

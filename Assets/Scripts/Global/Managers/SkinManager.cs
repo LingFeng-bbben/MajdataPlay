@@ -13,6 +13,7 @@ using UnityEngine;
 
 namespace MajdataPlay
 {
+    [DontDestroyOnLoad]
     internal sealed class SkinManager : MajComponent
     {
         public delegate void OnSkinChangedCallback(SkinManager sender, CustomSkin newSkin);
