@@ -76,7 +76,7 @@ namespace MajdataPlay
             // Time Update
             MajTimeline.OnPreUpdate();
             InputManager.OnPreUpdate();
-            _dummyTouchPanelRenderer.OnPreUpdate();
+            _dummyTouchPanelRenderer?.OnPreUpdate();
             try
             {
                 switch (SceneSwitcher.CurrentScene)
