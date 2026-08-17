@@ -721,7 +721,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 {
                     End();
                 }
-                else if (endTiming >= CLASSIC_HOLD_ALLOW_OVER_LENGTH_SEC || JudgeResult.IsMissOrTooFast())
+                else if (endTiming > CLASSIC_HOLD_ALLOW_OVER_LENGTH_SEC || JudgeResult.IsMissOrTooFast())
                 {
                     End();
                 }

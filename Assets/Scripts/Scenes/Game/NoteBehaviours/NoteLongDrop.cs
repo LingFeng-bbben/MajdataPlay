@@ -66,10 +66,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         protected JudgeGrade HoldEndJudge(in JudgeGrade headGrade, in float ingoreTimeSec)
         {
             if (!IsJudged)
+            {
                 return headGrade;
+            }
 
-            var offset = (int)JudgeResult > 7 ? 0 : JudgeDiff;
-            var realityHT = (Length - ingoreTimeSec - offset / 1000f).Clamp(0, Length - 0.3f);
+            var realityHT = (Length - ingoreTimeSec).Clamp(0, Length - 0.3f);
             var percent = ((realityHT - _playerReleaseTimeSec) / realityHT).Clamp(0, 1);
 
             if (realityHT <= 0)
