@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Unity.IL2CPP.CompilerServices;
 
@@ -7,20 +8,23 @@ namespace MajdataPlay
 {
     internal sealed class FPSMonitor : MajComponent
     {
-        const int FPS_SAMPLE_COUNT = 120;
-        const int ONE_PERCENT_LOW_FPS_SAMPLE_COUNT = 120;
+        const int AVG_FPS_SAMPLE_COUNT = 120;
+        const int LOW_FPS_SAMPLE_COUNT = 600;
 
-        uint _avgFPSIndex;
-        uint _avgFPSSampleCount;
-        uint _onePercentLowFrameSampleCount;
+        // --- Avg FPS ---
+        private uint _avgFPSIndex;
+        private uint _avgFPSSampleCount;
+        private long _totalFrameTimeTicks;
+        private readonly long[] _avgFPSData = new long[AVG_FPS_SAMPLE_COUNT];
 
-        long _totalFrameTimeTicks;
+        // --- 1% Low FPS ---
+        private uint _lowFPSIndex;
+        private uint _lowFPSSampleCount;
+        private readonly long[] _lowFPSData = new long[LOW_FPS_SAMPLE_COUNT];
+        private readonly long[] _lowSortBuffer = new long[LOW_FPS_SAMPLE_COUNT];
 
-        readonly long[] _avgFPSData = new long[FPS_SAMPLE_COUNT];
-        readonly (long FrameTimeTicks, ulong FrameIndex)[] _onePercentLowFrameData =
-            new (long FrameTimeTicks, ulong FrameIndex)[ONE_PERCENT_LOW_FPS_SAMPLE_COUNT];
-
-        TimeSpan _lastUpdateTiming = TimeSpan.Zero;
+        private TimeSpan _lastUpdateTiming = TimeSpan.Zero;
+        private IComparer<long> _lowFrameComparer = new LowFrameComparer();
 
         internal double AverageFPS
         {
@@ -54,17 +58,21 @@ namespace MajdataPlay
 
         internal bool TryGetOnePercentLowFPS(out double fps)
         {
-            if (_onePercentLowFrameSampleCount != ONE_PERCENT_LOW_FPS_SAMPLE_COUNT)
+            if (_lowFPSSampleCount < LOW_FPS_SAMPLE_COUNT)
             {
                 fps = 0;
                 return false;
             }
 
+            Array.Copy(_lowFPSData, _lowSortBuffer, LOW_FPS_SAMPLE_COUNT);
+            Array.Sort(_lowSortBuffer, _lowFrameComparer);
+
             var totalLowFrameTime = 0L;
-            var sampleCount = Math.Max(1, (int)(ONE_PERCENT_LOW_FPS_SAMPLE_COUNT * 0.01));
+            var sampleCount = Math.Max(1, (int)(LOW_FPS_SAMPLE_COUNT * 0.01));
+
             for (var i = 0; i < sampleCount; i++)
             {
-                totalLowFrameTime += _onePercentLowFrameData[i].FrameTimeTicks;
+                totalLowFrameTime += _lowSortBuffer[i];
             }
 
             var averageLowFrameTime = (TimeSpan.FromTicks(totalLowFrameTime) / sampleCount).TotalSeconds;
@@ -75,86 +83,41 @@ namespace MajdataPlay
         [Il2CppSetOption(Option.NullChecks, false)]
         [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        unsafe void AddSample(in long frameTicks)
+        void AddSample(in long frameTicks)
         {
-            if (_avgFPSIndex >= FPS_SAMPLE_COUNT)
+            // ------ Refresh Average FPS Buffer ------
+            if (_avgFPSIndex >= AVG_FPS_SAMPLE_COUNT)
             {
                 _avgFPSIndex = 0;
             }
-            if (_avgFPSSampleCount != FPS_SAMPLE_COUNT)
+            if (_avgFPSSampleCount < AVG_FPS_SAMPLE_COUNT)
             {
                 _avgFPSSampleCount++;
             }
-            ref var lastSample = ref _avgFPSData[_avgFPSIndex++];
-            _totalFrameTimeTicks -= lastSample;
+
+            ref var lastAvgSample = ref _avgFPSData[_avgFPSIndex++];
+            _totalFrameTimeTicks -= lastAvgSample;
             _totalFrameTimeTicks += frameTicks;
-            lastSample = frameTicks;
+            lastAvgSample = frameTicks;
 
-            fixed ((long FrameTimeTicks, ulong FrameIndex)* lowFrameDataPtr = _onePercentLowFrameData)
+            // ------ Refresh 1% Low FPS Buffer ------
+            if (_lowFPSIndex >= LOW_FPS_SAMPLE_COUNT)
             {
-                const int BYTES_SIZE = 16;
-                if (_onePercentLowFrameSampleCount < ONE_PERCENT_LOW_FPS_SAMPLE_COUNT)
-                {
-                    _onePercentLowFrameSampleCount++;
-                }
+                _lowFPSIndex = 0;
+            }
+            if (_lowFPSSampleCount < LOW_FPS_SAMPLE_COUNT)
+            {
+                _lowFPSSampleCount++;
+            }
 
-                var flag = 0;
-                var thisFrameIndex = MajTimeline.FrameCount;
-                var oldestFrameIndex = ulong.MaxValue;
-                var oldestRecordIndex = -1;
-                for (var i = 0; i < ONE_PERCENT_LOW_FPS_SAMPLE_COUNT; i++)
-                {
-                    ref var data = ref *(lowFrameDataPtr + i);
-
-                    switch (flag)
-                    {
-                        case 0:
-                        {
-                            if (data.FrameTimeTicks == 0)
-                            {
-                                data.FrameTimeTicks = frameTicks;
-                                data.FrameIndex = thisFrameIndex;
-                                return;
-                            }
-                            if (data.FrameTimeTicks < frameTicks)
-                            {
-                                var bytesToCopy = (ONE_PERCENT_LOW_FPS_SAMPLE_COUNT - i - 1) * BYTES_SIZE;
-                                Buffer.MemoryCopy(lowFrameDataPtr + i, lowFrameDataPtr + i + 1, bytesToCopy, bytesToCopy);
-                                data.FrameTimeTicks = frameTicks;
-                                data.FrameIndex = thisFrameIndex;
-                                flag = 1;
-                                continue;
-                            }
-
-                            goto case 2;
-                        }
-                        case 1:
-                        {
-                            if (data.FrameTimeTicks == 0)
-                            {
-                                return;
-                            }
-
-                            goto case 2;
-                        }
-                        case 2:
-                        {
-                            if (data.FrameIndex < oldestFrameIndex)
-                            {
-                                oldestRecordIndex = i;
-                                oldestFrameIndex = data.FrameIndex;
-                            }
-                            break;
-                        }
-                    }
-                }
-                if (oldestRecordIndex != -1)
-                {
-                    var bytesToCopy = (ONE_PERCENT_LOW_FPS_SAMPLE_COUNT - oldestRecordIndex - 1) * BYTES_SIZE;
-                    Buffer.MemoryCopy(lowFrameDataPtr + oldestRecordIndex + 1, lowFrameDataPtr + oldestRecordIndex,
-                        bytesToCopy, bytesToCopy);
-                    *(lowFrameDataPtr + (ONE_PERCENT_LOW_FPS_SAMPLE_COUNT - 1)) = (0, 0);
-                }
+            _lowFPSData[_lowFPSIndex++] = frameTicks;
+        }
+        
+        class LowFrameComparer : IComparer<long>
+        {
+            public int Compare(long x, long y)
+            {
+                return y.CompareTo(x);
             }
         }
     }
