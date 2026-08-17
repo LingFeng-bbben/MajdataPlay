@@ -23,6 +23,8 @@ using MajdataPlay.Platform.Android.IO;
 #if UNITY_IOS || UNITY_EDITOR
 using MajdataPlay.Platform.iOS;
 using System.Buffers.Binary;
+using MajdataPlay.Buffers;
+
 
 #endif
 
