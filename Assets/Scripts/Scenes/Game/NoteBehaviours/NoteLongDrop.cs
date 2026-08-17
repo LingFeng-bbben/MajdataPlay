@@ -37,9 +37,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         protected const float SLIDE_JUDGE_CLASSIC_SEG_3RD_GREAT_MSEC = 24 * FRAME_LENGTH_MSEC;   // 24f
         protected const float SLIDE_JUDGE_GOOD_AREA_MSEC = 36 * FRAME_LENGTH_MSEC;               // 36f
 
-        protected const int HOLD_STATE_HEAD_MISS_OR_NOT_JUDGED = -3;
-        protected const int HOLD_STATE_HEAD_JUDGED_AND_NOT_FEEDBACK = -2;
-        protected const int HOLD_STATE_HEAD_JUDGED = -1;
+        protected const int HOLD_HEAD_STATE_MISS_OR_NOT_JUDGED = 0;
+        protected const int HOLD_HEAD_STATE_JUDGED_AND_NOT_FEEDBACK = 1;
+        protected const int HOLD_HEAD_STATE_JUDGED = 2;
+        protected const int HOLD_STATE_NONE = -1;
         protected const int HOLD_STATE_RELEASED = 0;
         protected const int HOLD_STATE_PRESSED = 1;
         public float Length
@@ -50,7 +51,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
         [ReadOnlyField]
         [SerializeField]
-        protected float _playerReleaseTimeSec = 0;
+        protected float PlayerReleaseTimeSec = 0;
         [ReadOnlyField]
         [SerializeField]
         protected float _length = 1f;
@@ -71,7 +72,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
 
             var realityHT = (Length - ingoreTimeSec).Clamp(0, Length - 0.3f);
-            var percent = ((realityHT - _playerReleaseTimeSec) / realityHT).Clamp(0, 1);
+            var percent = ((realityHT - PlayerReleaseTimeSec) / realityHT).Clamp(0, 1);
 
             if (realityHT <= 0)
             {

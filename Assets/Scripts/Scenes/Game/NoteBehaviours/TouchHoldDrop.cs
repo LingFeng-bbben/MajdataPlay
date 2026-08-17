@@ -83,11 +83,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         NotePoolManager _notePoolManager;
         MultTouchHandler _multTouchHandler;
 
-        // -2 => Head miss or not judged yet
-        // -1 => Head judged
-        // 0  => Released
-        // 1  => Pressed
-        int _lastHoldState = HOLD_STATE_HEAD_MISS_OR_NOT_JUDGED;
+        int _lastHoldState = HOLD_STATE_NONE;
+        int _lastHeadState = HOLD_HEAD_STATE_MISS_OR_NOT_JUDGED;
         float _releaseTime = 0;
         Range<float> _bodyCheckRange;
         //readonly float _touchPanelOffset = MajEnv.UserSetting?.Judge.TouchPanelOffset ?? 0;
@@ -192,7 +189,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                             IsMine = IsMine,
                             Diff = JudgeDiff
                         });
-                        _lastHoldState = HOLD_STATE_HEAD_JUDGED_AND_NOT_FEEDBACK;
+                        _lastHeadState = HOLD_HEAD_STATE_JUDGED_AND_NOT_FEEDBACK;
+                        _lastHoldState = HOLD_STATE_PRESSED;
                     }
                     break;
                 case AutoplayModeOption.DJAuto_TouchPanel_First:
@@ -244,7 +242,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             GroupInfo = poolingInfo.GroupInfo;
             BodyGroupInfo = poolingInfo.TouchHoldGroupInfo;
             IsJudged = false;
-            _lastHoldState = HOLD_STATE_HEAD_MISS_OR_NOT_JUDGED;
+            _lastHoldState = HOLD_STATE_NONE;
+            _lastHeadState = HOLD_HEAD_STATE_MISS_OR_NOT_JUDGED;
             Length = poolingInfo.LastFor;
             isFirework = poolingInfo.IsFirework;
             SensorPos = poolingInfo.SensorPos;
@@ -257,7 +256,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 _buttonPos = null;
             }
-            _playerReleaseTimeSec = 0;
+            PlayerReleaseTimeSec = 0;
             JudgableRange = new(JudgeTimingWithOffset - 0.15f, JudgeTimingWithOffset + 0.316667f, ContainsType.Closed);
             _releaseTime = 0;
 
@@ -345,7 +344,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 Diff = JudgeDiff,
                 IsMine = IsMine
             });
-            _lastHoldState = HOLD_STATE_HEAD_MISS_OR_NOT_JUDGED;
+            _lastHoldState = HOLD_STATE_NONE;
+            _lastHeadState = HOLD_HEAD_STATE_MISS_OR_NOT_JUDGED;
             AudioEffMana.StopTouchHoldSound();
             EffectManager.PlayTouchHoldJudgeResult(SensorPos, result);
             EffectManager.ResetHoldEffect(SensorPos);
@@ -447,7 +447,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             JudgeResult = result;
             IsJudged = true;
             BodyGroupInfo?.RegisterTrigger(InstanceID);
-            _lastHoldState = HOLD_STATE_HEAD_JUDGED_AND_NOT_FEEDBACK;
+            _lastHeadState = HOLD_HEAD_STATE_JUDGED_AND_NOT_FEEDBACK;
         }
         [OnPreUpdate]
         internal void OnPreUpdate()
@@ -556,7 +556,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                         IsJudged = true;
                         JudgeResult = (JudgeGrade)GroupInfo.JudgeResult;
                         JudgeDiff = GroupInfo.JudgeDiff;
-                        _lastHoldState = HOLD_STATE_HEAD_JUDGED_AND_NOT_FEEDBACK;
+                        _lastHeadState = HOLD_HEAD_STATE_JUDGED_AND_NOT_FEEDBACK;
                         NoteManager.NextTouch(QueueInfo);
                         BodyGroupInfo?.RegisterTrigger(InstanceID);
                     }
@@ -567,7 +567,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 JudgeResult = JudgeGrade.Miss;
                 IsJudged = true;
                 JudgeDiff = TOUCH_JUDGE_GOOD_AREA_MSEC;
-                _lastHoldState = HOLD_STATE_HEAD_MISS_OR_NOT_JUDGED;
+                _lastHeadState = HOLD_HEAD_STATE_MISS_OR_NOT_JUDGED;
                 _releaseTime = 114514;
                 NoteManager.NextTouch(QueueInfo);
             }
@@ -677,17 +677,17 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 return;
             }
-            if (_lastHoldState is HOLD_STATE_HEAD_JUDGED or HOLD_STATE_PRESSED)
+            if (_lastHeadState is HOLD_HEAD_STATE_JUDGED or HOLD_HEAD_STATE_JUDGED_AND_NOT_FEEDBACK || _lastHoldState is HOLD_STATE_PRESSED)
             {
                 AudioEffMana.PlayTouchHoldSound();
             }
 
             if (!_bodyCheckRange.InRange(ThisFrameSec) || !NoteController.IsStart)
             {
-                if (_lastHoldState == HOLD_STATE_HEAD_JUDGED_AND_NOT_FEEDBACK && GetRemainingTime() < Length)
+                if (_lastHeadState == HOLD_HEAD_STATE_JUDGED_AND_NOT_FEEDBACK && GetRemainingTime() < Length)
                 {
                     EffectManager.PlayHoldEffect(SensorPos, JudgeResult);
-                    _lastHoldState = HOLD_STATE_HEAD_JUDGED;
+                    _lastHeadState = HOLD_HEAD_STATE_JUDGED;
                 }
                 return;
             }
@@ -714,12 +714,23 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
             else
             {
-                if (_releaseTime <= DELUXE_HOLD_RELEASE_IGNORE_TIME_SEC)
+                if (_lastHoldState != HOLD_STATE_RELEASED)
                 {
-                    _releaseTime += MajTimeline.DeltaTime;
-                    return;
+                    if (_releaseTime <= DELUXE_HOLD_RELEASE_IGNORE_TIME_SEC)
+                    {
+                        _releaseTime += MajTimeline.DeltaTime;
+                        return;
+                    }
                 }
-                _playerReleaseTimeSec += MajTimeline.DeltaTime;
+                else
+                {
+                    if (_releaseTime != 0)
+                    {
+                        PlayerReleaseTimeSec += _releaseTime;
+                        _releaseTime = 0;
+                    }
+                }                
+                PlayerReleaseTimeSec += MajTimeline.DeltaTime;
                 StopHoldEffect();
                 _lastHoldState = HOLD_STATE_RELEASED;
             }
