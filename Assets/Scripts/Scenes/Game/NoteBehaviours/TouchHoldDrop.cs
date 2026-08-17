@@ -714,22 +714,17 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
             else
             {
-                if (_lastHoldState != HOLD_STATE_RELEASED)
+                if (_lastHoldState != HOLD_STATE_RELEASED &&
+                    _releaseTime <= DELUXE_HOLD_RELEASE_IGNORE_TIME_SEC)
                 {
-                    if (_releaseTime <= DELUXE_HOLD_RELEASE_IGNORE_TIME_SEC)
-                    {
-                        _releaseTime += MajTimeline.DeltaTime;
-                        return;
-                    }
+                    _releaseTime += MajTimeline.DeltaTime;
+                    return;
                 }
-                else
+                else if (_releaseTime != 0)
                 {
-                    if (_releaseTime != 0)
-                    {
-                        PlayerReleaseTimeSec += _releaseTime;
-                        _releaseTime = 0;
-                    }
-                }                
+                    PlayerReleaseTimeSec += _releaseTime;
+                    _releaseTime = 0;
+                }
                 PlayerReleaseTimeSec += MajTimeline.DeltaTime;
                 StopHoldEffect();
                 _lastHoldState = HOLD_STATE_RELEASED;
