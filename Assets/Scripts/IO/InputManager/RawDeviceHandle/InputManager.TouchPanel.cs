@@ -10,6 +10,7 @@ using MajdataPlay.Runtime;
 using MajdataPlay.Settings;
 using MajdataPlay.Utils;
 using System;
+using System.Buffers.Binary;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
@@ -350,7 +351,7 @@ namespace MajdataPlay.IO
                 var t1 = stopwatch.Elapsed;
 
                 var buffer = (stackalloc byte[8192]);
-                var readBuffer = new Buffer(buffer);
+                var readBuffer = new SpanBuffer(buffer);
 
                 currentThread.Name = DAEMON_THREAD_NAME;
                 currentThread.IsBackground = true;
@@ -714,19 +715,62 @@ namespace MajdataPlay.IO
             }
             static void PipeUpdateLoop()
             {
-                /// Package structure
-                /// |<-  Reserved bit  ->||<-          Device states           ->| | Flag |                           
-                /// 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-                /// Flag define
-                const byte FLAG_REPORT_PAKCET = 0b0000_0001;
-                const byte FLAG_HEARTBEAT_PAKCET = 0b1000_0000;
-
+                /// Payload structure
+                ///                    64bit                    
+                /// |<-            Device states             ->|                         
+                /// 00000000 00000000 00000000 00000000 00000000
+                /// 
+                
                 ref var @lock = ref _syncLock;
                 var pipeName = $"MajdataPlay.IO.TouchPanel.{IODetector.PlayerIndex}P";
                 var token = MajEnv.GlobalCT;
                 var pollingRate = _btnPollingRateMs;
                 var stopwatch = new Stopwatch();
                 var t1 = stopwatch.Elapsed;
+                var currentThread = Thread.CurrentThread;
+                var callback = (PipePacket.PacketReceivedCallback)((PipePacket packet) =>
+                {
+                    if(packet.Type == PipePacketType.HeartBeat)
+                    {
+                        return;
+                    }
+                    else if(packet.Payload.Length != 64 / 8)
+                    {
+                        return;
+                    }
+                    var data = BinaryPrimitives.ReadUInt64LittleEndian(packet.Payload);
+                    ref var @lock = ref _syncLock;
+                    var isLocked = false;
+                    try
+                    {
+                        @lock.Enter(ref isLocked);
+                        var states = _sensorRealTimeStates.AsSpan();
+                        var hadOn = _isSensorHadOnInternal.AsSpan();
+                        var hadOff = _isSensorHadOffInternal.AsSpan();
+
+                        for (int i = 0; i < 35; i++)
+                        {
+                            ref var state = ref states[i];
+                            state = (data & (1UL << i)) != 0;
+                            hadOn[i] |= state;
+                            hadOff[i] |= !state;
+                        }
+                    }
+                    finally
+                    {
+                        if (isLocked)
+                        {
+                            @lock.Exit();
+                        }
+                    }
+                });
+
+                currentThread.Name = DAEMON_THREAD_NAME;
+                currentThread.IsBackground = true;
+                currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
+
+                MajDebug.LogInfo(nameof(TouchPanel), $"Managed thread id: {currentThread.ManagedThreadId}");
+                MajDebug.LogInfo(nameof(TouchPanel), $"OS thread id: {PlatformInfo.GetCurrentOSThreadId()}");
 
                 while (!token.IsCancellationRequested)
                 {
@@ -750,7 +794,8 @@ namespace MajdataPlay.IO
                             continue;
                         }
                         IsConnected = true;
-                        var buffer = (stackalloc byte[sizeof(ulong) / sizeof(byte)]);
+                        var rawBuffer = (stackalloc byte[1024]);
+                        var buffer = new SpanBuffer((stackalloc byte[8192]));
                         stopwatch.Start();
                         while (true)
                         {
@@ -758,40 +803,12 @@ namespace MajdataPlay.IO
                             try
                             {
                                 var now = MajTimeline.UnscaledTime;
-                                var read = pipeClientStream.Read(buffer);
-                                var isLocked = false;
-                                if (read < buffer.Length)
+                                var read = pipeClientStream.Read(rawBuffer);
+                                if(read != 0)
                                 {
-                                    MajDebug.LogWarning(nameof(TouchPanel), "");
-                                    continue;
-                                }
-                                var data = BitConverter.ToUInt64(buffer);
-                                if ((data & FLAG_REPORT_PAKCET) == 0)
-                                {
-                                    continue;
-                                }
-                                try
-                                {
-                                    @lock.Enter(ref isLocked);
-                                    var states = _sensorRealTimeStates.AsSpan();
-                                    var hadOn = _isSensorHadOnInternal.AsSpan();
-                                    var hadOff = _isSensorHadOffInternal.AsSpan();
-
-                                    for (int i = 0; i < 35; i++)
-                                    {
-                                        ref var state = ref states[i];
-                                        state = (data & (1UL << (i + 8))) != 0;
-                                        hadOn[i] |= state;
-                                        hadOff[i] |= !state;
-                                    }
-                                }
-                                finally
-                                {
-                                    if (isLocked)
-                                    {
-                                        @lock.Exit();
-                                    }
-                                }
+                                    buffer.Write(rawBuffer.Slice(0, read));
+                                    PipePacket.Parse(ref buffer, 1024, callback);
+                                }                                                             
                             }
                             catch (OperationCanceledException)
                             {
@@ -830,7 +847,7 @@ namespace MajdataPlay.IO
                 }
             }
             [MethodImpl(MethodImplOptions.NoInlining)]
-            static void ReadFromSerialStream(SerialStream serial, Span<bool> buffer, ref Buffer readBuffer)
+            static void ReadFromSerialStream(SerialStream serial, Span<bool> buffer, ref SpanBuffer readBuffer)
             {
                 var tmpReadBuffer = (stackalloc byte[1024]);
                 //the SerialPort.BaseStream will be eaten by serialport's own buffer so we dont do that
@@ -1056,7 +1073,7 @@ namespace MajdataPlay.IO
                 const int PACKET_LENGTH = 9; // '(' + body(7) + ')' = 9
 
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                public static void Parse(ref Buffer packet, Span<bool> buffer)
+                public static void Parse(ref SpanBuffer packet, Span<bool> buffer)
                 {
                     if (packet.IsEmpty || buffer.Length < 35)
                     {
@@ -1601,65 +1618,7 @@ namespace MajdataPlay.IO
                 }
             }
 
-            ref struct Buffer
-            {
-                public ReadOnlySpan<byte> Data
-                {
-                    get => _buffer.Slice(0, _writeIndex);
-                }
-                public bool IsEmpty
-                {
-                    get => _writeIndex == 0;
-                }
-
-
-                private int _writeIndex;
-                private readonly Span<byte> _buffer;
-
-                public Buffer(Span<byte> buffer)
-                {
-                    _buffer = buffer;
-                    _writeIndex = 0;
-                }
-
-                public int Write(scoped ReadOnlySpan<byte> data)
-                {
-                    if(data.IsEmpty)
-                    {
-                        return 0;
-                    }
-                    if(data.Length + _writeIndex > _buffer.Length)
-                    {
-                        data = data.Slice(0, _buffer.Length - _writeIndex);
-                    }
-                    data.CopyTo(_buffer.Slice(_writeIndex));
-                    _writeIndex += data.Length;
-
-                    return data.Length;
-                }
-
-                public void Skip(int count)
-                {
-                    if (count <= 0)
-                    {
-                        return;
-                    }
-                    else if (count >= _writeIndex)
-                    {
-                        Clear();
-                        return;
-                    }
-
-                    var b2 = _buffer.Slice(count, _writeIndex - count);
-                    b2.CopyTo(_buffer);
-                    _writeIndex -= count;
-                }
-
-                public void Clear()
-                {
-                    _writeIndex = 0;
-                }
-            }
+            
         }
 #endif
     }

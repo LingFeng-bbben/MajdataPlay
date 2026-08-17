@@ -11,6 +11,7 @@ using MajdataPlay.Settings;
 using MajdataPlay.UnsafeKit;
 using MajdataPlay.Utils;
 using System;
+using System.Buffers.Binary;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;

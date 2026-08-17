@@ -13,6 +13,11 @@ using MajdataPlay.Numerics;
 using UnityEngine;
 using MajdataPlay.Diagnostics;
 using MajdataPlay.Runtime;
+using System.IO.Pipes;
+
+
+
+
 
 #if UNITY_STANDALONE
 using HidSharp;
@@ -463,6 +468,190 @@ namespace MajdataPlay.IO
 
                 }
             }
+
+            static void PipeUpdateLoop()
+            {
+                /// Payload structure (32bit)
+                ///                  
+                ///    b        g        r       Type
+                /// 00000000 00000000 00000000 00000000
+                /// 
+                var ledOptions = MajEnv.Settings.IO.OutputDevice.Led;
+                var pipeName = $"MajdataPlay.IO.Led.{IODetector.PlayerIndex}P";
+                var token = MajEnv.GlobalCT;
+                var stopwatch = new Stopwatch();
+                var t1 = stopwatch.Elapsed;
+                var ledRingColors = _ledRingColors.AsSpan();
+                var refreshRate = TimeSpan.FromMilliseconds(ledOptions.RefreshRateMs);
+                var currentThread = Thread.CurrentThread;
+
+                if(refreshRate.TotalMilliseconds > 500)
+                {
+                    refreshRate = TimeSpan.FromMilliseconds(500);
+                }
+
+                currentThread.Name = DAEMON_THREAD_NAME;
+                currentThread.IsBackground = true;
+                currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
+
+                MajDebug.LogInfo(nameof(LedDevice), $"Managed thread id: {currentThread.ManagedThreadId}");
+                MajDebug.LogInfo(nameof(LedDevice), $"OS thread id: {PlatformInfo.GetCurrentOSThreadId()}");
+
+                var heartBeatPacket = new PipePacket()
+                {
+                    Type = PipePacketType.HeartBeat,
+                };
+                var heartBeatData = (stackalloc byte[PipePacket.PACKET_HEADER_LENGTH * sizeof(byte)]);
+                var packetBuffer = (stackalloc byte[1024]);
+                var payload = (stackalloc byte[1024 - PipePacket.PACKET_HEADER_LENGTH]);
+                var latestReports = (stackalloc LedReport[8]
+                {
+                    new LedReport()
+                    {
+                        Index = 0,
+                        Color = Color.black,
+                    },
+                    new LedReport()
+                    {
+                        Index = 1,
+                        Color = Color.black,
+                    },
+                    new LedReport()
+                    {
+                        Index = 2,
+                        Color = Color.black,
+                    },
+                    new LedReport()
+                    {
+                        Index = 3,
+                        Color = Color.black,
+                    },
+                    new LedReport()
+                    {
+                        Index = 4,
+                        Color = Color.black,
+                    },
+                    new LedReport()
+                    {
+                        Index = 5,
+                        Color = Color.black,
+                    },
+                    new LedReport()
+                    {
+                        Index = 6,
+                        Color = Color.black,
+                    },
+                    new LedReport()
+                    {
+                        Index = 7,
+                        Color = Color.black,
+                    }
+                });
+                heartBeatPacket.Write(heartBeatData);
+
+                while (!token.IsCancellationRequested)
+                {
+                    Thread.Sleep(MajEnv.IO_DEVICE_RECONNECT_INTERVAL_MSEC);
+                    var pipeClientStream = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous)
+                    {
+                        ReadTimeout = 2000,
+                        WriteTimeout = 2000
+                    };
+                    try
+                    {
+                        try
+                        {
+                            MajDebug.LogInfo(nameof(LedDevice), $"Attempting connect to pipe \"{pipeName}\"...");
+                            pipeClientStream.Connect(2000);
+                            MajDebug.LogInfo(nameof(LedDevice), "Connected");
+                        }
+                        catch (Exception e)
+                        {
+                            MajDebug.LogError(nameof(LedDevice), $"Failed to connect to pipe\n{e}");
+                            continue;
+                        }
+                        IsConnected = true;
+                        
+                        stopwatch.Start();
+                        while (true)
+                        {
+                            token.ThrowIfCancellationRequested();
+                            try
+                            {
+                                var now = MajTimeline.UnscaledTime;
+                                var needUpdate = false;
+                                var writtenBytes = 0;
+                                for (var i = 0; i < 8; i++)
+                                {
+                                    var color = ledRingColors[i];
+                                    ref var latestReport = ref latestReports[i];
+                                    if (latestReport.Color == color && _isThrottlerEnabled)
+                                    {
+                                        continue;
+                                    }
+                                    latestReport = new()
+                                    {
+                                        Index = i,
+                                        Color = color,
+                                    };
+                                    needUpdate = true;
+                                    payload[writtenBytes++] = (byte)i;
+                                    payload[writtenBytes++] = (byte)(color.r * byte.MaxValue);
+                                    payload[writtenBytes++] = (byte)(color.g * byte.MaxValue);
+                                    payload[writtenBytes++] = (byte)(color.b * byte.MaxValue);
+                                }
+                                var packet = new PipePacket()
+                                {
+                                    Type = PipePacketType.Report,
+                                    Length = (ushort)writtenBytes,
+                                    Payload = payload.Slice(0, writtenBytes)
+                                };
+                                var packetLen = packet.Write(packetBuffer);
+                                if (needUpdate)
+                                {
+                                    pipeClientStream.Write(packetBuffer.Slice(0, packetLen));
+                                }
+                                else
+                                {
+                                    pipeClientStream.Write(heartBeatData);
+                                }
+                            }
+                            catch (OperationCanceledException)
+                            {
+                                break;
+                            }
+                            catch (IOException ioE)
+                            {
+                                IsConnected = false;
+                                MajDebug.LogError(nameof(LedDevice), $"{ioE}");
+                                break;
+                            }
+                            catch (Exception e)
+                            {
+                                MajDebug.LogError(nameof(LedDevice), $"{e}");
+                            }
+                            finally
+                            {
+                                if (refreshRate.TotalMilliseconds > 0)
+                                {
+                                    var t2 = stopwatch.Elapsed;
+                                    var elapsed = t2 - t1;
+                                    t1 = t2;
+                                    if (elapsed < refreshRate)
+                                    {
+                                        Thread.Sleep(refreshRate - elapsed);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        pipeClientStream.Dispose();
+                    }
+                }
+            }
+
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             static bool EnsureSerialPortIsOpen(SerialPort serialSession)
             {

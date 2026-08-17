@@ -22,6 +22,8 @@ using MajdataPlay.Platform.Android.IO;
 #endif
 #if UNITY_IOS || UNITY_EDITOR
 using MajdataPlay.Platform.iOS;
+using System.Buffers.Binary;
+
 #endif
 
 #if UNITY_STANDALONE
@@ -710,19 +712,61 @@ namespace MajdataPlay.IO
             }
             static void PipeUpdateLoop()
             {
-                /// Package structure
-                /// |<-             Reserved bit             ->| | Device states | | Flag |                           
-                /// 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
-                /// Flag define
-                const byte FLAG_REPORT_PAKCET = 0b0000_0001;
-                const byte FLAG_HEARTBEAT_PAKCET = 0b1000_0000;
+                /// Payload structure
+                ///                    64bit                    
+                /// |<-            Device states             ->|                         
+                /// 00000000 00000000 00000000 00000000 00000000
+                /// 
 
-                ref var @lock = ref _syncLock;
                 var pipeName = $"MajdataPlay.IO.ButtonRing.{IODetector.PlayerIndex}P";
                 var token = MajEnv.GlobalCT;
                 var pollingRate = _btnPollingRateMs;
                 var stopwatch = new Stopwatch();
                 var t1 = stopwatch.Elapsed;
+                var currentThread = Thread.CurrentThread;
+                var callback = (PipePacket.PacketReceivedCallback)((PipePacket packet) =>
+                {
+                    if (packet.Type == PipePacketType.HeartBeat)
+                    {
+                        return;
+                    }
+                    else if (packet.Payload.Length != 64 / 8)
+                    {
+                        return;
+                    }
+                    var data = BinaryPrimitives.ReadUInt64LittleEndian(packet.Payload);
+                    ref var @lock = ref _syncLock;
+                    var isLocked = false;
+                    try
+                    {
+                        @lock.Enter(ref isLocked);
+                        var states = _buttonRealTimeStates.AsSpan();
+                        var hadOn = _isBtnHadOnInternal.AsSpan();
+                        var hadOff = _isBtnHadOffInternal.AsSpan();
+
+                        for (int i = 0; i < 12; i++)
+                        {
+                            ref var state = ref states[i];
+                            state = (data & (1UL << i)) != 0;
+                            hadOn[i] |= state;
+                            hadOff[i] |= !state;
+                        }
+                    }
+                    finally
+                    {
+                        if (isLocked)
+                        {
+                            @lock.Exit();
+                        }
+                    }
+                });
+
+                currentThread.Name = DAEMON_THREAD_NAME;
+                currentThread.IsBackground = true;
+                currentThread.Priority = MajEnv.THREAD_PRIORITY_IO;
+
+                MajDebug.LogInfo(nameof(ButtonRing), $"Managed thread id: {currentThread.ManagedThreadId}");
+                MajDebug.LogInfo(nameof(ButtonRing), $"OS thread id: {PlatformInfo.GetCurrentOSThreadId()}");
 
                 while (!token.IsCancellationRequested)
                 {
@@ -746,7 +790,8 @@ namespace MajdataPlay.IO
                             continue;
                         }
                         IsConnected = true;
-                        var buffer = (stackalloc byte[sizeof(ulong) / sizeof(byte)]);
+                        var rawBuffer = (stackalloc byte[1024]);
+                        var buffer = new SpanBuffer((stackalloc byte[8192]));
                         stopwatch.Start();
                         while (true)
                         {
@@ -754,39 +799,11 @@ namespace MajdataPlay.IO
                             try
                             {
                                 var now = MajTimeline.UnscaledTime;
-                                var read = pipeClientStream.Read(buffer);
-                                var isLocked = false;
-                                if (read < buffer.Length)
+                                var read = pipeClientStream.Read(rawBuffer);
+                                if (read != 0)
                                 {
-                                    MajDebug.LogWarning(nameof(ButtonRing), "");
-                                    continue;
-                                }
-                                var data = BitConverter.ToUInt64(buffer);
-                                if ((data & FLAG_REPORT_PAKCET) == 0)
-                                {
-                                    continue;
-                                }
-                                try
-                                {
-                                    @lock.Enter(ref isLocked);
-                                    var states = _buttonRealTimeStates.AsSpan();
-                                    var hadOn = _isBtnHadOnInternal.AsSpan();
-                                    var hadOff = _isBtnHadOffInternal.AsSpan();
-
-                                    for (int i = 0; i < 12; i++)
-                                    {
-                                        ref var state = ref states[i];
-                                        state = (data & (1UL << (i + 8))) != 0;
-                                        hadOn[i] |= state;
-                                        hadOff[i] |= !state;
-                                    }
-                                }
-                                finally
-                                {
-                                    if (isLocked)
-                                    {
-                                        @lock.Exit();
-                                    }
+                                    buffer.Write(rawBuffer.Slice(0, read));
+                                    PipePacket.Parse(ref buffer, 1024, callback);
                                 }
                             }
                             catch (OperationCanceledException)
