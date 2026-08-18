@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 using UnityEngine.InputSystem;
 using UnityEngine.Profiling;
 using System.IO.Pipes;
+using System.Buffers.Binary;
+using MajdataPlay.Buffers;
 using MajdataPlay.Diagnostics;
 #if UNITY_STANDALONE_WIN
 using MajdataPlay.Platform.Win32.IO;
@@ -22,10 +24,6 @@ using MajdataPlay.Platform.Android.IO;
 #endif
 #if UNITY_IOS || UNITY_EDITOR
 using MajdataPlay.Platform.iOS;
-using System.Buffers.Binary;
-using MajdataPlay.Buffers;
-
-
 #endif
 
 #if UNITY_STANDALONE
