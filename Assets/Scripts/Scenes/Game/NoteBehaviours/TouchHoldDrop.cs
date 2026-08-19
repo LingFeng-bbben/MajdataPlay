@@ -1,5 +1,6 @@
 using MajdataPlay.Buffers;
 using MajdataPlay.Diagnostics;
+using MajdataPlay.Editor;
 using MajdataPlay.Extensions;
 using MajdataPlay.IO;
 using MajdataPlay.Numerics;
@@ -84,8 +85,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         MultTouchHandler _multTouchHandler;
 
         int _lastHoldState = HOLD_STATE_NONE;
-        int _lastHeadState = HOLD_HEAD_STATE_MISS_OR_NOT_JUDGED;
-        float _releaseTime = 0;
+        int _lastHeadState = HOLD_HEAD_STATE_NOT_JUDGED;
+
+        [ReadOnlyField]
+        [SerializeField]
+        float _waitReleaseTimeSec = 0;
+
         Range<float> _bodyCheckRange;
         //readonly float _touchPanelOffset = MajEnv.UserSetting?.Judge.TouchPanelOffset ?? 0;
 
@@ -243,7 +248,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             BodyGroupInfo = poolingInfo.TouchHoldGroupInfo;
             IsJudged = false;
             _lastHoldState = HOLD_STATE_NONE;
-            _lastHeadState = HOLD_HEAD_STATE_MISS_OR_NOT_JUDGED;
+            _lastHeadState = HOLD_HEAD_STATE_NOT_JUDGED;
             Length = poolingInfo.LastFor;
             isFirework = poolingInfo.IsFirework;
             SensorPos = poolingInfo.SensorPos;
@@ -258,7 +263,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
             PlayerReleaseTimeSec = 0;
             JudgableRange = new(JudgeTimingWithOffset - 0.15f, JudgeTimingWithOffset + 0.316667f, ContainsType.Closed);
-            _releaseTime = 0;
+            _waitReleaseTimeSec = 0;
 
             if (Length <= TOUCH_HOLD_HEAD_IGNORE_LENGTH_SEC + TOUCH_HOLD_TAIL_IGNORE_LENGTH_SEC)
             {
@@ -311,6 +316,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             BodyGroupInfo?.Exit();
             if (!IsMine)
             {
+                if (_lastHoldState == HOLD_STATE_RELEASED)
+                {
+                    PlayerReleaseTimeSec += MajTimeline.DeltaTime;
+                }
                 JudgeResult = HoldEndJudge(JudgeResult, TOUCH_HOLD_HEAD_IGNORE_LENGTH_SEC + TOUCH_HOLD_TAIL_IGNORE_LENGTH_SEC);
             }
             ConvertJudgeGrade(ref JudgeResult);
@@ -345,7 +354,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 IsMine = IsMine
             });
             _lastHoldState = HOLD_STATE_NONE;
-            _lastHeadState = HOLD_HEAD_STATE_MISS_OR_NOT_JUDGED;
+            _lastHeadState = HOLD_HEAD_STATE_NOT_JUDGED;
             AudioEffMana.StopTouchHoldSound();
             EffectManager.PlayTouchHoldJudgeResult(SensorPos, result);
             EffectManager.ResetHoldEffect(SensorPos);
@@ -567,8 +576,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 JudgeResult = JudgeGrade.Miss;
                 IsJudged = true;
                 JudgeDiff = TOUCH_JUDGE_GOOD_AREA_MSEC;
-                _lastHeadState = HOLD_HEAD_STATE_MISS_OR_NOT_JUDGED;
-                _releaseTime = 114514;
+                _lastHeadState = HOLD_HEAD_STATE_JUDGED;
                 NoteManager.NextTouch(QueueInfo);
             }
         }
@@ -709,21 +717,23 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             if (on || IsAutoplay)
             {
                 PlayHoldEffect();
-                _releaseTime = 0;
+                _waitReleaseTimeSec = 0;
                 _lastHoldState = HOLD_STATE_PRESSED;
             }
             else
             {
-                if (_lastHoldState != HOLD_STATE_RELEASED &&
-                    _releaseTime <= DELUXE_HOLD_RELEASE_IGNORE_TIME_SEC)
+                var isNeverBeenReleased = _lastHoldState != HOLD_STATE_RELEASED;
+                var isForgiving = _waitReleaseTimeSec <= DELUXE_HOLD_RELEASE_IGNORE_TIME_SEC;
+                var isHeadJudged = _lastHeadState != HOLD_HEAD_STATE_NOT_JUDGED;
+                if (isHeadJudged && isNeverBeenReleased && isForgiving)
                 {
-                    _releaseTime += MajTimeline.DeltaTime;
+                    _waitReleaseTimeSec += MajTimeline.DeltaTime;
                     return;
                 }
-                else if (_releaseTime != 0)
+                else if (_waitReleaseTimeSec != 0)
                 {
-                    PlayerReleaseTimeSec += _releaseTime;
-                    _releaseTime = 0;
+                    PlayerReleaseTimeSec += _waitReleaseTimeSec;
+                    _waitReleaseTimeSec = 0;
                 }
                 PlayerReleaseTimeSec += MajTimeline.DeltaTime;
                 StopHoldEffect();

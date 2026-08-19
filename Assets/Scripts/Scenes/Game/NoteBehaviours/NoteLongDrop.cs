@@ -37,7 +37,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         protected const float SLIDE_JUDGE_CLASSIC_SEG_3RD_GREAT_MSEC = 24 * FRAME_LENGTH_MSEC;   // 24f
         protected const float SLIDE_JUDGE_GOOD_AREA_MSEC = 36 * FRAME_LENGTH_MSEC;               // 36f
 
-        protected const int HOLD_HEAD_STATE_MISS_OR_NOT_JUDGED = 0;
+        protected const int HOLD_HEAD_STATE_NOT_JUDGED = 0;
         protected const int HOLD_HEAD_STATE_JUDGED_AND_NOT_FEEDBACK = 1;
         protected const int HOLD_HEAD_STATE_JUDGED = 2;
         protected const int HOLD_STATE_NONE = -1;
