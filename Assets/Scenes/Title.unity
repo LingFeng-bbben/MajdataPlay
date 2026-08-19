@@ -966,7 +966,7 @@ PrefabInstance:
     - target: {fileID: 8350591977979412089, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
       propertyPath: m_Camera
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 6959415326676185806}
     - target: {fileID: 8350591977979412089, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
       propertyPath: m_RenderMode
       value: 1
@@ -1000,10 +1000,98 @@ PrefabInstance:
       addedObject: {fileID: 1514694039}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
+--- !u!1001 &6959415326676185805
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1350311737120837062, guid: c56103e2e04c2c44ea96bafac763935a, type: 3}
+      propertyPath: m_CullingMask.m_Bits
+      value: 55
+      objectReference: {fileID: 0}
+    - target: {fileID: 3243441165040463401, guid: c56103e2e04c2c44ea96bafac763935a, type: 3}
+      propertyPath: m_Name
+      value: Main Camera
+      objectReference: {fileID: 0}
+    - target: {fileID: 6500212484500030017, guid: c56103e2e04c2c44ea96bafac763935a, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6500212484500030017, guid: c56103e2e04c2c44ea96bafac763935a, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 4.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6500212484500030017, guid: c56103e2e04c2c44ea96bafac763935a, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -10
+      objectReference: {fileID: 0}
+    - target: {fileID: 6500212484500030017, guid: c56103e2e04c2c44ea96bafac763935a, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6500212484500030017, guid: c56103e2e04c2c44ea96bafac763935a, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6500212484500030017, guid: c56103e2e04c2c44ea96bafac763935a, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6500212484500030017, guid: c56103e2e04c2c44ea96bafac763935a, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6500212484500030017, guid: c56103e2e04c2c44ea96bafac763935a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6500212484500030017, guid: c56103e2e04c2c44ea96bafac763935a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6500212484500030017, guid: c56103e2e04c2c44ea96bafac763935a, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3243441165040463401, guid: c56103e2e04c2c44ea96bafac763935a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6959415326676185808}
+  m_SourcePrefab: {fileID: 100100000, guid: c56103e2e04c2c44ea96bafac763935a, type: 3}
+--- !u!20 &6959415326676185806 stripped
+Camera:
+  m_CorrespondingSourceObject: {fileID: 1350311737120837062, guid: c56103e2e04c2c44ea96bafac763935a, type: 3}
+  m_PrefabInstance: {fileID: 6959415326676185805}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &6959415326676185807 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3243441165040463401, guid: c56103e2e04c2c44ea96bafac763935a, type: 3}
+  m_PrefabInstance: {fileID: 6959415326676185805}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &6959415326676185808
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6959415326676185807}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 365468b5460ab42489f96bbf560acb2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.UI.PreviewOnlyCamera
+  <RuntimeDatabase>k__BackingField: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
+  - {fileID: 6959415326676185805}
   - {fileID: 3234089997214234524}
   - {fileID: 826534572}
   - {fileID: 2077852204}
