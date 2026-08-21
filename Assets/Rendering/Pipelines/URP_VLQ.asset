@@ -99,7 +99,7 @@ MonoBehaviour:
       m_Values: []
     obsoleteHasProbeVolumes:
       m_Keys: []
-      m_Values:
+      m_Values: 
   m_PrefilteringModeMainLightShadows: 0
   m_PrefilteringModeAdditionalLight: 0
   m_PrefilteringModeAdditionalLightShadows: 0

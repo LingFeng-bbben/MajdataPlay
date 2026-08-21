@@ -10,13 +10,13 @@ namespace MajdataPlay.Rendering
     /// modifying the vendor SDK. The stock feature renders before transparents,
     /// which allows List's canvas to cover the model in Play Mode.
     /// </summary>
-    public sealed class CubismAfterTransparentsRenderFeature : CubismRenderFeature
+    public sealed class CubismBeforeTransparentsRenderFeature : CubismRenderFeature
     {
         public override void Create()
         {
             RenderPass = new CubismRenderPassFeature.CubismRenderPass
             {
-                renderPassEvent = RenderPassEvent.AfterRenderingTransparents
+                renderPassEvent = RenderPassEvent.BeforeRenderingTransparents
             };
         }
     }

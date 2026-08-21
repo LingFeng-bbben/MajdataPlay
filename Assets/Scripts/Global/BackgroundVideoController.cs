@@ -1,4 +1,8 @@
+using Live2D.Cubism.Rendering.URP.RenderingInterceptor;
 using MajdataPlay.Diagnostics;
+using System;
+using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.Video;
 #nullable enable
@@ -12,6 +16,11 @@ namespace MajdataPlay
         [SerializeField]
         SpriteRenderer _videoRenderer = null!;
 
+        [SerializeField]
+        CubismRenderingInterceptController _renderingInterrupter;
+
+        MajScenes[] _containsCubismComponentScenes = Array.Empty<MajScenes>();
+
         protected override void Awake()
         {
             base.Awake();
@@ -20,6 +29,14 @@ namespace MajdataPlay
             {
                 MajDebug.LogError("Global background video references are not configured.");
             }
+            SceneSwitcher.OnSceneChanged += OnSceneChanged;
+            var scenes = (MajScenes[])Enum.GetValues(typeof(MajScenes));
+            _containsCubismComponentScenes = scenes.Where(scene =>
+                                                    {
+                                                        var field = typeof(MajScenes).GetField(scene.ToString());
+                                                        return field?.GetCustomAttribute<ContainsCubismComponentAttribute>() != null;
+                                                    })
+                                                    .ToArray();
         }
 
         public void Pause()
@@ -47,6 +64,15 @@ namespace MajdataPlay
         {
             _videoRenderer.gameObject.layer = MajEnv.DEFAULT_LAYER;
             Play();
+        }
+
+        void OnSceneChanged(object? sender, (MajScenes NewScene, MajScenes OldScene) args)
+        {
+            if (_renderingInterrupter is null)
+            {
+                return;
+            }
+            _renderingInterrupter.enabled = Array.IndexOf(_containsCubismComponentScenes, args.NewScene) != -1;
         }
     }
 }

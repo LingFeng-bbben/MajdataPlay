@@ -140,7 +140,6 @@ namespace MajdataPlay
                 OnSceneChanged(this, (CurrentScene, LastScene));
             }
             CabinetLed.SetCabinetLight(1.0f);
-            _canvas.worldCamera = MainCamera;
         }
 
         public void SwitchScene(string sceneName, bool autoFadeOut = true)
