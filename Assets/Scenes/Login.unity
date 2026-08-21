@@ -673,13 +673,34 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3243441165040463401, guid: c56103e2e04c2c44ea96bafac763935a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 189424107}
   m_SourcePrefab: {fileID: 100100000, guid: c56103e2e04c2c44ea96bafac763935a, type: 3}
 --- !u!20 &189424105 stripped
 Camera:
   m_CorrespondingSourceObject: {fileID: 1350311737120837062, guid: c56103e2e04c2c44ea96bafac763935a, type: 3}
   m_PrefabInstance: {fileID: 189424104}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &189424106 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3243441165040463401, guid: c56103e2e04c2c44ea96bafac763935a, type: 3}
+  m_PrefabInstance: {fileID: 189424104}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &189424107
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 189424106}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 365468b5460ab42489f96bbf560acb2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.UI.PreviewOnlyCamera
+  <RuntimeDatabase>k__BackingField: {fileID: 0}
 --- !u!1001 &207450794
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -934,6 +955,14 @@ PrefabInstance:
       propertyPath: m_Color.r
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 307026145555316282, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
+      propertyPath: m_SortingLayerID
+      value: 1199593265
+      objectReference: {fileID: 0}
+    - target: {fileID: 307026145555316282, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
+      propertyPath: m_OverrideSorting
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4485814405497562604, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -1053,14 +1082,6 @@ PrefabInstance:
     - target: {fileID: 8246146771354057080, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
       propertyPath: m_Color.r
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 307026145555316282, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
-      propertyPath: m_SortingLayerID
-      value: 1199593265
-      objectReference: {fileID: 0}
-    - target: {fileID: 307026145555316282, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
-      propertyPath: m_OverrideSorting
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8350591977979412089, guid: 37bdf9fbdeb38224783acd28ed56b012, type: 3}
       propertyPath: m_Camera
@@ -3953,10 +3974,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3ae676a105b153c449b10f977d8a884e, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.UI.ButtonAnimation
   BindSensor: 13000000
-  BindButton:
+  BindButton: 
   HoldTriggerTime: 0
   ReleasedScale: 1
   PressedScale: 0.9
@@ -3975,10 +3996,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3ae676a105b153c449b10f977d8a884e, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.UI.ButtonAnimation
   BindSensor: 02000000
-  BindButton:
+  BindButton: 
   HoldTriggerTime: 0
   ReleasedScale: 1
   PressedScale: 0.9

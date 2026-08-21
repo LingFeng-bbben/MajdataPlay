@@ -27,7 +27,7 @@ namespace MajdataPlay
         internal void OnLateUpdate()
         {
             var ledColors = _ledRingColors.AsSpan();
-            for (var i = 0; i < ledColors.Length; i++)
+            for (var i = 0; i < _dummyLights.Length; i++)
             {
                 _dummyLights[i].color = ledColors[i];
             }

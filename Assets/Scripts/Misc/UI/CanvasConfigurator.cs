@@ -16,6 +16,9 @@ namespace MajdataPlay.UI
         void Awake()
         {
             _canvas = GetComponent<Canvas>();
+        }
+        void Start()
+        {
             _canvas.worldCamera = SceneSwitcher.MainCamera;
             SceneSwitcher.OnSceneChanged += OnSceneChanged;
         }
