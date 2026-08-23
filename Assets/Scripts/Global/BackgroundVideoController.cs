@@ -72,7 +72,9 @@ namespace MajdataPlay
             {
                 return;
             }
-            _renderingInterrupter.enabled = Array.IndexOf(_containsCubismComponentScenes, args.NewScene) != -1;
+            var isContainsCubismComponent = Array.IndexOf(_containsCubismComponentScenes, args.NewScene) != -1;
+            _renderingInterrupter.enabled = isContainsCubismComponent;
+            _videoRenderer.enabled = !isContainsCubismComponent;
         }
     }
 }
