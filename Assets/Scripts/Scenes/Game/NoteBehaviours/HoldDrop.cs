@@ -180,7 +180,6 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                         };
                         PlaySFX();
                         _lastHeadState = HOLD_HEAD_STATE_JUDGED_AND_NOT_FEEDBACK;
-                        _lastHoldState = HOLD_STATE_PRESSED;
                     }
                     break;
                 case AutoplayModeOption.DJAuto_TouchPanel_First:
