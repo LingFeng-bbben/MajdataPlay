@@ -367,7 +367,14 @@ namespace MajdataPlay.Scenes.Game
                                         TouchArea = note.TouchArea,
                                         Count = 1
                                     };
-                                    CreateSlideGroup(timing, foldedSlide, eachNotes); // 星星组
+                                    if (foldedSlide.RawContent.Contains('K'))
+                                    {
+                                        
+                                    }
+                                    else
+                                    {
+                                        CreateSlideGroup(timing, foldedSlide, eachNotes); // 星星组
+                                    }
                                     _noteCount += foldedSlide.Count - 1;
                                     break;
                             }
@@ -968,6 +975,10 @@ namespace MajdataPlay.Scenes.Game
                     member.TouchHoldGroupInfo = touchHoldGroups.Find(x => x.Members.Any(y => y == member));
                 }
             });
+        }
+        private void CreateExtendSlide(SimaiTimingPoint timing, FoldedSimaiNote note, in IList<NotePoolingInfo?> eachNotes)
+        {
+
         }
         private void CreateSlideGroup(SimaiTimingPoint timing, FoldedSimaiNote note, in IList<NotePoolingInfo?> eachNotes)
         {
