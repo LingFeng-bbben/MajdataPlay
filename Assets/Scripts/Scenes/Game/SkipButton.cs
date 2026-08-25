@@ -1,21 +1,42 @@
 using Cysharp.Threading.Tasks;
 using MajdataPlay.IO;
+using MajdataPlay.UI;
 using MajdataPlay.Utils;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 #nullable enable
 namespace MajdataPlay.Scenes.Game
 {
     public class SkipButton : MonoBehaviour
     {
+        readonly static SensorArea[] DEFAULT_SENSOR_AREAS =
+        {
+            SensorArea.B4,
+            SensorArea.B5,
+            SensorArea.E5,
+        };
+
+        SensorArea[] _boundSensorAreas = new SensorArea[DEFAULT_SENSOR_AREAS.Length];
         bool _isBound = false;
-        bool a = false;
+        bool _isTriggered = false;
+
+        void Awake()
+        {
+            var rotationOffset = (int)MajEnv.Settings.Display.GameplayScreenRotationAngle * 2;
+            for (var i = 0; i < DEFAULT_SENSOR_AREAS.Length; i++)
+            {
+                _boundSensorAreas[i] = DEFAULT_SENSOR_AREAS[i].Diff(rotationOffset);
+            }
+
+            if (TryGetComponent<ButtonAnimation>(out var buttonAnimation))
+            {
+                buttonAnimation.BindSensor = _boundSensorAreas;
+            }
+        }
         void OnAreaDown(object? sender,InputEventArgs args)
         {
-            if (a)
+            if (_isTriggered)
                 return;
-            a = true;
+            _isTriggered = true;
             Majdata<GamePlayManager>.Instance!.EndGame().Forget();
         }
         void OnEnable()
@@ -28,9 +49,10 @@ namespace MajdataPlay.Scenes.Game
                 return;
             _isBound = true;
             await UniTask.Delay(1000);
-            InputManager.BindSensor(OnAreaDown, SensorArea.B4);
-            InputManager.BindSensor(OnAreaDown, SensorArea.B5);
-            InputManager.BindSensor(OnAreaDown, SensorArea.E5);
+            foreach (var sensorArea in _boundSensorAreas)
+            {
+                InputManager.BindSensor(OnAreaDown, sensorArea);
+            }
         }
         void OnDestroy()
         {
@@ -39,9 +61,10 @@ namespace MajdataPlay.Scenes.Game
         void OnDisable()
         {
             _isBound = false;
-            InputManager.UnbindSensor(OnAreaDown, SensorArea.B4);
-            InputManager.UnbindSensor(OnAreaDown, SensorArea.B5);
-            InputManager.UnbindSensor(OnAreaDown, SensorArea.E5);
+            foreach (var sensorArea in _boundSensorAreas)
+            {
+                InputManager.UnbindSensor(OnAreaDown, sensorArea);
+            }
         }
     }
 }
