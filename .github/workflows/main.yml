@@ -125,13 +125,6 @@ jobs:
           restore-keys: |
             Library-${{ runner.os }}-${{ env.TARGET_PLATFORM }}-
 
-      - name: Setup Java & Gradle Cache
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '17'
-          cache: 'gradle'
-
       - name: Setup Ruby and Fastlane
         uses: ruby/setup-ruby@v1
         with:
@@ -150,6 +143,13 @@ jobs:
           buildName: MajdataPlay
           buildsPath: ${{ env.CONFIGURATION }}
           androidExportType: androidStudioProject
+
+      - name: Setup Java & Gradle Cache
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'zulu'
+          java-version: '17' 
+          cache: 'gradle'
 
       - name: Prepare Keystore
         run: |
