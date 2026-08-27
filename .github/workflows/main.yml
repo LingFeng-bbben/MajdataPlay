@@ -157,7 +157,7 @@ jobs:
 
       - name: Install Android NDK via SDK Manager
         run: |
-          echo "y" | sdkmanager --install "ndk;23.1.7779620"
+          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "ndk;23.1.7779620"
 
       # ★ 更新：修复 SDK/NDK 绝对路径，指向 sdkmanager 下载的官方路径
       - name: Fix Android SDK and NDK paths
