@@ -162,7 +162,8 @@ jobs:
 
       - name: Create Fastfile
         run: |
-          cat << 'EOF' > Fastfile
+          mkdir -p fastlane
+          cat << 'EOF' > fastlane/Fastfile
           default_platform(:android)
 
           platform :android do
