@@ -159,7 +159,6 @@ jobs:
         run: |
           echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "ndk;23.1.7779620"
 
-      # ★ 更新：修复 SDK/NDK 绝对路径，指向 sdkmanager 下载的官方路径
       - name: Fix Android SDK and NDK paths
         run: |
           cd ${{ env.UNITY_PROJECT_EXPORT_PATH }}
@@ -193,21 +192,44 @@ jobs:
           default_platform(:android)
 
           platform :android do
-            desc "Build FOSS version (APK)"
+            
+            before_all do
+              gradle_path = File.join(ENV['UNITY_PROJECT_EXPORT_PATH'], 'launcher', 'build.gradle')
+              content = File.read(gradle_path)
+
+              content = content.gsub(/versionCode\s+\d+/, "versionCode #{ENV['BUNDLE_VERSION_CODE']}")
+              content = content.gsub(/versionName\s+['"].*?['"]/, "versionName '#{ENV['BUNDLE_VERSION_WITH_HASH']}'")
+
+              signing_block = <<-GRADLE
+              
+              // --- Injected by Fastlane ---
+              android {
+                  signingConfigs {
+                      release {
+                          storeFile file("#{ENV['KEYSTORE_PATH']}")
+                          storePassword "#{ENV['ANDROID_KEYSTORE_PASS']}"
+                          keyAlias "#{ENV['ANDROID_KEYALIAS_NAME']}"
+                          keyPassword "#{ENV['ANDROID_KEYALIAS_PASS']}"
+                      }
+                  }
+                  buildTypes {
+                      release {
+                          signingConfig signingConfigs.release
+                      }
+                  }
+              }
+              GRADLE
+
+              File.open(gradle_path, 'w') { |file| file.puts(content + signing_block) }
+            end
+
+            desc "Build foss version (APK)"
             lane :build_foss do
               gradle(
                 project_dir: ENV['UNITY_PROJECT_EXPORT_PATH'],
                 task: "assemble",
                 build_type: "Release",
-                flags: "--build-cache",
-                properties: {
-                  "android.injected.versionCode" => ENV['BUNDLE_VERSION_CODE'],
-                  "android.injected.versionName" => ENV['BUNDLE_VERSION_WITH_HASH'],
-                  "android.injected.signing.store.file" => ENV['KEYSTORE_PATH'],
-                  "android.injected.signing.store.password" => ENV['ANDROID_KEYSTORE_PASS'],
-                  "android.injected.signing.key.alias" => ENV['ANDROID_KEYALIAS_NAME'],
-                  "android.injected.signing.key.password" => ENV['ANDROID_KEYALIAS_PASS']
-                }
+                flags: "--build-cache"
               )
             end
 
@@ -217,21 +239,13 @@ jobs:
                 project_dir: ENV['UNITY_PROJECT_EXPORT_PATH'],
                 task: "bundle",
                 build_type: "Release",
-                flags: "--build-cache",
-                properties: {
-                  "android.injected.versionCode" => ENV['BUNDLE_VERSION_CODE'],
-                  "android.injected.versionName" => ENV['BUNDLE_VERSION_WITH_HASH'],
-                  "android.injected.signing.store.file" => ENV['KEYSTORE_PATH'],
-                  "android.injected.signing.store.password" => ENV['ANDROID_KEYSTORE_PASS'],
-                  "android.injected.signing.key.alias" => ENV['ANDROID_KEYALIAS_NAME'],
-                  "android.injected.signing.key.password" => ENV['ANDROID_KEYALIAS_PASS']
-                }
+                flags: "--build-cache"
               )
             end
           end
           EOF
 
-      - name: Build FOSS (APK)
+      - name: Build foss (APK)
         env:
           ANDROID_KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
           ANDROID_KEYALIAS_NAME: ${{ secrets.ANDROID_KEYALIAS_NAME }}
@@ -247,11 +261,11 @@ jobs:
           OUTPUT_DIR="${{ env.UNITY_PROJECT_EXPORT_PATH }}/launcher/build/outputs/apk/release"
           for file in "$OUTPUT_DIR"/*.apk; do
             if [[ "$file" == *"v7a"* ]]; then
-              cp "$file" "out/MajdataPlay-Android-nightly.armeabi-v7a.apk"
+              cp "$file" "out/MajdataPlay-Android-${{ env.BUNDLE_VERSION_WITH_HASH }}-nightly.armeabi-v7a.apk"
             elif [[ "$file" == *"v8a"* ]]; then
-              cp "$file" "out/MajdataPlay-Android-nightly.arm64-v8a.apk"
+              cp "$file" "out/MajdataPlay-Android-${{ env.BUNDLE_VERSION_WITH_HASH }}-nightly.arm64-v8a.apk"
             else
-              cp "$file" "out/MajdataPlay-Android-nightly.apk"
+              cp "$file" "out/MajdataPlay-Android-${{ env.BUNDLE_VERSION_WITH_HASH }}-nightly.apk"
             fi
           done
           ls -la out
@@ -269,13 +283,13 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p out
-          cp "${{ env.UNITY_PROJECT_EXPORT_PATH }}/launcher/build/outputs/bundle/release/launcher-release.aab" "out/MajdataPlay-Android-nightly.aab"
+          cp "${{ env.UNITY_PROJECT_EXPORT_PATH }}/launcher/build/outputs/bundle/release/launcher-release.aab" "out/MajdataPlay-Android-${{ env.BUNDLE_VERSION_WITH_HASH }}-nightly.aab"
           ls -la out
 
       - name: Upload FOSS APK outputs as workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: MajdataPlay-Android-FOSS-APK
+          name: MajdataPlay-Android-foss-APK
           path: out/*.apk
           if-no-files-found: error
           retention-days: 7
@@ -294,7 +308,7 @@ jobs:
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_DEPLOY_ACCOUNT_JSON }}
           packageName: net.majdata.majdataplay
-          releaseFiles: out/MajdataPlay-Android-nightly.aab
+          releaseFiles: out/MajdataPlay-Android-${{ env.BUNDLE_VERSION_WITH_HASH }}-nightly.aab
           track: internal
           status: completed
 
