@@ -155,6 +155,24 @@ jobs:
           java-version: '17' 
           cache: 'gradle'
 
+      - name: Setup Android NDK
+        uses: nttld/setup-ndk@v1
+        id: setup-ndk
+        with:
+          ndk-version: r23c
+          local-cache: true
+
+      - name: Fix Android SDK and NDK paths
+        run: |
+          cd ${{ env.UNITY_PROJECT_EXPORT_PATH }}
+          
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          echo "ndk.dir=${{ steps.setup-ndk.outputs.ndk-path }}" >> local.properties
+          
+          if [ -f "unityLibrary/build.gradle" ]; then
+            sed -i 's|ndkPath "/opt/unity/Editor/Data/PlaybackEngines/AndroidPlayer/NDK"|ndkPath "${{ steps.setup-ndk.outputs.ndk-path }}"|g' unityLibrary/build.gradle
+          fi
+
       - name: Generate Gradle Wrapper
         run: |
           cd ${{ env.UNITY_PROJECT_EXPORT_PATH }}
