@@ -155,6 +155,11 @@ jobs:
           java-version: '17' 
           cache: 'gradle'
 
+      - name: Generate Gradle Wrapper
+        run: |
+          cd ${{ env.UNITY_PROJECT_EXPORT_PATH }}
+          gradle wrapper
+
       - name: Prepare Keystore
         run: |
           echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android-publish.keystore
@@ -173,7 +178,6 @@ jobs:
                 project_dir: ENV['UNITY_PROJECT_EXPORT_PATH'],
                 task: "assemble",
                 build_type: "Release",
-                use_gradlew: false,
                 flags: "--build-cache",
                 properties: {
                   "android.injected.versionCode" => ENV['BUNDLE_VERSION_CODE'],
@@ -192,7 +196,6 @@ jobs:
                 project_dir: ENV['UNITY_PROJECT_EXPORT_PATH'],
                 task: "bundle",
                 build_type: "Release",
-                use_gradlew: false,
                 flags: "--build-cache",
                 properties: {
                   "android.injected.versionCode" => ENV['BUNDLE_VERSION_CODE'],
