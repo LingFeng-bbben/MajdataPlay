@@ -89,17 +89,10 @@ jobs:
     name: Build (Android)
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' }}
-    strategy:
-      fail-fast: false
-      matrix:
-        configuration: [Release]
-        platform: [Android]
-        channel: [foss, play]
-
     env:
-      CONFIGURATION: ${{ matrix.configuration }}
-      TARGET_PLATFORM: ${{ matrix.platform }}
-      TARGET_CHANNEL: ${{ matrix.channel }}
+      CONFIGURATION: Release
+      TARGET_PLATFORM: Android
+      UNITY_PROJECT_EXPORT_PATH: Release/Android
 
     steps:
       - name: Checkout the repository
@@ -120,7 +113,7 @@ jobs:
           COMMIT_COUNT=$(git rev-list HEAD --count)
           COUNT=$((COMMIT_COUNT + 100000))
           echo "BUNDLE_VERSION_CODE=$COUNT" >> $GITHUB_ENV
-          echo "BUNDLE_VERSION_CODE_FOR_APK=$COMMIT_COUNT" >> $GITHUB_ENV
+          echo "BUNDLE_VERSION_CODE_FOR_APK=$COUNT" >> $GITHUB_ENV
           echo "Android AAB version code: $COUNT"
           echo "Android APK version code: $COMMIT_COUNT"
 
@@ -132,76 +125,145 @@ jobs:
           restore-keys: |
             Library-${{ runner.os }}-${{ env.TARGET_PLATFORM }}-
 
-      - name: Build APKs Release
-        if: ${{ env.TARGET_CHANNEL == 'foss' }}
-        uses: game-ci/unity-builder@v4
+      - name: Setup Java & Gradle Cache
+        uses: actions/setup-java@v4
         with:
-          unityVersion: ${{ env.UNITY_VERSION }}
-          targetPlatform: ${{ env.TARGET_PLATFORM }}
-          versioning: Custom
-          version: ${{ env.BUNDLE_VERSION_WITH_HASH }}
-          androidVersionCode: ${{ env.BUNDLE_VERSION_CODE_FOR_APK }}
-          buildName: MajdataPlay
-          buildsPath: ${{ env.CONFIGURATION }}
-          androidTargetSdkVersion: 29
-          androidKeystoreName: android-publish.keystore
-          androidKeystoreBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-          androidKeystorePass: ${{ secrets.ANDROID_KEYSTORE_PASS }}
-          androidKeyaliasName: ${{ secrets.ANDROID_KEYALIAS_NAME }}
-          androidKeyaliasPass: ${{ secrets.ANDROID_KEYALIAS_PASS }}
+          distribution: 'zulu'
+          java-version: '17'
+          cache: 'gradle'
 
-      - name: Build AAB Release
-        if: ${{ env.TARGET_CHANNEL == 'play' }}
+      - name: Setup Ruby and Fastlane
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          
+      - name: Install Fastlane
+        run: gem install fastlane
+
+      - name: Export Android Project
         uses: game-ci/unity-builder@v4
         with:
           unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: ${{ env.TARGET_PLATFORM }}
           versioning: Custom
           version: ${{ env.BUNDLE_VERSION_WITH_HASH }}
-          androidVersionCode: ${{ env.BUNDLE_VERSION_CODE }}
           buildName: MajdataPlay
           buildsPath: ${{ env.CONFIGURATION }}
-          androidExportType: androidAppBundle
-          androidTargetSdkVersion: 36
-          androidKeystoreName: android-publish.keystore
-          androidKeystoreBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-          androidKeystorePass: ${{ secrets.ANDROID_KEYSTORE_PASS }}
-          androidKeyaliasName: ${{ secrets.ANDROID_KEYALIAS_NAME }}
-          androidKeyaliasPass: ${{ secrets.ANDROID_KEYALIAS_PASS }}
+          androidExportType: androidStudioProject
+
+      - name: Prepare Keystore
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android-publish.keystore
+          echo "KEYSTORE_PATH=$(pwd)/android-publish.keystore" >> $GITHUB_ENV
+
+      - name: Create Fastfile
+        run: |
+          cat << 'EOF' > Fastfile
+          default_platform(:android)
+
+          platform :android do
+            desc "Build FOSS version (APK)"
+            lane :build_foss do
+              gradle(
+                project_dir: ENV['UNITY_PROJECT_EXPORT_PATH'],
+                task: "assemble",
+                build_type: "Release",
+                flags: "--build-cache",
+                properties: {
+                  "android.injected.versionCode" => ENV['BUNDLE_VERSION_CODE_FOR_APK'],
+                  "android.injected.versionName" => ENV['BUNDLE_VERSION_WITH_HASH'],
+                  "android.injected.signing.store.file" => ENV['KEYSTORE_PATH'],
+                  "android.injected.signing.store.password" => ENV['ANDROID_KEYSTORE_PASS'],
+                  "android.injected.signing.key.alias" => ENV['ANDROID_KEYALIAS_NAME'],
+                  "android.injected.signing.key.password" => ENV['ANDROID_KEYALIAS_PASS']
+                }
+              )
+            end
+
+            desc "Build Play version (AAB)"
+            lane :build_play do
+              gradle(
+                project_dir: ENV['UNITY_PROJECT_EXPORT_PATH'],
+                task: "bundle",
+                build_type: "Release",
+                flags: "--build-cache",
+                properties: {
+                  "android.injected.versionCode" => ENV['BUNDLE_VERSION_CODE'],
+                  "android.injected.versionName" => ENV['BUNDLE_VERSION_WITH_HASH'],
+                  "android.injected.signing.store.file" => ENV['KEYSTORE_PATH'],
+                  "android.injected.signing.store.password" => ENV['ANDROID_KEYSTORE_PASS'],
+                  "android.injected.signing.key.alias" => ENV['ANDROID_KEYALIAS_NAME'],
+                  "android.injected.signing.key.password" => ENV['ANDROID_KEYALIAS_PASS']
+                }
+              )
+            end
+          end
+          EOF
+
+      - name: Build FOSS (APK)
+        env:
+          ANDROID_KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+          ANDROID_KEYALIAS_NAME: ${{ secrets.ANDROID_KEYALIAS_NAME }}
+          ANDROID_KEYALIAS_PASS: ${{ secrets.ANDROID_KEYALIAS_PASS }}
+        run: |
+          find ${{ env.UNITY_PROJECT_EXPORT_PATH }} -name "build.gradle" -exec sed -i 's/targetSdkVersion [0-9]*/targetSdkVersion 29/g' {} +
+          fastlane build_foss
 
       - name: Collect Android APKs
-        if: ${{ env.TARGET_CHANNEL == 'foss' }}
         run: |
           set -euo pipefail
           mkdir -p out
-          cp "${{ env.CONFIGURATION }}/Android/MajdataPlay.apk/MajdataPlay.armeabi-v7a.apk" "out/MajdataPlay-Android-nightly.armeabi-v7a.apk"
-          cp "${{ env.CONFIGURATION }}/Android/MajdataPlay.apk/MajdataPlay.arm64-v8a.apk" "out/MajdataPlay-Android-nightly.arm64-v8a.apk"
+          OUTPUT_DIR="${{ env.UNITY_PROJECT_EXPORT_PATH }}/launcher/build/outputs/apk/release"
+          for file in "$OUTPUT_DIR"/*.apk; do
+            if [[ "$file" == *"v7a"* ]]; then
+              cp "$file" "out/MajdataPlay-Android-nightly.armeabi-v7a.apk"
+            elif [[ "$file" == *"v8a"* ]]; then
+              cp "$file" "out/MajdataPlay-Android-nightly.arm64-v8a.apk"
+            else
+              cp "$file" "out/MajdataPlay-Android-nightly.apk"
+            fi
+          done
           ls -la out
+
+      - name: Build Play (AAB)
+        env:
+          ANDROID_KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+          ANDROID_KEYALIAS_NAME: ${{ secrets.ANDROID_KEYALIAS_NAME }}
+          ANDROID_KEYALIAS_PASS: ${{ secrets.ANDROID_KEYALIAS_PASS }}
+        run: |
+          find ${{ env.UNITY_PROJECT_EXPORT_PATH }} -name "build.gradle" -exec sed -i 's/targetSdkVersion [0-9]*/targetSdkVersion 36/g' {} +
+          fastlane build_play
 
       - name: Collect Android AAB
-        if: ${{ env.TARGET_CHANNEL == 'play' }}
         run: |
           set -euo pipefail
           mkdir -p out
-          cp "${{ env.CONFIGURATION }}/Android/MajdataPlay.aab" "out/MajdataPlay-Android-nightly.aab"
+          cp "${{ env.UNITY_PROJECT_EXPORT_PATH }}/launcher/build/outputs/bundle/release/launcher-release.aab" "out/MajdataPlay-Android-nightly.aab"
           ls -la out
 
-      - name: Upload build outputs as workflow artifact
+      - name: Upload FOSS APK outputs as workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: out-${{ env.TARGET_PLATFORM }}-${{ env.TARGET_CHANNEL }}
-          path: out/*
+          name: MajdataPlay-Android-FOSS-APK
+          path: out/*.apk
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload Play AAB outputs as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MajdataPlay-Android-Play-AAB
+          path: out/*.aab
           if-no-files-found: error
           retention-days: 7
 
       - name: Upload to Google Play
         uses: r0adkll/upload-google-play@v1
-        if: ${{ env.TARGET_CHANNEL == 'play' }}
         continue-on-error: true
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_DEPLOY_ACCOUNT_JSON }}
           packageName: net.majdata.majdataplay
-          releaseFiles: ${{ env.CONFIGURATION }}/Android/MajdataPlay.aab
+          releaseFiles: out/MajdataPlay-Android-nightly.aab
           track: internal
           status: completed
 
