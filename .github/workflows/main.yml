@@ -140,6 +140,7 @@ jobs:
           targetPlatform: ${{ env.TARGET_PLATFORM }}
           versioning: Custom
           version: ${{ env.BUNDLE_VERSION_WITH_HASH }}
+          androidVersionCode: ${{ env.BUNDLE_VERSION_CODE_FOR_APK }}
           buildName: MajdataPlay
           buildsPath: ${{ env.CONFIGURATION }}
           androidExportType: androidStudioProject
