@@ -166,12 +166,17 @@ jobs:
         run: |
           cd ${{ env.UNITY_PROJECT_EXPORT_PATH }}
           
-          echo "sdk.dir=$ANDROID_HOME" > local.properties
-          echo "ndk.dir=${{ steps.setup-ndk.outputs.ndk-path }}" >> local.properties
+          BAD_NDK="/opt/unity/Editor/Data/PlaybackEngines/AndroidPlayer/NDK"
+          BAD_SDK="/opt/unity/Editor/Data/PlaybackEngines/AndroidPlayer/SDK"
           
-          if [ -f "unityLibrary/build.gradle" ]; then
-            sed -i 's|ndkPath "/opt/unity/Editor/Data/PlaybackEngines/AndroidPlayer/NDK"|ndkPath "${{ steps.setup-ndk.outputs.ndk-path }}"|g' unityLibrary/build.gradle
-          fi
+          GOOD_NDK="${{ steps.setup-ndk.outputs.ndk-path }}"
+          GOOD_SDK="$ANDROID_HOME"
+          
+          find . -type f \( -name "*.gradle" -o -name "*.properties" \) -exec sed -i "s|$BAD_NDK|$GOOD_NDK|g" {} +
+          find . -type f \( -name "*.gradle" -o -name "*.properties" \) -exec sed -i "s|$BAD_SDK|$GOOD_SDK|g" {} +
+          
+          echo "sdk.dir=$GOOD_SDK" > local.properties
+          echo "ndk.dir=$GOOD_NDK" >> local.properties
 
       - name: Generate Gradle Wrapper
         run: |
