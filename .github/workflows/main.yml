@@ -173,6 +173,7 @@ jobs:
                 project_dir: ENV['UNITY_PROJECT_EXPORT_PATH'],
                 task: "assemble",
                 build_type: "Release",
+                use_gradlew: false,
                 flags: "--build-cache",
                 properties: {
                   "android.injected.versionCode" => ENV['BUNDLE_VERSION_CODE'],
@@ -191,6 +192,7 @@ jobs:
                 project_dir: ENV['UNITY_PROJECT_EXPORT_PATH'],
                 task: "bundle",
                 build_type: "Release",
+                use_gradlew: false,
                 flags: "--build-cache",
                 properties: {
                   "android.injected.versionCode" => ENV['BUNDLE_VERSION_CODE'],
