@@ -145,6 +145,9 @@ jobs:
           buildsPath: ${{ env.CONFIGURATION }}
           androidExportType: androidStudioProject
 
+      - name: Fix Directory Permissions
+        run: sudo chown -R $USER:$USER ${{ env.UNITY_PROJECT_EXPORT_PATH }}
+
       - name: Setup Java & Gradle Cache
         uses: actions/setup-java@v5
         with:
