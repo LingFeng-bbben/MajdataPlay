@@ -92,7 +92,7 @@ jobs:
     env:
       CONFIGURATION: Release
       TARGET_PLATFORM: Android
-      UNITY_PROJECT_EXPORT_PATH: Release/Android
+      UNITY_PROJECT_EXPORT_PATH: Release/Android/MajdataPlay
 
     steps:
       - name: Checkout the repository
@@ -146,7 +146,7 @@ jobs:
           androidExportType: androidStudioProject
 
       - name: Fix Directory Permissions
-        run: sudo chown -R $USER:$USER ${{ env.UNITY_PROJECT_EXPORT_PATH }}
+        run: sudo chown -R $USER:$USER ${{ env.CONFIGURATION }}/${{ env.TARGET_PLATFORM }}
 
       - name: Setup Java & Gradle Cache
         uses: actions/setup-java@v5
