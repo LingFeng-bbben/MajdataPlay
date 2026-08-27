@@ -113,7 +113,7 @@ jobs:
           COMMIT_COUNT=$(git rev-list HEAD --count)
           COUNT=$((COMMIT_COUNT + 100000))
           echo "BUNDLE_VERSION_CODE=$COUNT" >> $GITHUB_ENV
-          echo "BUNDLE_VERSION_CODE_FOR_APK=$COUNT" >> $GITHUB_ENV
+          echo "BUNDLE_VERSION_CODE_FOR_APK=$COMMIT_COUNT" >> $GITHUB_ENV
           echo "Android AAB version code: $COUNT"
           echo "Android APK version code: $COMMIT_COUNT"
 
@@ -170,7 +170,7 @@ jobs:
                 build_type: "Release",
                 flags: "--build-cache",
                 properties: {
-                  "android.injected.versionCode" => ENV['BUNDLE_VERSION_CODE_FOR_APK'],
+                  "android.injected.versionCode" => ENV['BUNDLE_VERSION_CODE'],
                   "android.injected.versionName" => ENV['BUNDLE_VERSION_WITH_HASH'],
                   "android.injected.signing.store.file" => ENV['KEYSTORE_PATH'],
                   "android.injected.signing.store.password" => ENV['ANDROID_KEYSTORE_PASS'],
