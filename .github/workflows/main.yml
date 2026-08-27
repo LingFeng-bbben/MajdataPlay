@@ -155,23 +155,11 @@ jobs:
           java-version: '17' 
           cache: 'gradle'
 
-      - name: Setup Android NDK
-        uses: nttld/setup-ndk@v1
-        id: setup-ndk
-        with:
-          ndk-version: r23c
-          local-cache: true
-
-      - name: Install NDK Dependencies & Fix Permissions
+      - name: Install Android NDK via SDK Manager
         run: |
-          sudo apt-get update -y
-          sudo apt-get install -y libtinfo5 libncurses5 || {
-            sudo ln -sf /lib/x86_64-linux-gnu/libtinfo.so.6 /lib/x86_64-linux-gnu/libtinfo.so.5
-            sudo ln -sf /lib/x86_64-linux-gnu/libncurses.so.6 /lib/x86_64-linux-gnu/libncurses.so.5
-          }
-          
-          chmod -R +x ${{ steps.setup-ndk.outputs.ndk-path }}
+          echo "y" | sdkmanager --install "ndk;23.1.7779620"
 
+      # ★ 更新：修复 SDK/NDK 绝对路径，指向 sdkmanager 下载的官方路径
       - name: Fix Android SDK and NDK paths
         run: |
           cd ${{ env.UNITY_PROJECT_EXPORT_PATH }}
@@ -179,7 +167,7 @@ jobs:
           BAD_NDK="/opt/unity/Editor/Data/PlaybackEngines/AndroidPlayer/NDK"
           BAD_SDK="/opt/unity/Editor/Data/PlaybackEngines/AndroidPlayer/SDK"
           
-          GOOD_NDK="${{ steps.setup-ndk.outputs.ndk-path }}"
+          GOOD_NDK="$ANDROID_HOME/ndk/23.1.7779620"
           GOOD_SDK="$ANDROID_HOME"
           
           find . -type f \( -name "*.gradle" -o -name "*.properties" \) -exec sed -i "s|$BAD_NDK|$GOOD_NDK|g" {} +
