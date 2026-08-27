@@ -162,6 +162,16 @@ jobs:
           ndk-version: r23c
           local-cache: true
 
+      - name: Install NDK Dependencies & Fix Permissions
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y libtinfo5 libncurses5 || {
+            sudo ln -sf /lib/x86_64-linux-gnu/libtinfo.so.6 /lib/x86_64-linux-gnu/libtinfo.so.5
+            sudo ln -sf /lib/x86_64-linux-gnu/libncurses.so.6 /lib/x86_64-linux-gnu/libncurses.so.5
+          }
+          
+          chmod -R +x ${{ steps.setup-ndk.outputs.ndk-path }}
+
       - name: Fix Android SDK and NDK paths
         run: |
           cd ${{ env.UNITY_PROJECT_EXPORT_PATH }}
