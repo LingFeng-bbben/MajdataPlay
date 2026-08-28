@@ -92,6 +92,7 @@ jobs:
     env:
       CONFIGURATION: Release
       TARGET_PLATFORM: Android
+      PROJECT_ROOT: ${{ github.workspace }}
       UNITY_PROJECT_EXPORT_PATH: Release/Android/MajdataPlay
 
     steps:
@@ -199,7 +200,12 @@ jobs:
           platform :android do
             
             before_all do
-              gradle_path = File.join(ENV['UNITY_PROJECT_EXPORT_PATH'], 'launcher', 'build.gradle')
+              gradle_path = File.join(
+                ENV['PROJECT_ROOT'],
+                ENV['UNITY_PROJECT_EXPORT_PATH'],
+                'launcher',
+                'build.gradle'
+              )
               content = File.read(gradle_path)
 
               content = content.gsub(/versionCode\s+\d+/, "versionCode #{ENV['BUNDLE_VERSION_CODE']}")
