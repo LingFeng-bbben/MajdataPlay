@@ -1566,6 +1566,28 @@ namespace MajdataPlay.Scenes.Game
 
                 return slideCount > 1;
             }
+            public static int GetEachSlideCount(SimaiNote origin, ReadOnlySpan<SimaiNote> notes)
+            {
+                var noteCount = notes.Count(x =>
+                {
+                    var isSlide = x.Type == SimaiNoteType.Slide;
+                    var isMineSlide = x.IsMineSlide;
+
+                    return isSlide && !isMineSlide;
+                });
+
+                return noteCount;
+            }
+            public static SimaiNote[] GetEachSlides(SimaiNote origin, IEnumerable<SimaiNote> notes)
+            {
+                return notes.FindAll(x =>
+                {
+                    var isSlide = x.Type == SimaiNoteType.Slide;
+                    var isMineSlide = x.IsMineSlide;
+
+                    return isSlide && !isMineSlide;
+                });
+            }
             public static int Rotation(int keyIndex, int diff)
             {
                 if (!keyIndex.InRange(1, 8))
