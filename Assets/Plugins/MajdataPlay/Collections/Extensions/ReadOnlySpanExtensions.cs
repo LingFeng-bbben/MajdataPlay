@@ -112,5 +112,35 @@ namespace MajdataPlay.Collections
             }
             return false;
         }
+        public static int Count<T>(this ReadOnlySpan<T> span, T value) where T : IEquatable<T>
+        {
+            var count = 0;
+            var index = -1;
+
+            while ((index = span.IndexOf(value)) >= 0)
+            {
+                count++;
+                span = span.Slice(index + 1);
+            }
+
+            return count;
+        }
+        public static int Count<T>(this ReadOnlySpan<T> span, Func<T, bool> predicate)
+        {
+            if (predicate == null)
+            {
+                throw new ArgumentNullException(nameof(predicate));
+            }
+
+            var count = 0;
+            foreach (var item in span)
+            {
+                if (predicate(item))
+                {
+                    count++;
+                }
+            }
+            return count;
+        }
     }
 }
