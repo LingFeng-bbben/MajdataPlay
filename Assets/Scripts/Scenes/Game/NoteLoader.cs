@@ -1509,6 +1509,63 @@ namespace MajdataPlay.Scenes.Game
             {
                 return sensorIndex.Diff(diff);
             }
+            public static bool IsEachNote(SimaiNote origin, ReadOnlySpan<SimaiNote> notes)
+            {
+                return IsEachNote(origin, origin.Type, notes);
+            }
+            public static bool IsEachNote(SimaiNote origin, SimaiNoteType type, ReadOnlySpan<SimaiNote> notes)
+            {
+                switch(type)
+                {
+                    case SimaiNoteType.Tap:
+                    case SimaiNoteType.Hold:
+                    case SimaiNoteType.Touch:
+                    case SimaiNoteType.TouchHold:
+                        {
+                            if (origin.IsMine)
+                            {
+                                return false;
+                            }
+                            var noteCount = notes.Count(x =>
+                            {
+                                var isMineNoteOrMineStar = x.IsMine;
+                                var isNoHeadSlide = x.IsSlideNoHead;
+
+                                return !(isMineNoteOrMineStar || isNoHeadSlide);
+                            });
+                            return noteCount > 1;
+                        }
+                    case SimaiNoteType.Slide:
+                        {
+                            if (origin.IsMineSlide)
+                            {
+                                return false;
+                            }
+                            var noteCount = notes.Count(x =>
+                            {
+                                var isSlide = x.Type == SimaiNoteType.Slide;
+                                var isMineSlide = x.IsMineSlide;
+
+                                return isSlide && !isMineSlide;
+                            });
+                            return noteCount > 1;
+                        }
+                }
+                return false;
+            }
+            public static bool IsStarDouble(SimaiNote origin, ReadOnlySpan<SimaiNote> notes)
+            {
+                var slideCount = notes.Count(x =>
+                {
+                    var isSlide = x.Type == SimaiNoteType.Slide;
+                    var isMineSlide = x.IsMineSlide;
+                    var isSameHead = x.StartPosition == origin.StartPosition;
+
+                    return isSlide && !isMineSlide && isSameHead;
+                });
+
+                return slideCount > 1;
+            }
             public static int Rotation(int keyIndex, int diff)
             {
                 if (!keyIndex.InRange(1, 8))
