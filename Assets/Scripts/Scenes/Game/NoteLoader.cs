@@ -1541,13 +1541,7 @@ namespace MajdataPlay.Scenes.Game
                             {
                                 return false;
                             }
-                            var noteCount = notes.Count(x =>
-                            {
-                                var isSlide = x.Type == SimaiNoteType.Slide;
-                                var isMineSlide = x.IsMineSlide;
-
-                                return isSlide && !isMineSlide;
-                            });
+                            var noteCount = GetEachSlideCount(origin, notes);
                             return noteCount > 1;
                         }
                 }
