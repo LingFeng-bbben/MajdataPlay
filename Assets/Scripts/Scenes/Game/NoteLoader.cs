@@ -222,6 +222,8 @@ namespace MajdataPlay.Scenes.Game
         {
             Majdata<NoteLoader>.Instance = this;
 
+            SlideDataBuilder.InitializeSlideAreaLookup();
+
             Array.Clear(_isHasTap, 0, _isHasTap.Length);
             Array.Clear(_isHasHold, 0, _isHasHold.Length);
             Array.Clear(_isHasTouch, 0, _isHasTouch.Length);
@@ -1465,15 +1467,16 @@ namespace MajdataPlay.Scenes.Game
             var isInvalid = endFlagPos == -1 ||
                             endFlagPos == slideText.Length - 1 ||
                             !int.TryParse(slideText.Slice(0, 1), out startPos) ||
-                            !int.TryParse(slideText.Slice(endFlagPos, 1), out endPos);
+                            !int.TryParse(slideText.Slice(endFlagPos + 1, 1), out endPos);
             if (isInvalid)
             {
                 throw new InvalidSimaiSyntaxException(timing.RawTextPositionX, timing.RawTextPositionY, note.RawContent);
             }
+            var slideCode = note.RawContent.Substring(0, endFlagPos + 2);
             var multiple = note.Count;
             var isMine = note.IsMineSlide;
             var isEach = NoteCreateHelper.IsEachNote(note, timing.Notes);
-            var pathMetadata = SlideCodeParser.Parse(note.RawContent);
+            var pathMetadata = SlideCodeParser.Parse(slideCode);
             var slideMetadata = ExtendSlideHelper.CreateSlideEntry(pathMetadata);
             var extendSlideObject = Instantiate(slidePrefab[SLIDE_PREFAB_MAP["Ex"]], notes.transform.GetChild(3));
             var extendSlide = extendSlideObject.GetComponent<ExtendSlideDrop>();

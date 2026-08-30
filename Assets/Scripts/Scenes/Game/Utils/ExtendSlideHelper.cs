@@ -113,7 +113,7 @@ namespace MajdataPlay.Scenes.Game.Utils
             var firstAreaMinIdx = 2;    // 第一个区至少删两个箭头
             var finalAreaMaxIdx = conditionalLastArrow ? arrowCount - 7 : arrowCount - 6;  // 最后一个区至少留四个箭头
             SensorArea sensorA;
-            SensorArea sensorB;
+            SensorArea? sensorB;
             for (var i = 0; i <= areaRawData.Length - 2; i++) // 最后一个判定段要特殊处理
             {
                 var targetLength = lastLength + 0.33 * (areaRawData[i].LengthAfterPush - lastLength);
@@ -127,12 +127,12 @@ namespace MajdataPlay.Scenes.Game.Utils
                 lastLength = areaRawData[i].LengthAfterFinish;
 
                 sensorA = (SensorArea)areaRawData[i].SensorA;
-                sensorB = (SensorArea)areaRawData[i].SensorB;
+                sensorB = areaRawData[i].SensorB == -1 ? null : (SensorArea)areaRawData[i].SensorB;
                 areaList.Add(new ParsingSlideArea(push, finish, sensorA, sensorB));
             }
 
             sensorA = (SensorArea)areaRawData[^1].SensorA;
-            sensorB = (SensorArea)areaRawData[^1].SensorB;
+            sensorB = areaRawData[^1].SensorB == -1 ? null : (SensorArea)areaRawData[^1].SensorB;
             areaList.Add(new ParsingSlideArea(arrowCount, arrowCount, sensorA, sensorB));
 
             var slideLength = arrowRawData[^1].PathLength;
