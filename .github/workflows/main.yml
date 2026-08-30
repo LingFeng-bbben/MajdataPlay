@@ -262,7 +262,7 @@ jobs:
           ANDROID_KEYALIAS_NAME: ${{ secrets.ANDROID_KEYALIAS_NAME }}
           ANDROID_KEYALIAS_PASS: ${{ secrets.ANDROID_KEYALIAS_PASS }}
         run: |
-          find ${{ env.UNITY_PROJECT_EXPORT_PATH }} -name "build.gradle" -exec sed -i 's/targetSdkVersion [0-9]*/targetSdkVersion 29/g' {} +
+          sed -i 's/^unity\.targetSdkVersion=.*/unity.targetSdkVersion=29/' "${{ env.UNITY_PROJECT_EXPORT_PATH }}/gradle.properties"
           fastlane build_foss
 
       - name: Collect Android APKs
@@ -287,7 +287,7 @@ jobs:
           ANDROID_KEYALIAS_NAME: ${{ secrets.ANDROID_KEYALIAS_NAME }}
           ANDROID_KEYALIAS_PASS: ${{ secrets.ANDROID_KEYALIAS_PASS }}
         run: |
-          find ${{ env.UNITY_PROJECT_EXPORT_PATH }} -name "build.gradle" -exec sed -i 's/targetSdkVersion [0-9]*/targetSdkVersion 36/g' {} +
+          sed -i 's/^unity\.targetSdkVersion=.*/unity.targetSdkVersion=36/' "${{ env.UNITY_PROJECT_EXPORT_PATH }}/gradle.properties"
           fastlane build_play
 
       - name: Collect Android AAB
