@@ -69,23 +69,7 @@ namespace MajdataPlay.UI
             // -------------------------
             if (isDown)
             {
-                var pressedScale = new Vector3(PressedScale, PressedScale, PressedScale);
-                CancelScaleMotion();
-                _scaleMotion = LMotion.Create(transform.localScale, pressedScale, AnimationDuration)
-                    .WithEase(EaseType)
-                    .WithOnComplete(() =>
-                    {
-                        if (HoldTriggerTime > 0f)
-                        {
-                            return;
-                        }
-
-                        var releasedScale = new Vector3(ReleasedScale, ReleasedScale, ReleasedScale);
-                        _scaleMotion = LMotion.Create(transform.localScale, releasedScale, AnimationDuration)
-                            .WithEase(EaseType)
-                            .BindToLocalScale(transform);
-                    })
-                    .BindToLocalScale(transform);
+                PlayPressScaleAnimation(HoldTriggerTime <= 0f);
                 if (HoldTriggerTime > 0f)
                 {
                     _holdTimer = 0f;
@@ -104,11 +88,8 @@ namespace MajdataPlay.UI
             // -------------------------
             if (isUp && !isPressed && HoldTriggerTime > 0f)
             {
-                var releasedScale = new Vector3(ReleasedScale, ReleasedScale, ReleasedScale);
                 CancelScaleMotion();
-                _scaleMotion = LMotion.Create(transform.localScale, releasedScale, AnimationDuration)
-                    .WithEase(EaseType)
-                    .BindToLocalScale(transform);
+                PlayReleaseScaleAnimation();
 
                 _holdTimer = 0f;
 
@@ -169,6 +150,45 @@ namespace MajdataPlay.UI
                 }
             }
         }
+
+        void PlayPressScaleAnimation(bool autoRelease)
+        {
+            var pressedScale = new Vector3(PressedScale, PressedScale, PressedScale);
+            CancelScaleMotion();
+            _scaleMotion = LMotion.Create(transform.localScale, pressedScale, AnimationDuration)
+                .WithEase(EaseType)
+                .WithOnComplete(() =>
+                {
+                    if (autoRelease)
+                    {
+                        PlayReleaseScaleAnimation();
+                    }
+                })
+                .BindToLocalScale(transform);
+        }
+
+        void PlayReleaseScaleAnimation()
+        {
+            var releasedScale = new Vector3(ReleasedScale, ReleasedScale, ReleasedScale);
+            _scaleMotion = LMotion.Create(transform.localScale, releasedScale, AnimationDuration)
+                .WithEase(EaseType)
+                .BindToLocalScale(transform);
+        }
+
+#if UNITY_EDITOR
+        public void PlayClickAnimationPreview()
+        {
+            CancelScaleMotion();
+            transform.localScale = new Vector3(ReleasedScale, ReleasedScale, ReleasedScale);
+            PlayPressScaleAnimation(true);
+        }
+
+        public void StopAnimationPreview(Vector3 restoreScale)
+        {
+            CancelScaleMotion();
+            transform.localScale = restoreScale;
+        }
+#endif
 
         void CancelScaleMotion()
         {
