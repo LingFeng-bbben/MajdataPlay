@@ -206,96 +206,17 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             State = NoteStatus.Inited;
         }
-        [Il2CppSetOption(Option.NullChecks, false)]
-        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void SensorCheck()
+        protected override SensorCheckResult SensorCheck()
         {
-            if (AutoplayMode == AutoplayModeOption.Enable || !IsCheckable)
+            var result = base.SensorCheck();
+            if (result.IsAnyAreaTriggered)
             {
-                return;
+                HideBar(GetIndex());
+                PlaySFX();
             }
-            else if (IsEnded || !IsInited)
-            {
-                return;
-            }
-            else if (IsFinished)
-            {
-                return;
-            }
-
-            for (var i = 0; i < 3; i++)
-            {
-                SensorCheckInternal(ref JudgeQueues[i]);
-            }
+            return result;
         }
-        [Il2CppSetOption(Option.NullChecks, false)]
-        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void SensorCheckInternal(ref Memory<SlideArea> queueMemory)
-        {
-            if (queueMemory.IsEmpty)
-            {
-                return;
-            }
 
-            for (; !queueMemory.IsEmpty;)
-            {
-                var queue = queueMemory.Span;
-                ref var first = ref queue[0];
-                ref SlideArea second = ref Unsafe.NullRef<SlideArea>();
-                var fAreas = first.IncludedAreas;
-
-                if (queueMemory.Length >= 2)
-                {
-                    second = ref queue[1];
-                }
-
-                for (var i = 0; i < fAreas.Length; i++)
-                {
-                    var area = fAreas[i];
-                    var sensorState = NoteManager.GetSensorStatusInThisFrame(area);
-                    first.Check(area, sensorState);
-                }
-
-                if (first.On)
-                {
-                    PlaySFX();
-                }
-
-                if (!Unsafe.IsNullRef(ref second) && (first.IsSkippable || first.On))
-                {
-                    var sAreas = second.IncludedAreas;
-
-                    for (var i = 0; i < sAreas.Length; i++)
-                    {
-                        var area = sAreas[i];
-                        var sensorState = NoteManager.GetSensorStatusInThisFrame(area);
-                        second.Check(area, sensorState);
-                    }
-
-                    if (second.IsFinished)
-                    {
-                        queueMemory = queueMemory.Slice(2);
-                        HideBar(GetIndex());
-                        continue;
-                    }
-                    else if (second.On)
-                    {
-                        queueMemory = queueMemory.Slice(1);
-                        HideBar(GetIndex());
-                        continue;
-                    }
-                }
-
-                if (first.IsFinished)
-                {
-                    queueMemory = queueMemory.Slice(1);
-                    HideBar(GetIndex());
-                }
-                return;
-            }
-        }
         void SlideCheck()
         {
             var thisFrameSec = ThisFrameSec;
@@ -605,44 +526,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
             DJAutoplayProgress = DJAutoplayProgress.Clamp(0, currentProgress);
         }
-        protected override void TooLateJudge()
-        {
-            if (IsJudged)
-            {
-                End();
-                return;
-            }
-            base.TooLateJudge();
-            End();
-        }
-        protected override void End()
-        {
-            if (IsEnded)
-            {
-                return;
-            }
-            State = NoteStatus.End;
-            base.End();
-            ConvertJudgeGrade(ref JudgeResult);
-            if (!ModInfo.SubdivideSlideJudgeGrade)
-            {
-                JudgeGradeCorrection(ref JudgeResult);
-            }
-            var result = new NoteJudgeResult()
-            {
-                Grade = JudgeResult,
-                Diff = JudgeDiff,
-                IsEX = IsEX,
-                IsBreak = IsBreak
-            };
 
-            ObjectCounter.ReportResult(this, result, Multiple);
-            if (PlaySlideOK(result))
-            {
-                SlideOK!.PlayResult(result);
-            }
-            PlayJudgeSFX(result);
-        }
         protected override void LoadSkin()
         {
             var barRenderers = SlideBarRenderers;
