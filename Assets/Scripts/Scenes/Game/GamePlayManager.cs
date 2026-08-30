@@ -1041,7 +1041,7 @@ namespace MajdataPlay.Scenes.Game
             if (_isManualStartGame)
             {
                 _sceneSwitcher.SetLoadingText($"{"MAJTEXT_GAME_PRESS_4TH_BUTTON_TO_CONTINUE".i18n()}...");
-                while (!InputManager.IsButtonClickedInThisFrame(ButtonZone.A4))
+                while (!InputManager.IsSensorClickedInThisFrame(SensorArea.A4))
                 {
                     await UniTask.Yield(token);
                 }
