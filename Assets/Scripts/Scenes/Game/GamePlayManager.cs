@@ -163,6 +163,7 @@ namespace MajdataPlay.Scenes.Game
         float _3456PressTime = 0;
         float _1278PressTime = 0;
         float _p1PressTime = 0;
+        bool _isFnKeyInputArmed = false;
 
         float _devicePlaybackOffset = 0f;
 
@@ -1315,12 +1316,20 @@ namespace MajdataPlay.Scenes.Game
         {
             using (UnityProfiler.Create("GamePlayManager.FnKeyStateUpdate"))
             {
-                if (State == GamePlayStatus.Ended)
+                if (State is not (GamePlayStatus.Running or GamePlayStatus.Blocking or GamePlayStatus.WaitForEnd))
                 {
-                    _3456PressTime = 0;
-                    _2367PressTime = 0;
-                    _1278PressTime = 0;
-                    _p1PressTime = 0;
+                    _isFnKeyInputArmed = false;
+                    ResetFnKeyPressTimes();
+                    return;
+                }
+                if (!_isFnKeyInputArmed)
+                {
+                    // Do not inherit a shortcut that was pressed while entering this Game scene.
+                    ResetFnKeyPressTimes();
+                    if (IsFnKeyInputReleased())
+                    {
+                        _isFnKeyInputArmed = true;
+                    }
                     return;
                 }
                 var _inner_2367 = InputManager.CheckSensorStatus(_sensorAreaFor2367[0], SwitchStatus.On) &&
@@ -1460,6 +1469,38 @@ namespace MajdataPlay.Scenes.Game
                     ExitToScene("Practice", 0).Forget();
                 }
             }
+        }
+        void ResetFnKeyPressTimes()
+        {
+            _3456PressTime = 0;
+            _2367PressTime = 0;
+            _1278PressTime = 0;
+            _p1PressTime = 0;
+        }
+        bool IsFnKeyInputReleased()
+        {
+            if (InputManager.CheckButtonStatus(ButtonZone.P1, SwitchStatus.On))
+            {
+                return false;
+            }
+            for (var i = 0; i < _buttonKeyFor2367.Length; i++)
+            {
+                if (InputManager.CheckButtonStatus(_buttonKeyFor2367[i], SwitchStatus.On) ||
+                    InputManager.CheckButtonStatus(_buttonKeyFor3456[i], SwitchStatus.On) ||
+                    InputManager.CheckButtonStatus(_buttonKeyFor1278[i], SwitchStatus.On))
+                {
+                    return false;
+                }
+#if UNITY_ANDROID || UNITY_IOS
+                if (InputManager.CheckSensorStatus(_sensorAreaFor2367[i], SwitchStatus.On) ||
+                    InputManager.CheckSensorStatus(_sensorAreaFor3456[i], SwitchStatus.On) ||
+                    InputManager.CheckSensorStatus(_sensorAreaFor1278[i], SwitchStatus.On))
+                {
+                    return false;
+                }
+#endif
+            }
+            return true;
         }
         void EnforceGameFailureLateUpdate()
         {
