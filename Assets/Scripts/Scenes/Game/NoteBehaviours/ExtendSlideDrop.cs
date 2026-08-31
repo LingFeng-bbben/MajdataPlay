@@ -114,9 +114,17 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
             var rentedBuffer = Pool<SlideArea>.RentArray(areas.Count);
             areas.CopyTo(rentedBuffer);
-            Table = new SlideTable(rentedBuffer, areas.Count);
+            Table = new SlideTable(rentedBuffer, areas.Count)
+            {
+                Const = metadata.SlideConst,
+                ClassicConst = metadata.SlideConst,
+            };
             JudgeQueues[0] = Table.JudgeQueue;
             JudgeQueueLength = Table.JudgeQueue.Length;
+
+            var percent = Table.Const;
+            JudgeTiming = StartTiming + (Length * (1 - percent));
+            LastWaitTimeSec = Length * percent;
         }
         private void InitArrowAndPath(ExtendSlideMetadata metadata)
         {
@@ -147,6 +155,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 SlideBarRenderers.Add(arrowRenderer);
                 SlideBarTransforms.Add(arrowTransform);
                 arrowTransform.localScale *= USERSETTING_SLIDE_SCALE;
+                arrowTransform.position = pos;
+                arrowTransform.rotation = rot;
             }
         }
         private void InitSlideOk(ExtendSlideMetadata metadata)
