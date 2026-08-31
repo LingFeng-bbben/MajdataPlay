@@ -685,7 +685,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 return;
             }
-            if (_lastHeadState is HOLD_HEAD_STATE_JUDGED or HOLD_HEAD_STATE_JUDGED_AND_NOT_FEEDBACK || _lastHoldState is HOLD_STATE_PRESSED)
+            if (_lastHeadState is HOLD_HEAD_STATE_JUDGED_AND_NOT_FEEDBACK || 
+                (_lastHeadState is HOLD_HEAD_STATE_JUDGED && JudgeResult != JudgeGrade.Miss) ||
+                _lastHoldState is HOLD_STATE_PRESSED)
             {
                 AudioEffMana.PlayTouchHoldSound();
             }
