@@ -112,8 +112,16 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                           parsingArea.ArrowProgressFinish)
                     );
             }
+            if (areas.Count <= 3)
+            {
+                var @as = areas.AsSpan();
+                ref var area = ref @as[1];
+                area.IsSkippable = false;
+            }
+
             var rentedBuffer = Pool<SlideArea>.RentArray(areas.Count);
-            areas.CopyTo(rentedBuffer);
+            areas.CopyTo(rentedBuffer);            
+
             Table = new SlideTable(rentedBuffer, areas.Count)
             {
                 Const = metadata.SlideConst,
