@@ -136,7 +136,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 var arrowInfo = metadata.ArrowPoses[i];
                 var pos = new Vector3(arrowInfo.X, arrowInfo.Y);
-                var rot = Quaternion.Euler(0, 0, arrowInfo.RotZ);
+                var rot = Quaternion.Euler(new Vector3(0, 0, arrowInfo.RotZ) + new Vector3(0f, 0f, 18f));
+                var arrowRot = Quaternion.Euler(new Vector3(0, 0, arrowInfo.RotZ));
 
                 StarPositions.Add(pos);
                 StarRotations.Add(rot);
@@ -156,7 +157,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 SlideBarTransforms.Add(arrowTransform);
                 arrowTransform.localScale *= USERSETTING_SLIDE_SCALE;
                 arrowTransform.position = pos;
-                arrowTransform.rotation = rot;
+                arrowTransform.rotation = arrowRot;
             }
         }
         private void InitSlideOk(ExtendSlideMetadata metadata)
@@ -167,8 +168,6 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 case SlideOkType.CircleR:
                     IsJustR = true;
                     break;
-                default:
-                    throw new NotSupportedException();
             }
             if (SlideOK is null)
             {
