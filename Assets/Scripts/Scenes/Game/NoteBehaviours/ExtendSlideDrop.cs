@@ -38,11 +38,6 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             SlideOK.IsClassic = IsClassic;
             SlideOK.transform.SetParent(Transform.parent);
 
-            SetActive(false);
-            SetStarActive(false);
-            SetSlideBarAlpha(0f);
-            SlideLength = SlideBars.Count + 1;
-
             starTransforms[0].position = Vector3.zero;
             starTransforms[0].localScale = new Vector3(0f, 0f, 1f);
         }
@@ -86,6 +81,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             var starTransforms = StarTransforms.Span;
             starTransforms[0].position = StarPositions[0];
             starTransforms[0].transform.localScale = new Vector3(0f, 0f, 1f);
+
+            SetActive(false);
+            SetStarActive(false);
+            SetSlideBarAlpha(0f);
+            SlideLength = SlideBars.Count + 1;
 
             State = NoteStatus.Inited;
             DJAutoplayRatio = SlideLength / 14;
