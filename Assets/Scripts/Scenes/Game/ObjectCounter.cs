@@ -674,7 +674,7 @@ namespace MajdataPlay.Scenes.Game
         internal void ReportResult<T>(T note, in NoteJudgeResult judgeResult, int multiple = 1) where T : NoteDrop
         {
             var grade = judgeResult.Grade;
-            var isSlide = note is SlideDrop or WifiDrop;
+            var isSlide = note is SlideBase;
 
             if (!isSlide && !judgeResult.IsMissOrTooFast)
             {
@@ -1297,8 +1297,7 @@ namespace MajdataPlay.Scenes.Game
                         noteJudgeStats.HoldJudgedCount += multiple;
                         fieldHeadRef = ref noteJudgeStats.HoldCriticalCount;
                         break;
-                    case WifiDrop:
-                    case SlideDrop:
+                    case SlideBase:
                         _judgedSlideCount[(int)grade] += multiple;
                         noteJudgeStats.SlideJudgedCount += multiple;
                         fieldHeadRef = ref noteJudgeStats.SlideCriticalCount;
@@ -1414,8 +1413,7 @@ namespace MajdataPlay.Scenes.Game
                 case TouchHoldDrop:
                     baseScore = 1000 * multiple;
                     break;
-                case SlideDrop:
-                case WifiDrop:
+                case SlideBase:
                     baseScore = 1500 * multiple;
                     break;
             }
