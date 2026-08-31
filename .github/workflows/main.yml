@@ -262,7 +262,27 @@ jobs:
           ANDROID_KEYALIAS_NAME: ${{ secrets.ANDROID_KEYALIAS_NAME }}
           ANDROID_KEYALIAS_PASS: ${{ secrets.ANDROID_KEYALIAS_PASS }}
         run: |
-          sed -i 's/^unity\.targetSdkVersion=.*/unity.targetSdkVersion=29/' "${{ env.UNITY_PROJECT_EXPORT_PATH }}/gradle.properties"
+          ROOT="${{ env.UNITY_PROJECT_EXPORT_PATH }}"
+
+          # Unity property
+          find "$ROOT" -type f -name "gradle.properties" \
+            -exec sed -i 's/^unity\.targetSdkVersion=.*/unity.targetSdkVersion=29/' {} +
+      
+          # AGP 9 syntax
+          find "$ROOT" -type f -name "*.gradle" \
+            -exec sed -i -E 's/(targetSdk[[:space:]]+)[0-9]+/\129/g' {} +
+      
+          # Old AGP syntax, if any
+          find "$ROOT" -type f -name "*.gradle" \
+            -exec sed -i -E 's/(targetSdkVersion[[:space:]]+)[0-9]+/\129/g' {} +
+      
+          echo "=== Final SDK configuration ==="
+          grep -RIn \
+            --include='*.gradle' \
+            --include='*.properties' \
+            -E 'targetSdk|targetSdkVersion|unity.targetSdkVersion' \
+            "$ROOT"
+            
           fastlane build_foss
 
       - name: Collect Android APKs
@@ -287,7 +307,24 @@ jobs:
           ANDROID_KEYALIAS_NAME: ${{ secrets.ANDROID_KEYALIAS_NAME }}
           ANDROID_KEYALIAS_PASS: ${{ secrets.ANDROID_KEYALIAS_PASS }}
         run: |
-          sed -i 's/^unity\.targetSdkVersion=.*/unity.targetSdkVersion=36/' "${{ env.UNITY_PROJECT_EXPORT_PATH }}/gradle.properties"
+          ROOT="${{ env.UNITY_PROJECT_EXPORT_PATH }}"
+
+          find "$ROOT" -type f -name "gradle.properties" \
+            -exec sed -i 's/^unity\.targetSdkVersion=.*/unity.targetSdkVersion=36/' {} +
+      
+          find "$ROOT" -type f -name "*.gradle" \
+            -exec sed -i -E 's/(targetSdk[[:space:]]+)[0-9]+/\136/g' {} +
+      
+          find "$ROOT" -type f -name "*.gradle" \
+            -exec sed -i -E 's/(targetSdkVersion[[:space:]]+)[0-9]+/\136/g' {} +
+      
+          echo "=== Final SDK configuration ==="
+          grep -RIn \
+            --include='*.gradle' \
+            --include='*.properties' \
+            -E 'targetSdk|targetSdkVersion|unity.targetSdkVersion' \
+            "$ROOT"
+            
           fastlane build_play
 
       - name: Collect Android AAB
