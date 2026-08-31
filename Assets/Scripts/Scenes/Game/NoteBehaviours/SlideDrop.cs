@@ -307,6 +307,29 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
         }
 
+        protected override void LoadSkin()
+        {
+            base.LoadSkin();
+            if (IsJustR)
+            {
+                if (SlideOK!.Shape == SlideOKShape.Str && IsMirror)
+                {
+                    SlideOK!.transform.Rotate(new Vector3(0f, 0f, 180f));
+                    var angel = SlideOK.transform.rotation.eulerAngles.z * Mathf.Deg2Rad;
+                    SlideOK.transform.position += new Vector3(Mathf.Sin(angel) * 0.27f, Mathf.Cos(angel) * -0.27f);
+                }
+            }
+            else
+            {
+                if (SlideOK!.Shape == SlideOKShape.Str && !IsMirror)
+                {
+                    SlideOK!.transform.Rotate(new Vector3(0f, 0f, 180f));
+                    var angel = SlideOK.transform.rotation.eulerAngles.z * Mathf.Deg2Rad;
+                    SlideOK.transform.position += new Vector3(Mathf.Sin(angel) * 0.27f, Mathf.Cos(angel) * -0.27f);
+                }
+            }
+        }
+
         protected override void OnDestroy()
         {
             base.OnDestroy();

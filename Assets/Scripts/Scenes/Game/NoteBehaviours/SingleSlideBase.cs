@@ -342,7 +342,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             DJAutoplayProgress = DJAutoplayProgress.Clamp(0, currentProgress);
         }
 
-        protected sealed override void LoadSkin()
+        protected override void LoadSkin()
         {
             var barRenderers = SlideBarRenderers;
             var skin = MajInstances.SkinManager.GetSlideSkin();
@@ -395,21 +395,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             if (IsJustR)
             {
-                if (SlideOK!.SetR() == 1 && IsMirror)
-                {
-                    SlideOK!.transform.Rotate(new Vector3(0f, 0f, 180f));
-                    var angel = SlideOK.transform.rotation.eulerAngles.z * Mathf.Deg2Rad;
-                    SlideOK.transform.position += new Vector3(Mathf.Sin(angel) * 0.27f, Mathf.Cos(angel) * -0.27f);
-                }
+                SlideOK!.SetR();
             }
             else
             {
-                if (SlideOK!.SetL() == 1 && !IsMirror)
-                {
-                    SlideOK!.transform.Rotate(new Vector3(0f, 0f, 180f));
-                    var angel = SlideOK.transform.rotation.eulerAngles.z * Mathf.Deg2Rad;
-                    SlideOK.transform.position += new Vector3(Mathf.Sin(angel) * 0.27f, Mathf.Cos(angel) * -0.27f);
-                }
+                SlideOK!.SetL();
             }
         }
 

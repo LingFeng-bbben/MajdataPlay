@@ -174,8 +174,14 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 return;
             }
             var pose = metadata.OkPose;
+            var rotZ = pose.RotZ;
             SlideOK.transform.position = new Vector3(pose.X, pose.Y);
-            SlideOK.transform.rotation = Quaternion.Euler(new Vector3(0, 0, pose.RotZ));
+            //SlideOK.transform.rotation = Quaternion.Euler(new Vector3(0, 0, pose.RotZ));
+            //if (IsJustR)
+            //{
+            //    rotZ -= 180f;
+            //}
+            SlideOK.transform.rotation = Quaternion.AngleAxis(rotZ, Vector3.forward);
 
             switch(metadata.OkType)
             {
