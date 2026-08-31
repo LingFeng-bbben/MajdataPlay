@@ -326,7 +326,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 }
                 else
                 {
-                    if (_lastHoldState == HOLD_STATE_RELEASED)
+                    if (_lastHoldState == HOLD_STATE_RELEASED ||
+                        (_lastHoldState == HOLD_STATE_NONE && JudgeResult == JudgeGrade.Miss))
                     {
                         PlayerReleaseTimeSec += MajTimeline.DeltaTime;
                     }

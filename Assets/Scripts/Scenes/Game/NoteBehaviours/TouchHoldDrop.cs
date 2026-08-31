@@ -315,7 +315,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             BodyGroupInfo?.Exit();
             if (!IsMine)
             {
-                if (_lastHoldState == HOLD_STATE_RELEASED)
+                if (_lastHoldState == HOLD_STATE_RELEASED ||
+                    (_lastHoldState == HOLD_STATE_NONE && JudgeResult == JudgeGrade.Miss))
                 {
                     PlayerReleaseTimeSec += MajTimeline.DeltaTime;
                 }
