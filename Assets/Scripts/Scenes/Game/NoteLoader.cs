@@ -1072,7 +1072,10 @@ namespace MajdataPlay.Scenes.Game
                                                                           "组合星星有错误\nSLIDE CHAIN ERROR");
                             }
                         }
-                        slidePart.RawContent ??= sb.ToString();
+                        if(string.IsNullOrEmpty(slidePart.RawContent))
+                        {
+                            slidePart.RawContent = sb.ToString();
+                        }                        
                         string slideShape = NoteCreateHelper.DetectShapeFromText(slidePart.RawContent);
                         if (slideShape.StartsWith("-"))
                         {
