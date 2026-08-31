@@ -132,7 +132,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             StartPos = ((int)metadata.JudgeAreaQueue[0].SensorA) + 1;
             EndPos = ((int)metadata.JudgeAreaQueue[metadata.JudgeAreaQueue.Length - 1].SensorA) + 1;
 
-            for (var i = 1; i < metadata.ArrowPoses.Length; i++)
+            for (var i = 0; i < metadata.ArrowPoses.Length; i++)
             {
                 var arrowInfo = metadata.ArrowPoses[i];
                 var pos = new Vector3(arrowInfo.X, arrowInfo.Y);
