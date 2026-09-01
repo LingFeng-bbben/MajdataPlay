@@ -13585,6 +13585,7 @@ GameObject:
   - component: {fileID: 1390256244}
   - component: {fileID: 1390256245}
   - component: {fileID: 1390256246}
+  - component: {fileID: 1390256247}
   m_Layer: 0
   m_Name: SlidePool
   m_TagString: Untagged
@@ -13637,6 +13638,20 @@ MonoBehaviour:
   IntUpdateElapsedMs: 0
   IntFixedUpdateElapsedMs: 0
   IntLateUpdateElapsedMs: 0
+--- !u!114 &1390256247
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1390256243}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0dc60ee6aa35d5c448ff8a1e1a4ec843, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.Scenes.Game.Notes.Controllers.SlideOKUpdater
+  <PreUpdateElapsedMs>k__BackingField: 0
+  _noteListRoot: {fileID: 1390256244}
 --- !u!1 &1435460156
 GameObject:
   m_ObjectHideFlags: 0

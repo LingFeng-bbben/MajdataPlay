@@ -45,6 +45,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             _displayCP = MajEnv.Settings.Display.DisplayCriticalPerfect;
             _spriteRenderer = GetComponent<SpriteRenderer>();
             _animator = GetComponent<Animator>();
+            _animator.enabled = false;
             _defaultMaterial = _spriteRenderer.sharedMaterial;
             _justSprites = MajInstances.SkinManager.SelectedSkin.Just;
 
@@ -128,12 +129,13 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
             _animator.Update(0.0000001f);
         }
-        [OnUpdate]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void OnUpdate()
+        internal void OnUpdate()
         {
             using (UnityProfiler.Create("SlideOK.OnUpdate"))
             {
+                var delta = MajTimeline.DeltaTime;
+                _animator.Update(delta);
                 if (_elapsedTime > 0.5f)
                 {
                     State = NoteStatus.End;
@@ -143,7 +145,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 }
                 else
                 {
-                    _elapsedTime += MajTimeline.DeltaTime;
+                    _elapsedTime += delta;
                 }
             }
         }
@@ -237,16 +239,13 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         void SetActiveInternal(bool state)
         {
             base.SetActive(state);
-            switch (state)
+            if(state)
             {
-                case true:
-                    _spriteRenderer.enabled = true;
-                    _animator.enabled = true;
-                    break;
-                case false:
-                    _spriteRenderer.enabled = false;
-                    _animator.enabled = false;
-                    break;
+                _spriteRenderer.enabled = true;
+            }
+            else
+            {
+                _spriteRenderer.enabled = false;
             }
         }
     }
