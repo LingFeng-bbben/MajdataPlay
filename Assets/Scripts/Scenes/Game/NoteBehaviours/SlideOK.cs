@@ -1,5 +1,6 @@
 ﻿using MajdataPlay.Buffers;
 using MajdataPlay.Diagnostics;
+using MajdataPlay.Editor;
 using MajdataPlay.Scenes.Game.Misc.Notes;
 using MajdataPlay.Scenes.Game.Notes.Slide;
 using MajdataPlay.Utils;
@@ -25,20 +26,28 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         bool _displayCP = false;
         float _elapsedTime = 0f;
 
+        [SerializeField]
+        [ReadOnlyField]
+        int _sortingOrder = 0;
+
         Sprite[] _justSprites = Array.Empty<Sprite>();
         SpriteRenderer _spriteRenderer;
         Animator _animator;
         Material _defaultMaterial;
 
-        readonly static int CLASSIC_ANIM_HASH = Animator.StringToHash("classic");
-        readonly static int MODERN_ANIM_HASH = Animator.StringToHash("modern");
-        readonly static int BREAK_ANIM_HASH = Animator.StringToHash("break");
+        private static int s_GlobalSortingOrder = 0;
 
-        const int SORTING_ORDER_CRITICAL = 0;
-        const int SORTING_ORDER_PERFECT = 1;
-        const int SORTING_ORDER_GREAT = 2;
-        const int SORTING_ORDER_GOOD = 3;
-        const int SORTING_ORDER_MISS = 4;
+        private readonly static int CLASSIC_ANIM_HASH = Animator.StringToHash("classic");
+        private readonly static int MODERN_ANIM_HASH = Animator.StringToHash("modern");
+        private readonly static int BREAK_ANIM_HASH = Animator.StringToHash("break");
+
+        const int STRIDE = 13107;
+
+        const short SORTING_ORDER_CRITICAL = short.MinValue;
+        const short SORTING_ORDER_PERFECT = (short)(short.MinValue + STRIDE);
+        const short SORTING_ORDER_GREAT = (short)(short.MinValue + (STRIDE * 2));
+        const short SORTING_ORDER_GOOD = (short)(short.MinValue + (STRIDE * 3));
+        const short SORTING_ORDER_MISS = (short)(short.MinValue + (STRIDE * 4));
         protected override void Awake()
         {
             base.Awake();
@@ -47,14 +56,23 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             _animator = GetComponent<Animator>();
             _animator.enabled = false;
             _defaultMaterial = _spriteRenderer.sharedMaterial;
-            _justSprites = MajInstances.SkinManager.SelectedSkin.Just;
+            _justSprites = MajInstances.SkinManager.SelectedSkin.Just;            
 
             SetActiveInternal(false);
+        }
+        void Start()
+        {
+            _sortingOrder = s_GlobalSortingOrder++;
+        }
+        void OnDestroy()
+        {
+            s_GlobalSortingOrder = 0;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PlayResult(in NoteJudgeResult result)
         {
             var isBreak = false;
+            var sortingOrder = (int)SORTING_ORDER_CRITICAL;
             switch (result.Grade)
             {
                 case JudgeGrade.Perfect:
@@ -66,48 +84,58 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                     {
                         SetJustP();
                     }
-                    _spriteRenderer.sortingOrder = SORTING_ORDER_CRITICAL;
+                    sortingOrder = SORTING_ORDER_CRITICAL;
                     isBreak = result.IsBreak;
                     break;
                 case JudgeGrade.FastPerfect2nd:
                 case JudgeGrade.FastPerfect3rd:
                     SetFastP();
-                    _spriteRenderer.sortingOrder = SORTING_ORDER_PERFECT;
+                    sortingOrder = SORTING_ORDER_PERFECT;
                     break;
                 case JudgeGrade.FastGreat3rd:
                 case JudgeGrade.FastGreat2nd:
                 case JudgeGrade.FastGreat:
                     SetFastGr();
-                    _spriteRenderer.sortingOrder = SORTING_ORDER_GREAT;
+                    sortingOrder = SORTING_ORDER_GREAT;
                     break;
                 case JudgeGrade.FastGood:
                     SetFastGd();
-                    _spriteRenderer.sortingOrder = SORTING_ORDER_GOOD;
+                    sortingOrder = SORTING_ORDER_GOOD;
                     break;
                 case JudgeGrade.LateGood:
                     SetLateGd();
-                    _spriteRenderer.sortingOrder = SORTING_ORDER_GOOD;
+                    sortingOrder = SORTING_ORDER_GOOD;
                     break;
                 case JudgeGrade.LatePerfect3rd:
                 case JudgeGrade.LatePerfect2nd:
                     SetLateP();
-                    _spriteRenderer.sortingOrder = SORTING_ORDER_PERFECT;
+                    sortingOrder = SORTING_ORDER_PERFECT;
                     break;
                 case JudgeGrade.LateGreat2nd:
                 case JudgeGrade.LateGreat3rd:
                 case JudgeGrade.LateGreat:
                     SetLateGr();
-                    _spriteRenderer.sortingOrder = SORTING_ORDER_GREAT;
+                    sortingOrder = SORTING_ORDER_GREAT;
                     break;
                 case JudgeGrade.TooFast:
                     SetTooFast();
-                    _spriteRenderer.sortingOrder = SORTING_ORDER_MISS;
+                    sortingOrder = SORTING_ORDER_MISS;
                     break;
                 default:
                     SetMiss();
-                    _spriteRenderer.sortingOrder = SORTING_ORDER_MISS;
+                    sortingOrder = SORTING_ORDER_MISS;
                     break;
             }
+            if(IsClassic)
+            {
+                sortingOrder += _sortingOrder;
+            }
+            else
+            {
+                sortingOrder += STRIDE - _sortingOrder;
+            }
+            _spriteRenderer.sortingOrder = sortingOrder;
+
             Play(isBreak);
             State = NoteStatus.Running;
             SetActive(true);
