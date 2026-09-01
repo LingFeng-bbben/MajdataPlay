@@ -116,6 +116,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 var @as = areas.AsSpan();
                 ref var area = ref @as[1];
+                if(areas.Count == 2)
+                {
+                    area = ref @as[0];
+                }
                 area.IsSkippable = false;
             }
 
