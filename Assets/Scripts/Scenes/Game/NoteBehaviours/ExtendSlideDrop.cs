@@ -154,7 +154,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 StarPositions.Add(pos);
                 StarRotations.Add(rot);
 
-                if (i == 0 || i == metadata.ArrowPoses.Length - 1)
+                if (i == 0 || 
+                    i == metadata.ArrowPoses.Length - 1 ||
+                    (i == metadata.ArrowPoses.Length - 2 && metadata.ConditionalLastArrow))
                 {
                     continue;
                 }
