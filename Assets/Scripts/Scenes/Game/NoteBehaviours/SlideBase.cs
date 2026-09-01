@@ -7,6 +7,7 @@ using MajdataPlay.IO;
 using MajdataPlay.Numerics;
 using MajdataPlay.Scenes.Game.Notes.Controllers;
 using MajdataPlay.Scenes.Game.Notes.Slide;
+using MajdataPlay.Settings;
 using MajdataPlay.Utils;
 using System;
 using System.Collections.Generic;
@@ -206,10 +207,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         protected uint SlideBarFadeInFlag = 0;
 
         [ReadOnlyField, SerializeField]
-        int _multiple = 1;
+        private int _multiple = 1;
 
-        GameObject?[] _rentedArrayForStars;
-        Transform[] _rentedArrayForStarTransforms;
+        private GameObject?[] _rentedArrayForStars;
+        private Transform[] _rentedArrayForStarTransforms;
+        private SlideArea?[] _lastTriggerAreas = new SlideArea?[3];
+
         protected SlideBase()
         {
             _rentedArrayForStars = Pool<GameObject?>.RentArray(3, true);
@@ -264,6 +267,104 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 queue = Memory<SlideArea>.Empty;
             }
         }
+        [Il2CppSetOption(Option.NullChecks, false)]
+        [Il2CppSetOption(Option.ArrayBoundsChecks, false)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected virtual SensorCheckResult SensorCheck()
+        {
+            if (AutoplayMode == AutoplayModeOption.Enable || !IsCheckable)
+            {
+                return default;
+            }
+            else if (IsEnded || !IsInited)
+            {
+                return default;
+            }
+            else if (IsFinished)
+            {
+                return default;
+            }
+            Array.Clear(_lastTriggerAreas, 0, _lastTriggerAreas.Length);
+            var isAnyAreaTriggered = false;
+            for (var x = 0; x < JudgeQueues.Length; x++)
+            {
+                ref var queueMemory = ref JudgeQueues[x];
+                if(queueMemory.IsEmpty)
+                {
+                    continue;
+                }
+                
+                for (; !queueMemory.IsEmpty;)
+                {
+                    var queue = queueMemory.Span;
+                    ref var first = ref queue[0];
+                    ref SlideArea second = ref Unsafe.NullRef<SlideArea>();
+                    var fAreas = first.IncludedAreas;
+
+                    if (queue.Length >= 2)
+                    {
+                        second = ref queue[1];
+                    }
+
+                    for (var i = 0; i < fAreas.Length; i++)
+                    {
+                        var area = fAreas[i];
+                        var sensorState = NoteManager.GetSensorStatusInThisFrame(area);
+                        first.Check(area, sensorState);
+                    }
+
+                    // Check the second area
+
+                    if (!Unsafe.IsNullRef(ref second) && (first.IsSkippable || first.On))
+                    {
+                        var sAreas = second.IncludedAreas;
+
+                        for (var i = 0; i < sAreas.Length; i++)
+                        {
+                            var area = sAreas[i];
+                            var sensorState = NoteManager.GetSensorStatusInThisFrame(area);
+                            second.Check(area, sensorState);
+                        }
+
+                        if (second.IsFinished)
+                        {
+                            queueMemory = queueMemory.Slice(2);
+                            _lastTriggerAreas[x] = second;
+                            isAnyAreaTriggered = true;
+                            continue;
+                        }
+                        else if (second.On)
+                        {
+                            queueMemory = queueMemory.Slice(1);
+                            _lastTriggerAreas[x] = second;
+                            isAnyAreaTriggered = true;
+                            continue;
+                        }
+                    }
+
+                    // Finally check the first area
+
+                    if (first.IsFinished)
+                    {
+                        queueMemory = queueMemory.Slice(1);
+                        _lastTriggerAreas[x] = first;
+                        isAnyAreaTriggered = true;
+                    }
+                    else if (first.On)
+                    {
+                        _lastTriggerAreas[x] = first;
+                        isAnyAreaTriggered = true;
+                    }
+                    break;
+                }
+            }
+            return new()
+            {
+                IsAnyAreaTriggered = isAnyAreaTriggered,
+                LastTriggerAreas = _lastTriggerAreas
+            };
+        }
+
         [Il2CppSetOption(Option.NullChecks, false)]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected sealed override void Judge(float currentSec)
@@ -566,7 +667,12 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         }
         protected virtual void TooLateJudge()
         {
-            if (QueueRemaining == 1)
+            if (IsJudged)
+            {
+                End();
+                return;
+            }
+            else if (QueueRemaining == 1)
             {
                 JudgeResult = JudgeGrade.LateGood;
             }
@@ -576,15 +682,45 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
             ConvertJudgeGrade(ref JudgeResult);
             IsJudged = true;
+            End();
         }
         protected virtual void End()
         {
+            if (IsEnded)
+            {
+                return;
+            }
+            State = NoteStatus.End;
             if (Parent is not null && !Parent.IsEnded)
             {
                 Parent.End();
             }
 
             SetActive(false);
+
+            if (!ConnectInfo.IsConnSlide || ConnectInfo.IsGroupPartEnd)
+            {
+                ConvertJudgeGrade(ref JudgeResult);
+                if (!ModInfo.SubdivideSlideJudgeGrade)
+                {
+                    JudgeGradeCorrection(ref JudgeResult);
+                }
+                var result = new NoteJudgeResult()
+                {
+                    Grade = JudgeResult,
+                    Diff = JudgeDiff,
+                    IsEX = IsEX,
+                    IsBreak = IsBreak
+                };
+                // 只有组内最后一个Slide完成 才会显示判定条并增加总数
+                ObjectCounter.ReportResult(this, result, Multiple);
+                if (PlaySlideOK(result))
+                {
+                    SlideOK.PlayResult(result);
+                }
+
+                PlayJudgeSFX(result);
+            }
         }
         /// <summary>
         /// Connection Slide
@@ -753,5 +889,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         string _slideType = string.Empty;
         [ReadOnlyField, SerializeField]
         float _slideLength = 0f;
+
+        protected readonly ref struct SensorCheckResult
+        {
+            public bool IsAnyAreaTriggered { get; init; }
+            public ReadOnlySpan<SlideArea?> LastTriggerAreas { get; init; }
+        }
     }
 }

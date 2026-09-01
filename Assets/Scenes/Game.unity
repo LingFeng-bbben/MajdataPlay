@@ -13585,6 +13585,7 @@ GameObject:
   - component: {fileID: 1390256244}
   - component: {fileID: 1390256245}
   - component: {fileID: 1390256246}
+  - component: {fileID: 1390256247}
   m_Layer: 0
   m_Name: SlidePool
   m_TagString: Untagged
@@ -13637,6 +13638,20 @@ MonoBehaviour:
   IntUpdateElapsedMs: 0
   IntFixedUpdateElapsedMs: 0
   IntLateUpdateElapsedMs: 0
+--- !u!114 &1390256247
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1390256243}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0dc60ee6aa35d5c448ff8a1e1a4ec843, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.Scenes.Game.Notes.Controllers.SlideOKUpdater
+  <PreUpdateElapsedMs>k__BackingField: 0
+  _noteListRoot: {fileID: 1390256244}
 --- !u!1 &1435460156
 GameObject:
   m_ObjectHideFlags: 0
@@ -13955,7 +13970,7 @@ MonoBehaviour:
   - {fileID: 3347333010027816482, guid: c0d7d240be289194bbbd0c7c849c7208, type: 3}
   - {fileID: 8148946950682681393, guid: d050f65c3f52d524ab26963738702536, type: 3}
   - {fileID: 8389343569395675099, guid: 32868e5f4fa463f4c905e870406abea5, type: 3}
-  - {fileID: 349982270078930302, guid: d0fd46e58bee17740a889818d94c8816, type: 3}
+  - {fileID: 2992700185771566843, guid: d834300fa2a2b5f4998e8a9be20b022a, type: 3}
   breakMaterial: {fileID: 2100000, guid: 6cea13e5ba8275446be27a38daed20c7, type: 2}
   BreakShine: {fileID: 9100000, guid: c28f56116f6dc34408d6f0f544f1e2cc, type: 2}
   JudgeBreakShine: {fileID: 0}

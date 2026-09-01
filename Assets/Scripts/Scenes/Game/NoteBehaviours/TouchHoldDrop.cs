@@ -315,7 +315,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             BodyGroupInfo?.Exit();
             if (!IsMine)
             {
-                if (_lastHoldState == HOLD_STATE_RELEASED)
+                if (_lastHoldState == HOLD_STATE_RELEASED ||
+                    (_lastHoldState == HOLD_STATE_NONE && JudgeResult == JudgeGrade.Miss))
                 {
                     PlayerReleaseTimeSec += MajTimeline.DeltaTime;
                 }
@@ -684,7 +685,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 return;
             }
-            if (_lastHeadState is HOLD_HEAD_STATE_JUDGED or HOLD_HEAD_STATE_JUDGED_AND_NOT_FEEDBACK || _lastHoldState is HOLD_STATE_PRESSED)
+            if (_lastHeadState is HOLD_HEAD_STATE_JUDGED_AND_NOT_FEEDBACK || 
+                (_lastHeadState is HOLD_HEAD_STATE_JUDGED && JudgeResult != JudgeGrade.Miss) ||
+                _lastHoldState is HOLD_STATE_PRESSED)
             {
                 AudioEffMana.PlayTouchHoldSound();
             }

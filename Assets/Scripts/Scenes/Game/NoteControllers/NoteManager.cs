@@ -30,6 +30,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         TouchUpdater _touchUpdater;
         TouchHoldUpdater _touchHoldUpdater;
         EachLineUpdater _eachLineUpdater;
+        SlideOKUpdater _slideOKUpdater;
 
         readonly int[] _noteCurrentIndex = new int[8];
         readonly int[] _touchCurrentIndex = new int[33];
@@ -111,6 +112,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             _touchUpdater = Majdata<TouchUpdater>.Instance!;
             _touchHoldUpdater = Majdata<TouchHoldUpdater>.Instance!;
             _eachLineUpdater = Majdata<EachLineUpdater>.Instance!;
+            _slideOKUpdater = Majdata<SlideOKUpdater>.Instance!;
 #if !(UNITY_ANDROID || UNITY_IOS)
             _isUseButtonRingForTouch = Majdata<INoteController>.Instance?.ModInfo.ButtonRingForTouch ?? false;
 #endif
@@ -186,6 +188,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 _touchUpdater.OnUpdate();
                 _touchHoldUpdater.OnUpdate();
                 _eachLineUpdater.OnUpdate();
+                _slideOKUpdater.OnUpdate();
 #if UNITY_EDITOR || DEBUG
                 _updateElapsedMs = 0;
                 _updateElapsedMs += _tapUpdater.UpdateElapsedMs;
@@ -194,6 +197,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 _updateElapsedMs += _touchUpdater.UpdateElapsedMs;
                 _updateElapsedMs += _touchHoldUpdater.UpdateElapsedMs;
                 _updateElapsedMs += _eachLineUpdater.UpdateElapsedMs;
+                _updateElapsedMs += _slideOKUpdater.UpdateElapsedMs;
 #endif
             }
         }
@@ -210,6 +214,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 _touchUpdater.OnLateUpdate();
                 _touchHoldUpdater.OnLateUpdate();
                 _eachLineUpdater.OnLateUpdate();
+                _slideOKUpdater.OnLateUpdate();
 #if UNITY_EDITOR || DEBUG
                 _lateUpdateElapsedMs = 0;
                 _lateUpdateElapsedMs += _tapUpdater.LateUpdateElapsedMs;
@@ -218,6 +223,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 _lateUpdateElapsedMs += _touchUpdater.LateUpdateElapsedMs;
                 _lateUpdateElapsedMs += _touchHoldUpdater.LateUpdateElapsedMs;
                 _lateUpdateElapsedMs += _eachLineUpdater.LateUpdateElapsedMs;
+                _lateUpdateElapsedMs += _slideOKUpdater.LateUpdateElapsedMs;
 #endif
             }
         }
@@ -253,6 +259,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             _touchUpdater.Init();
             _touchHoldUpdater.Init();
             _eachLineUpdater.Init();
+            _slideOKUpdater.Init();
         }
         internal void Clear()
         {

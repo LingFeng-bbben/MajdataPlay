@@ -86,6 +86,16 @@ namespace MajdataPlay.Databases
             public Material BreakMaterial { get; private set; }
             [field: SerializeField]
             public Material HoldShineMaterial { get; private set; }
+            [field: SerializeField]
+            public NotePrefabAssets Prefab {  get; private set; }
+        }
+        [Serializable]
+        public class NotePrefabAssets
+        {
+            [field: SerializeField]
+            public GameObject SlideStar { get; private set; }
+            [field: SerializeField]
+            public GameObject SlideArrow { get; private set; }
         }
     }
 }

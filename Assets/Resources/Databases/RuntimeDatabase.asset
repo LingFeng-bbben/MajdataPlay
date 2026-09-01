@@ -21,6 +21,9 @@ MonoBehaviour:
     <DefaultMaterial>k__BackingField: {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
     <BreakMaterial>k__BackingField: {fileID: 2100000, guid: 236ca777eb286d94099e0750c7df85fe, type: 2}
     <HoldShineMaterial>k__BackingField: {fileID: 2100000, guid: 8bc279c763563fc4eae2dae3cdb07c59, type: 2}
+    <Prefab>k__BackingField:
+      <SlideStar>k__BackingField: {fileID: 3082733108601366817, guid: 42156a3b3ae4d054da74641cd739534f, type: 3}
+      <SlideArrow>k__BackingField: {fileID: 2535332773632020788, guid: 26220d3164a33a842b831825665c52a6, type: 3}
   <Sprite>k__BackingField:
     <EmptySongCover>k__BackingField: {fileID: 21300000, guid: fe0b463810edb304ab6d44a2c15900ce, type: 3}
   _difficultyColors:

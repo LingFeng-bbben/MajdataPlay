@@ -182,6 +182,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                     {
                         case STATE_SLIDE_DROP:
                             return _slideInstance!.State;
+                        case STATE_EX_SLIDE_DROP:
+                            return _exSlideInstance!.State;
                         case STATE_WIFI_DROP:
                             return _wifiInstance!.State;
                         default:
@@ -192,11 +194,13 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
 
             readonly int _state = STATE_INVALID;
             readonly SlideDrop? _slideInstance;
+            readonly ExtendSlideDrop? _exSlideInstance;
             readonly WifiDrop? _wifiInstance;
 
             const int STATE_INVALID = 0;
             const int STATE_SLIDE_DROP = 1;
-            const int STATE_WIFI_DROP = 2;
+            const int STATE_EX_SLIDE_DROP = 2;
+            const int STATE_WIFI_DROP = 3;
 
             public SlideBinding(SlideQueueInfo queueInfo)
             {
@@ -205,6 +209,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 {
                     _slideInstance = slideDrop;
                     _state = STATE_SLIDE_DROP;
+                }
+                else if(instance is ExtendSlideDrop exSlideDrop)
+                {
+                    _exSlideInstance = exSlideDrop;
+                    _state = STATE_EX_SLIDE_DROP;
                 }
                 else if(instance is WifiDrop wifiDrop)
                 {
@@ -222,6 +231,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                     case STATE_SLIDE_DROP:
                         _slideInstance!.OnPreUpdate();
                         break;
+                    case STATE_EX_SLIDE_DROP:
+                        _exSlideInstance!.OnPreUpdate();
+                        break;
                     case STATE_WIFI_DROP:
                         _wifiInstance!.OnPreUpdate();
                         break;
@@ -236,6 +248,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 {
                     case STATE_SLIDE_DROP:
                         _slideInstance!.OnUpdate();
+                        break;
+                    case STATE_EX_SLIDE_DROP:
+                        _exSlideInstance!.OnUpdate();
                         break;
                     case STATE_WIFI_DROP:
                         _wifiInstance!.OnUpdate();
