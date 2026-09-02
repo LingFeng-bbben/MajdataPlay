@@ -18,11 +18,13 @@ namespace MajdataPlay.Editor.Windows
             "Cull Completely"
         };
 
+        private readonly List<Animator> _animators = new();
         private readonly List<Row> _rows = new();
 
         private Vector2 _scroll;
 
         private bool _autoRefresh = true;
+        private bool _autoRefreshObjects = true;
         private bool _onlyUpdated;
         private bool _onlyActive = true;
 
@@ -77,62 +79,74 @@ namespace MajdataPlay.Editor.Windows
         private void EditorUpdate()
         {
             if (!Application.isPlaying)
+            {
                 return;
+            }
 
             if (!_autoRefresh)
+            {
                 return;
+            }
 
             double now = EditorApplication.timeSinceStartup;
 
             if (now - _lastRefreshTime < 0.1)
+            {
                 return;
+            }
 
             _lastRefreshTime = now;
+
+            RefreshObjectList();
 
             Refresh();
 
             Repaint();
+        }
+        private void RefreshObjectList()
+        {
+            if (!_autoRefreshObjects)
+            {
+                return;
+            }
+            _animators.Clear();
+            var animators = FindObjectsByType<Animator>(
+                    FindObjectsInactive.Include,
+                    FindObjectsSortMode.None);
+            _animators.AddRange(animators);
         }
 
         private void Refresh()
         {
             _rows.Clear();
 
-            var animators =
-                FindObjectsByType<Animator>(
-                    FindObjectsInactive.Exclude,
-                    FindObjectsSortMode.None);
-
-            foreach (var animator in animators)
+            foreach (var animator in _animators)
             {
                 if (animator == null)
-                    continue;
-
-                if (_onlyActive &&
-                    (!animator.isActiveAndEnabled ||
-                     !animator.gameObject.activeInHierarchy))
-                    continue;
-
-                var monitor =
-                    animator.GetComponent<AnimatorMonitor>();
-
-                if(monitor == null)
                 {
-                    monitor = animator.AddComponent<AnimatorMonitor>();
+                    continue;
+                }
+                var isActive = animator.isActiveAndEnabled && animator.gameObject.activeInHierarchy;
+
+                if (_onlyActive && !isActive)
+                {
+                    continue;
                 }
 
-                bool updated =
-                    monitor != null &&
-                    monitor.UpdatedThisFrame;
+                var monitor = animator.GetOrAddComponent<AnimatorMonitor>();
+                var updated = monitor != null && monitor.UpdatedThisFrame;
 
                 if (_onlyUpdated && !updated)
+                {
                     continue;
+                }
 
                 _rows.Add(new Row
                 {
                     Animator = animator,
                     Monitor = monitor,
-                    Updated = updated
+                    Updated = updated,
+                    IsActive = isActive
                 });
             }
 
@@ -143,7 +157,9 @@ namespace MajdataPlay.Editor.Windows
                         b.Updated.CompareTo(a.Updated);
 
                     if (result != 0)
+                    {
                         return result;
+                    }
 
                     return string.Compare(
                         a.Animator.name,
@@ -178,17 +194,36 @@ namespace MajdataPlay.Editor.Windows
         {
             EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
 
-            bool newAuto =
+            var newAuto =
                 GUILayout.Toggle(
                     _autoRefresh,
-                    "Auto Refresh",
+                    "Auto Update",
                     EditorStyles.toolbarButton,
                     GUILayout.Width(100));
 
             if (newAuto != _autoRefresh)
+            {
                 _autoRefresh = newAuto;
+            }
 
-            bool newOnlyUpdated =
+            var newAutoRefreshObjects = 
+                GUILayout.Toggle(
+                    _autoRefreshObjects,
+                    "Auto Refresh Objects",
+                    EditorStyles.toolbarButton,
+                    GUILayout.Width(130));
+
+            if (newAutoRefreshObjects != _autoRefreshObjects)
+            {
+                _autoRefreshObjects = newAutoRefreshObjects;
+
+                if (_autoRefreshObjects)
+                {
+                    RefreshObjectList();
+                }
+            }
+
+            var newOnlyUpdated =
                 GUILayout.Toggle(
                     _onlyUpdated,
                     "Only Updated",
@@ -201,7 +236,7 @@ namespace MajdataPlay.Editor.Windows
                 Refresh();
             }
 
-            bool newOnlyActive =
+            var newOnlyActive =
                 GUILayout.Toggle(
                     _onlyActive,
                     "Only Active",
@@ -221,6 +256,15 @@ namespace MajdataPlay.Editor.Windows
                     EditorStyles.toolbarButton,
                     GUILayout.Width(70)))
             {
+                Refresh();
+            }
+
+            if (GUILayout.Button(
+                    "Refresh Objects",
+                    EditorStyles.toolbarButton,
+                    GUILayout.Width(110)))
+            {
+                RefreshObjectList();
                 Refresh();
             }
 
@@ -283,6 +327,10 @@ namespace MajdataPlay.Editor.Windows
                 GUILayout.Width(55));
 
             GUILayout.Label(
+                "Is Active",
+                GUILayout.Width(55));
+
+            GUILayout.Label(
                 "GameObject",
                 GUILayout.Width(180));
 
@@ -314,12 +362,18 @@ namespace MajdataPlay.Editor.Windows
             Animator animator = row.Animator;
 
             if (animator == null)
+            {
                 return;
+            }
 
             EditorGUILayout.BeginHorizontal();
 
             GUILayout.Label(
                 row.Updated ? "YES" : "-",
+                GUILayout.Width(55));
+
+            GUILayout.Label(
+                row.IsActive ? "YES" : "NO",
                 GUILayout.Width(55));
 
             if (GUILayout.Button(
@@ -409,6 +463,12 @@ namespace MajdataPlay.Editor.Windows
             public Animator Animator;
             public AnimatorMonitor Monitor;
             public bool Updated;
+            public bool IsActive;
+        }
+        public struct AnimatorCache
+        {
+            public Animator Animator;
+            public AnimatorMonitor Monitor;
         }
     }
 }
