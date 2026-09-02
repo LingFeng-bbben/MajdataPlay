@@ -14,7 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Unity.Collections;
 using UnityEngine;
-
+#nullable enable
 namespace MajdataPlay.Drawing
 {
     public static class SpriteLoader
@@ -83,7 +83,7 @@ namespace MajdataPlay.Drawing
         {
             try
             {
-                var texture = Decode(data, markNonReadable);
+                var texture = TextureLoader.LoadFromMemory(data, markNonReadable);
                 //var texture = new Texture2D(0, 0);
                 //texture.LoadImage(data, markNonReadable);
 
@@ -145,7 +145,7 @@ namespace MajdataPlay.Drawing
         {
             try
             {
-                var texture = await DecodeAsync(dataMemory, markNonReadable);
+                var texture = await TextureLoader.LoadFromMemoryAsync(dataMemory, markNonReadable);
                 await UniTask.SwitchToMainThread();
 
                 return Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f), 100, 1,
@@ -158,26 +158,6 @@ namespace MajdataPlay.Drawing
 
                 return EmptySprite;
             }
-        }
-
-
-
-
-
-        async static Task<Texture2D> DecodeAsync(ReadOnlyMemory<byte> dataMemory, bool markNonReadable)
-        {
-            await UniTask.SwitchToThreadPool();
-            var bitmap = SKBitmap.Decode(dataMemory.Span);
-
-            await UniTask.SwitchToMainThread();
-            var texture = bitmap.ToTexture2D(markNonReadable);
-            return texture;
-        }
-        static Texture2D Decode(ReadOnlySpan<byte> data, bool markNonReadable)
-        {
-            var bitmap = SKBitmap.Decode(data);
-            
-            return bitmap.ToTexture2D(markNonReadable);
         }
     }
 }
