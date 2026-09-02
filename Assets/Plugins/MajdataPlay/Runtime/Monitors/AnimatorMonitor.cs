@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
-namespace MajdataPlay.Editor.Monitors
+namespace MajdataPlay.Runtime.Monitors
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Animator))]

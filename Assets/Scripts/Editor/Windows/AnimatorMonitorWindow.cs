@@ -1,4 +1,4 @@
-﻿using MajdataPlay.Editor.Monitors;
+﻿using MajdataPlay.Runtime.Monitors;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -6,7 +6,7 @@ using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Profiling;
-
+#nullable enable
 namespace MajdataPlay.Editor.Windows
 {
     public sealed class AnimatorMonitorWindow : EditorWindow
@@ -19,6 +19,7 @@ namespace MajdataPlay.Editor.Windows
         };
 
         private readonly List<Animator> _animators = new();
+        private readonly Dictionary<EntityId, AnimatorCache> _cachedMinitors = new();
         private readonly List<Row> _rows = new();
 
         private Vector2 _scroll;
@@ -109,6 +110,14 @@ namespace MajdataPlay.Editor.Windows
             {
                 return;
             }
+            for (var i = 0; i < _animators.Count; i++)
+            {
+                var anim = _animators[i];
+                if (!anim)
+                {
+                    _cachedMinitors.Remove(anim.GetEntityId());
+                }
+            }
             _animators.Clear();
             var animators = FindObjectsByType<Animator>(
                     FindObjectsInactive.Include,
@@ -122,7 +131,7 @@ namespace MajdataPlay.Editor.Windows
 
             foreach (var animator in _animators)
             {
-                if (animator == null)
+                if (!animator)
                 {
                     continue;
                 }
@@ -132,9 +141,21 @@ namespace MajdataPlay.Editor.Windows
                 {
                     continue;
                 }
+                var cache = default(AnimatorCache);
 
-                var monitor = animator.GetOrAddComponent<AnimatorMonitor>();
-                var updated = monitor != null && monitor.UpdatedThisFrame;
+                if(!_cachedMinitors.TryGetValue(animator.GetEntityId(), out cache))
+                {
+                    cache = new AnimatorCache()
+                    {
+                        Monitor = animator.GetOrAddComponent<AnimatorMonitor>(),
+                        GameObject = animator.gameObject,
+                        Transform = animator.transform
+                    };
+                    _cachedMinitors[animator.GetEntityId()] = cache;
+                }
+
+                var monitor = cache.Monitor;
+                var updated = monitor.UpdatedThisFrame;
 
                 if (_onlyUpdated && !updated)
                 {
@@ -467,8 +488,9 @@ namespace MajdataPlay.Editor.Windows
         }
         public struct AnimatorCache
         {
-            public Animator Animator;
             public AnimatorMonitor Monitor;
+            public GameObject GameObject;
+            public Transform Transform;
         }
     }
 }
