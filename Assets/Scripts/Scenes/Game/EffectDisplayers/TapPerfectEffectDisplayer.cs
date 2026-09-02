@@ -28,6 +28,9 @@ namespace MajdataPlay.Scenes.Game
         const float ANIM_LENGTH_SEC = 1 / 60f * 48;
 
         float _animRemainingTime = 0;
+
+        private long _expectedTrigger = long.MaxValue;
+
         protected override void Awake()
         {
             base.Awake();
@@ -45,6 +48,11 @@ namespace MajdataPlay.Scenes.Game
             if (!Active || _animRemainingTime < 0)
             {
                 return;
+            }
+            if(_expectedTrigger != long.MaxValue)
+            {
+                _animator.SetTrigger((int)_expectedTrigger);
+                _expectedTrigger = long.MaxValue;
             }
             var deltaTime = MajTimeline.DeltaTime;
             _animator.Update(deltaTime);
@@ -79,9 +87,8 @@ namespace MajdataPlay.Scenes.Game
                 case JudgeGrade.FastPerfect2nd:
                 case JudgeGrade.Perfect:
                     SetActive(true);
-                    _animator.SetTrigger(TAP_PERFECT_ANIM_HASH);
+                    _expectedTrigger = TAP_PERFECT_ANIM_HASH;
                     _animRemainingTime = ANIM_LENGTH_SEC;
-                    _animator.Update(0.000000114514f);
                     break;
             }
         }
@@ -94,9 +101,8 @@ namespace MajdataPlay.Scenes.Game
                 case JudgeGrade.LateGood:
                 case JudgeGrade.FastGood:
                     SetActive(true);
-                    _animator.SetTrigger(BREAK_GOOD_ANIM_HASH);
+                    _expectedTrigger = BREAK_GOOD_ANIM_HASH;
                     _animRemainingTime = ANIM_LENGTH_SEC;
-                    _animator.Update(0.000000114514f);
                     break;
                 case JudgeGrade.LateGreat:
                 case JudgeGrade.LateGreat2nd:
@@ -105,9 +111,8 @@ namespace MajdataPlay.Scenes.Game
                 case JudgeGrade.FastGreat2nd:
                 case JudgeGrade.FastGreat:
                     SetActive(true);
-                    _animator.SetTrigger(BREAK_GREAT_ANIM_HASH);
+                    _expectedTrigger = BREAK_GREAT_ANIM_HASH;
                     _animRemainingTime = ANIM_LENGTH_SEC;
-                    _animator.Update(0.000000114514f);
                     break;
                 case JudgeGrade.LatePerfect3rd:
                 case JudgeGrade.FastPerfect3rd:
@@ -115,9 +120,8 @@ namespace MajdataPlay.Scenes.Game
                 case JudgeGrade.FastPerfect2nd:
                 case JudgeGrade.Perfect:
                     SetActive(true);
-                    _animator.SetTrigger(BREAK_PERFECT_ANIM_HASH);
+                    _expectedTrigger = BREAK_PERFECT_ANIM_HASH;
                     _animRemainingTime = ANIM_LENGTH_SEC;
-                    _animator.Update(0.000000114514f);
                     break;
                 default:
                     break;

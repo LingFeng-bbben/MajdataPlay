@@ -26,6 +26,7 @@ namespace MajdataPlay.Scenes.Game
         
         bool _isPlaying = false;
         Color _color = WHITE;
+        Color _newColor = WHITE;
 
         static readonly int MATERIAL_COLOR_ID = Shader.PropertyToID("_Color");
         static readonly Color YELLOW = new Color(1f, 227f / 255f, 0f);
@@ -48,7 +49,9 @@ namespace MajdataPlay.Scenes.Game
         public void Play(in JudgeGrade judgeType)
         {
             if (_isPlaying)
+            {
                 return;
+            }
             _isPlaying = true;
 
             var newColor = WHITE;
@@ -80,8 +83,20 @@ namespace MajdataPlay.Scenes.Game
                 return;
             }
             SetActive(true);
-            _material.SetColor(MATERIAL_COLOR_ID, newColor);
-            _color = newColor;
+            _newColor = newColor;
+        }
+        internal void OnLateUpdate()
+        {
+            if(!Active)
+            {
+                return;
+            }
+            else if(_color == _newColor)
+            {
+                return;
+            }
+            _material.SetColor(MATERIAL_COLOR_ID, _newColor);
+            _color = _newColor;
         }
         public override void SetActive(bool state)
         {

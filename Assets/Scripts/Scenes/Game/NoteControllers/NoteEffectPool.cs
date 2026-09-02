@@ -42,9 +42,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
         TouchFeedbackDisplayer[] _touchFeedbackEffects = new TouchFeedbackDisplayer[33];
 
         TapEffectDisplayer[] _rentedArrayForGeneratedTapEffectDisplayers = Array.Empty<TapEffectDisplayer>();
+        HoldEffectDisplayer[] _rentedArrayForGeneratedHoldEffectDisplayers = Array.Empty<HoldEffectDisplayer>();
         TouchEffectDisplayer[] _rentedArrayForGeneratedTouchEffectDisplayers = Array.Empty<TouchEffectDisplayer>();
 
         ReadOnlyMemory<TapEffectDisplayer> _generatedTapEffectDisplayers = Array.Empty<TapEffectDisplayer>();
+        ReadOnlyMemory<HoldEffectDisplayer> _generatedHoldEffectDisplayers = Array.Empty<HoldEffectDisplayer>();
         ReadOnlyMemory<TouchEffectDisplayer> _generatedTouchEffectDisplayers = Array.Empty<TouchEffectDisplayer>();
 
         GamePlayManager _gpManager;
@@ -91,6 +93,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
             }
             _isInited = false;
             using var generatedTapEffectDisplayers = new RentedList<TapEffectDisplayer>();
+            using var generatedHoldEffectDisplayers = new RentedList<HoldEffectDisplayer>();
             using var generatedTouchEffectDisplayers = new RentedList<TouchEffectDisplayer>();
             var tapParent = transform.GetChild(0);
             var touchParent = transform.GetChild(1);
@@ -152,6 +155,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 displayer.Position = position;
                 displayer.Reset();
                 _holdEffects[i] = displayer;
+                generatedHoldEffectDisplayers.Add(displayer);
             }
             for (var i = 0; i < 33; i++)
             {
@@ -181,6 +185,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 displayer4Hold.ResetAll();
                 _touchHoldJudgeEffects[i] = displayer4Hold;
                 generatedTapEffectDisplayers.Add(displayer4Hold);
+                generatedHoldEffectDisplayers.Add(displayer);
             }
             // Touch Feedback Effect
             for (var i = 0; i < 33; i++)
@@ -204,10 +209,13 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 _touchFeedbackEffects[i] = displayer;
             }
             _rentedArrayForGeneratedTapEffectDisplayers = Pool<TapEffectDisplayer>.RentArray(generatedTapEffectDisplayers.Count);
+            _rentedArrayForGeneratedHoldEffectDisplayers = Pool<HoldEffectDisplayer>.RentArray(generatedHoldEffectDisplayers.Count);
             _rentedArrayForGeneratedTouchEffectDisplayers = Pool<TouchEffectDisplayer>.RentArray(generatedTouchEffectDisplayers.Count);
             generatedTapEffectDisplayers.CopyTo(_rentedArrayForGeneratedTapEffectDisplayers);
+            generatedHoldEffectDisplayers.CopyTo(_rentedArrayForGeneratedHoldEffectDisplayers);
             generatedTouchEffectDisplayers.CopyTo(_rentedArrayForGeneratedTouchEffectDisplayers);
             _generatedTapEffectDisplayers = _rentedArrayForGeneratedTapEffectDisplayers.AsMemory(0, generatedTapEffectDisplayers.Count);
+            _generatedHoldEffectDisplayers = _rentedArrayForGeneratedHoldEffectDisplayers.AsMemory(0, generatedHoldEffectDisplayers.Count);
             _generatedTouchEffectDisplayers = _rentedArrayForGeneratedTouchEffectDisplayers.AsMemory(0, generatedTouchEffectDisplayers.Count);
 
             _isInited = true;
@@ -224,9 +232,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                     return;
                 }
                 var s1 = _generatedTapEffectDisplayers.Span;
-                var s2 = _generatedTouchEffectDisplayers.Span;
+                var s2 = _generatedHoldEffectDisplayers.Span;
+                var s3 = _generatedTouchEffectDisplayers.Span;
                 var count1 = _generatedTapEffectDisplayers.Length;
-                var count2 = _generatedTouchEffectDisplayers.Length;
+                var count2 = _generatedHoldEffectDisplayers.Length;
+                var count3 = _generatedTouchEffectDisplayers.Length;
 
                 for (var i = 0; i < count1; i++)
                 {
@@ -236,16 +246,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Controllers
                 {
                     s2[i].OnLateUpdate();
                 }
-
-                //for (var i = 0; i < 33; i++)
-                //{
-                //    _touchJudgeEffects[i].OnLateUpdate();
-                //    _touchHoldJudgeEffects[i].OnLateUpdate();
-                //}
-                //for (var i = 0; i < 8; i++)
-                //{
-                //    _tapJudgeEffects[i].OnLateUpdate();
-                //}
+                for (var i = 0; i < count3; i++)
+                {
+                    s3[i].OnLateUpdate();
+                }                
             }
         }
         /// <summary>

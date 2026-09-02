@@ -45,6 +45,8 @@ namespace MajdataPlay.Scenes.Game
         const float ANIM_LENGTH_SEC = 1 / 60f * 21;
 
         float _animRemainingTime = 0;
+        private long _expectedTrigger = long.MaxValue;
+
         protected override void Awake()
         {
             base.Awake();
@@ -90,6 +92,11 @@ namespace MajdataPlay.Scenes.Game
             {
                 return;
             }
+            if (_expectedTrigger != long.MaxValue)
+            {
+                _animator.SetTrigger((int)_expectedTrigger);
+                _expectedTrigger = long.MaxValue;
+            }
             var deltaTime = MajTimeline.DeltaTime;
             _animator.Update(deltaTime);
             _animRemainingTime -= deltaTime;
@@ -117,13 +124,12 @@ namespace MajdataPlay.Scenes.Game
             
             if (isBreak && result == JudgeGrade.Perfect)
             {
-                _animator.SetTrigger(BREAK_ANIM_HASH);
+                _expectedTrigger = BREAK_ANIM_HASH;
             }
             else
             {
-                _animator.SetTrigger(PERFECT_ANIM_HASH);
+                _expectedTrigger = PERFECT_ANIM_HASH;
             }
-            _animator.Update(0.000000114514f);
             _animRemainingTime = ANIM_LENGTH_SEC;
         }
         void LoadTapSkin(in NoteJudgeResult judgeResult,bool isClassC = false)

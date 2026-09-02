@@ -24,6 +24,8 @@ namespace MajdataPlay.Scenes.Game
         const float ANIM_LENGTH_SEC = 1 / 60f * 32;
 
         float _animRemainingTime = 0;
+        private long _expectedTrigger = long.MaxValue;
+
         protected override void Awake()
         {
             base.Awake();
@@ -46,6 +48,11 @@ namespace MajdataPlay.Scenes.Game
             {
                 return;
             }
+            if (_expectedTrigger != long.MaxValue)
+            {
+                _animator.SetTrigger((int)_expectedTrigger);
+                _expectedTrigger = long.MaxValue;
+            }
             var deltaTime = MajTimeline.DeltaTime;
             _animator.Update(deltaTime);
             _animRemainingTime -= deltaTime;
@@ -63,9 +70,8 @@ namespace MajdataPlay.Scenes.Game
                 case JudgeGrade.LateGood:
                 case JudgeGrade.FastGood:
                     SetActive(true);
-                    _animator.SetTrigger(TAP_GOOD_ANIM_HASH);
+                    _expectedTrigger = TAP_GOOD_ANIM_HASH;
                     _animRemainingTime = ANIM_LENGTH_SEC;
-                    _animator.Update(0.000000114514f);
                     break;
             }
         }
