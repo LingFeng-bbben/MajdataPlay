@@ -434,7 +434,10 @@ namespace MajdataPlay.Scenes.Result
             _isInited = true;
             CabinetLed.SetButtonLight(Color.yellow, 4);
             var t1 = _scoreSaveTask;
-            await UniTask.Delay(3000);
+            if (RecordHelper.IsEnabled)
+            {
+                await UniTask.Delay(3000);
+            }
             var t2 = RecordHelper.StopRecordAsync();
             while (!t1.IsCompleted || !t2.IsCompleted)
             {
