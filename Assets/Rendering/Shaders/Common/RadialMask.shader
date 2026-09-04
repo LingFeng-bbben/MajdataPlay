@@ -54,9 +54,9 @@ Shader "Common/RadialMask"
             float _Softness;
 
             UNITY_INSTANCING_BUFFER_START(Props)
-            UNITY_DEFINE_INSTANCED_PROP(float, _Progress)
-            UNITY_DEFINE_INSTANCED_PROP(float, _InvertMask)
-            UNITY_DEFINE_INSTANCED_PROP(float, _CounterClockwise)
+                UNITY_DEFINE_INSTANCED_PROP(float, _Progress)
+                UNITY_DEFINE_INSTANCED_PROP(float, _InvertMask)
+                UNITY_DEFINE_INSTANCED_PROP(float, _CounterClockwise)
             UNITY_INSTANCING_BUFFER_END(Props)
 
             v2f vert(appdata_t IN)
