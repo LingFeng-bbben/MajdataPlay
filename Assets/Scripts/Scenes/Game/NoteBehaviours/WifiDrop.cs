@@ -591,9 +591,8 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 SlideOK!.transform.Rotate(new Vector3(0f, 0f, 180f));
             }
         }
-        protected override void OnDestroy()
+        void OnDestroy()
         {
-            base.OnDestroy();
             _wifiTable.Dispose();
         }
     }
