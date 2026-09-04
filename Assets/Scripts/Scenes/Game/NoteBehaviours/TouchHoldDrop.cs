@@ -19,45 +19,12 @@ using UnityEngine.UI;
 #nullable enable
 namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 {
-    internal sealed class TouchHoldDrop : NoteLongDrop, INoteQueueMember<TouchQueueInfo>, IRendererContainer, IPoolableNote<TouchHoldPoolingInfo, TouchQueueInfo>, IMajComponent
+    internal sealed class TouchHoldDrop : NoteLongDrop, INoteQueueMember<TouchQueueInfo>, IPoolableNote<TouchHoldPoolingInfo, TouchQueueInfo>, IMajComponent
     {
         public TouchGroup? GroupInfo { get; private set; } = null;
         public TouchHoldGroup? BodyGroupInfo { get; private set; } = null;
         public TouchQueueInfo QueueInfo { get; private set; } = TouchQueueInfo.Default;
-        public RendererStatus RendererState
-        {
-            get => _rendererState;
-            set
-            {
-                if (State < NoteStatus.Inited)
-                {
-                    return;
-                }
 
-                switch (value)
-                {
-                    case RendererStatus.Off:
-                        for (var i = 0; i < _fanRenderers.Length; i++)
-                        {
-                            var renderer = _fanRenderers[i];
-                            renderer.enabled = false;
-                        }
-                        _borderRenderer.enabled = false;
-                        break;
-                    case RendererStatus.On:
-                        for (var i = 0; i < _fanRenderers.Length; i++)
-                        {
-                            var renderer = _fanRenderers[i];
-                            renderer.enabled = true;
-                        }
-                        _borderRenderer.enabled = true;
-                        break;
-                    default:
-                        return;
-                }
-                _rendererState = value;
-            }
-        }
         public char areaPosition;
         public bool isFirework;
 
@@ -132,11 +99,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             SetFansColor(new Color(1f, 1f, 1f, 0f));
             SetFansPosition(0.4f);
 
-            base.SetActive(false);
-            SetFanActive(false);
-            SetBorderActive(false);
-            SetPointActive(false);
-            Active = false;
+            SetActiveWithRenderer(false);
 
             for (var i = 0; i < _fanRenderers.Length; i++)
             {
@@ -146,82 +109,6 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             _borderRenderer.enabled = false;
 
             Transform.localScale *= USERSETTING_TOUCH_SCALE;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override void Autoplay()
-        {
-            switch (AutoplayMode)
-            {
-                case AutoplayModeOption.Enable:
-                    if (!IsAutoplay)
-                    {
-                        return;
-                    }
-                    else if (IsJudged)
-                    {
-                        if (GetRemainingTime() == 0)
-                        {
-                            End();
-                        }
-                        return;
-                    }
-                    if (GetTimeSpanToJudgeTiming() >= -0.016667f)
-                    {
-                        var autoplayGrade = AutoplayGrade;
-                        if (((int)autoplayGrade).InRange(0, 14))
-                        {
-                            JudgeResult = autoplayGrade;
-                        }
-                        else
-                        {
-                            JudgeResult = (JudgeGrade)Randomizer.Next(0, 15);
-                        }
-                        ConvertJudgeGrade(ref JudgeResult);
-                        IsJudged = true;
-                        JudgeDiff = JudgeResult switch
-                        {
-                            < JudgeGrade.Perfect => 1,
-                            > JudgeGrade.Perfect => -1,
-                            _ => 0
-                        };
-                        PlayJudgeSFX(new NoteJudgeResult()
-                        {
-                            Grade = JudgeResult,
-                            IsBreak = IsBreak,
-                            IsEX = IsEX,
-                            IsMine = IsMine,
-                            Diff = JudgeDiff
-                        });
-                        _lastHeadState = HOLD_HEAD_STATE_JUDGED_AND_NOT_FEEDBACK;
-                    }
-                    break;
-                case AutoplayModeOption.DJAuto_TouchPanel_First:
-                case AutoplayModeOption.DJAuto_ButtonRing_First:
-                    DJAutoplay();
-                    break;
-            }
-            
-        }
-        private void DJAutoplay()
-        {
-            if (!IsAutoplay || IsEnded)
-            {
-                return;
-            }
-            else if (IsJudged)
-            {
-                NoteManager.SimulateSensorPress(SensorPos);
-                return;
-            }
-            else if (!NoteManager.IsCurrentNoteJudgeable(QueueInfo))
-            {
-                return;
-            }
-            else if (GetTimeSpanToArriveTiming() < -FRAME_LENGTH_SEC)
-            {
-                return;
-            }
-            NoteManager.SimulateSensorClick(SensorPos);
         }
         public void Init(TouchHoldPoolingInfo poolingInfo)
         {
@@ -279,14 +166,10 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
 
             SetBorderProgress(0f);
             SetFansColor(new Color(1f, 1f, 1f, 0f));
-            SetActive(true);
-            SetFanActive(false);
-            SetBorderActive(false);
-            SetPointActive(false);
+            SetActiveWithoutRenderer(true);
 
             Transform.position = NoteHelper.GetTouchAreaPosition(SensorPos);
             SetFansPosition(0.4f);
-            RendererState = RendererStatus.Off;
 
             for (var i = 0; i < 4; i++)
             {
@@ -326,9 +209,7 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                 IsEX = IsEX,
                 Diff = JudgeDiff,
             };
-            //_pointObject.SetActive(false);
             SetActive(false);
-            RendererState = RendererStatus.Off;
 
             ObjectCounter.ReportResult(this, result);
             if (!IsJudged)
@@ -482,7 +363,6 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                             _multTouchHandler.Register(SensorPos, IsEach, IsBreak);
                             SetPointActive(true);
                             SetFanActive(true);
-                            RendererState = RendererStatus.On;
                             State = NoteStatus.Scaling;
                             goto case NoteStatus.Scaling;
                         }
@@ -760,53 +640,33 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             {
                 return;
             }
+            SetActiveWithRenderer(state);
+        }
+        private void SetActiveWithoutRenderer(bool state)
+        {
+            base.SetActive(state);
+        }
+        private void SetActiveWithRenderer(bool state)
+        {
             base.SetActive(state);
             SetFanActive(state);
             SetBorderActive(state);
             SetPointActive(state);
-            Active = state;
         }
         private void SetFanActive(bool state)
         {
-            switch (state)
+            for (var i = 0; i < _fanRenderers.Length; i++)
             {
-                case true:
-                    foreach (var fanObj in _fans.AsSpan())
-                    {
-                        fanObj.layer = MajEnv.DEFAULT_LAYER;
-                    }
-                    break;
-                case false:
-                    foreach (var fanObj in _fans.AsSpan())
-                    {
-                        fanObj.layer = MajEnv.HIDDEN_LAYER;
-                    }
-                    break;
+                _fanRenderers[i].enabled = state;
             }
         }
         private void SetPointActive(bool state)
         {
-            switch (state)
-            {
-                case true:
-                    _pointObject.layer = MajEnv.DEFAULT_LAYER;
-                    break;
-                case false:
-                    _pointObject.layer = MajEnv.HIDDEN_LAYER;
-                    break;
-            }
+            _pointRenderer.enabled = state;
         }
         private void SetBorderActive(bool state)
         {
-            switch (state)
-            {
-                case true:
-                    _borderObject.layer = MajEnv.DEFAULT_LAYER;
-                    break;
-                case false:
-                    _borderObject.layer = MajEnv.HIDDEN_LAYER;
-                    break;
-            }
+            _borderRenderer.enabled = state;
         }
 
         private void SetFansPosition(in float distance)
@@ -883,6 +743,85 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
             }
         }
 
-        RendererStatus _rendererState = RendererStatus.Off;
+        #region Autoplay Implementation
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected override void Autoplay()
+        {
+            switch (AutoplayMode)
+            {
+                case AutoplayModeOption.Enable:
+                    if (!IsAutoplay)
+                    {
+                        return;
+                    }
+                    else if (IsJudged)
+                    {
+                        if (GetRemainingTime() == 0)
+                        {
+                            End();
+                        }
+                        return;
+                    }
+                    if (GetTimeSpanToJudgeTiming() >= -0.016667f)
+                    {
+                        var autoplayGrade = AutoplayGrade;
+                        if (((int)autoplayGrade).InRange(0, 14))
+                        {
+                            JudgeResult = autoplayGrade;
+                        }
+                        else
+                        {
+                            JudgeResult = (JudgeGrade)Randomizer.Next(0, 15);
+                        }
+                        ConvertJudgeGrade(ref JudgeResult);
+                        IsJudged = true;
+                        JudgeDiff = JudgeResult switch
+                        {
+                            < JudgeGrade.Perfect => 1,
+                            > JudgeGrade.Perfect => -1,
+                            _ => 0
+                        };
+                        PlayJudgeSFX(new NoteJudgeResult()
+                        {
+                            Grade = JudgeResult,
+                            IsBreak = IsBreak,
+                            IsEX = IsEX,
+                            IsMine = IsMine,
+                            Diff = JudgeDiff
+                        });
+                        _lastHeadState = HOLD_HEAD_STATE_JUDGED_AND_NOT_FEEDBACK;
+                    }
+                    break;
+                case AutoplayModeOption.DJAuto_TouchPanel_First:
+                case AutoplayModeOption.DJAuto_ButtonRing_First:
+                    DJAutoplay();
+                    break;
+            }
+
+        }
+        private void DJAutoplay()
+        {
+            if (!IsAutoplay || IsEnded)
+            {
+                return;
+            }
+            else if (IsJudged)
+            {
+                NoteManager.SimulateSensorPress(SensorPos);
+                return;
+            }
+            else if (!NoteManager.IsCurrentNoteJudgeable(QueueInfo))
+            {
+                return;
+            }
+            else if (GetTimeSpanToArriveTiming() < -FRAME_LENGTH_SEC)
+            {
+                return;
+            }
+            NoteManager.SimulateSensorClick(SensorPos);
+        }
+
+        #endregion
     }
 }
