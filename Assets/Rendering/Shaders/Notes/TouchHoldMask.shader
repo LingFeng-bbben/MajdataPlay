@@ -1,20 +1,8 @@
-Shader "Common/RadialMask"
+Shader "Notes/TouchHoldMask"
 {
     Properties
     {
         [PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}
-        _Color ("Tint", Color) = (1,1,1,1)
-        
-        _Progress ("Progress", Range(0.0, 1.0)) = 1.0
-        _Softness ("Edge Softness", Range(0.0, 0.05)) = 0.005
-
-        [Toggle] _InvertMask ("Invert Mask", Float) = 0
-        [Toggle] _CounterClockwise ("Counter Clockwise", Float) = 0
-
-        [HideInInspector] _RendererColor ("RendererColor", Color) = (1,1,1,1)
-        [HideInInspector] _Flip ("Flip", Vector) = (1,1,1,1)
-        [PerRendererData] _AlphaTex ("External Alpha", 2D) = "white" {}
-        [PerRendererData] _EnableExternalAlpha ("Enable External Alpha", Float) = 0
     }
     
     SubShader
@@ -57,18 +45,41 @@ Shader "Common/RadialMask"
 
             sampler2D _MainTex;
 
-            UNITY_INSTANCING_BUFFER_START(Props)
-                UNITY_DEFINE_INSTANCED_PROP(float, _Progress)
-                UNITY_DEFINE_INSTANCED_PROP(float, _InvertMask)
-                UNITY_DEFINE_INSTANCED_PROP(float, _CounterClockwise)
-                UNITY_DEFINE_INSTANCED_PROP(fixed4, _Color)
-                UNITY_DEFINE_INSTANCED_PROP(float, _Softness)
+            #ifdef UNITY_INSTANCING_ENABLED
 
-                UNITY_DEFINE_INSTANCED_PROP(fixed4, _RendererColor)
-                UNITY_DEFINE_INSTANCED_PROP(fixed4, _Flip)
-                UNITY_DEFINE_INSTANCED_PROP(float, _EnableExternalAlpha)
-                UNITY_DEFINE_INSTANCED_PROP(float4, _MainTex_ST)
-            UNITY_INSTANCING_BUFFER_END(Props)
+            UNITY_INSTANCING_BUFFER_START(PerDrawSprite)
+
+                UNITY_DEFINE_INSTANCED_PROP(
+                    fixed4,
+                    unity_SpriteRendererColorArray
+                )
+
+                UNITY_DEFINE_INSTANCED_PROP(
+                    fixed2,
+                    unity_SpriteFlipArray
+                )
+
+            UNITY_INSTANCING_BUFFER_END(PerDrawSprite)
+
+            #define _RendererColor \
+                UNITY_ACCESS_INSTANCED_PROP(PerDrawSprite, unity_SpriteRendererColorArray)
+
+            #define _Flip \
+                UNITY_ACCESS_INSTANCED_PROP(PerDrawSprite, unity_SpriteFlipArray)
+
+            #endif
+
+
+            CBUFFER_START(UnityPerDrawSprite)
+
+            #ifndef UNITY_INSTANCING_ENABLED
+
+                fixed4 _RendererColor;
+                fixed2 _Flip;
+
+            #endif
+
+            CBUFFER_END
 
             v2f vert(appdata_t IN)
             {
@@ -80,9 +91,7 @@ Shader "Common/RadialMask"
                 OUT.texcoord = IN.texcoord;
                 OUT.localPos = IN.vertex.xy;
 
-                fixed4 color = UNITY_ACCESS_INSTANCED_PROP(Props, _Color);
-                fixed4 rendererColor = UNITY_ACCESS_INSTANCED_PROP(Props, _RendererColor);
-                OUT.color = IN.color * color * rendererColor;
+                OUT.color = IN.color;
                 return OUT;
             }
 
@@ -90,29 +99,21 @@ Shader "Common/RadialMask"
             {
                 UNITY_SETUP_INSTANCE_ID(IN);
 
-                float currentProgress = UNITY_ACCESS_INSTANCED_PROP(Props, _Progress);
-                float invertMask = UNITY_ACCESS_INSTANCED_PROP(Props, _InvertMask);
-                float isCCW = UNITY_ACCESS_INSTANCED_PROP(Props, _CounterClockwise);
-                float softness = UNITY_ACCESS_INSTANCED_PROP(Props, _Softness);
+                float currentProgress = _RendererColor.a;
 
-                fixed4 col = tex2D(_MainTex, IN.texcoord) * IN.color;
+                fixed4 col = tex2D(_MainTex, IN.texcoord);
+                col *= fixed4(IN.color.rgb, 1.0);
                 float2 dir = IN.localPos;
 
-                if (isCCW > 0.5) dir.x = -dir.x;
 
                 float angle = atan2(dir.x, dir.y);
                 
                 if (angle < 0) angle += UNITY_PI * 2.0;
                 
                 float normalizedAngle = angle / (UNITY_PI * 2.0);
-                float safeSoftness = max(softness, 0.0001);
+                float safeSoftness = 0.005;
                 float fillEnd = currentProgress * (1.0 + safeSoftness);
                 float mask = 1.0 - smoothstep(fillEnd - safeSoftness, fillEnd, normalizedAngle);
-
-                if (invertMask > 0.5)
-                {
-                    mask = 1.0 - mask;
-                }
 
                 col.a *= mask;
                 return col;

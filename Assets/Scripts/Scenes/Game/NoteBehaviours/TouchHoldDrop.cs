@@ -723,9 +723,11 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void SetBorderProgress(float progress)
         {
-            _borderRenderer.GetPropertyBlock(_borderMpb);
-            _borderMpb.SetFloat(s_ProgressPropertyId, progress);
-            _borderRenderer.SetPropertyBlock(_borderMpb);
+            //_borderRenderer.GetPropertyBlock(_borderMpb);
+            //_borderMpb.Clear();
+            //_borderMpb.SetFloat(s_ProgressPropertyId, progress);
+            //_borderRenderer.SetPropertyBlock(_borderMpb);
+            _borderRenderer.color = new Color(1f, 1f, 1f, progress);
         }
         protected override void PlaySFX()
         {
