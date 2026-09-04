@@ -526,9 +526,9 @@ namespace MajdataPlay.Scenes.Game.Notes.Behaviours
                         return;
                     case NoteStatus.Arrived:
                         {
-                            var value = 0.91f * (1 - (Length - timing) / Length);
-                            var alpha = value.Clamp(0, 1f);
-                            SetBorderProgress(alpha);
+                            var value = (1 - ((Length - timing) / Length));
+                            var progress = value.Clamp(0, 1f);
+                            SetBorderProgress(progress);
                         }
                         return;
                 }

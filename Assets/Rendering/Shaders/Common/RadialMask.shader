@@ -46,6 +46,7 @@ Shader "Common/RadialMask"
                 float4 vertex   : SV_POSITION;
                 fixed4 color    : COLOR;
                 float2 texcoord : TEXCOORD0;
+                float2 localPos : TEXCOORD1;
                 UNITY_VERTEX_INPUT_INSTANCE_ID 
             };
 
@@ -67,6 +68,7 @@ Shader "Common/RadialMask"
                 
                 OUT.vertex = UnityObjectToClipPos(IN.vertex);
                 OUT.texcoord = IN.texcoord;
+                OUT.localPos = IN.vertex.xy;
                 OUT.color = IN.color * _Color;
                 return OUT;
             }
@@ -80,7 +82,7 @@ Shader "Common/RadialMask"
                 float isCCW = UNITY_ACCESS_INSTANCED_PROP(Props, _CounterClockwise);
 
                 fixed4 col = tex2D(_MainTex, IN.texcoord) * IN.color;
-                float2 dir = IN.texcoord - float2(0.5, 0.5);
+                float2 dir = IN.localPos;
 
                 if (isCCW > 0.5) dir.x = -dir.x;
 
