@@ -1,21 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
-using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Serialization;
-using UnityEngine.U2D;
 using UnityEngine.LowLevel;
 using UnityEngine.PlayerLoop;
 using MajdataPlay.Diagnostics;
-using Unity.Burst;
-
-using Unity.Jobs;
-
-
-
 
 #if UNITY_EDITOR
 using UnityEditor; 
@@ -275,32 +264,17 @@ namespace MajdataPlay.Rendering
         // Internal
         // ============================================================
 
-        private static readonly int MainTexID =
-            Shader.PropertyToID("_MainTex");
-
         private static readonly int RendererColorID =
             Shader.PropertyToID("_RendererColor");
 
         private MeshFilter _meshFilter;
         private MeshRenderer _meshRenderer;
 
-        private Mesh _mesh;
+        private RawSpriteResources.MeshEntry? _meshEntry;
+        private RawSpriteResources.MaterialEntry? _materialEntry;
         private MaterialPropertyBlock _propertyBlock;
 
         private int _rawSpriteUpdaterIndex = -1; // Updater index
-
-        // ------------------------------------------------------------
-        // Persistent Native buffers
-        // ------------------------------------------------------------
-
-        private NativeArray<Vector3> _positions;
-        private NativeArray<Vector2> _uv0;
-        private NativeArray<Vector3> _meshPositions;
-
-        private NativeArray<ushort> _indices;
-
-        private int _vertexCount;
-        private int _indexCount;
 
         // ------------------------------------------------------------
         // Cached state
@@ -336,6 +310,7 @@ namespace MajdataPlay.Rendering
 
         private void OnEnable()
         {
+            Initialize();
             _meshRenderer.enabled = true;
 
             _spriteDirty = true;
@@ -433,27 +408,19 @@ namespace MajdataPlay.Rendering
 
         private void OnDisable()
         {
-            _meshRenderer.enabled = false;
+            if (_meshRenderer != null)
+                _meshRenderer.enabled = false;
         }
 
         private void OnDestroy()
         {
             Updater.Unregister(this);
-            DisposeNativeBuffers();
-
-            if (_mesh != null)
-            {
-                if (Application.isPlaying)
-                {
-                    Destroy(_mesh);
-                }
-                else
-                {
-                    DestroyImmediate(_mesh);
-                }
-
-                _mesh = null;
-            }
+            if (_meshFilter != null)
+                _meshFilter.sharedMesh = null;
+            if (_meshRenderer != null)
+                _meshRenderer.sharedMaterial = null;
+            RawSpriteResources.Release(_meshEntry);
+            RawSpriteResources.Release(_materialEntry);
         }
         public void GetPropertyBlock(MaterialPropertyBlock properties)
         {
@@ -502,7 +469,6 @@ namespace MajdataPlay.Rendering
         private void Initialize()
         {
             EnsureRenderer();
-            EnsureMesh();
             EnsurePropertyBlock();
         }
 
@@ -517,24 +483,6 @@ namespace MajdataPlay.Rendering
             {
                 _meshRenderer = GetComponent<MeshRenderer>();
             }
-        }
-
-        private void EnsureMesh()
-        {
-            if (_mesh != null)
-            {
-                return;
-            }
-
-            _mesh = new Mesh
-            {
-                name = "RawSpriteRenderer Mesh",
-                hideFlags = HideFlags.HideAndDontSave
-            };
-
-            _mesh.MarkDynamic();
-
-            _meshFilter.sharedMesh = _mesh;
         }
 
         private void EnsurePropertyBlock()
@@ -554,30 +502,7 @@ namespace MajdataPlay.Rendering
             _spriteDirty = true;
             _geometryDirty = true;
 
-            var currentSprite = _sprite;
-            if(currentSprite == null)
-            {
-                _vertexCount = 0;
-                _indexCount = 0;
-                return;
-            }
-            var sourcePositions = currentSprite.GetVertexAttribute<Vector3>(VertexAttribute.Position);
-            var sourceUVs = currentSprite.GetVertexAttribute<Vector2>(VertexAttribute.TexCoord0);
-            var sourceIndices = currentSprite.GetIndices();
-
-            var vertexCount = sourcePositions.Length;
-            var indexCount = sourceIndices.Length;
-
-            EnsurePositionBuffers(vertexCount);
-            EnsureUVBuffer(vertexCount);
-            EnsureIndexBuffer(indexCount);
-
-            sourcePositions.CopyTo(_positions);
-            sourceUVs.CopyTo(_uv0);
-            sourceIndices.CopyTo(_indices);
-
-            _vertexCount = vertexCount;
-            _indexCount = indexCount;
+            _materialDirty = true;
         }
 
         private void MarkGeometryDirty()
@@ -648,148 +573,16 @@ namespace MajdataPlay.Rendering
             _spriteDirty = false;
             _geometryDirty = false;
 
-            var currentSprite = _sprite;
+            // Instancing requires the same Mesh object, not just identical vertices.
+            var next = RawSpriteResources.AcquireMesh(_sprite, _flipX, _flipY);
+            _meshFilter.sharedMesh = next?.Mesh;
+            RawSpriteResources.Release(_meshEntry);
+            _meshEntry = next;
 
-            if (_vertexCount == 0 || _indexCount == 0)
-            {
-                ClearGeometry();
-
-                _appliedSprite = currentSprite;
-                _appliedFlipX = _flipX;
-                _appliedFlipY = _flipY;
-
-                return;
-            }
-
-            // Sprite 没变，只是 flip 改变。
-            if (currentSprite == _appliedSprite)
-            {
-                ApplyFlipOnly(currentSprite);
-
-                _appliedFlipX = _flipX;
-                _appliedFlipY = _flipY;
-
-                return;
-            }
-
-            _appliedSprite = currentSprite;
-
-            // --------------------------------------------------------
-            // Flip
-            // --------------------------------------------------------
-
-            BuildFlippedPositions(currentSprite);
-
-            // --------------------------------------------------------
-            // Upload
-            // --------------------------------------------------------
-
-            _mesh.Clear(false);
-
-            _mesh.SetVertices(
-                _meshPositions,
-                0,
-                _vertexCount,
-                MeshUpdateFlags.DontRecalculateBounds |
-                MeshUpdateFlags.DontValidateIndices);
-
-            _mesh.SetUVs(
-                0,
-                _uv0,
-                0,
-                _vertexCount,
-                MeshUpdateFlags.DontRecalculateBounds |
-                MeshUpdateFlags.DontValidateIndices);
-
-            _mesh.SetIndices(
-                _indices,
-                0,
-                _indexCount,
-                MeshTopology.Triangles,
-                0,
-                false,
-                0);
-
-            // Sprite.bounds 已经是 Sprite 几何对应的 local bounds。
-            // 不需要 RecalculateBounds。
-            _mesh.bounds = currentSprite.bounds;
-
-            _meshFilter.sharedMesh = _mesh;
-
+            _appliedSprite = _sprite;
             _appliedFlipX = _flipX;
             _appliedFlipY = _flipY;
-
-            // Texture 只在 Sprite 改变时更新。
-            EnsurePropertyBlock();
-
-            _meshRenderer.GetPropertyBlock(_propertyBlock);
-
-            Texture texture = currentSprite.texture;
-            _propertyBlock.SetTexture(MainTexID, texture);
-
-            _meshRenderer.SetPropertyBlock(_propertyBlock);
-
-            // sprite 已经处理完，不需要再次上传。
-            _spriteDirty = false;
-        }
-
-        private void ApplyFlipOnly(Sprite currentSprite)
-        {
-            if (_mesh == null || _vertexCount == 0)
-            {
-                return;
-            }
-
-            BuildFlippedPositions(currentSprite);
-
-            _mesh.SetVertices(
-                _meshPositions,
-                0,
-                _vertexCount,
-                MeshUpdateFlags.DontRecalculateBounds |
-                MeshUpdateFlags.DontValidateIndices);
-
-            // Flip 后 bounds 不变。
-            _mesh.bounds = currentSprite.bounds;
-        }
-
-        private void BuildFlippedPositions(Sprite spriteData)
-        {
-            var source = _positions;
-            var destination = _meshPositions;
-
-            // Sprite vertices 是以 Sprite pivot 为原点建立的。
-            // 因此翻转需要围绕 pivot 原点做，而不是 Mesh center。
-
-            var job = new FlipSpritePositionsJob
-            {
-                Source = _positions,
-                Destination = _meshPositions,
-                ScaleX = _flipX ? -1f : 1f,
-                ScaleY = _flipY ? -1f : 1f
-            };
-
-            job.Run(_vertexCount);
-        }
-
-        private void ClearGeometry()
-        {
-            if (_mesh == null)
-            {
-                return;
-            }
-
-            _mesh.Clear(false);
-
-            _vertexCount = 0;
-            _indexCount = 0;
-
-            // 清除纹理 MPB。
-            EnsurePropertyBlock();
-
-            _meshRenderer.GetPropertyBlock(_propertyBlock);
-            _propertyBlock.SetTexture(MainTexID, Texture2D.whiteTexture);
-            _meshRenderer.SetPropertyBlock(_propertyBlock);
+            _materialDirty = true;
         }
 
         // ============================================================
@@ -840,12 +633,16 @@ namespace MajdataPlay.Rendering
         {
             _materialDirty = false;
 
-            Material material = _sharedMaterial;
+            EnsureRenderer();
 
-            if (_meshRenderer.sharedMaterial != material)
-                _meshRenderer.sharedMaterial = material;
-
-            _appliedMaterial = material;
+            // Textures belong to a shared material. A texture in the property block
+            // disables GPU instancing even when every renderer uses the same texture.
+            var next = RawSpriteResources.AcquireMaterial(
+                _sharedMaterial, _sprite != null ? _sprite.texture : null);
+            _meshRenderer.sharedMaterial = next != null ? next.Material : _sharedMaterial;
+            RawSpriteResources.Release(_materialEntry);
+            _materialEntry = next;
+            _appliedMaterial = _sharedMaterial;
         }
 
         // ============================================================
@@ -866,107 +663,6 @@ namespace MajdataPlay.Rendering
                 _motionVectorGenerationMode;
         }
 
-        // ============================================================
-        // Native buffers
-        // ============================================================
-
-        private void EnsurePositionBuffers(int length)
-        {
-            if (_positions.IsCreated &&
-                _positions.Length == length &&
-                _meshPositions.IsCreated &&
-                _meshPositions.Length == length)
-            {
-                return;
-            }
-
-            if (_positions.IsCreated)
-                _positions.Dispose();
-
-            if (_meshPositions.IsCreated)
-                _meshPositions.Dispose();
-
-            _positions = new NativeArray<Vector3>(
-                length,
-                Allocator.Persistent,
-                NativeArrayOptions.UninitializedMemory);
-
-            _meshPositions = new NativeArray<Vector3>(
-                length,
-                Allocator.Persistent,
-                NativeArrayOptions.UninitializedMemory);
-        }
-
-        private void EnsureUVBuffer(int length)
-        {
-            if (_uv0.IsCreated &&
-                _uv0.Length == length)
-            {
-                return;
-            }
-
-            if (_uv0.IsCreated)
-                _uv0.Dispose();
-
-            _uv0 = new NativeArray<Vector2>(
-                length,
-                Allocator.Persistent,
-                NativeArrayOptions.UninitializedMemory);
-        }
-
-        private void EnsureIndexBuffer(int length)
-        {
-            if (_indices.IsCreated &&
-                _indices.Length == length)
-            {
-                return;
-            }
-
-            if (_indices.IsCreated)
-                _indices.Dispose();
-
-            _indices = new NativeArray<ushort>(
-                length,
-                Allocator.Persistent,
-                NativeArrayOptions.UninitializedMemory);
-        }
-
-        private void DisposeNativeBuffers()
-        {
-            if (_positions.IsCreated)
-                _positions.Dispose();
-
-            if (_meshPositions.IsCreated)
-                _meshPositions.Dispose();
-
-            if (_uv0.IsCreated)
-                _uv0.Dispose();
-
-            if (_indices.IsCreated)
-                _indices.Dispose();
-        }
-        [BurstCompile]
-        public struct FlipSpritePositionsJob : IJobParallelFor
-        {
-            [ReadOnly]
-            public NativeArray<Vector3> Source;
-
-            [WriteOnly]
-            public NativeArray<Vector3> Destination;
-
-            public float ScaleX;
-            public float ScaleY;
-
-            public void Execute(int index)
-            {
-                var p = Source[index];
-
-                p.x *= ScaleX;
-                p.y *= ScaleY;
-
-                Destination[index] = p;
-            }
-        }
         public static class Updater
         {
             private sealed class PlayerLoopMarker
