@@ -7,7 +7,17 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Serialization;
 using UnityEngine.U2D;
-#if UNITY_EDITOR 
+using UnityEngine.LowLevel;
+using UnityEngine.PlayerLoop;
+using MajdataPlay.Diagnostics;
+using Unity.Burst;
+
+using Unity.Jobs;
+
+
+
+
+#if UNITY_EDITOR
 using UnityEditor; 
 #endif
 #nullable enable
@@ -62,7 +72,7 @@ namespace MajdataPlay.Rendering
         // SpriteRenderer-like public API
         // ============================================================
 
-        public Sprite sprite
+        public Sprite Sprite
         {
             get => _sprite;
             set
@@ -77,7 +87,7 @@ namespace MajdataPlay.Rendering
             }
         }
 
-        public Color color
+        public Color Color
         {
             get => _color;
             set
@@ -90,7 +100,7 @@ namespace MajdataPlay.Rendering
             }
         }
 
-        public bool flipX
+        public bool FlipX
         {
             get => _flipX;
             set
@@ -103,7 +113,7 @@ namespace MajdataPlay.Rendering
             }
         }
 
-        public bool flipY
+        public bool FlipY
         {
             get => _flipY;
             set
@@ -116,7 +126,7 @@ namespace MajdataPlay.Rendering
             }
         }
 
-        public string sortingLayerName
+        public string SortingLayerName
         {
             get => _sortingLayerName;
             set
@@ -131,7 +141,7 @@ namespace MajdataPlay.Rendering
             }
         }
 
-        public int sortingLayerID
+        public int SortingLayerID
         {
             get
             {
@@ -158,7 +168,7 @@ namespace MajdataPlay.Rendering
             }
         }
 
-        public int sortingOrder
+        public int SortingOrder
         {
             get => _sortingOrder;
             set
@@ -171,7 +181,7 @@ namespace MajdataPlay.Rendering
             }
         }
 
-        public Material sharedMaterial
+        public Material SharedMaterial
         {
             get
             {
@@ -192,7 +202,7 @@ namespace MajdataPlay.Rendering
             }
         }
 
-        public ShadowCastingMode shadowCastingMode
+        public ShadowCastingMode ShadowCastingMode
         {
             get => _shadowCastingMode;
             set
@@ -205,7 +215,7 @@ namespace MajdataPlay.Rendering
             }
         }
 
-        public bool receiveShadows
+        public bool ReceiveShadows
         {
             get => _receiveShadows;
             set
@@ -218,7 +228,7 @@ namespace MajdataPlay.Rendering
             }
         }
 
-        public MotionVectorGenerationMode motionVectorGenerationMode
+        public MotionVectorGenerationMode MotionVectorGenerationMode
         {
             get => _motionVectorGenerationMode;
             set
@@ -231,27 +241,8 @@ namespace MajdataPlay.Rendering
             }
         }
 
-        /// <summary>
-        /// 与 SpriteRenderer.enabled 对应。
-        /// 实际上直接代理 MeshRenderer.enabled。
-        /// </summary>
-        public bool enabled
-        {
-            get
-            {
-                EnsureRenderer();
-                return _meshRenderer != null && _meshRenderer.enabled;
-            }
-            set
-            {
-                EnsureRenderer();
 
-                if (_meshRenderer != null)
-                    _meshRenderer.enabled = value;
-            }
-        }
-
-        public Bounds bounds
+        public Bounds Vounds
         {
             get
             {
@@ -262,7 +253,7 @@ namespace MajdataPlay.Rendering
             }
         }
 
-        public bool isVisible
+        public bool IsVisible
         {
             get
             {
@@ -271,7 +262,7 @@ namespace MajdataPlay.Rendering
             }
         }
 
-        public Renderer rendererComponent
+        public Renderer RendererComponent
         {
             get
             {
@@ -296,12 +287,7 @@ namespace MajdataPlay.Rendering
         private Mesh _mesh;
         private MaterialPropertyBlock _propertyBlock;
 
-        // ------------------------------------------------------------
-        // Temporary sprite buffers
-        // ------------------------------------------------------------ 
-        private NativeArray<Vector3> _spritePositions;
-        private NativeArray<Vector2> _spriteUVs;
-        private NativeArray<ushort> _spriteIndices;
+        private int _rawSpriteUpdaterIndex = -1; // Updater index
 
         // ------------------------------------------------------------
         // Persistent Native buffers
@@ -345,11 +331,12 @@ namespace MajdataPlay.Rendering
         private void Awake()
         {
             Initialize();
+            Updater.Register(this);
         }
 
         private void OnEnable()
         {
-            Initialize();
+            _meshRenderer.enabled = true;
 
             _spriteDirty = true;
             _geometryDirty = true;
@@ -361,7 +348,7 @@ namespace MajdataPlay.Rendering
             ApplyAll();
         }
 
-        private void LateUpdate()
+        private void OnPreLateUpdate()
         {
             if (!isActiveAndEnabled)
             {
@@ -407,6 +394,14 @@ namespace MajdataPlay.Rendering
 
 #if UNITY_EDITOR
 
+        private void LateUpdate()
+        {
+            if (!Application.isPlaying)
+            {
+                ApplyDirty();
+            }
+        }
+
         private void OnValidate()
         {
             // OnValidate 可能发生在对象还没完成初始化的时候。
@@ -438,12 +433,12 @@ namespace MajdataPlay.Rendering
 
         private void OnDisable()
         {
-            // 不销毁 Mesh。
-            // Disable/Enable 时继续复用，减少 native allocation。
+            _meshRenderer.enabled = false;
         }
 
         private void OnDestroy()
         {
+            Updater.Unregister(this);
             DisposeNativeBuffers();
 
             if (_mesh != null)
@@ -475,16 +470,22 @@ namespace MajdataPlay.Rendering
         private void EnsureRenderer()
         {
             if (_meshFilter == null)
+            {
                 _meshFilter = GetComponent<MeshFilter>();
+            }
 
             if (_meshRenderer == null)
+            {
                 _meshRenderer = GetComponent<MeshRenderer>();
+            }
         }
 
         private void EnsureMesh()
         {
             if (_mesh != null)
+            {
                 return;
+            }
 
             _mesh = new Mesh
             {
@@ -500,7 +501,9 @@ namespace MajdataPlay.Rendering
         private void EnsurePropertyBlock()
         {
             if (_propertyBlock == null)
+            {
                 _propertyBlock = new MaterialPropertyBlock();
+            }
         }
 
         // ============================================================
@@ -511,22 +514,31 @@ namespace MajdataPlay.Rendering
         {
             _spriteDirty = true;
             _geometryDirty = true;
-            _spritePositions.Dispose();
-            _spriteUVs.Dispose();
-            _spriteIndices.Dispose();
 
             var currentSprite = _sprite;
+            if(currentSprite == null)
+            {
+                _vertexCount = 0;
+                _indexCount = 0;
+                return;
+            }
             var sourcePositions = currentSprite.GetVertexAttribute<Vector3>(VertexAttribute.Position);
             var sourceUVs = currentSprite.GetVertexAttribute<Vector2>(VertexAttribute.TexCoord0);
             var sourceIndices = currentSprite.GetIndices();
 
-            _spritePositions = new NativeArray<Vector3>(sourcePositions.Length, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
-            _spriteUVs = new NativeArray<Vector2>(sourceUVs.Length, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
-            _spriteIndices = new NativeArray<ushort>(sourceIndices.Length, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
+            var vertexCount = sourcePositions.Length;
+            var indexCount = sourceIndices.Length;
 
-            sourcePositions.CopyTo(_spritePositions);
-            sourceUVs.CopyTo(_spriteUVs);
-            sourceIndices.CopyTo(_spriteIndices);
+            EnsurePositionBuffers(vertexCount);
+            EnsureUVBuffer(vertexCount);
+            EnsureIndexBuffer(indexCount);
+
+            sourcePositions.CopyTo(_positions);
+            sourceUVs.CopyTo(_uv0);
+            sourceIndices.CopyTo(_indices);
+
+            _vertexCount = vertexCount;
+            _indexCount = indexCount;
         }
 
         private void MarkGeometryDirty()
@@ -597,13 +609,13 @@ namespace MajdataPlay.Rendering
             _spriteDirty = false;
             _geometryDirty = false;
 
-            Sprite currentSprite = _sprite;
+            var currentSprite = _sprite;
 
-            if (currentSprite == null)
+            if (_vertexCount == 0 || _indexCount == 0)
             {
                 ClearGeometry();
 
-                _appliedSprite = null;
+                _appliedSprite = currentSprite;
                 _appliedFlipX = _flipX;
                 _appliedFlipY = _flipY;
 
@@ -621,143 +633,70 @@ namespace MajdataPlay.Rendering
                 return;
             }
 
-            try
-            {
-                _appliedSprite = currentSprite;
+            _appliedSprite = currentSprite;
 
-                var sourcePositions = default(NativeSlice<Vector3>);
-                var sourceUVs = default(NativeSlice<Vector2>);
-                var sourceIndices = default(NativeArray<ushort>);
+            // --------------------------------------------------------
+            // Flip
+            // --------------------------------------------------------
 
-                if (_spritePositions.IsCreated)
-                {
-                    sourcePositions = _spritePositions;
-                }
-                else
-                {
-                    sourcePositions = currentSprite.GetVertexAttribute<Vector3>(VertexAttribute.Position);
-                }
+            BuildFlippedPositions(currentSprite);
 
-                if (_spriteUVs.IsCreated)
-                {
-                    sourceUVs = _spriteUVs;
-                }
-                else
-                {
-                    sourceUVs = currentSprite.GetVertexAttribute<Vector2>(VertexAttribute.TexCoord0);
-                }
+            // --------------------------------------------------------
+            // Upload
+            // --------------------------------------------------------
 
-                if (_spriteIndices.IsCreated)
-                {
-                    sourceIndices = _spriteIndices;
-                }
-                else
-                {
-                    sourceIndices = currentSprite.GetIndices();
-                }
+            _mesh.Clear(false);
 
-                int vertexCount = sourcePositions.Length;
-                int indexCount = sourceIndices.Length;
+            _mesh.SetVertices(
+                _meshPositions,
+                0,
+                _vertexCount,
+                MeshUpdateFlags.DontRecalculateBounds |
+                MeshUpdateFlags.DontValidateIndices);
 
-                if (vertexCount == 0 || indexCount == 0)
-                {
-                    ClearGeometry();
+            _mesh.SetUVs(
+                0,
+                _uv0,
+                0,
+                _vertexCount,
+                MeshUpdateFlags.DontRecalculateBounds |
+                MeshUpdateFlags.DontValidateIndices);
 
-                    _appliedFlipX = _flipX;
-                    _appliedFlipY = _flipY;
+            _mesh.SetIndices(
+                _indices,
+                0,
+                _indexCount,
+                MeshTopology.Triangles,
+                0,
+                false,
+                0);
 
-                    return;
-                }
+            // Sprite.bounds 已经是 Sprite 几何对应的 local bounds。
+            // 不需要 RecalculateBounds。
+            _mesh.bounds = currentSprite.bounds;
 
-                EnsurePositionBuffers(vertexCount);
-                EnsureUVBuffer(vertexCount);
-                EnsureIndexBuffer(indexCount);
+            _meshFilter.sharedMesh = _mesh;
 
-                // --------------------------------------------------------
-                // Copy source Sprite data
-                // --------------------------------------------------------
+            _appliedFlipX = _flipX;
+            _appliedFlipY = _flipY;
 
-                sourcePositions.CopyTo(_positions);
-                sourceUVs.CopyTo(_uv0);
+            // Texture 只在 Sprite 改变时更新。
+            EnsurePropertyBlock();
 
-                sourceIndices.CopyTo(_indices);
+            _meshRenderer.GetPropertyBlock(_propertyBlock);
 
-                _vertexCount = vertexCount;
-                _indexCount = indexCount;
+            Texture texture = currentSprite.texture;
+            _propertyBlock.SetTexture(MainTexID, texture);
 
-                // --------------------------------------------------------
-                // Flip
-                // --------------------------------------------------------
+            _meshRenderer.SetPropertyBlock(_propertyBlock);
 
-                BuildFlippedPositions(currentSprite);
-
-                // --------------------------------------------------------
-                // Upload
-                // --------------------------------------------------------
-
-                _mesh.Clear(false);
-
-                _mesh.SetVertices(
-                    _meshPositions,
-                    0,
-                    _vertexCount,
-                    MeshUpdateFlags.DontRecalculateBounds |
-                    MeshUpdateFlags.DontValidateIndices);
-
-                _mesh.SetUVs(
-                    0,
-                    _uv0,
-                    0,
-                    _vertexCount,
-                    MeshUpdateFlags.DontRecalculateBounds |
-                    MeshUpdateFlags.DontValidateIndices);
-
-                _mesh.SetIndices(
-                    _indices,
-                    0,
-                    _indexCount,
-                    MeshTopology.Triangles,
-                    0,
-                    false,
-                    0);
-
-                // Sprite.bounds 已经是 Sprite 几何对应的 local bounds。
-                // 不需要 RecalculateBounds。
-                _mesh.bounds = currentSprite.bounds;
-
-                _meshFilter.sharedMesh = _mesh;
-
-                _appliedFlipX = _flipX;
-                _appliedFlipY = _flipY;
-
-                // Texture 只在 Sprite 改变时更新。
-                EnsurePropertyBlock();
-
-                _meshRenderer.GetPropertyBlock(_propertyBlock);
-
-                Texture texture = currentSprite.texture;
-                _propertyBlock.SetTexture(MainTexID, texture);
-
-                _meshRenderer.SetPropertyBlock(_propertyBlock);
-
-                // sprite 已经处理完，不需要再次上传。
-                _spriteDirty = false;
-            }
-            finally
-            {
-                _spritePositions.Dispose();
-                _spriteUVs.Dispose();
-                _spriteIndices.Dispose();
-                _spritePositions = default;
-                _spriteUVs = default;
-                _spriteIndices = default;
-            }
+            // sprite 已经处理完，不需要再次上传。
+            _spriteDirty = false;
         }
 
         private void ApplyFlipOnly(Sprite currentSprite)
         {
-            if (_mesh == null ||
-                _vertexCount == 0)
+            if (_mesh == null || _vertexCount == 0)
             {
                 return;
             }
@@ -777,30 +716,29 @@ namespace MajdataPlay.Rendering
 
         private void BuildFlippedPositions(Sprite spriteData)
         {
-            NativeArray<Vector3> source = _positions;
-            NativeArray<Vector3> destination = _meshPositions;
+            var source = _positions;
+            var destination = _meshPositions;
 
             // Sprite vertices 是以 Sprite pivot 为原点建立的。
             // 因此翻转需要围绕 pivot 原点做，而不是 Mesh center。
 
-            for (int i = 0; i < _vertexCount; i++)
+            var job = new FlipSpritePositionsJob
             {
-                Vector3 p = source[i];
+                Source = _positions,
+                Destination = _meshPositions,
+                ScaleX = _flipX ? -1f : 1f,
+                ScaleY = _flipY ? -1f : 1f
+            };
 
-                if (_flipX)
-                    p.x = -p.x;
-
-                if (_flipY)
-                    p.y = -p.y;
-
-                destination[i] = p;
-            }
+            job.Run(_vertexCount);
         }
 
         private void ClearGeometry()
         {
             if (_mesh == null)
+            {
                 return;
+            }
 
             _mesh.Clear(false);
 
@@ -811,7 +749,7 @@ namespace MajdataPlay.Rendering
             EnsurePropertyBlock();
 
             _meshRenderer.GetPropertyBlock(_propertyBlock);
-            _propertyBlock.SetTexture(MainTexID, null);
+            _propertyBlock.SetTexture(MainTexID, Texture2D.whiteTexture);
             _meshRenderer.SetPropertyBlock(_propertyBlock);
         }
 
@@ -967,10 +905,249 @@ namespace MajdataPlay.Rendering
 
             if (_indices.IsCreated)
                 _indices.Dispose();
+        }
+        [BurstCompile]
+        public struct FlipSpritePositionsJob : IJobParallelFor
+        {
+            [ReadOnly]
+            public NativeArray<Vector3> Source;
 
-            _spritePositions.Dispose();
-            _spriteUVs.Dispose();
-            _spriteIndices.Dispose();
+            [WriteOnly]
+            public NativeArray<Vector3> Destination;
+
+            public float ScaleX;
+            public float ScaleY;
+
+            public void Execute(int index)
+            {
+                var p = Source[index];
+
+                p.x *= ScaleX;
+                p.y *= ScaleY;
+
+                Destination[index] = p;
+            }
+        }
+        public static class Updater
+        {
+            private sealed class PlayerLoopMarker
+            {
+            }
+
+            private static RawSpriteRenderer[] s_Renderers;
+            private static int s_Count;
+
+            private static bool s_Installed;
+
+            private static readonly PlayerLoopSystem.UpdateFunction s_UpdateDelegate = UpdateAll;
+
+
+            public static void Register(RawSpriteRenderer renderer)
+            {
+                if (renderer == null)
+                    return;
+
+                int index = renderer._rawSpriteUpdaterIndex;
+
+                // 防止重复注册
+                if (index >= 0)
+                    return;
+
+                EnsureInstalled();
+
+                if (s_Renderers == null)
+                {
+                    s_Renderers = new RawSpriteRenderer[16];
+                }
+                else if (s_Count == s_Renderers.Length)
+                {
+                    Array.Resize(
+                        ref s_Renderers,
+                        s_Renderers.Length < 1024
+                            ? s_Renderers.Length * 2
+                            : s_Renderers.Length + 1024
+                    );
+                }
+
+                index = s_Count++;
+
+                s_Renderers[index] = renderer;
+                renderer._rawSpriteUpdaterIndex = index;
+            }
+
+            public static void Unregister(RawSpriteRenderer renderer)
+            {
+                if (renderer == null)
+                    return;
+
+                int index = renderer._rawSpriteUpdaterIndex;
+
+                if ((uint)index >= (uint)s_Count)
+                {
+                    renderer._rawSpriteUpdaterIndex = -1;
+                    return;
+                }
+
+                RawSpriteRenderer[] renderers = s_Renderers;
+
+                int lastIndex = --s_Count;
+                RawSpriteRenderer last = renderers[lastIndex];
+
+                if (index != lastIndex)
+                {
+                    renderers[index] = last;
+                    last._rawSpriteUpdaterIndex = index;
+                }
+
+                renderers[lastIndex] = null;
+                renderer._rawSpriteUpdaterIndex = -1;
+            }
+
+            private static void UpdateAll()
+            {
+                var renderers = s_Renderers;
+                var count = s_Count;
+
+                for (var i = 0; i < count; i++)
+                {
+                    RawSpriteRenderer renderer = renderers[i];
+
+                    renderer.OnPreLateUpdate();
+                }
+            }
+
+            private static void EnsureInstalled()
+            {
+                if (s_Installed)
+                    return;
+
+                PlayerLoopSystem loop = PlayerLoop.GetCurrentPlayerLoop();
+
+                if (!InsertAtEndOfPhase<PreLateUpdate>(
+                        ref loop,
+                        typeof(PlayerLoopMarker),
+                        s_UpdateDelegate))
+                {
+                    MajDebug.LogError(
+                        "RawSpriteUpdater: Failed to install into PreLateUpdate."
+                    );
+                    return;
+                }
+
+                PlayerLoop.SetPlayerLoop(loop);
+                s_Installed = true;
+            }
+
+            private static bool InsertAtEndOfPhase<TPhase>(
+                ref PlayerLoopSystem root,
+                Type markerType,
+                PlayerLoopSystem.UpdateFunction updateDelegate)
+                where TPhase : struct
+            {
+                return InsertAtEndOfPhase(
+                    ref root,
+                    typeof(TPhase),
+                    markerType,
+                    updateDelegate);
+            }
+
+            private static bool InsertAtEndOfPhase(
+                ref PlayerLoopSystem system,
+                Type phaseType,
+                Type markerType,
+                PlayerLoopSystem.UpdateFunction updateDelegate)
+            {
+                PlayerLoopSystem[] children = system.subSystemList;
+
+                if (children == null)
+                    return false;
+
+                for (int i = 0; i < children.Length; i++)
+                {
+                    PlayerLoopSystem child = children[i];
+
+                    if (child.type == phaseType)
+                    {
+                        if (ContainsMarker(child, markerType))
+                            return true;
+
+                        PlayerLoopSystem[] oldChildren = child.subSystemList;
+
+                        int oldCount = oldChildren?.Length ?? 0;
+
+                        PlayerLoopSystem[] newChildren =
+                            new PlayerLoopSystem[oldCount + 1];
+
+                        if (oldCount != 0)
+                        {
+                            Array.Copy(
+                                oldChildren,
+                                0,
+                                newChildren,
+                                0,
+                                oldCount);
+                        }
+
+                        newChildren[oldCount] = new PlayerLoopSystem
+                        {
+                            type = markerType,
+                            updateDelegate = updateDelegate
+                        };
+
+                        child.subSystemList = newChildren;
+                        children[i] = child;
+                        system.subSystemList = children;
+
+                        return true;
+                    }
+
+                    if (InsertAtEndOfPhase(
+                            ref child,
+                            phaseType,
+                            markerType,
+                            updateDelegate))
+                    {
+                        children[i] = child;
+                        system.subSystemList = children;
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            private static bool ContainsMarker(
+                PlayerLoopSystem system,
+                Type markerType)
+            {
+                if (system.type == markerType)
+                    return true;
+
+                PlayerLoopSystem[] children = system.subSystemList;
+
+                if (children == null)
+                    return false;
+
+                for (int i = 0; i < children.Length; i++)
+                {
+                    if (ContainsMarker(children[i], markerType))
+                        return true;
+                }
+
+                return false;
+            }
+
+            /// <summary>
+            /// 处理 Domain Reload Disabled / PlayMode 重启。
+            /// </summary>
+            [RuntimeInitializeOnLoadMethod(
+                RuntimeInitializeLoadType.SubsystemRegistration)]
+            private static void ResetStatics()
+            {
+                s_Renderers = null;
+                s_Count = 0;
+                s_Installed = false;
+            }
         }
     }
 }
