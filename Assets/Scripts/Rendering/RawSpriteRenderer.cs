@@ -455,6 +455,45 @@ namespace MajdataPlay.Rendering
                 _mesh = null;
             }
         }
+        public void GetPropertyBlock(MaterialPropertyBlock properties)
+        {
+            if (properties == null)
+            {
+                throw new ArgumentNullException(nameof(properties));
+            }
+
+            _meshRenderer.GetPropertyBlock(properties);
+        }
+
+        public void SetPropertyBlock(MaterialPropertyBlock properties)
+        {
+            if (properties == null)
+            {
+                throw new ArgumentNullException(nameof(properties));
+            }
+
+            _meshRenderer.SetPropertyBlock(properties);
+        }
+
+        public void GetPropertyBlock(MaterialPropertyBlock properties, int materialIndex)
+        {
+            if (properties == null)
+            {
+                throw new ArgumentNullException(nameof(properties));
+            }
+
+            _meshRenderer.GetPropertyBlock(properties, materialIndex);
+        }
+
+        public void SetPropertyBlock(MaterialPropertyBlock properties, int materialIndex)
+        {
+            if (properties == null)
+            {
+                throw new ArgumentNullException(nameof(properties));
+            }
+
+            _meshRenderer.SetPropertyBlock(properties, materialIndex);
+        }
 
         // ============================================================
         // Initialization

@@ -100,7 +100,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4570065831695336319}
-  - component: {fileID: 4570065831695336312}
+  - component: {fileID: 2206731699729494150}
+  - component: {fileID: 8037694162383748697}
+  - component: {fileID: 3743915582908413402}
   m_Layer: 0
   m_Name: TouchHold_Border
   m_TagString: Untagged
@@ -123,9 +125,16 @@ Transform:
   m_Children: []
   m_Father: {fileID: 4570065832926722979}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!212 &4570065831695336312
-SpriteRenderer:
-  serializedVersion: 2
+--- !u!33 &2206731699729494150
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4570065831695336318}
+  m_Mesh: {fileID: 0}
+--- !u!23 &8037694162383748697
+MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -137,9 +146,9 @@ SpriteRenderer:
   m_DynamicOccludee: 1
   m_StaticShadowCaster: 0
   m_MotionVectors: 1
-  m_LightProbeUsage: 1
+  m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 0
+  m_RayTracingMode: 2
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
@@ -162,7 +171,7 @@ SpriteRenderer:
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
   m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 0
+  m_SelectedEditorRenderState: 3
   m_MinimumChartSize: 4
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
@@ -172,16 +181,29 @@ SpriteRenderer:
   m_SortingLayer: 13
   m_SortingOrder: 5
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 5860588875163717545, guid: cfd9e133c39b4b44eab460b397ae2874, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_FlipX: 0
-  m_FlipY: 0
-  m_DrawMode: 0
-  m_Size: {x: 2.09, y: 2.1}
-  m_AdaptiveModeThreshold: 0.5
-  m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 0
-  m_SpriteSortPoint: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &3743915582908413402
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4570065831695336318}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 981059f4c6164bd45be91f7fd9bebc49, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MajdataPlay.Rendering.RawSpriteRenderer
+  _sprite: {fileID: 0}
+  _color: {r: 1, g: 1, b: 1, a: 1}
+  _flipX: 0
+  _flipY: 0
+  _sortingLayerName: TouchHold Border
+  _sortingOrder: 5
+  _sharedMaterial: {fileID: 2100000, guid: f620a513368cf6046b73c1594627fee8, type: 2}
+  _shadowCastingMode: 0
+  _receiveShadows: 0
+  _motionVectorGenerationMode: 1
 --- !u!1 &4570065831800169648
 GameObject:
   m_ObjectHideFlags: 0
