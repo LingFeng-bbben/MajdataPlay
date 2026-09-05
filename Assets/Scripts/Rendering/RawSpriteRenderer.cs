@@ -7,7 +7,6 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Serialization;
 using UnityEngine.U2D;
-using Object = UnityEngine.Object;
 #if UNITY_EDITOR 
 using UnityEditor; 
 #endif
@@ -69,7 +68,9 @@ namespace MajdataPlay.Rendering
             set
             {
                 if (_sprite == value)
+                {
                     return;
+                }
 
                 _sprite = value;
                 MarkSpriteDirty();
@@ -296,6 +297,13 @@ namespace MajdataPlay.Rendering
         private MaterialPropertyBlock _propertyBlock;
 
         // ------------------------------------------------------------
+        // Temporary sprite buffers
+        // ------------------------------------------------------------ 
+        private NativeArray<Vector3> _spritePositions;
+        private NativeArray<Vector2> _spriteUVs;
+        private NativeArray<ushort> _spriteIndices;
+
+        // ------------------------------------------------------------
         // Persistent Native buffers
         // ------------------------------------------------------------
 
@@ -356,37 +364,43 @@ namespace MajdataPlay.Rendering
         private void LateUpdate()
         {
             if (!isActiveAndEnabled)
+            {
                 return;
+            }
 
             // ExecuteAlways 情况下，Inspector / Animation
             // 可能绕过 C# property setter，所以这里仍然做一次 cheap check。
 
             if (_sprite != _appliedSprite)
             {
-                _spriteDirty = true;
-                _geometryDirty = true;
+                MarkSpriteDirty();
             }
 
             if (_color != _appliedColor)
-                _colorDirty = true;
+            {
+                MarkColorDirty();
+            }
 
             if (_flipX != _appliedFlipX ||
                 _flipY != _appliedFlipY)
             {
-                _geometryDirty = true;
+                MarkGeometryDirty();
             }
 
-            if (_appliedSortingLayerID !=
-                SortingLayer.NameToID(_sortingLayerName))
+            if (_appliedSortingLayerID != SortingLayer.NameToID(_sortingLayerName))
             {
-                _sortingDirty = true;
+                MarkSortingDirty();
             }
 
             if (_appliedSortingOrder != _sortingOrder)
-                _sortingDirty = true;
+            {
+                MarkSortingDirty();
+            }
 
             if (_sharedMaterial != _appliedMaterial)
-                _materialDirty = true;
+            {
+                MarkMaterialDirty();
+            }
 
             ApplyDirty();
         }
@@ -435,9 +449,13 @@ namespace MajdataPlay.Rendering
             if (_mesh != null)
             {
                 if (Application.isPlaying)
+                {
                     Destroy(_mesh);
+                }
                 else
+                {
                     DestroyImmediate(_mesh);
+                }
 
                 _mesh = null;
             }
@@ -493,6 +511,22 @@ namespace MajdataPlay.Rendering
         {
             _spriteDirty = true;
             _geometryDirty = true;
+            _spritePositions.Dispose();
+            _spriteUVs.Dispose();
+            _spriteIndices.Dispose();
+
+            var currentSprite = _sprite;
+            var sourcePositions = currentSprite.GetVertexAttribute<Vector3>(VertexAttribute.Position);
+            var sourceUVs = currentSprite.GetVertexAttribute<Vector2>(VertexAttribute.TexCoord0);
+            var sourceIndices = currentSprite.GetIndices();
+
+            _spritePositions = new NativeArray<Vector3>(sourcePositions.Length, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
+            _spriteUVs = new NativeArray<Vector2>(sourceUVs.Length, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
+            _spriteIndices = new NativeArray<ushort>(sourceIndices.Length, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
+
+            sourcePositions.CopyTo(_spritePositions);
+            sourceUVs.CopyTo(_spriteUVs);
+            sourceIndices.CopyTo(_spriteIndices);
         }
 
         private void MarkGeometryDirty()
@@ -510,13 +544,18 @@ namespace MajdataPlay.Rendering
             _sortingDirty = true;
         }
 
+        private void MarkMaterialDirty()
+        {
+            _materialDirty = true;
+        }
+
         private void MarkAllDirty()
         {
-            _spriteDirty = true;
-            _geometryDirty = true;
-            _colorDirty = true;
-            _sortingDirty = true;
-            _materialDirty = true;
+            MarkColorDirty();
+            MarkGeometryDirty();
+            MarkSpriteDirty();
+            MarkSortingDirty();
+            MarkMaterialDirty();
             _rendererSettingsDirty = true;
         }
 
@@ -582,105 +621,137 @@ namespace MajdataPlay.Rendering
                 return;
             }
 
-            _appliedSprite = currentSprite;
-
-            NativeSlice<Vector3> sourcePositions =
-                currentSprite.GetVertexAttribute<Vector3>(
-                    VertexAttribute.Position);
-
-            NativeSlice<Vector2> sourceUVs =
-                currentSprite.GetVertexAttribute<Vector2>(
-                    VertexAttribute.TexCoord0);
-
-            NativeArray<ushort> sourceIndices =
-                currentSprite.GetIndices();
-
-            int vertexCount = sourcePositions.Length;
-            int indexCount = sourceIndices.Length;
-
-            if (vertexCount == 0 || indexCount == 0)
+            try
             {
-                ClearGeometry();
+                _appliedSprite = currentSprite;
+
+                var sourcePositions = default(NativeSlice<Vector3>);
+                var sourceUVs = default(NativeSlice<Vector2>);
+                var sourceIndices = default(NativeArray<ushort>);
+
+                if (_spritePositions.IsCreated)
+                {
+                    sourcePositions = _spritePositions;
+                }
+                else
+                {
+                    sourcePositions = currentSprite.GetVertexAttribute<Vector3>(VertexAttribute.Position);
+                }
+
+                if (_spriteUVs.IsCreated)
+                {
+                    sourceUVs = _spriteUVs;
+                }
+                else
+                {
+                    sourceUVs = currentSprite.GetVertexAttribute<Vector2>(VertexAttribute.TexCoord0);
+                }
+
+                if (_spriteIndices.IsCreated)
+                {
+                    sourceIndices = _spriteIndices;
+                }
+                else
+                {
+                    sourceIndices = currentSprite.GetIndices();
+                }
+
+                int vertexCount = sourcePositions.Length;
+                int indexCount = sourceIndices.Length;
+
+                if (vertexCount == 0 || indexCount == 0)
+                {
+                    ClearGeometry();
+
+                    _appliedFlipX = _flipX;
+                    _appliedFlipY = _flipY;
+
+                    return;
+                }
+
+                EnsurePositionBuffers(vertexCount);
+                EnsureUVBuffer(vertexCount);
+                EnsureIndexBuffer(indexCount);
+
+                // --------------------------------------------------------
+                // Copy source Sprite data
+                // --------------------------------------------------------
+
+                sourcePositions.CopyTo(_positions);
+                sourceUVs.CopyTo(_uv0);
+
+                sourceIndices.CopyTo(_indices);
+
+                _vertexCount = vertexCount;
+                _indexCount = indexCount;
+
+                // --------------------------------------------------------
+                // Flip
+                // --------------------------------------------------------
+
+                BuildFlippedPositions(currentSprite);
+
+                // --------------------------------------------------------
+                // Upload
+                // --------------------------------------------------------
+
+                _mesh.Clear(false);
+
+                _mesh.SetVertices(
+                    _meshPositions,
+                    0,
+                    _vertexCount,
+                    MeshUpdateFlags.DontRecalculateBounds |
+                    MeshUpdateFlags.DontValidateIndices);
+
+                _mesh.SetUVs(
+                    0,
+                    _uv0,
+                    0,
+                    _vertexCount,
+                    MeshUpdateFlags.DontRecalculateBounds |
+                    MeshUpdateFlags.DontValidateIndices);
+
+                _mesh.SetIndices(
+                    _indices,
+                    0,
+                    _indexCount,
+                    MeshTopology.Triangles,
+                    0,
+                    false,
+                    0);
+
+                // Sprite.bounds 已经是 Sprite 几何对应的 local bounds。
+                // 不需要 RecalculateBounds。
+                _mesh.bounds = currentSprite.bounds;
+
+                _meshFilter.sharedMesh = _mesh;
 
                 _appliedFlipX = _flipX;
                 _appliedFlipY = _flipY;
 
-                return;
+                // Texture 只在 Sprite 改变时更新。
+                EnsurePropertyBlock();
+
+                _meshRenderer.GetPropertyBlock(_propertyBlock);
+
+                Texture texture = currentSprite.texture;
+                _propertyBlock.SetTexture(MainTexID, texture);
+
+                _meshRenderer.SetPropertyBlock(_propertyBlock);
+
+                // sprite 已经处理完，不需要再次上传。
+                _spriteDirty = false;
             }
-
-            EnsurePositionBuffers(vertexCount);
-            EnsureUVBuffer(vertexCount);
-            EnsureIndexBuffer(indexCount);
-
-            // --------------------------------------------------------
-            // Copy source Sprite data
-            // --------------------------------------------------------
-
-            sourcePositions.CopyTo(_positions);
-            sourceUVs.CopyTo(_uv0);
-
-            sourceIndices.CopyTo(_indices);
-
-            _vertexCount = vertexCount;
-            _indexCount = indexCount;
-
-            // --------------------------------------------------------
-            // Flip
-            // --------------------------------------------------------
-
-            BuildFlippedPositions(currentSprite);
-
-            // --------------------------------------------------------
-            // Upload
-            // --------------------------------------------------------
-
-            _mesh.Clear(false);
-
-            _mesh.SetVertices(
-                _meshPositions,
-                0,
-                _vertexCount,
-                MeshUpdateFlags.DontRecalculateBounds |
-                MeshUpdateFlags.DontValidateIndices);
-
-            _mesh.SetUVs(
-                0,
-                _uv0,
-                0,
-                _vertexCount,
-                MeshUpdateFlags.DontRecalculateBounds |
-                MeshUpdateFlags.DontValidateIndices);
-
-            _mesh.SetIndices(
-                _indices,
-                0,
-                _indexCount,
-                MeshTopology.Triangles,
-                0,
-                false,
-                0);
-
-            // Sprite.bounds 已经是 Sprite 几何对应的 local bounds。
-            // 不需要 RecalculateBounds。
-            _mesh.bounds = currentSprite.bounds;
-
-            _meshFilter.sharedMesh = _mesh;
-
-            _appliedFlipX = _flipX;
-            _appliedFlipY = _flipY;
-
-            // Texture 只在 Sprite 改变时更新。
-            EnsurePropertyBlock();
-
-            _meshRenderer.GetPropertyBlock(_propertyBlock);
-
-            Texture texture = currentSprite.texture;
-            _propertyBlock.SetTexture(MainTexID, texture);
-
-            _meshRenderer.SetPropertyBlock(_propertyBlock);
-
-            // sprite 已经处理完，不需要再次上传。
-            _spriteDirty = false;
+            finally
+            {
+                _spritePositions.Dispose();
+                _spriteUVs.Dispose();
+                _spriteIndices.Dispose();
+                _spritePositions = default;
+                _spriteUVs = default;
+                _spriteIndices = default;
+            }
         }
 
         private void ApplyFlipOnly(Sprite currentSprite)
@@ -896,6 +967,10 @@ namespace MajdataPlay.Rendering
 
             if (_indices.IsCreated)
                 _indices.Dispose();
+
+            _spritePositions.Dispose();
+            _spriteUVs.Dispose();
+            _spriteIndices.Dispose();
         }
     }
 }
